@@ -1,3 +1,4 @@
+from dataclasses import field
 import sys
 from typing import Optional
 import aiofiles
@@ -10,8 +11,8 @@ logger = get_logger(__name__)
 
 class RagProject:
     # this exists to avoid the need for `globals` concerns
-    root_path: Optional[Path] = None
-    dot_rag_dir: Optional[Path] = None
+    root_path: Path = field(default_factory=Path)
+    dot_rag_dir: Path = field(default_factory=Path)
     config: RagConfig = RagConfig.default()
 
 # *** by the way I am not 100% certain I like this module... but lets see how it goes
