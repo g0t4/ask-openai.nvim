@@ -6,7 +6,7 @@ from logs import get_logger
 from index import workspace
 from index.validate import DatasetsValidator
 from language_server.commands import update_file
-from index.storage import Datasets, load_all_datasets
+from index.storage import load_all_datasets
 
 logger = get_logger(__name__)
 
