@@ -130,17 +130,19 @@ async def main():
 
     logging_fwk_to_console(level="DEBUG")
 
-    rag_dir = Path(sys.argv[1])
-    ds = load_all_datasets(rag_dir)
+    dot_rag_dir = Path(sys.argv[1])
+    workspace_folder = dot_rag_dir.parent
+    await workspace.from_folder(workspace_folder)
+    ds = workspace.datasets
 
+    # explicit calls to validate b/c that's what this module does! don't use this via workspace.validate_datasets()
     validator = DatasetsValidator(ds)
     validator.validate_datasets()
     validator.warn_about_unindexed_domains(ds)
 
-    root_dir = rag_dir.parent
-    warn_about_stale_files(ds, root_dir)
+    warn_about_stale_files(ds, workspace_folder)
 
-    config = await workspace.load_rag_config(root_dir)
+    config = await workspace.load_rag_config(workspace_folder)
     validator.compare_config_vs_indexed_domains(ds, config)
 
     if validator.any_problems:
