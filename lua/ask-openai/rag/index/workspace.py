@@ -7,7 +7,7 @@ from typing import Optional
 
 from logs import get_logger
 from config import RagConfig, load_config
-from index.storage import Datasets
+from index.storage import Datasets, load_all_datasets
 
 logger = get_logger(__name__)
 
@@ -81,6 +81,9 @@ async def from_folder(folder: str | Path):
     logger.debug(f"{project.dot_rag_dir=}")
 
     await load_rag_config(project.folder)
+
+    global datasets
+    datasets = load_all_datasets(project.dot_rag_dir)
 
 async def load_rag_config(root_path: Path) -> RagConfig:
     rag_yaml = root_path / ".rag.yaml"
