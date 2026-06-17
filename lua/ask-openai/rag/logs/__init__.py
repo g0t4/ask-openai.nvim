@@ -114,6 +114,7 @@ class Logger(logging.Logger):
         self.debug(f"{message}: %s", self._pp(obj))
 
     def inspect_info(self, message: str, obj):
+        """ entry stands out b/c of box border """
         if not self.isEnabledFor(logging.INFO):
             return
         if not console:

@@ -14,10 +14,8 @@ def setup(server: LanguageServer):
 
     @server.feature(types.INITIALIZE)
     async def on_initialize(_: LanguageServer, params: types.InitializeParams):
-
-        # logger.pp_info("params", params)
-        logger.inspect_info("client_info", params.client_info)
-        # params.trace # TODO use this to enable log level debug/trace?
+        # logger.inspect_info("params", params)
+        logger.debug("LSP %s", params.client_info)
 
         folders = params.workspace_folders or []
         if not any(folders):
