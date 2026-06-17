@@ -1,3 +1,4 @@
+import re
 import tempfile
 from pathlib import Path
 
@@ -6,6 +7,7 @@ import pytest
 from config.domains import (
     EXTENSION_TO_SEMANTIC_DOMAIN,
     BASENAME_TO_SEMANTIC_DOMAIN,
+    FILEPATH_REGEX_TO_SEMANTIC_DOMAIN,
     SHEBANG_EXECUTABLE_TO_SEMANTIC_DOMAIN,
     DEFAULT_ALLOWED_SEMANTIC_DOMAINS,
     resolve_semantic_domain,
@@ -131,16 +133,21 @@ class TestResolveSemanticDomain:
         assert resolve_semantic_domain(Path(".gitignore")) == "git"
         assert resolve_semantic_domain(Path(".rs")) == "rust"
 
+from config import domains
+
 class TestFilePathRegexFallback:
 
     def test_full_path_matches(self):
+        domains.FILEPATH_REGEX_TO_SEMANTIC_DOMAIN = [(re.compile(r".*\.config/fd/ignore$"), "git")]
         assert resolve_semantic_domain(Path("/Users/foo/.config/fd/ignore")) == "git"
 
     def test_tilde_path_matches(self):
+        domains.FILEPATH_REGEX_TO_SEMANTIC_DOMAIN = [(re.compile(r".*\.config/bat/config$"), "bash")]
         assert resolve_semantic_domain(Path("~/repos/github/g0t4/dotfiles/.config/bat/config")) == "bash"
 
     def test_non_matching_path_returns_none(self, tmp_path):
-        f = tmp_path / ".config/random/app"
+        domains.FILEPATH_REGEX_TO_SEMANTIC_DOMAIN = []
+        f = tmp_path / ".config/fd/ignore"
         f.parent.mkdir(parents=True, exist_ok=True)
         f.write_text("some random config\n")
         assert resolve_semantic_domain(f) is None
