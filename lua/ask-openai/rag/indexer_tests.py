@@ -33,17 +33,17 @@ test_cases = my_dir / "chunks/test_cases"
 def copy_file(src, dest):
     (tmp_source_code_dir / dest).write_text((test_cases / src).read_text())
 
+def trash_path(dir):
+    if dir.exists():
+        subprocess.run(["trash", dir])
+
 class TestBuildIndex:
 
     @classmethod
     def setup_class(cls):  # runs once before *all* tests in this class
-
+        # TODO review workspace usage
         workspace.rag_project.dot_rag_dir = dot_rag_dir
         workspace.rag_project.root_path = tmp_source_code_dir  # use this as default, override if different below
-
-    def trash_path(self, dir):
-        if dir.exists():
-            subprocess.run(["trash", dir])
 
     def get_vector_index(self):
         vectors_index_path = dot_rag_dir / "lua" / "vectors.index"
@@ -68,7 +68,7 @@ class TestBuildIndex:
         # FYI! this duplicates some low level line range chunking tests but I want to keep it to include the end to end picture
         #   i.e. for computing chunk id which relies on path to file
         #   here I am testing end to end chunking outputs even if most logic is shared with low level tests, still valuable
-        self.trash_path(dot_rag_dir)
+        trash_path(dot_rag_dir)
         workspace.rag_project.root_path = indexer_src_dir
 
         await self.build_lua_index(indexer_src_dir)
@@ -141,7 +141,7 @@ class TestBuildIndex:
     @pytest.mark.asyncio
     async def test_search_index_to_trigger_OpenMP_error(self):
         reset_cache_bewteen_tests()  # fix for changing the cached root_path dir
-        self.trash_path(dot_rag_dir)
+        trash_path(dot_rag_dir)
         workspace.rag_project.root_path = indexer_src_dir
 
         # * setup same index as in the first test
@@ -200,9 +200,9 @@ class TestBuildIndex:
         # TODO put this reset on each test
         reset_cache_bewteen_tests()  # fix for changing the cached root_path dir
 
-        self.trash_path(dot_rag_dir)
+        trash_path(dot_rag_dir)
         # * recreate source directory with initial files
-        self.trash_path(tmp_source_code_dir)
+        trash_path(tmp_source_code_dir)
         tmp_source_code_dir.mkdir(exist_ok=True, parents=True)
 
         copy_file("numbers.30.txt", "numbers.lua")  # 30 lines, 2 chunks
@@ -282,9 +282,9 @@ class TestBuildIndex:
     async def test_reproduce_file_mod_time_updated_but_not_chunks_should_not_duplicate_vectors_in_index(self):
         reset_cache_bewteen_tests()  # fix for changing the cached root_path dir
 
-        self.trash_path(dot_rag_dir)
+        trash_path(dot_rag_dir)
         # * recreate source directory with initial files
-        self.trash_path(tmp_source_code_dir)
+        trash_path(tmp_source_code_dir)
         tmp_source_code_dir.mkdir(exist_ok=True, parents=True)
 
         copy_file("numbers.30.txt", "numbers.lua")  # 30 lines, 2 chunks
@@ -338,9 +338,9 @@ class TestBuildIndex:
     async def test_update_file_from_language_server(self):
         reset_cache_bewteen_tests()  # fix for changing the cached root_path dir
 
-        self.trash_path(dot_rag_dir)
+        trash_path(dot_rag_dir)
         # * recreate source directory with initial files
-        self.trash_path(tmp_source_code_dir)
+        trash_path(tmp_source_code_dir)
         tmp_source_code_dir.mkdir(exist_ok=True, parents=True)
 
         copy_file("numbers.30.txt", "numbers.lua")  # 30 lines, 2 chunks
