@@ -29,15 +29,13 @@ async def grep_command(args: LSPSemanticGrepRequest, datasets: Datasets) -> LSPS
         if fs.is_no_rag_dir():
             return LSPSemanticGrepResult(error=LSPResponseErrors.NO_RAG_DIR)
 
-        # TODO REVIEW ASYNC (i.e. for file ops? or other async capable ops)
-
-        query = args.query
-        if query is None or len(query) == 0:
+        if args.query is None or len(args.query) == 0:
             logger.info("No query provided")
             return LSPSemanticGrepResult(error="No query provided")
 
         stopper.throw_if_stopped()
 
+        # TODO REVIEW ASYNC (i.e. for file ops? or other async capable ops)
         matches = await semantic_grep(
             args=args,
             datasets=datasets,
