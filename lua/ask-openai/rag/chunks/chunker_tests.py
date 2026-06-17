@@ -11,7 +11,8 @@ from index.storage import Chunk, ChunkType
 
 # * set root dir for relative paths
 my_dir = Path(__file__).absolute().parent
-repo_root = my_dir.parent.parent.parent.parent
+repo_root = workspace.git_repo_root_dir(my_dir)
+assert repo_root is not None
 test_cases = my_dir / "test_cases"
 test_cases_treesitter = test_cases / "treesitter"
 test_cases_python = test_cases_treesitter / "python"
