@@ -12,7 +12,7 @@ from index import fs
 from lsp import rag
 from chunks.chunker import RAGChunkerOptions
 from rag.logs import get_logger, logging_fwk_to_language_server_log_file, disable_printtmp
-from lsp.updates.file_queue import FileUpdateEmbeddingsQueue
+from lsp.operations.file_queue import FileUpdateEmbeddingsQueue
 
 disable_printtmp()  # LSP uses STDOUT for comms!
 
