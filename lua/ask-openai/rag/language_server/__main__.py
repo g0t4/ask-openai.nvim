@@ -2,7 +2,6 @@ import asyncio
 import logging
 import os
 import signal
-from pathlib import Path
 
 import lsprotocol.types as types
 from pygls.lsp.server import LanguageServer
@@ -10,14 +9,12 @@ from pygls.protocol.json_rpc import MsgId
 
 from index import fs
 from language_server import rag
-from chunks.chunker import RAGChunkerOptions
 from rag.logs import get_logger, logging_fwk_to_language_server_log_file, disable_printtmp
 from .file_queue import FileUpdateEmbeddingsQueue
 from language_server.commands import sleepy, grep
+from language_server.stoppers import request_stop
 
 disable_printtmp()  # LSP uses STDOUT for comms!
-
-from language_server.stoppers import request_stop, create_stopper, remove_stopper
 
 logging_fwk_to_language_server_log_file(logging.INFO)
 # logging_fwk_to_language_server_log_file(logging.DEBUG)
