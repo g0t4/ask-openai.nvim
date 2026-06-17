@@ -130,3 +130,32 @@ class TestResolveSemanticDomain:
         # and .ext should also work, but path.suffix doesn't do what you think so leave this test case after fixing (dropping use of suffix)
         assert resolve_semantic_domain(Path(".gitignore")) == "git"
         assert resolve_semantic_domain(Path(".rs")) == "rust"
+
+
+class TestPathRegexFallback:
+    """Test path-based regex fallback for extensionless files."""
+
+    def test_bat_config_maps_to_bash(self):
+        assert resolve_semantic_domain(Path(".config/bat/config")) == "bash"
+
+    def test_fd_ignore_maps_to_git(self):
+        assert resolve_semantic_domain(Path(".config/fd/ignore")) == "git"
+
+    def test_ghostty_config_maps_to_text(self):
+        assert resolve_semantic_domain(Path(".config/ghostty/config")) == "text"
+
+    def test_git_ignore_maps_to_git(self):
+        assert resolve_semantic_domain(Path(".config/git/ignore")) == "git"
+
+    def test_ripgrep_config_maps_to_ini(self):
+        assert resolve_semantic_domain(Path(".config/ripgrep/ripgreprc")) == "ini"
+
+    def test_non_matching_path_returns_none(self, tmp_path):
+        f = tmp_path / ".config/random/app"
+        f.parent.mkdir(parents=True, exist_ok=True)
+        f.write_text("some random config\n")
+        assert resolve_semantic_domain(f) is None
+
+    def test_path_regex_doesnt_match_files_with_extension(self):
+        # Path regex fallback should only apply to extensionless files
+        assert resolve_semantic_domain(Path(".config/bat/config.toml")) == "toml"
