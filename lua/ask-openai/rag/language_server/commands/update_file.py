@@ -104,7 +104,7 @@ class FileUpdateEmbeddingsQueue:
 async def update_file_from_pygls_doc(lsp_doc: TextDocument, options: RAGChunkerOptions, _passed_datasets: Datasets):
     file_path = Path(lsp_doc.path)
 
-    with logger.timer(f"update_file {workspace.get_loggable_path(file_path)}"):
+    with logger.timer(f"update_file {workspace.get_relative_path_to(file_path)}"):
         hash = get_file_hash_from_lines(lsp_doc.lines)
         # FYI you can check hash for changes, but remember this is off of disk and you only update that on commit
         #   so really there's no point to ask if changed, b/c only going to be saving materially if altering it

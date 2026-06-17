@@ -238,7 +238,7 @@ class Datasets:
         # * find prior chunks (if any)
         prior_chunks: list[Chunk] | None = None
         if file_path_str in dataset.chunks_by_file:
-            logger.debug(f"Prior chunks exist for {workspace.get_loggable_path(file_path_str)}")
+            logger.debug(f"Prior chunks exist for {workspace.get_relative_path_to(file_path_str)}")
             prior_chunks = dataset.chunks_by_file[file_path_str]
 
         if not prior_chunks:
