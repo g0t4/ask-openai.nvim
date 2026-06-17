@@ -233,6 +233,13 @@ async def serve(root_dir: str | Path | None = None) -> None:
 
     root_dir_path = Path(root_dir)
     await workspace.from_folder(root_dir_path)
+
+    if not workspace.get_config().enabled:
+        raise RuntimeError("RAG is disabled — cannot start server")
+
+    if workspace.is_no_rag_dir():
+        raise RuntimeError("dot_rag_dir directory not found — cannot start server")
+
     workspace.validate_datasets()
 
     @server.list_tools()
