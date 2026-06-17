@@ -18,6 +18,7 @@ async def main():
 
     dot_rag_dir = Path("~/repos/github/g0t4/ask-openai.nvim/.rag").expanduser().absolute()
     await workspace.from_folder(dot_rag_dir.parent)
+    workspace.load_datasets()
 
     args = LSPSemanticGrepRequest(
         query="where did I set the top_k for semantic grep?",

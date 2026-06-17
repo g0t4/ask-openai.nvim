@@ -32,9 +32,11 @@ def setup(server: LanguageServer):
         await workspace.from_folder(folder)
 
         if not workspace.get_config().enabled or workspace.is_no_rag_dir():
+            logger.debug("RAG disabled or no .rag directory, skipping initialization")
             # DO NOT notify yet, that has to come after server responds to initialize request
             return types.InitializeResult(capabilities=types.ServerCapabilities())
 
+        workspace.load_datasets()
         workspace.validate_datasets()
 
     def tell_client_to_shut_that_shit_down_now():

@@ -86,6 +86,7 @@ async def from_folder(folder: str | Path):
 
     await load_rag_config(project.folder)
 
+def load_datasets():
     global datasets
     datasets = load_all_datasets(project.dot_rag_dir)
 

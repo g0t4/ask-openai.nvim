@@ -242,6 +242,7 @@ async def serve(root_dir: str | Path | None = None) -> None:
         logger.error("dot_rag_dir directory not found — cannot start server")
         return # stop gracefully
 
+    workspace.load_datasets()
     workspace.validate_datasets()
 
     @server.list_tools()

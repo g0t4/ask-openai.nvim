@@ -133,17 +133,17 @@ async def main():
     dot_rag_dir = Path(sys.argv[1])
     workspace_folder = dot_rag_dir.parent
     await workspace.from_folder(workspace_folder)
-    ds = workspace.datasets
+    workspace.load_datasets()
 
     # explicit calls to validate b/c that's what this module does! don't use this via workspace.validate_datasets()
-    validator = DatasetsValidator(ds)
+    validator = DatasetsValidator(workspace.datasets)
     validator.validate_datasets()
-    validator.warn_about_unindexed_domains(ds)
+    validator.warn_about_unindexed_domains(workspace.datasets)
 
-    warn_about_stale_files(ds, workspace_folder)
+    warn_about_stale_files(workspace.datasets, workspace_folder)
 
     config = await workspace.load_rag_config(workspace_folder)
-    validator.compare_config_vs_indexed_domains(ds, config)
+    validator.compare_config_vs_indexed_domains(workspace.datasets, config)
 
     if validator.any_problems:
         sys.exit(1)
