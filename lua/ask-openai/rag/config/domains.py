@@ -211,11 +211,6 @@ EXTENSION_TO_SEMANTIC_DOMAIN: dict[str, str] = {
     "hcl": "hcl",
 }
 
-# FILEPATH MATCH to SEMANTIC_DOMAIN (not just basename) - IMPLEMENTED
-# See FILEPATH_REGEX_DOMAINS below for the actual patterns
-# TODO look at what bat command does in its mapping table for this particular problem as it also deals with syntax highlighting files that aren't always clearly mapped to a format
-#    TODO at least copy over my bat config at a minimum that will cover some cases of mappings
-
 BASENAME_TO_SEMANTIC_DOMAIN: dict[str, str] = {
     # --- Shell ---
     "Makefile": "make",
@@ -339,26 +334,27 @@ SHEBANG_EXECUTABLE_TO_SEMANTIC_DOMAIN: dict[str, str] = {
     # "julia": "julia",
 }
 
-
 # Path-based regex patterns for extensionless files (last resort matching)
 # Order matters: first match wins
-FILEPATH_REGEX_DOMAINS: list[tuple[re.Pattern, str]] = [
+FILEPATH_REGEX_TO_SEMANTIC_DOMAIN: list[tuple[re.Pattern, str]] = [
+    # TODO look at what bat command does in its mapping table for this particular problem as it also deals with syntax highlighting files that aren't always clearly mapped to a format
+    #    TODO at least copy over my bat config at a minimum that will cover some cases of mappings
+
     # --- bat config (syntax highlighting uses bash-like syntax for some themes) ---
     (re.compile(r".config/bat/config$"), "bash"),
-    
+
     # --- fd ignore files (gitignore format) ---
     (re.compile(r".config/fd/ignore$"), "git"),
-    
+
     # --- ghostty config (plain text configuration) ---
     (re.compile(r".config/ghostty/config$"), "text"),
-    
+
     # --- git ignore files ---
     (re.compile(r".config/git/ignore$"), "git"),
-    
+
     # --- ripgrep config (INI-like format) ---
     (re.compile(r".config/ripgrep/ripgreprc$"), "ini"),
 ]
-
 
 def resolve_semantic_domain_for_vim_filetype(vim_filetype: str):
     # TODO actually lets prompt the agent to provide a semantic/retrieval domain instead of vim_filetype?
@@ -368,16 +364,11 @@ def resolve_semantic_domain_for_vim_filetype(vim_filetype: str):
     return resolve_semantic_domain(as_file_extension)
 
 def _resolve_semantic_domain_from_filepath_regex(file_path: Path) -> Optional[str]:
-    """
-    Try to resolve semantic domain using filepath regex patterns.
-    Only applies to extensionless files as a last resort.
-    """
     path_str = str(file_path)
-    for pattern, domain in FILEPATH_REGEX_DOMAINS:
+    for pattern, domain in FILEPATH_REGEX_TO_SEMANTIC_DOMAIN:
         if pattern.search(path_str):
             return domain
     return None
-
 
 def resolve_semantic_domain(file_path: str | Path) -> Optional[str]:
     """Resolve the semantic/retrieval domain for a file, the group used for narrow querying of related files...
@@ -410,7 +401,8 @@ def resolve_semantic_domain(file_path: str | Path) -> Optional[str]:
     else:
         ext = suffix.lstrip(".").lower()
     if not ext:
-        # Full path matching regexes fallback (for extensionless only until need arises for files w/ an extension)
+        # FYI file path regexes fallback is only for extensionless until real need arises for files with an extension
+        #   keep in mind this is overhead, don't blindly add everywhere for an oddball case where the file could be given an extension instead!
         domain = _resolve_semantic_domain_from_filepath_regex(file_path)
         if domain is not None:
             return domain
