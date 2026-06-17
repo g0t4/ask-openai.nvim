@@ -2,7 +2,6 @@ import logging
 import os
 import signal
 
-import lsprotocol.types as types
 from pygls.lsp.server import LanguageServer
 
 from rag.logs import get_logger, logging_fwk_to_language_server_log_file
