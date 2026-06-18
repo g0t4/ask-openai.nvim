@@ -73,18 +73,36 @@ class TestShebangToSemanticDomainEdgeCases:
         f.write_text("#!/usr/bin/env perl\nprint 'hi'\n")
         assert resolve_semantic_domain(f) == "perl"
 
-    def test_no_shebang_returns_none(self, tmp_path):
+    def test_extension_with_no_shebang__returns_extension(self, tmp_path):
+        # duplicative test but it doesn't hurt to keep here too
+        f = tmp_path / "file.json"
+        f.write_text("just some text\nno shebang here\n")
+        assert resolve_semantic_domain(f) == "json"
+
+    def test_extensionless_with_no_shebang__returns_unknown(self, tmp_path):
         f = tmp_path / "random_file"
         f.write_text("just some text\nno shebang here\n")
         assert resolve_semantic_domain(f) == "unknown"
 
-    def test_shebang_not_first_line(self, tmp_path):
+    def test_extension_with_shebang_not_first_line__returns_extension(self, tmp_path):
+        f = tmp_path / "wrong_shebang.json"
+        f.write_text("some text\n#!/usr/bin/env python\n")
+        assert resolve_semantic_domain(f) == "json"
+
+    def test_extensionless_with_shebang_not_first_line__returns_unknown(self, tmp_path):
         f = tmp_path / "wrong_shebang"
         f.write_text("some text\n#!/usr/bin/env python\n")
         assert resolve_semantic_domain(f) == "unknown"
 
-    def test_binary_file_returns_none(self, tmp_path):
-        f = tmp_path / "binary"
+    def test_extension_on_binary_file__returns_extension(self, tmp_path):
+        f = tmp_path / "foo.json"
+        f.write_bytes(b"\x00\x01\x02\x03")
+        assert resolve_semantic_domain(f) == "json"
+
+    def test_extensionless_binary_file__returns_unknown(self, tmp_path):
+        # BTW handling binary format is largely up to the chunker, semantic domain right now focuses on filename (with exception for shebangs)
+        #  I am inclined to map binary files to binary/None but lets hold off for now
+        f = tmp_path / "foo"
         f.write_bytes(b"\x00\x01\x02\x03")
         assert resolve_semantic_domain(f) == "unknown"
 
