@@ -76,17 +76,17 @@ class TestShebangToSemanticDomainEdgeCases:
     def test_no_shebang_returns_none(self, tmp_path):
         f = tmp_path / "random_file"
         f.write_text("just some text\nno shebang here\n")
-        assert resolve_semantic_domain(f) is None
+        assert resolve_semantic_domain(f) == "unknown"
 
     def test_shebang_not_first_line(self, tmp_path):
         f = tmp_path / "wrong_shebang"
         f.write_text("some text\n#!/usr/bin/env python\n")
-        assert resolve_semantic_domain(f) is None
+        assert resolve_semantic_domain(f) == "unknown"
 
     def test_binary_file_returns_none(self, tmp_path):
         f = tmp_path / "binary"
         f.write_bytes(b"\x00\x01\x02\x03")
-        assert resolve_semantic_domain(f) is None
+        assert resolve_semantic_domain(f) == "unknown"
 
     def test_python_versioned_shebang(self, tmp_path):
         """python3.11 should still match python."""
@@ -150,4 +150,12 @@ class TestFilePathRegexFallback:
         f = tmp_path / ".config/fd/ignore"
         f.parent.mkdir(parents=True, exist_ok=True)
         f.write_text("some random config\n")
-        assert resolve_semantic_domain(f) is None
+        assert resolve_semantic_domain(f) == "unknown"
+
+    def test_extensionless_file_returns_unknown_with_warning(self, tmp_path, caplog):
+        domains.FILEPATH_REGEX_TO_SEMANTIC_DOMAIN = []
+        f = tmp_path / "random_extensionless_file"
+        f.write_text("some content\n")
+        domain = resolve_semantic_domain(f)
+        assert domain == "unknown"
+        assert "No semantic domain resolved for extensionless file" in caplog.text
