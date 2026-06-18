@@ -101,7 +101,10 @@ class TestShebangToSemanticDomainEdgeCases:
 
     def test_extensionless_binary_file__returns_unknown(self, tmp_path):
         # BTW handling binary format is largely up to the chunker, semantic domain right now focuses on filename (with exception for shebangs)
-        #  I am inclined to map binary files to binary/None but lets hold off for now
+        #  I am inclined to map binary files to binary/None but lets hold off for now as that would require reading file contents...
+        #  actually I am inclined to use `file` command to find out the type of binary format so we can expand into images/pdfs/videos/audio/etc... save for later
+        #   TODO consider attaching file command output on stats for a file? and then making that searchable too? (index stats and search for file names/paths too!)
+        #     this would make possible a semantic file picker... ala spotlight that doesn't suck! could even cover both name/path/file/stat and contents of file!
         f = tmp_path / "foo"
         f.write_bytes(b"\x00\x01\x02\x03")
         assert resolve_semantic_domain(f) == "unknown"
