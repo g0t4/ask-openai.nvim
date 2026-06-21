@@ -89,6 +89,7 @@ EXCLUDED_CONTENT_HASHES: list[str] = [
     #
     #
     "b6726077e8204487d5b12facab182f5dc48b85def2dcf72987573cfab3599d22",  ## Fish Shell
+    "f696757ba196454bbde350bc52c480d87a747f4fc3374b9ef86e0be26997b3da",  ## Fish Shell
     #
     "511f32b9bf45f71b8a1a807d3636e9694c2c6ad13cc68166ca6741455eb72df7",  # General project code rules
     "8f9ce1c508b6ed7f217818da62222e65643092d1e679f31cb738153edec72cb0",  # General Code Preferences (FIM one + trailing \n\n) # TODO strip trail new lines before compute hash?
