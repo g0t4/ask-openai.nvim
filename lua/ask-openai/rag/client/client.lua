@@ -1,4 +1,4 @@
-local ansi = require("ask-openai.predictions.ansi")
+local ansi = require("devtools.ansi")
 local log = require("devtools.logs.logger").universal()
 
 local M = {}
@@ -53,7 +53,22 @@ function warn_if_table_has_vim_NIL(what)
     end
     if #found_keys > 0 then
         local what_str = vim.inspect(what)
-        log:warn("found vim.NIL keys:", found_keys, " on ", what_str)
+
+        -- TODO make into general purpose highlighter for logging table + specific keys!
+        -- split the inspected string into lines
+        local lines = vim.split(what_str, "\n", { plain = true })
+        for i, line in ipairs(lines) do
+            for _, key in ipairs(found_keys) do
+                -- make line for key bold
+                if line:match("^%s*" .. key .. "%s*=%s*") then
+                    lines[i] = ansi.bold(ansi.red(line))
+                    break
+                end
+            end
+        end
+        local highlighted_what = table.concat(lines, "\n")
+
+        log:warn("found vim.NIL keys:", found_keys, " on ", highlighted_what)
     end
     return found_NIL
 end
