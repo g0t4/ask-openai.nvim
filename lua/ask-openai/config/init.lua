@@ -1,6 +1,6 @@
 local local_share = require("ask-openai.config.local_share")
 local LlamaServerClient = require("ask-openai.backends.llama_cpp.llama_server_client")
-local logs = require("devtools.logs.logger"):universal()
+local log = require("devtools.logs.logger"):universal()
 
 local M = {}
 
@@ -299,7 +299,7 @@ function M.get_validated_bearer_token()
         return 'Ask failed, bearer_token is nil'
     elseif bearer_token == "" then
         -- don't fail, just add to tracing
-        logs:info("FYI bearer_token is empty")
+        log:info("FYI bearer_token is empty")
     end
 
     return bearer_token

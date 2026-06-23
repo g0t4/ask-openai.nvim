@@ -9,7 +9,7 @@ local previewers = require('telescope.previewers')
 local state = require('telescope.actions.state')
 -- non-telescope deps:
 local files = require("ask-openai.helpers.files")
-local logs = require('devtools.logs.logger').universal()
+local log = require('devtools.logs.logger').universal()
 local AsyncDynamicFinder = require('telescope._extensions.ask_semantic_grep.async_dynamic_finder')
 local HLGroups = require('ask-openai.hlgroups')
 local client = require('ask-openai.rag.client.client')
@@ -26,12 +26,12 @@ local last_msg_id, last_cancel_requests
 ---@param entry_maker fun(match: LSPRankedMatch): SemanticGrepTelescopeEntryMatch
 function _semantic_grep(semantic_grep_request, lsp_buffer_number, process_result, process_complete, entry_maker)
     if last_cancel_requests then
-        logs:info("canceling semantic_grep request, last_msg_id: " .. vim.inspect(last_msg_id))
+        log:info("canceling semantic_grep request, last_msg_id: " .. vim.inspect(last_msg_id))
         last_cancel_requests()
         last_cancel_requests = nil
     end
 
-    logs:info("requesting semantic_grep, last_msg_id: " .. vim.inspect(last_msg_id))
+    log:info("requesting semantic_grep, last_msg_id: " .. vim.inspect(last_msg_id))
     local my_msg_id, cancel_my_request -- "my" as in this closure's request
     my_msg_id, cancel_my_request = client.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, function(obj)
 
@@ -44,7 +44,7 @@ function _semantic_grep(semantic_grep_request, lsp_buffer_number, process_result
         last_cancel_requests = nil
 
         if obj.result and obj.result.isError then
-            logs:error("semantic_grep failed: " .. (obj.result.error or "unknown"))
+            log:error("semantic_grep failed: " .. (obj.result.error or "unknown"))
             return {}
         end
 
@@ -58,7 +58,7 @@ function _semantic_grep(semantic_grep_request, lsp_buffer_number, process_result
     last_cancel_requests = cancel_my_request
     last_msg_id = my_msg_id -- this is a number
 
-    logs:info("semantic_grep last_msg_id: " .. vim.inspect(last_msg_id))
+    log:info("semantic_grep last_msg_id: " .. vim.inspect(last_msg_id))
 end
 
 local ns = vim.api.nvim_create_namespace("rag_preview")
@@ -185,7 +185,7 @@ local custom_buffer_previewer = previewers.new_buffer_previewer({
             if filename:match("%.ts$") then
                 ft = "typescript"
             else
-                logs:info("filetype match failed, please manually add the mapping for the file extension (ft=" .. tostring(ft) .. ") for filename: " .. filename)
+                log:info("filetype match failed, please manually add the mapping for the file extension (ft=" .. tostring(ft) .. ") for filename: " .. filename)
                 ft = ""
             end
         end
