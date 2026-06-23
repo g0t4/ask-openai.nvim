@@ -12,6 +12,36 @@ function M.is_lsp_client_available(lsp_buffer_number)
     return clients ~= nil and clients[1] ~= nil
 end
 
+---@param matches LSPRankedMatch[]
+function nil_means_nil(matches)
+    -- setting a key to nil in a table effectively removes the key
+    -- - FYI vim.NIL means set to null
+    --   use vim.NIL if you need to know a key was set to null (python None)
+    --
+    -- ?? walk the entire response object and delete all the keys with vim.NIL?
+    --   IOTW change vim.NIL => nil
+    local function nillify(what)
+        if what == vim.NIL then
+            return nil
+        end
+        return what
+    end
+    for _, match in ipairs(matches) do
+        -- FYI for now be conservative and only replace vim.NIL on values that you know can be python's None value
+        -- and that client side (here in lua) can be nil
+        match.start_column_base0 = nillify(match.start_column_base0)
+        match.end_column_base0 = nillify(match.end_column_base0)
+
+        -- warn if anything else is vim.NIL so I don't waste time down the line
+        for key, value in pairs(match) do
+            if value == vim.NIL then
+                log:warn("found vim.NIL on LSP response... if that's ok then add code to bypass this warning just for the respective keys where it is ok")
+            end
+        end
+    end
+    return matches
+end
+
 --- Executes a semantic grep request with:
 --- - check server is available
 --- - supports timeout
@@ -43,6 +73,9 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
 
     ---@param lsp_result LSPSemanticGrepResult
     local function on_language_server_response(err, lsp_result)
+        if lsp_result.matches then
+            lsp_result.matches = nil_means_nil(lsp_result.matches)
+        end
         if err then
             -- IIGC this is a client side error in making the request?
             log:luaify_trace("Semantic Grep tool_call query failed (callback err): " .. vim.inspect(err), lsp_result)
