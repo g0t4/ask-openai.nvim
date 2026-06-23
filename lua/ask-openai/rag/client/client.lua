@@ -52,7 +52,8 @@ function warn_if_table_has_vim_NIL(what)
         end
     end
     if #found_keys > 0 then
-        log:warn("found vim.NIL keys:", found_keys, " on ", what)
+        local what_str = vim.inspect(what)
+        log:warn("found vim.NIL keys:", found_keys, " on ", what_str)
     end
     return found_NIL
 end
@@ -102,10 +103,11 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
 
     ---@param lsp_result LSPSemanticGrepResult
     local function on_language_server_response(err, lsp_result)
+        walk_for_vim_NIL(lsp_result) -- FYI uncomment for testing known vim.NIL values
         if lsp_result.matches then
             lsp_result.matches = nil_means_nil(lsp_result.matches)
         end
-        walk_for_vim_NIL(lsp_result) -- FYI move before nil_means_nil to see warnings for vim.NIL
+        walk_for_vim_NIL(lsp_result)
         if err then
             -- IIGC this is a client side error in making the request?
             log:luaify_trace("Semantic Grep tool_call query failed (callback err): " .. vim.inspect(err), lsp_result)
