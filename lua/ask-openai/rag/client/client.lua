@@ -40,6 +40,7 @@ function warn_if_table_has_vim_NIL(what)
         return false
     end
 
+    -- FYI yes this is a bit hacky, so what... clean it up when you need it elsewhere
     -- * table
     local found_keys = {}
     for key, value in pairs(what) do
