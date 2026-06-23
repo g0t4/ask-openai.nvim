@@ -31,16 +31,46 @@ function nil_means_nil(matches)
         -- and that client side (here in lua) can be nil
         match.start_column_base0 = nillify(match.start_column_base0)
         match.end_column_base0 = nillify(match.end_column_base0)
-
-        -- warn if anything else is vim.NIL so I don't waste time down the line
-        for key, value in pairs(match) do
-            if value == vim.NIL then
-                log:warn("found vim.NIL on LSP response... if that's ok then add code to bypass this warning just for the respective keys where it is ok")
-            end
-        end
     end
     return matches
 end
+
+function warn_if_table_has_vim_NIL(what)
+    if type(what) ~= "table" then
+        return false
+    end
+
+    -- * table
+    local found_keys = {}
+    for key, value in pairs(what) do
+        if value == vim.NIL then
+            found_NIL = true
+            table.insert(found_keys, key)
+        elseif warn_if_table_has_vim_NIL(value) then
+            -- FYI defer to root most caller of warn_if_vim_NIL to log entire object
+            found_NIL = true
+        end
+    end
+    if #found_keys > 0 then
+        log:warn("found vim.NIL keys:", vim.inspect(found_keys))
+    end
+    return found_NIL
+end
+
+function walk_for_vim_NIL(what)
+    if what == vim.NIL then
+        -- TODO get actual code that called this to give as "what was vim.NIL"?
+        -- log traceback so you can see "what" as in the expression used to pass `what`
+        log:warn("entire object is vim.NIL, here is traceback where this was called:", debug.traceback())
+        return
+    end
+    if not warn_if_table_has_vim_NIL(what) then
+        return
+    end
+    -- log:warn("found vim.NIL on top-level object:", what)
+end
+
+-- walk_for_vim_NIL(vim.NIL) -- test passing vim.NIL directly
 
 --- Executes a semantic grep request with:
 --- - check server is available
@@ -73,6 +103,7 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
 
     ---@param lsp_result LSPSemanticGrepResult
     local function on_language_server_response(err, lsp_result)
+        walk_for_vim_NIL(lsp_result) -- TODO move after nil_means_nil once done testing
         if lsp_result.matches then
             lsp_result.matches = nil_means_nil(lsp_result.matches)
         end
