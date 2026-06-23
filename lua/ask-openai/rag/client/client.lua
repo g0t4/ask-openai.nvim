@@ -52,7 +52,7 @@ function warn_if_table_has_vim_NIL(what)
         end
     end
     if #found_keys > 0 then
-        log:warn("found vim.NIL keys:", vim.inspect(found_keys))
+        log:warn("found vim.NIL keys:", found_keys, " on ", what)
     end
     return found_NIL
 end
@@ -69,8 +69,6 @@ function walk_for_vim_NIL(what)
     end
     -- log:warn("found vim.NIL on top-level object:", what)
 end
-
--- walk_for_vim_NIL(vim.NIL) -- test passing vim.NIL directly
 
 --- Executes a semantic grep request with:
 --- - check server is available
