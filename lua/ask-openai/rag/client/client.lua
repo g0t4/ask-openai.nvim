@@ -52,26 +52,27 @@ function warn_if_table_has_vim_NIL(what)
             found_NIL = true
         end
     end
-    if #found_keys > 0 then
-        local what_str = vim.inspect(what)
+    if #found_keys == 0 then
+        return found_NIL
+    end
 
-        -- TODO make into general purpose highlighter for logging table + specific keys!
-        -- split the inspected string into lines
-        local lines = vim.split(what_str, "\n", { plain = true })
-        for i, line in ipairs(lines) do
-            for _, key in ipairs(found_keys) do
-                -- make line for key bold
-                if line:match("^%s*" .. key .. "%s*=%s*") then
-                    lines[i] = ansi.bold(ansi.red(line))
-                    break
-                end
+    -- * found keys
+    local what_str = vim.inspect(what)
+    -- TODO make into general purpose highlighter for logging table + specific keys!
+    local lines = vim.split(what_str, "\n", { plain = true })
+    for i, line in ipairs(lines) do
+        for _, key in ipairs(found_keys) do
+            -- make each key stand out
+            if line:match("^%s*" .. key .. "%s*=%s*") then
+                lines[i] = ansi.bold(ansi.red(line))
+                break
             end
         end
-        local highlighted_what = table.concat(lines, "\n")
-
-        log:warn("found vim.NIL keys:", found_keys, " on ", highlighted_what)
     end
-    return found_NIL
+    local highlighted_what = table.concat(lines, "\n")
+
+    log:warn("found vim.NIL keys:", found_keys, " on ", highlighted_what)
+    return true
 end
 
 function walk_for_vim_NIL(what)
