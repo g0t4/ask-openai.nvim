@@ -67,6 +67,7 @@ function walk_for_vim_NIL(what)
     if not warn_if_table_has_vim_NIL(what) then
         return
     end
+    -- PRN if needed log full object (root most) instead of closest table.. so this is the furthest away
     -- log:warn("found vim.NIL on top-level object:", what)
 end
 
