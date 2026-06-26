@@ -125,7 +125,7 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
     ---@param lsp_result LSPSemanticGrepResult
     local function on_language_server_response(err, lsp_result)
         -- walk_for_vim_NIL(lsp_result) -- FYI uncomment for testing known vim.NIL values before replacing with nil_means_nil
-        if lsp_result.matches then
+        if lsp_result and lsp_result.matches then
             lsp_result.matches = nil_means_nil(lsp_result.matches)
         end
         walk_for_vim_NIL(lsp_result)
