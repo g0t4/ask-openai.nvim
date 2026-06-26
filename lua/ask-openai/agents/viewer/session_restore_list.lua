@@ -1,5 +1,6 @@
 local log = require("devtools.logs.logger").universal()
 local FloatWindow = require("ask-openai.helpers.float_window")
+local HLGroups = require("ask-openai.hlgroups")
 
 --- Represents a single trace session entry.
 ---@class SessionEntry
@@ -15,6 +16,9 @@ local M = {}
 --- Similar to AgentsFrontend.chat_window pattern.
 ---@type SessionRestoreList|nil
 M._instance = nil
+
+--- Extmark namespace for selection highlights
+local HIGHLIGHT_NS = vim.api.nvim_create_namespace("AskSessionRestoreHighlight")
 
 --- Format a unix timestamp into a human-readable relative age string.
 ---
@@ -269,16 +273,25 @@ function M.render_list(instance)
         local entry_lines = format_entry_lines(entry, idx)
         table.insert(lines, entry_lines[1]) -- header line (always visible)
 
-        if idx == instance.selected_idx then
-            -- Highlight selected item's content with a special marker
-            table.insert(lines, "  >> " .. entry_lines[2])
-        else
-            table.insert(lines, "     " .. entry_lines[2])
-        end
+        -- Content line (no prefix marker anymore)
+        table.insert(lines, entry_lines[2])
     end
 
     vim.api.nvim_buf_set_lines(instance.buffer_number, 0, -1, false, lines)
-    vim.api.nvim_win_set_cursor(0, { instance.selected_idx * 2 - 1, 0 })
+
+    -- Clear any existing selection highlights
+    vim.api.nvim_buf_clear_namespace(instance.buffer_number, HIGHLIGHT_NS, 0, -1)
+
+    -- Highlight the selected item's content line with a distinct color
+    local selected_content_line_idx = instance.selected_idx * 2 - 2
+
+    vim.api.nvim_buf_set_extmark(instance.buffer_number, HIGHLIGHT_NS, selected_content_line_idx, 0, {
+        hl_group = HLGroups.SESSION_RESTORE_SELECTED,
+        end_line = selected_content_line_idx + 2,
+        hl_eol = true,
+    })
+
+    vim.api.nvim_win_set_cursor(0, { selected_content_line_idx + 1, 0 })
 end
 
 --- Move selection down by one.

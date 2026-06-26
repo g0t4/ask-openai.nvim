@@ -70,4 +70,8 @@ HLGroups.TOOL_STDOUT_CONTENT = "AskStdoutContent"
 vim.api.nvim_set_hl(0, HLGroups.TOOL_STDOUT_HEADER, { fg = "#FF8C00" })
 vim.api.nvim_set_hl(0, HLGroups.TOOL_STDOUT_CONTENT, { fg = "#A0A0A0" })
 
+-- * Session Restore List
+HLGroups.SESSION_RESTORE_SELECTED = "AskSessionRestoreSelected"
+vim.api.nvim_set_hl(0, HLGroups.SESSION_RESTORE_SELECTED, { fg = "#000000", bg = "#FFD700", bold = true })
+
 return HLGroups
