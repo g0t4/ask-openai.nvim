@@ -17,11 +17,20 @@ local _fetch_in_progress = {}
 local _model_cache = {}
 
 local MODEL_PATTERNS = {
-    -- order matters: more specific patterns first
-    { pattern = "^ggml%-org/Qwen3%.6.-MTP%-GGUF:", abbrev = "qwen3.6mtp" },
-    { pattern = "^ggml%-org/Qwen3%.6",             abbrev = "qwen3" },
-    { pattern = "^g0t4/Qwen%-AgentWorld",          abbrev = "agentworld" },
-    { pattern = "^ggml%-org/gpt%-oss",             abbrev = "gptoss" },
+    -- FYI escape - => %- (easy to forget and will bork the pattern)
+    --
+    -- ALSO, order matters: more specific patterns first
+    --
+    -- ggml-org/Qwen3.6-35B-A3B-MTP-GGUF:Q8_0
+    { pattern = "/Qwen3%.6.*%-MTP",  abbrev = "qwen3mtp" },
+    -- ggml-org/Qwen3.6-35B-A3B-GGUF:Q8_0
+    { pattern = "/Qwen3%.6",         abbrev = "qwen3" },
+    -- g0t4/Qwen-AgentWorld-35B-A3B-GGUF:Q8_0
+    { pattern = "/Qwen%-AgentWorld", abbrev = "agentworld" },
+    -- ggml-org/gpt-oss-120b-GGUF
+    { pattern = "/gpt%-oss",         abbrev = "gptoss" },
+    -- google/gemma-4-26B-A4B-it-qat-q4_0-gguf
+    { pattern = "/gemma%-4",         abbrev = "gemma4" },
 }
 
 --- Abbreviate a raw model name using pattern matching, or return the original name.
