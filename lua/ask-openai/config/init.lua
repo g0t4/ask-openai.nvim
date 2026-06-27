@@ -29,7 +29,7 @@ local MODEL_PATTERNS = {
 --- @return string
 local function abbreviate_model(raw_model)
     if not raw_model then
-        return raw_model
+        return "MISSING_NAME"
     end
 
     for _, entry in ipairs(MODEL_PATTERNS) do
@@ -40,7 +40,6 @@ local function abbreviate_model(raw_model)
 
     return raw_model
 end
-
 
 --- Perform the actual fetch in the background.
 --- @param base_url string
