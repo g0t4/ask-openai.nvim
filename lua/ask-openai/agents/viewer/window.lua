@@ -13,6 +13,7 @@ local SPINNER_FRAMES = { '⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧',
 ---@field _spinner_handle? table -- vim.loop.timer_t handle
 ---@field _spinner_idx number
 ---@field _base_title string
+---@field _agent_is_running boolean
 local AgentWindow = {}
 local class_mt = { __index = FloatWindow } -- inherit FloatWindow behavior too
 setmetatable(AgentWindow, class_mt)
