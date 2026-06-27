@@ -729,6 +729,9 @@ function AgentsFrontend.abort_request()
         return
     end
     CurlRequestForTrace.terminate(trace.last_request)
+    if AgentsFrontend.chat_window._agent_is_running then
+        AgentsFrontend.chat_window:stop_spinner("Aborted") -- FYI don't mark aborted if not running
+    end
     if AgentsFrontend.rag_cancel then
         AgentsFrontend.rag_cancel()
     end
