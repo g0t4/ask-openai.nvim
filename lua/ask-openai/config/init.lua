@@ -17,8 +17,10 @@ local _fetch_in_progress = {}
 local _model_cache = {}
 
 local MODEL_NAME_MAP = {
+    -- PRN switch to pattern matching not exact fixed string match?
     ["ggml-org/Qwen3.6-35B-A3B-MTP-GGUF:Q8_0"] = "qwen3.6mtp",
     ["ggml-org/Qwen3.6-35B-A3B-GGUF:Q8_0"] = "qwen3",
+    ["g0t4/Qwen-AgentWorld-35B-A3B-GGUF:Q8_0"] = "agentworld",
     ["ggml-org/gpt-oss-120b-GGUF"] = "gptoss",
 }
 
@@ -26,7 +28,7 @@ local MODEL_NAME_MAP = {
 --- @param raw_model string|nil
 --- @return string
 local function abbreviate_model(raw_model)
-    return MODEL_NAME_MAP[raw_model] or "OFFLINE"
+    return MODEL_NAME_MAP[raw_model] or raw_model
 end
 
 --- Perform the actual fetch in the background.
