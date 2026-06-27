@@ -126,12 +126,12 @@ function AgentWindow:ensure_spinner_running(base_title)
                 end
 
                 ---@type vim.api.keyset.win_config
-                local title_config = {
+                local config = {
                     title = " " .. title .. " ",
                     title_pos = "center",
                 }
                 -- TODO take over title for spinner only? leave footer for details?
-                vim.api.nvim_win_set_config(self.win_id, title_config)
+                vim.api.nvim_win_set_config(self.win_id, config)
             end)
         end)
 
