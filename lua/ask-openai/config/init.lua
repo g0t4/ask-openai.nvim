@@ -119,9 +119,9 @@ function M.get_llama_server_model_name(base_url)
         return cached.name
     end
 
-    -- 2. Fetch already in progress — caller will retry later
+    -- 2. Fetch already in progress — assume caller will retry later
     if _fetch_in_progress[base_url] then
-        return nil
+        return "Pending..."
     end
 
     -- 3. Start a new background fetch
@@ -130,7 +130,7 @@ function M.get_llama_server_model_name(base_url)
         refresh_model_info_cache_for(base_url)
     end)
 
-    return nil
+    return "Pending..."
 end
 
 ---@class Provider
@@ -227,15 +227,15 @@ function M.get_endpoints()
             base_url = M.get_cmdline_base_url(),
         },
         qwen = {
-            name = qwen3_model or "OFFLINE",
+            name = qwen3_model,
             base_url = qwen3_url,
         },
         gptoss = {
-            name = gptoss_model or "OFFLINE",
+            name = gptoss_model,
             base_url = gptoss_url,
         },
         gemma4 = {
-            name = gemma4_model or "OFFLINE",
+            name = gemma4_model,
             base_url = gemma4_url,
         },
     }
