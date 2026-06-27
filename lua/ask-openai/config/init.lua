@@ -173,7 +173,7 @@ local default_options = {
 
     -- request parameters:
     model = "gpt-4o",
-    max_tokens = 4000, -- higher when using thinking models like gptoss120b
+    max_tokens = 10000, -- higher when using thinking models like 4K+ for gptoss120b (high 8K) and 10K for qwen3.6/agentworld
     -- PRN temperature
     -- in future, if add other ask helpers then I can move these into a nested table like copilot options
 
