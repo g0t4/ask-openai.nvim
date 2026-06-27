@@ -365,6 +365,10 @@ end
 function M.setup(user_options)
     set_user_options(user_options)
     local_share.setup()
+    vim.schedule(function()
+        -- schedule in background on startup
+        M.get_endpoints()
+    end)
 end
 
 M.local_share = local_share
