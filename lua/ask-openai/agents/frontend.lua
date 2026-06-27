@@ -473,17 +473,24 @@ local function update_ui_chat_viewer(trace)
 
         -- * update window title with model name and token count
         local last_message = request.accumulated_model_response_messages[#request.accumulated_model_response_messages]
-        if last_message and last_message.timings then
-            local timings = last_message.timings
-            local cache_token_count = timings.cache_n or 0
-            local prompt_token_count = timings.prompt_n or 0
-            local predicted_token_count = timings.predicted_n or 0
-            local total_token_count = cache_token_count + prompt_token_count + predicted_token_count
-            local config = require("ask-openai.config")
-            local confirmed_model_name = config.get_endpoints()[api.get_agents_model()].name -- confirm by checking actual model name.
-            -- TODO merge with Agent Finished message that masks this one
-            local footer = string.format("%s | tokens: %s", confirmed_model_name, _comma_separate(total_token_count))
-            AgentsFrontend.chat_window:set_title(nil, footer)
+        if last_message and last_message.last_sse then
+            log:info("last_message", last_message)
+            local last_sse = last_message.last_sse
+            local timings = last_sse.timings
+            local footers = {}
+            if last_sse.model then
+                table.insert(footers, last_sse.model)
+            end
+            if timings then
+                local cache_token_count = timings.cache_n or 0
+                local prompt_token_count = timings.prompt_n or 0
+                local predicted_token_count = timings.predicted_n or 0
+                local total_token_count = cache_token_count + prompt_token_count + predicted_token_count
+                local token_footer = "tokens: " .. _comma_separate(total_token_count)
+                table.insert(footers, token_footer)
+            end
+            local footer = table.concat(footers, " | ")
+            AgentsFrontend.chat_window:set_footer(footer)
         end
     end)
 end
@@ -516,8 +523,9 @@ function AgentsFrontend.on_streaming_delta_update_message_history(choice, reques
         request.accumulated_model_response_messages[index_base1] = rx_accum_message
     end
 
-    if sse_parsed.timings then
-        rx_accum_message.timings = sse_parsed.timings
+    local is_last_sse = sse_parsed.timings
+    if is_last_sse then
+        rx_accum_message.last_sse = sse_parsed
     end
 
     if choice.delta.content ~= nil and choice.delta.content ~= vim.NIL then
