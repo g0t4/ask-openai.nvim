@@ -3,7 +3,7 @@ local CurlRequest = require("ask-openai.backends.curl_request")
 ---@class CurlRequestForTrace : CurlRequest
 ---@field trace AgentTrace
 ---@field already_sent boolean
----@field accumulated_model_response_messages RxAccumulatedMessage[] -- model "assistant" responses, built from SSEs
+---@field accumulated_model_response_messages RxAccumulatedMessage[] -- AIMessage response message(s), built from SSEs... while this is setup to support multiple AIMessages from the model on a single completion request, in practice it's only ever one... just did this to support multiple should that ever happen... or even if the SSEs are messed up somehow and split across multiple accidentally
 local CurlRequestForTrace = {}
 local class_mt = { __index = CurlRequest } -- inherit from CurlRequest (for reals, not just the type annotations :] )
 setmetatable(CurlRequestForTrace, class_mt)
