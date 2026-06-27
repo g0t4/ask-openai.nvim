@@ -86,6 +86,9 @@ function AgentWindow:rebuild_title()
 
     -- * rebuild footer (currently one part only)
     local footer_parts = {}
+    if self._spinner_frame then
+        table.insert(footer_parts, self._spinner_frame)
+    end
     if self._footer then
         table.insert(footer_parts, self._footer)
     end
