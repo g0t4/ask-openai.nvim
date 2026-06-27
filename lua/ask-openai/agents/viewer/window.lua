@@ -10,6 +10,7 @@ local SPINNER_FRAMES = { '⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧',
 ---@field buffer_number number
 ---@field buffer BufferController
 ---@field win_id number
+---@field _model_name string
 ---@field _spinner_handle? table -- vim.loop.timer_t handle
 ---@field _spinner_idx number
 ---@field _base_title string
@@ -18,7 +19,8 @@ local AgentWindow = {}
 local class_mt = { __index = FloatWindow } -- inherit FloatWindow behavior too
 setmetatable(AgentWindow, class_mt)
 
-function AgentWindow:new()
+---@param model_name string
+function AgentWindow:new(model_name)
     ---@type FloatWindowOptions
     local opts = {
         width_ratio = 0.6,
@@ -28,7 +30,10 @@ function AgentWindow:new()
     }
 
     local instance_mt = { __index = self } -- FYI self is likely AgentWindow here
+
     local instance = setmetatable(FloatWindow:new(opts), instance_mt)
+    instance._model_name = model_name
+    instance:set_title("tentative: " .. model_name)
 
     instance.buffer = BufferController:new(instance.buffer_number)
 
