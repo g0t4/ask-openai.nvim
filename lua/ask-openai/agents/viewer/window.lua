@@ -70,8 +70,11 @@ function AgentWindow:update_model_name(model_name)
 end
 
 function AgentWindow:rebuild_title()
-    -- TODO! make sure everything uses these parts to set components of title
+    -- * rebuild title
     local parts = {}
+    if self._spinner_frame then
+        table.insert(parts, self._spinner_frame)
+    end
     if self._model_name then
         table.insert(parts, self._model_name)
     end
@@ -80,11 +83,16 @@ function AgentWindow:rebuild_title()
     end
     local title = table.concat(parts, " - ")
     self:set_title(title)
+
+    -- * rebuild footer (currently one part only)
+    local footer_parts = {}
+    if self._footer then
+        table.insert(footer_parts, self._footer)
+    end
+    local footer = table.concat(footer_parts, " - ")
+    self:set_footer(footer)
 end
 
---- Update the window title with an animated spinner.
---- If a base_title is provided, it gets displayed after the spinner frame.
---- Runs indefinitely via a timer that fires every 100ms for smooth animation.
 ---@param base_title? string -- optional static text to display alongside the spinner
 function AgentWindow:ensure_spinner_running(base_title)
     if not self.win_id or not vim.api.nvim_win_is_valid(self.win_id) then
@@ -95,12 +103,10 @@ function AgentWindow:ensure_spinner_running(base_title)
         self._base_title = base_title
     end
 
-    -- Initialize spinner state on first call
     if not self._spinner_handle then
         self._spinner_idx = 1
-        -- self._base_title = base_title or ""
 
-        -- Create a timer that fires every 100ms for smooth animation
+        -- * timer fires every 100ms for smooth animation
         local handle = vim.loop.new_timer()
         handle:start(0, 100, function()
             if not self._agent_is_running then
@@ -117,21 +123,10 @@ function AgentWindow:ensure_spinner_running(base_title)
                     return
                 end
 
-                local spinner_frame = SPINNER_FRAMES[self._spinner_idx]
                 self._spinner_idx = (self._spinner_idx % #SPINNER_FRAMES) + 1
+                self._spinner_frame = SPINNER_FRAMES[self._spinner_idx]
 
-                local title = spinner_frame
-                if self._base_title then
-                    title = title .. " " .. self._base_title
-                end
-
-                ---@type vim.api.keyset.win_config
-                local config = {
-                    title = " " .. title .. " ",
-                    title_pos = "center",
-                }
-                -- TODO take over title for spinner only? leave footer for details?
-                vim.api.nvim_win_set_config(self.win_id, config)
+                self:rebuild_title()
             end)
         end)
 
@@ -148,8 +143,9 @@ function AgentWindow:stop_spinner(final_title)
         self._spinner_handle = nil
     end
 
+    self._spinner_frame = nil
     self._base_title = final_title or self._base_title
-    self:set_title(self._base_title)
+    self:rebuild_title()
 end
 
 ---@param width_ratio number -- new width ratio (0 to 1)
@@ -230,7 +226,7 @@ end
 
 function AgentWindow:close()
     -- stop the spinner animation before closing
-    self:stop_spinner("closed")
+    self:stop_spinner()
     -- TODO still issues around closing window and re-open it... not showing the title + spinner until I close and reopen again
     --   IOTW open window by running sleep 30s prompt... then F8 close.... esc ... <leader>ao ... (no spinner in title, no title actually)... then F8 close again ... <leader>ao .. this time title shows?!?!
     vim.api.nvim_win_close(0, true)

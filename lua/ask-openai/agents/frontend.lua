@@ -490,7 +490,9 @@ local function update_ui_chat_viewer(trace)
                 table.insert(footers, token_footer)
             end
             local footer = table.concat(footers, " | ")
-            AgentsFrontend.chat_window:set_footer(footer)
+            -- PRN? add AgentWindow:set_footer_parts() and have it call rebuild?
+            AgentsFrontend.chat_window._footer = footer
+            AgentsFrontend.chat_window:rebuild_title()
         end
     end)
 end
