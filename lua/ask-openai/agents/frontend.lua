@@ -390,7 +390,17 @@ end
 
 function AgentsFrontend.ensure_chat_window_is_open()
     if AgentsFrontend.chat_window == nil then
-        AgentsFrontend.chat_window = AgentWindow:new()
+        local window = AgentWindow:new()
+        AgentsFrontend.chat_window = window
+
+        local api = require("ask-openai.api")
+        local configured_model = api.get_agents_model()
+        local config = require("ask-openai.config")
+        --
+        -- TODO maybe setup cache'd name retrieval to take a callback (call when async completes, and when cached can be sync called)
+        --   that way name is not pending
+        local model_name = config.get_endpoints()[configured_model].name
+        window:set_title(model_name .. " (tentative)")
 
         -- stop generation, if still wanna look at it w/o closing the window
         vim.keymap.set("n", "<Esc>", AgentsFrontend.abort_request, { buffer = AgentsFrontend.chat_window.buffer_number })
