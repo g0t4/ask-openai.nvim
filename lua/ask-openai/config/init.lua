@@ -77,7 +77,8 @@ function M.get_llama_server_model_name(base_url)
     local cached = _model_cache[base_url]
     if cached then
         local cache_timeout_seconds = cached.name == nil and 1 or 120
-        if os.time() - cached.ts > cache_timeout_seconds then
+        local expired = os.time() - cached.ts > cache_timeout_seconds
+        if expired then
             -- trigger background refresh while using last value
             vim.schedule(function()
                 refresh_model_info_cache_for(base_url)
