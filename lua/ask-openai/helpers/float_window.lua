@@ -173,4 +173,19 @@ function FloatWindow:set_title(title, footer)
     end)
 end
 
+--- Only set footer (w/o changing title)
+---@param footer string
+function FloatWindow:set_footer(footer)
+    vim.schedule(function()
+        if not footer or not self.win_id or not vim.api.nvim_win_is_valid(self.win_id) then
+            log:warn("Cannot set footer", { win_id = self.win_id, valid = vim.api.nvim_win_is_valid(self.win_id), footer = footer, })
+            return
+        end
+        local config = {}
+        config.footer = " " .. footer .. " "
+        config.footer_pos = "center"
+        vim.api.nvim_win_set_config(self.win_id, config)
+    end)
+end
+
 return FloatWindow
