@@ -1,4 +1,5 @@
 local json_client = require("ask-openai.backends.json_client")
+local log = require("devtools.logs.logger").universal()
 
 --
 -- ModelInfo: strongly-typed representation of llama-server /v1/models model data
@@ -136,6 +137,7 @@ end
 ---@return ModelInfo? @Model info object, or nil on failure
 function LlamaServerClient.get_model_info(base_url, opts)
     local response = LlamaServerClient.get_models(base_url, opts)
+    -- log:info("model_info response", response)
     if not response or response.code ~= 200 then
         return nil
     end

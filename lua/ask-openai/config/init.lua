@@ -50,55 +50,59 @@ local function abbreviate_model(raw_model)
     return raw_model
 end
 
---- Perform the actual fetch in the background.
---- @param base_url string
-local function refresh_model_info_cache_for(base_url)
+local function NOOP() end
+
+---@param base_url string
+---@param callback ModelEntryCallback
+local function refresh_model_info_cache_for(base_url, callback)
+    callback = callback or NOOP
+
     local model_info = LlamaServerClient.get_model_info(base_url, { connect_timeout = 1, max_time = 3 })
     if not model_info then
         _fetch_in_progress[base_url] = nil
+        callback({ name = "FETCH_FAILED" })
         return
     end
 
     local model_name = abbreviate_model(model_info.name)
 
-    _model_cache[base_url] = { name = model_name, model_info = model_info, ts = os.time() }
-    _fetch_in_progress[base_url] = nil
+    local entry = { name = model_name, model_info = model_info, base_url = base_url, ts = os.time() }
+    _model_cache[base_url] = entry
+    callback(entry) -- TODO or just return name?
 end
 
+---@alias ModelEntryCallback fun(entry: ModelCacheEntry)
 
---- Query the llama-server for the first model's abbreviated name at the given base URL.
---- Non-blocking: returns cached value if available, otherwise kicks off a
---- background fetch and returns nil. Future calls will return the cached
---- value once the background fetch completes.
---- @param base_url string The base URL of the llama-server (e.g. "http://paxy.lan:8012")
---- @return string|nil The cached abbreviated model name, or nil if not yet cached.
-function M.get_llama_server_model_name(base_url)
-    -- 1. Check cache first
+--- Async model name lookup (cached is sync but requires callback pattern for now)
+---@param base_url string The base URL of the llama-server (e.g. "http://paxy.lan:8012")
+---@param callback ModelEntryCallback
+function M.get_llama_server_model_info(base_url, callback)
+    callback = callback or NOOP
+
+    local function fetch()
+        _fetch_in_progress[base_url] = true
+        vim.schedule(function()
+            refresh_model_info_cache_for(base_url, callback)
+        end)
+    end
+
     local cached = _model_cache[base_url]
     if cached then
         local cache_timeout_seconds = cached.name == nil and 1 or 120
         local expired = os.time() - cached.ts > cache_timeout_seconds
         if expired then
             -- trigger background refresh while using last value
-            vim.schedule(function()
-                refresh_model_info_cache_for(base_url)
-            end)
+            fetch()
         end
-        return cached.name
+        callback(cached) -- respond with cached (albeit "expired") until refreshed
+        return
     end
 
-    -- 2. Fetch already in progress — assume caller will retry later
-    if _fetch_in_progress[base_url] then
-        return "Pending..."
+    if not _fetch_in_progress[base_url] then
+        fetch()
     end
 
-    -- 3. Start a new background fetch
-    _fetch_in_progress[base_url] = true
-    vim.schedule(function()
-        refresh_model_info_cache_for(base_url)
-    end)
-
-    return "Pending..."
+    callback({ name = "Pending..." })
 end
 
 ---@class Provider
@@ -204,10 +208,11 @@ function M.get_endpoints()
     }
 end
 
-function M.get_base_url(model)
+---@param config_model_slug string   -- this is an abbreviated string used in the config file to store which model to use for a given situation, not the same as abbreviated model name NOR full model name from llama.cpp
+function M.get_base_url(config_model_slug)
     local endpoints = M.get_endpoints()
-    if endpoints[model] then
-        return endpoints[model].base_url
+    if endpoints[config_model_slug] then
+        return endpoints[config_model_slug].base_url
     end
     return nil
 end

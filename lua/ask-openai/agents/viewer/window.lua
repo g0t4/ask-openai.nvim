@@ -20,7 +20,7 @@ local class_mt = { __index = FloatWindow } -- inherit FloatWindow behavior too
 setmetatable(AgentWindow, class_mt)
 
 ---@param model_name string
-function AgentWindow:new(model_name)
+function AgentWindow:new()
     ---@type FloatWindowOptions
     local opts = {
         width_ratio = 0.6,
@@ -32,8 +32,7 @@ function AgentWindow:new(model_name)
     local instance_mt = { __index = self } -- FYI self is likely AgentWindow here
 
     local instance = setmetatable(FloatWindow:new(opts), instance_mt)
-    instance._model_name = model_name
-    instance:set_title("tentative: " .. model_name)
+    instance._model_name = nil
 
     instance.buffer = BufferController:new(instance.buffer_number)
 
@@ -63,6 +62,24 @@ function AgentWindow:new(model_name)
     vim.opt_local.wrap = true
 
     return instance
+end
+
+function AgentWindow:update_model_name(model_name)
+    self._model_name = model_name
+    self:rebuild_title()
+end
+
+function AgentWindow:rebuild_title()
+    -- TODO! make sure everything uses these parts to set components of title
+    local parts = {}
+    if self._model_name then
+        table.insert(parts, self._model_name)
+    end
+    if self._base_title then
+        table.insert(parts, self._base_title)
+    end
+    local title = table.concat(parts, " - ")
+    self:set_title(title)
 end
 
 --- Update the window title with an animated spinner.
