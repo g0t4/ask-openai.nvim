@@ -16,20 +16,31 @@ local _fetch_in_progress = {}
 -- cache: base_url -> ModelCacheEntry
 local _model_cache = {}
 
-local MODEL_NAME_MAP = {
-    -- PRN switch to pattern matching not exact fixed string match?
-    ["ggml-org/Qwen3.6-35B-A3B-MTP-GGUF:Q8_0"] = "qwen3.6mtp",
-    ["ggml-org/Qwen3.6-35B-A3B-GGUF:Q8_0"] = "qwen3",
-    ["g0t4/Qwen-AgentWorld-35B-A3B-GGUF:Q8_0"] = "agentworld",
-    ["ggml-org/gpt-oss-120b-GGUF"] = "gptoss",
+local MODEL_PATTERNS = {
+    -- order matters: more specific patterns first
+    { pattern = "^ggml%-org/Qwen3%.6.-MTP%-GGUF:", abbrev = "qwen3.6mtp" },
+    { pattern = "^ggml%-org/Qwen3%.6",             abbrev = "qwen3" },
+    { pattern = "^g0t4/Qwen%-AgentWorld",          abbrev = "agentworld" },
+    { pattern = "^ggml%-org/gpt%-oss",             abbrev = "gptoss" },
 }
 
---- Abbreviate a raw model name using the lookup table, or return "OFFLINE" sentinel.
+--- Abbreviate a raw model name using pattern matching, or return the original name.
 --- @param raw_model string|nil
 --- @return string
 local function abbreviate_model(raw_model)
-    return MODEL_NAME_MAP[raw_model] or raw_model
+    if not raw_model then
+        return raw_model
+    end
+
+    for _, entry in ipairs(MODEL_PATTERNS) do
+        if raw_model:match(entry.pattern) then
+            return entry.abbrev
+        end
+    end
+
+    return raw_model
 end
+
 
 --- Perform the actual fetch in the background.
 --- @param base_url string
