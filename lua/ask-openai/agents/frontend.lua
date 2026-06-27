@@ -730,6 +730,7 @@ function AgentsFrontend.abort_request()
     end
     CurlRequestForTrace.terminate(trace.last_request)
     if AgentsFrontend.chat_window._agent_is_running then
+        -- TODO only "cancel" if agent is running? (i.e. why call rag_cancel (etc) if agent is done (or never started)
         AgentsFrontend.chat_window:mark_agent_running(false)
         AgentsFrontend.chat_window:stop_spinner("Aborted") -- FYI don't mark aborted if not running
     end
