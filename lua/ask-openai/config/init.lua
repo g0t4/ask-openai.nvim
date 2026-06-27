@@ -175,7 +175,6 @@ function M.get_options()
 end
 
 --- @class Endpoint
---- @field name string
 --- @field base_url string
 
 --- @return table<string, Endpoint>
@@ -184,25 +183,21 @@ function M.get_endpoints()
     local qwen3_url = "http://ask.lan:8012"
     local gemma4_url = "http://ask.lan:8011"
 
-    local gptoss_model = M.get_llama_server_model_name(gptoss_url)
-    local qwen3_model = M.get_llama_server_model_name(qwen3_url)
-    local gemma4_model = M.get_llama_server_model_name(gemma4_url)
-
+    -- FYI fine by me to collapse Endpoint into a string
+    -- I used to handle name here too but that became a hot mess due to async vs sync
+    -- sync is needed for endpoint URL...
+    -- async is fine for name (for all my use cases thus far
     return {
         cmdline = {
-            name = nil,
             base_url = M.get_cmdline_base_url(),
         },
         qwen = {
-            name = qwen3_model,
             base_url = qwen3_url,
         },
         gptoss = {
-            name = gptoss_model,
             base_url = gptoss_url,
         },
         gemma4 = {
-            name = gemma4_model,
             base_url = gemma4_url,
         },
     }
