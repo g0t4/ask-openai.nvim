@@ -148,6 +148,7 @@ function AgentWindow:stop_spinner(final_title)
 
     self._spinner_frame = nil
     self._base_title = final_title or self._base_title
+    self:mark_agent_running(false) -- FYI consider cart/horse... mark agent running might be how I want to stop the spinner, instead of stop spinner => mark agent running (false)...
     self:rebuild_title()
 end
 
