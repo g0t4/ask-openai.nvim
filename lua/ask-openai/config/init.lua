@@ -65,39 +65,6 @@ local function refresh_model_info_cache_for(base_url)
     _fetch_in_progress[base_url] = nil
 end
 
---- Query the llama-server for the first model's full information at the given base URL.
---- Non-blocking: returns cached value if available, otherwise kicks off a
---- background fetch and returns nil. Future calls will return the cached
---- value once the background fetch completes.
---- @param base_url string The base URL of the llama-server (e.g. "http://paxy.lan:8012")
---- @return ModelInfo? The cached model info, or nil if not yet cached.
-function M.get_llama_server_model_info(base_url)
-    -- 1. Check cache first
-    local cached = _model_cache[base_url]
-    if cached then
-        local cache_timeout_seconds = cached.name == nil and 1 or 120
-        if os.time() - cached.ts > cache_timeout_seconds then
-            -- trigger background refresh while using last value
-            vim.schedule(function()
-                refresh_model_info_cache_for(base_url)
-            end)
-        end
-        return cached.model_info
-    end
-
-    -- 2. Fetch already in progress — caller will retry later
-    if _fetch_in_progress[base_url] then
-        return nil
-    end
-
-    -- 3. Start a new background fetch
-    _fetch_in_progress[base_url] = true
-    vim.schedule(function()
-        refresh_model_info_cache_for(base_url)
-    end)
-
-    return nil
-end
 
 --- Query the llama-server for the first model's abbreviated name at the given base URL.
 --- Non-blocking: returns cached value if available, otherwise kicks off a
