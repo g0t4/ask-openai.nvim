@@ -52,7 +52,9 @@ describe("data-only events", function()
     end
 
     describe("concatenate", function()
-        only("two data fields in the same event => joined with \\n", function()
+        -- use only to stop tests after this "only" one... won't stop tests before this point
+        -- only(...)
+        it("two data fields in the same event => joined with \\n", function()
             parser:writes {
                 -- FYI you must have \n at the end of a field to delimit it from other fields in the same event, including with multiple data field values
                 "data: hello\n", -- *** \n is FIELD SEPARATOR (cannot have another \n next to it)
