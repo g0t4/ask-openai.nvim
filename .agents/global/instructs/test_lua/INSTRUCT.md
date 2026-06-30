@@ -1,5 +1,4 @@
 ---
-name: verify_lua_config
 description: how to verify lua modules for neovim and hammerspoon
 ---
 
