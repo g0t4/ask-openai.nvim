@@ -46,14 +46,14 @@ function M.setup_lsp()
             -- ".git", -- common, but in my case I need .rag (in fact, LS should never be setup if there's no .rag dir, so this would never be called)
         })
 
-        if rag_root_dir then
-            -- ONLY start LS if you find a root
-            -- FYI! if you see RAG results seemingly coming from a different repo, use this log to check located root:
-            -- log:info(string.format("found ask-LS root=%s, bufnr=%d %s", tostring(root), bufnr, filepath))
-            on_dir(rag_root_dir)
+        if not rag_root_dir then
+            log:warn(string.format("no ask-LS root found for bufnr=%d %s", bufnr, filepath))
             return
         end
-        log:warn(string.format("no ask-LS root found for bufnr=%d %s", bufnr, filepath))
+        -- ONLY start LS if you find a root
+        -- FYI! if you see RAG results seemingly coming from a different repo, use this log to check located root:
+        -- log:info(string.format("found ask-LS root=%s, bufnr=%d %s", tostring(root), bufnr, filepath))
+        on_dir(rag_root_dir)
     end
 
     vim.lsp.config("ask_language_server", {
