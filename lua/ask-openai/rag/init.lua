@@ -68,7 +68,8 @@ function M.setup_lsp()
 
         -- old values from lspconfig setup => these might need adjusted if filetypes differs in vim.lsp.config
         -- filetypes = rag_client.get_filetypes_for_workspace(),
-        -- filetypes = { '*' }, -- not set == all filetypes
+        -- not set == all filetypes
+        -- DO NOT SET filetypes = { '*' }, -- doesn't work
 
         root_dir = root_dir
     })
