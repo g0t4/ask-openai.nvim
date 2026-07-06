@@ -50,9 +50,15 @@ function M.setup_lsp()
             log:warn(string.format("no ask-LS root found for bufnr=%d %s", bufnr, filepath))
             return
         end
-        -- ONLY start LS if you find a root
+        local cwd = vim.fn.getcwd()
+        local is_file_in_cwd = filepath:sub(1, #cwd) == cwd
         -- FYI! if you see RAG results seemingly coming from a different repo, use this log to check located root:
-        -- log:info(string.format("found ask-LS root=%s, bufnr=%d %s", tostring(root), bufnr, filepath))
+        if is_file_in_cwd then
+            -- log:info(string.format("found ask-LS rag_root_dir=%s, bufnr=%d %s", tostring(rag_root_dir), bufnr, filepath))
+        else
+            log:warn(string.format("ask-LS rag_root_dir=%s is not in CWD, bufnr=%d %s", tostring(rag_root_dir), bufnr, filepath))
+        end
+        -- ONLY start LS if you find a rag_root_dir
         on_dir(rag_root_dir)
     end
 
