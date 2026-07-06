@@ -40,17 +40,17 @@ function M.setup_lsp()
 
         -- * get root based on first .rag dir in/above file's directory
         local filepath = vim.api.nvim_buf_get_name(bufnr)
-        local root = vim.fs.root(filepath, {
+        local rag_root_dir = vim.fs.root(filepath, {
             ".rag", -- only if a .rag dir, otherwise we don't start this LS
             -- FYI might have issues w/ nested .rag dirs but I don't really use that... handle if it arises
             -- ".git", -- common, but in my case I need .rag (in fact, LS should never be setup if there's no .rag dir, so this would never be called)
         })
 
-        if root then
+        if rag_root_dir then
             -- ONLY start LS if you find a root
             -- FYI! if you see RAG results seemingly coming from a different repo, use this log to check located root:
             -- log:info(string.format("found ask-LS root=%s, bufnr=%d %s", tostring(root), bufnr, filepath))
-            on_dir(root)
+            on_dir(rag_root_dir)
             return
         end
         log:warn(string.format("no ask-LS root found for bufnr=%d %s", bufnr, filepath))
