@@ -56,7 +56,16 @@ function M.setup_lsp()
         if is_file_in_cwd then
             -- log:info(string.format("found ask-LS rag_root_dir=%s, bufnr=%d %s", tostring(rag_root_dir), bufnr, filepath))
         else
-            log:warn(string.format("ask-LS rag_root_dir=%s is not in CWD, bufnr=%d %s", tostring(rag_root_dir), bufnr, filepath))
+            -- just means you are using an index from another repo, not a bad thing actually!
+            --  i.e. if I drill into a dependency and want to search its RAG index... this is a good thing!
+            --  but it can catch me off guard when I don't realize I have a file from another repo open
+            log:warn(string.format(
+                "ask-LS starting for files in a different repo/workspace"
+                .. "\n  cwd      = %s"
+                .. "\n  filepath = %s" .. " (bufnr=%d)"
+                .. "\n  rag_root = %s"
+                , cwd, filepath, bufnr, rag_root_dir))
+            -- FYI show filepath before rag_root_dir b/c former "selects" later
         end
         -- ONLY start LS if you find a rag_root_dir
         on_dir(rag_root_dir)
