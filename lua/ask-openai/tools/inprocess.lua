@@ -10,7 +10,8 @@ M.tools_available = {
     semantic_grep = semantic_grep_tool.ToolDefinition,
     -- TODO setup so tools available can be model dependent (i.e. gptoss gets apply_patch)
     -- apply_patch = apply_patch_tool.ToolDefinition,
-    run_in_neovim = run_in_neovim_tool.ToolDefinition,
+    -- run_in_neovim = run_in_neovim_tool.ToolDefinition,
+    --   TODO setup slash commands that can trigger tools like run_in_neovim
 }
 
 
