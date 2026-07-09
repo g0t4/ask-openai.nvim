@@ -73,6 +73,13 @@ local servers = {
     --         "tampermonkey-mcp@latest"
     --     }
     -- },
+    --
+    -- TODO I want a web browser "profile" I think... can be /my_browser or smth like that and then I also want it to add MCP devtools server!
+    -- and consider adding this in claude code too, since I use claude for TM scripts lately
+    -- npm install -g chrome-devtools-mcp@latest
+    -- claude mcp add --transport stdio --scope project chrome-devtools-mcp -- npx -y chrome-devtools-mcp@latest --slim --no-usage-statistics --auto-connect --browser-url http://127.0.0.1:9222
+    --
+
     -- TODO add these to specific repos using repo_root/.mcp.json file like langchain-ai/langchain repo has
     -- mcp_docs = {
     --     transport = "http",
