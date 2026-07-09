@@ -350,7 +350,9 @@ local function ask_rewrite_command(opts)
     local code_context = ""
     local code_caveat = ""
     local code = selection.original_text
+    local explainer = ""
     if code ~= nil and code ~= "" then
+        explainer = "Please rewrite the following code selection. My editor will replace the selected code with your response. Here is my request:"
         local start_line = (selection._start_line_0indexed or 0) + 1
         local end_line = (selection._end_line_0indexed or 0) + 1
         local line_info = start_line == end_line and tostring(start_line) or (start_line .. "-" .. end_line)
@@ -366,9 +368,12 @@ local function ask_rewrite_command(opts)
         -- - FYI gptoss120b w/ medium reasoning + caveat is working well
         --   - cannot get low reasoning to work well
     else
+        -- IIRC help w/o a selection (i.e. think of this as AskWrite w/o needing to distinguish Write vs Rewrite)
+        --  filename gives context if nothing else is provided, i.e. provides context for what language to write!
+        explainer = "I want you to write some code for me. Your response will be inserted into my editor where my cursor resides. Here is my request:"
+        -- PRN if I have trouble in non-code files like a text file or markdown... I can change verbiage, but I am sure the model will handle it just fine based on filetype
         code_context = "I am working on this file: " .. file_name
     end
-    user_message_with_code = user_prompt .. "\n\n" .. code_context .. code_caveat
 
     ---@param rag_matches LSPRankedMatch[]
     local function then_send_rewrite(rag_matches)
@@ -378,7 +383,7 @@ local function ask_rewrite_command(opts)
 
         if context.includes.current_file then
             local message = MessageBuilder:new()
-                :plain_text("FYI, here is my current buffer in Neovim. Use this as context for my request.")
+                :plain_text("FYI, here is the entire file where the selection resides so you can see surrounding context.")
                 :md_current_buffer()
                 :to_user_message()
 
@@ -408,7 +413,8 @@ local function ask_rewrite_command(opts)
             table.insert(messages, rag_message)
         end
 
-        table.insert(messages, TxChatMessage:user(user_message_with_code))
+        local user_message = explainer .. "\n" .. user_prompt .. "\n\n" .. code_context .. code_caveat
+        table.insert(messages, TxChatMessage:user(user_message))
 
         local _body = {
             messages = messages,
@@ -624,6 +630,9 @@ function RewriteFrontend.setup()
     )
 
     vim.keymap.set({ 'n', 'v' }, '<Leader>rw', ':<C-u>AskRewrite ', { noremap = true })
+
+    vim.keymap.set({ 'n', 'v' }, '<Leader>rwf', ':<C-u>AskRewrite /file ', { noremap = true })
+
     -- prefill prompt for AskRewrite via AskAgent /tools
     vim.keymap.set({ 'n', 'v' }, '<Leader>rf', ':<C-u>AskAgent /tools I want to change the current file /file ... ', { noremap = true })
 
