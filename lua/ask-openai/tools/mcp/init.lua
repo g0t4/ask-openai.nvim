@@ -18,7 +18,7 @@ local servers = {
 
     -- PRN implement https://agentskills.io/mcp https based MCP tools... is it a websocket?
 
-    fetch    = {
+    fetch        = {
         -- PRN only include this tool if initial request includes /web?
 
         -- -- * via docker
@@ -41,7 +41,7 @@ local servers = {
         },
         env = { VIRTUAL_ENV = "" }, -- clear venv so no warning about --active vs targeted venv
     },
-    commands = {
+    commands     = {
         transport = "stdio",
         command = "npx",
         args = {
@@ -51,7 +51,7 @@ local servers = {
             "--verbose",
         },
     },
-    agents   = {
+    agents       = {
         transport = "stdio",
         command = "uv",
         args = {
@@ -64,6 +64,15 @@ local servers = {
         },
         env = { VIRTUAL_ENV = "" }, -- clear venv so no warning about --active vs targeted venv
     },
+    -- FYI this works but I think I'll want the tools to be opt-in per first prompt... as there are many and basically just lets your agent modify scripts in tampermonkey which I can't help but think... can't I just do this with files in a dropbox folder and have them auto sync into TM?!
+    -- tampermonkey = {
+    --     transport = "stdio",
+    --     command = "npx",
+    --     args = {
+    --         "-y",
+    --         "tampermonkey-mcp@latest"
+    --     }
+    -- },
     -- TODO add these to specific repos using repo_root/.mcp.json file like langchain-ai/langchain repo has
     -- mcp_docs = {
     --     transport = "http",
