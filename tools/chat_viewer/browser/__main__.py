@@ -53,6 +53,9 @@ def load_trace_json(trace_path: Path) -> dict:
 def launch_chat_viewer(trace_path: Path) -> None:
     subprocess.run(["fish", "-i", "-c", f"view_trace {trace_path}"], check=False)
 
+def launch_chat_viewer_all(trace_path: Path) -> None:
+    subprocess.run(["fish", "-i", "-c", f"view_trace --all {trace_path}"], check=False)
+
 class TraceBrowser:
 
     def __init__(self, from_dir: str) -> None:
@@ -84,6 +87,7 @@ class TraceBrowser:
         table.add_row("t", "copy take command to add to datasets repo")
         table.add_row("d", "delete current trace (trash)")
         table.add_row("Enter", "open current trace in chat_viewer")
+        table.add_row("a", "open current trace in chat_viewer with --all flag")
         table.add_row("←/→", "older / newer")
         table.add_row("h", "help")
 
@@ -173,6 +177,13 @@ class TraceBrowser:
         else:
             print("No trace to display.")
 
+    def show_chat_all(self):
+        trace = self.current_trace()
+        if trace:
+            launch_chat_viewer_all(trace)
+        else:
+            print("No trace to display.")
+
     def delete_current_trace(self) -> None:
         trace = self.current_trace()
         if not trace:
@@ -208,6 +219,8 @@ class TraceBrowser:
             self.copy_take_command()
         elif char == b'd':
             self.delete_current_trace()
+        elif char == b'a':
+            self.show_chat_all()
         elif char == b'\n':
             self.show_chat()
         elif char == b'q':
