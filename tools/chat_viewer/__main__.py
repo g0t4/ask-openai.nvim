@@ -80,6 +80,7 @@ EXCLUDED_CONTENT_HASHES: list[str] = [
     "c43c46905fcf70315ff3929e76ba70d5190002abc20a24cfb8d2f6d44e11d60f",  ## Python Code Preferences
     "fc581a8b5aa1c4d88597127dd96b7efbdf42251fa914981850a763fc1331d875",  ## Python Code Preferences
     "a844f2839047f9959d06f26720378f57124635fc89d691d376147926c5ff7c6b",  ## Python Code Preferences
+    "741d8c7d24f66cae2957a7e856cf6656bacce97cdfddd8febe41071d16014b35",  ## Python Code Preferences
     #
     "232276fe3bb7baf13ede0343f5c076774b2dbd64be3b010a314b85816f718f31",  # rewrite - fish user prefs
     "4f20f6289174db47cefe46f27829c02078f22ce8717594b10c2551c18a57fca6",  # manually added exclusion
@@ -99,6 +100,7 @@ EXCLUDED_CONTENT_HASHES: list[str] = [
     #
     "b870ef7225f0a2b973f266c40ceba102867224ce64709d96ad01c9e532f15ba4",  ## Committing (gptoss author)
     "2ddf6ba106f6c037ee986e69a1f0df37b64b8e2501388fff1933a8ffd49333ba",  ## Committing (qwen author)
+    "a44326d06b491c9406c0b9d560aed11df0cd36e3bcb9afe0e574e8582245a56c",  ## Committing
     #
     "5b4513e0987158cfbc9225e1535f437eb054f5ca5455759984dcbf7631f56197",  ## Fetch tool
     "a9e229dae529161fe195077c1d6c79cc66ab3c37e287a20d9203616f13596d0a",  ## Fetch Tool
