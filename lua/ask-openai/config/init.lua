@@ -158,8 +158,6 @@ local default_options = {
                 accept_all = "<Tab>",
                 accept_line = "<C-right>",
                 accept_word = "<M-right>",
-                resume_stream = "<M-up>",
-                pause_stream = "<M-down>",
                 new_prediction = "<M-Tab>",
             },
         }

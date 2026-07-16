@@ -314,20 +314,6 @@ function PredictionsFrontend.entering_insert_mode()
     PredictionsFrontend.cursor_moved_in_insert_mode()
 end
 
-function PredictionsFrontend.pause_stream_invoked()
-    if not PredictionsFrontend.current_prediction then
-        return
-    end
-    PredictionsFrontend.current_prediction:pause_new_chunks()
-end
-
-function PredictionsFrontend.resume_stream_invoked()
-    if not PredictionsFrontend.current_prediction then
-        return
-    end
-    PredictionsFrontend.current_prediction:resume_new_chunks()
-end
-
 function PredictionsFrontend.accept_all_invoked()
     if not PredictionsFrontend.current_prediction then
         return

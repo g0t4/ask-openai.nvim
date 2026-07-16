@@ -8,8 +8,6 @@ local CursorController = require "ask-openai.predictions.cursor_controller"
 ---@field buffer integer
 ---@field prediction string         # content streamed so far (excluding buffered chunks)
 ---@field extmarks table
----@field paused boolean
----@field buffered_chunks string    # chunks received while `paused`
 ---@field abandoned boolean         # user aborted prediction
 ---@field disable_cursor_moved boolean
 ---
@@ -42,8 +40,6 @@ function Prediction.new(params)
     self.buffer = 0 -- 0 == current buffer
     self.prediction = ""
     self.extmarks = {}
-    self.paused = false
-    self.buffered_chunks = ""
     self.abandoned = false
     self.disable_cursor_moved = false
     self.has_reasoning = false
@@ -59,11 +55,6 @@ function Prediction.new(params)
 end
 
 function Prediction:add_chunk_to_prediction(chunk, reasoning_content)
-    if self.paused then
-        self.buffered_chunks = self.buffered_chunks .. chunk
-        return
-    end
-
     if chunk then
         self.prediction = self.prediction .. chunk
     end
@@ -80,7 +71,6 @@ end
 
 function Prediction:any_chunks()
     return self.prediction and self.prediction ~= ""
-        or self.buffered_chunks and self.buffered_chunks ~= ""
 end
 
 ---@param text string
@@ -174,18 +164,6 @@ function Prediction:clear_extmarks()
         pcall(vim.api.nvim_buf_del_extmark, self.buffer, extmarks_ns_id, self.extmarks.dup_highlight)
         self.extmarks.dup_highlight = nil
     end
-end
-
-function Prediction:pause_new_chunks()
-    -- pause means stop showing new chunks (buffer new chunks)
-    self.paused = true
-end
-
-function Prediction:resume_new_chunks()
-    self.paused = false
-    self.prediction = self.prediction .. self.buffered_chunks
-    self.buffered_chunks = ""
-    self:redraw_extmarks()
 end
 
 function Prediction:mark_as_abandoned()

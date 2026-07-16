@@ -34,20 +34,6 @@ function M.start_predictions()
             { noremap = true, callback = predictions_frontend.accept_word_invoked })
     end
 
-    if predictions.keymaps.pause_stream then
-        vim.api.nvim_set_keymap('i', predictions.keymaps.pause_stream, "", {
-            noremap = true,
-            callback = predictions_frontend.pause_stream_invoked,
-        })
-    end
-
-    if predictions.keymaps.resume_stream then
-        vim.api.nvim_set_keymap('i', predictions.keymaps.resume_stream, "", {
-            noremap = true,
-            callback = predictions_frontend.resume_stream_invoked,
-        })
-    end
-
     if predictions.keymaps.new_prediction then
         vim.api.nvim_set_keymap('i', predictions.keymaps.new_prediction, "",
             { noremap = true, callback = predictions_frontend.new_prediction_invoked })
@@ -107,8 +93,6 @@ function M.stop_predictions()
     pcall(vim.api.nvim_del_keymap, 'i', predictions.keymaps.accept_all)
     pcall(vim.api.nvim_del_keymap, 'i', predictions.keymaps.accept_line)
     pcall(vim.api.nvim_del_keymap, 'i', predictions.keymaps.accept_word)
-    pcall(vim.api.nvim_del_keymap, 'i', predictions.keymaps.pause_stream)
-    pcall(vim.api.nvim_del_keymap, 'i', predictions.keymaps.resume_stream)
     pcall(vim.api.nvim_del_keymap, 'i', predictions.keymaps.new_prediction)
 
     are_predictions_running = false
