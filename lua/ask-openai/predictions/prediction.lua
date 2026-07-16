@@ -243,12 +243,13 @@ function Prediction:accept_first_word()
 
     -- PRN add integration testing of these buffer/cursor interactions
 
-    local _, word_end = lines[1]:find("[_%w]+") -- find first word (range)
+    local first_line = lines[1]
+    local _, word_end = first_line:find("[_%w]+") -- find first word (range)
     -- log:warn("  word_end", vim.inspect(word_end))
     local insert_lines = {}
 
     local one_non_word_remains = word_end == nil
-    local one_word_remains = word_end == #lines[1] -- word_end == # chars in line ==> full match!
+    local one_word_remains = word_end == #first_line -- word_end == # chars in line ==> full match!
     local accepts_rest_of_line = one_non_word_remains or one_word_remains
     if accepts_rest_of_line then
         -- log:warn("  one_non_word_remains", vim.inspect(one_non_word_remains))
@@ -265,8 +266,8 @@ function Prediction:accept_first_word()
         --   redo the gen to get a useful scenario (often can get one word gens on lines that really only would have one word/non-word)
 
         -- take rest of line
-        local first_word = lines[1]
-        lines[1] = ""
+        local first_word = first_line
+        first_line = ""
 
         local last_predicted_line = #lines == 1
         if last_predicted_line then
@@ -276,8 +277,8 @@ function Prediction:accept_first_word()
         end
     else
         -- take next word only (not end of line)
-        local first_word = lines[1]:sub(1, word_end)
-        lines[1] = lines[1]:sub(word_end + 1)
+        local first_word = first_line:sub(1, word_end)
+        first_line = first_line:sub(word_end + 1)
 
         insert_lines = { first_word }
     end
