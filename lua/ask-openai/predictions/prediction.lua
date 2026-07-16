@@ -6,7 +6,7 @@ local CursorController = require "ask-openai.predictions.cursor_controller"
 ---@class Prediction
 ---@field id integer
 ---@field buffer integer
----@field prediction_cache { completion: string, cursor_prefix: string, first_line: string, rest_of_lines: string[], has_duplicate_prefix: boolean }
+---@field prediction_cache { completion: string, cursor_prefix: string, first_line: string, rest_of_lines: string[], has_duplicate_prefix: boolean, no_completion_yet: boolean }
 ---@field extmarks table
 ---@field abandoned boolean         # user aborted prediction
 ---@field disable_cursor_moved boolean
@@ -88,7 +88,6 @@ local function split_lines(text)
     return lines
 end
 
----@return boolean failure -- if there's no content yet, then bail on redraw -- TODO remove this hack when I don't need it anymore
 function Prediction:fim_fixes()
     -- * get cursor prefix one time
     if self.prediction_cache.cursor_prefix == nil then
@@ -104,10 +103,10 @@ function Prediction:fim_fixes()
     -- * Check if prediction's first line starts with the cursor prefix (FIM duplication)
     local cursor_prefix = self.prediction_cache.cursor_prefix
     local lines = split_lines(self.prediction_cache.completion)
+    self.prediction_cache.no_completion_yet = #lines == 0
     if #lines == 0 then
         if not self.has_reasoning then
-            -- TODO? perhaps use a cached field too? and nuke return value which is weird
-            return false
+            return
         end
         lines = { dots:get_still_thinking_message(self.start_time) }
     end
@@ -127,7 +126,7 @@ function Prediction:fim_fixes()
     self.prediction_cache.has_duplicate_prefix = has_duplicate_prefix
     self.prediction_cache.first_line = first_line
     self.prediction_cache.rest_of_lines = lines
-    return true
+    return
 end
 
 function Prediction:fix_fim_and_redraw_extmarks()
@@ -142,9 +141,9 @@ function Prediction:fix_fim_and_redraw_extmarks()
     end
 
     -- FYI must call before building extmarks (if needed strips duplicate prefix)
-    if not self:fim_fixes() then
-        -- TODO revisit this hack to return here too
-        -- hack to bail if no chunks yet and no reasoning dots to show
+    self:fim_fixes()
+    if self.prediction_cache.no_completion_yet then
+        -- TODO rename no_completion_yet?
         return
     end
 
@@ -210,8 +209,7 @@ end
 local BLANK_LINE = ""
 function Prediction:accept_first_line()
     -- FYI instead of splitting every time... could make a class that buffers into line splits for me! use a table of chunks until hit \n... flush to the next line and start accumulating next line, etc
-    local lines = split_lines(self.prediction_cache.completion)
-    if #lines == 0 then
+    if self.prediction_cache.no_completion_yet then
         return
     end
 
