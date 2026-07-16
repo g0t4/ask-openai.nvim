@@ -119,18 +119,13 @@ function Prediction:fim_fixes()
         and first_line_text:sub(1, #cursor_prefix) == cursor_prefix
     -- TODO fields when done
 
-    -- Drop duplicate prefix and show fixed version
-    local stripped_line -- TODO rename first_line
     if has_duplicate_prefix then
-        stripped_line = first_line_text:sub(#cursor_prefix + 1)
-    else
-        stripped_line = first_line_text
+        first_line_text = first_line_text:sub(#cursor_prefix + 1)
     end
 
     -- cache:
     self.prediction_cache.has_duplicate_prefix = has_duplicate_prefix
-    self.prediction_cache.stripped_line = stripped_line -- TODO just rename to first_line (and use downstream that way)
-    self.prediction_cache.first_line_text = first_line_text -- TODO shouldn't this be stripepd_line? or is stirpped line the prefix part only?
+    self.prediction_cache.first_line_text = first_line_text
     self.prediction_cache.lines = lines
     return true
 end
@@ -158,8 +153,8 @@ function Prediction:redraw_extmarks()
         -- -- Add subtle annotation showing what was dropped
         local annotation = string.format("[%d spaces stripped]", #self.prediction_cache.cursor_prefix)
         first_line_virt_text = {
-            { self.prediction_cache.stripped_line, HLGroups.PREDICTION_TEXT },
-            { " " .. annotation .. " ",            HLGroups.STATS_CACHED }
+            { self.prediction_cache.first_line_text, HLGroups.PREDICTION_TEXT },
+            { " " .. annotation .. " ",              HLGroups.STATS_CACHED }
         }
 
         -- Highlight the original duplicated characters in buffer with red bg
