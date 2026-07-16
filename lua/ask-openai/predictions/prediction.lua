@@ -149,11 +149,8 @@ function Prediction:redraw_extmarks()
         return
     end
 
-    local first_line_virt_text
+    -- * highlight cursor line prefix overlap with red bg
     if self.prediction_cache.has_duplicate_prefix then
-        first_line_virt_text = { { self.prediction_cache.first_line, HLGroups.PREDICTION_TEXT } }
-
-        -- Highlight cursor line prefix overlap with red bg
         self.extmarks.dup_highlight = vim.api.nvim_buf_set_extmark(
             self.buffer,
             extmarks_ns_id,
@@ -167,8 +164,6 @@ function Prediction:redraw_extmarks()
                 hl_eol = false,
             }
         )
-    else
-        first_line_virt_text = { { self.prediction_cache.first_line, HLGroups.PREDICTION_TEXT } }
     end
 
     local virt_lines = {}
@@ -176,6 +171,7 @@ function Prediction:redraw_extmarks()
         table.insert(virt_lines, { { line, HLGroups.PREDICTION_TEXT } })
     end
 
+    local first_line_virt_text = { { self.prediction_cache.first_line, HLGroups.PREDICTION_TEXT } }
     vim.api.nvim_buf_set_extmark(self.buffer, extmarks_ns_id, cursor.line_base0, cursor.col_base0, -- 0-indexed
         {
             virt_text = first_line_virt_text,
