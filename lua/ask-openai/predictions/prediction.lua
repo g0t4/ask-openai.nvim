@@ -60,13 +60,13 @@ end
 function Prediction:add_chunk_to_prediction(chunk, reasoning_content)
     if chunk then
         self.prediction_cache.completion = self.prediction_cache.completion .. chunk
-        -- TODO check for cursor_prefix duplication and update cached fields so I can use that in redraw_extmarks without recalculating this ever extmark/chunk update
+        -- TODO check for cursor_prefix duplication and update cached fields so I can use that in fix_fim_and_redraw_extmarks without recalculating this ever extmark/chunk update
     end
     if reasoning_content then
         table.insert(self.reasoning_chunks, reasoning_content)
         self.has_reasoning = true
     end
-    self:redraw_extmarks()
+    self:fix_fim_and_redraw_extmarks()
 end
 
 function Prediction:get_reasoning()
@@ -131,7 +131,7 @@ function Prediction:fim_fixes()
     return true
 end
 
-function Prediction:redraw_extmarks()
+function Prediction:fix_fim_and_redraw_extmarks()
     self:clear_extmarks()
 
     local controller = CursorController:new()
@@ -256,7 +256,7 @@ function Prediction:accept_first_line()
     -- * update prediction
     self.prediction_cache.completion = table.concat(lines, "\n")
     self.prediction_cache.cursor_prefix = nil -- force lookup
-    self:redraw_extmarks()
+    self:fix_fim_and_redraw_extmarks()
 end
 
 function Prediction:accept_first_word()
@@ -314,7 +314,7 @@ function Prediction:accept_first_word()
     self.prediction_cache.completion = table.concat(lines, "\n")
     self.prediction_cache.cursor_prefix = nil -- force lookup
     -- log:warn("  self.prediction_cache", vim.inspect(self.prediction_cache))
-    self:redraw_extmarks()
+    self:fix_fim_and_redraw_extmarks()
 end
 
 function Prediction:accept_all()
@@ -334,7 +334,7 @@ function Prediction:accept_all()
     -- * clear prediction
     self.prediction_cache.completion = "" -- strip all lines from the prediction (and update it)
     self.prediction_cache.cursor_prefix = nil -- force lookup
-    self:redraw_extmarks()
+    self:fix_fim_and_redraw_extmarks()
 
     -- TODO SIGNAL next prediction when accept all? (and then consider this for other accept types if they are accepting remainder of prediction too (finishing accepting current prediction)
     --   frontend.ask_for_prediction()

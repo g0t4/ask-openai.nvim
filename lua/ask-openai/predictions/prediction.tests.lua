@@ -163,7 +163,7 @@ describe("Prediction fixed display", function()
         prediction.prediction_cache.completion = "    return x" -- FIM completion with repeated prefix
 
         -- Act: redraw extmarks (this is called when chunks arrive)
-        prediction:redraw_extmarks()
+        prediction:fix_fim_and_redraw_extmarks()
 
         -- Assert: extmark should be set (no error means it worked)
         -- The fixed version shows without the duplicate prefix, with annotation
@@ -179,7 +179,7 @@ describe("Prediction fixed display", function()
         prediction.prediction_cache.completion = "return x" -- No prefix repetition
 
         -- Act: redraw extmarks
-        prediction:redraw_extmarks()
+        prediction:fix_fim_and_redraw_extmarks()
 
         -- Assert: should work without error (no annotation applied)
     end)
