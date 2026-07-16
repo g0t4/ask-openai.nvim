@@ -151,12 +151,7 @@ function Prediction:redraw_extmarks()
 
     local first_line_virt_text
     if self.prediction_cache.has_duplicate_prefix then
-        -- Add subtle annotation showing what was dropped
-        local annotation = string.format("[%d spaces stripped]", #self.prediction_cache.cursor_prefix)
-        first_line_virt_text = {
-            { self.prediction_cache.first_line, HLGroups.PREDICTION_TEXT },
-            { " " .. annotation .. " ",         HLGroups.STATS_CACHED }
-        }
+        first_line_virt_text = { { self.prediction_cache.first_line, HLGroups.PREDICTION_TEXT } }
 
         -- Highlight cursor line prefix overlap with red bg
         self.extmarks.dup_highlight = vim.api.nvim_buf_set_extmark(
