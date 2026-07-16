@@ -64,6 +64,7 @@ function M.qwen25coder.get_fim_prompt(request)
 General project code rules:
 - Never add comments to the end of a line.
 - NEVER add TODO comments for me.
+- Always pay close attention to indentation when suggesting code, pay close attention to whitespace on the line where the code will be inserted. Do not repeat existing indentation!
 ]])
     append_file_non_fim(instructions)
 
