@@ -121,12 +121,12 @@ function Prediction:redraw_extmarks()
     local first_line_text = table.remove(lines, 1)
     
     -- Check if first line starts with the cursor prefix (FIM duplication)
-    is_duplicate_prefix = is_duplicate_prefix 
+    local has_duplicate_prefix = is_duplicate_prefix 
         and #first_line_text >= #cursor_prefix 
         and first_line_text:sub(1, #cursor_prefix) == cursor_prefix
     
     local first_line_virt_text
-    if is_duplicate_prefix then
+    if has_duplicate_prefix then
         -- Drop duplicate prefix and show fixed version
         local stripped_line = first_line_text:sub(#cursor_prefix + 1)
         
@@ -169,6 +169,12 @@ end
 
 function Prediction:clear_extmarks()
     vim.api.nvim_buf_clear_namespace(self.buffer, extmarks_ns_id, 0, -1)
+    
+    -- Explicitly remove the duplicate prefix highlight if it exists
+    if self.extmarks and self.extmarks.dup_highlight then
+        pcall(vim.api.nvim_buf_del_extmark, self.buffer, extmarks_ns_id, self.extmarks.dup_highlight)
+        self.extmarks.dup_highlight = nil
+    end
 end
 
 function Prediction:pause_new_chunks()
