@@ -98,11 +98,10 @@ function Prediction:fim_fixes()
         local prefix = cursor_line_text:sub(1, cursor.col_base0)
         self.prediction_cache.cursor_prefix = prefix
     end
-    -- * Check if prediction's first line starts with the cursor prefix (FIM duplication)
-    -- TODO dedupe completion and use downstream for accepts and display
-    --  TODO that way I don't need logic in accept/display to compute overlap in prefix (or suffix later)
-    -- TODO suffix duplication? find traces first
 
+    -- TODO suffix duplication? find traces for this first... and make sure it is common enough and then test it well
+
+    -- * Check if prediction's first line starts with the cursor prefix (FIM duplication)
     local cursor_prefix = self.prediction_cache.cursor_prefix
     local lines = split_lines(self.prediction_cache.completion)
     if #lines == 0 then
@@ -198,26 +197,6 @@ function Prediction:insert_accepted(insert_lines)
     self.disable_cursor_moved = true
     local controller = CursorController:new()
     local cursor = controller:get_cursor_position()
-    -- * FIX: Auto-strip repeated indentation prefix from FIM completion
-    -- When models like gptoss120b repeat the cursor line's prefix (usually whitespace),
-    -- we detect and strip it before insertion. This handles cases where the model
-    -- outputs the full line instead of just the new code.
-    local cursor_prefix = self.prediction_cache.cursor_prefix
-    -- TODO use prediction_cache here
-
-    if cursor_prefix ~= "" then
-        local first_line = insert_lines[1]
-        -- Check if first line starts with the same prefix (common case: indentation repetition)
-        if #first_line >= #cursor_prefix and first_line:sub(1, #cursor_prefix) == cursor_prefix then
-            log:info("🔧 FIM prefix auto-stripped:", {
-                cursor_prefix = vim.inspect(cursor_prefix),
-                original_first_line = vim.inspect(first_line),
-                stripped_first_line = vim.inspect(first_line:sub(#cursor_prefix + 1)),
-            })
-            insert_lines[1] = first_line:sub(#cursor_prefix + 1)
-        end
-    end
-
 
     -- * insert accepted text
     -- INSERT b/c start == end == cursor position! (nothing to replace)
@@ -239,9 +218,9 @@ function Prediction:accept_first_line()
     -- PRN add integration testing of these buffer/cursor interactions
 
     -- * insert first line
-    local first_line = table.remove(lines, 1)
+    local first_line = self.prediction_cache.first_line
     local insert_lines = { first_line }
-    if #lines > 0 then
+    if #self.prediction_cache.rest_of_lines > 0 then
         -- only wrap a line if there are more lines to accept!
         insert_lines = { first_line, BLANK_LINE }
 
@@ -254,7 +233,7 @@ function Prediction:accept_first_line()
     self:insert_accepted(insert_lines)
 
     -- * update prediction
-    self.prediction_cache.completion = table.concat(lines, "\n")
+    self.prediction_cache.completion = table.concat(self.prediction_cache.rest_of_lines, "\n")
     self.prediction_cache.cursor_prefix = nil -- force lookup
     self:fix_fim_and_redraw_extmarks()
 end
