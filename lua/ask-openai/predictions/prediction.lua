@@ -6,7 +6,7 @@ local CursorController = require "ask-openai.predictions.cursor_controller"
 ---@class Prediction
 ---@field id integer
 ---@field buffer integer
----@field prediction_cache { completion: string, cursor_prefix: string, lines: string[], first_line: string, has_duplicate_prefix: boolean }
+---@field prediction_cache { completion: string, cursor_prefix: string, rest_of_lines: string[], first_line: string, has_duplicate_prefix: boolean }
 ---@field extmarks table
 ---@field abandoned boolean         # user aborted prediction
 ---@field disable_cursor_moved boolean
@@ -126,7 +126,7 @@ function Prediction:fim_fixes()
     -- cache:
     self.prediction_cache.has_duplicate_prefix = has_duplicate_prefix
     self.prediction_cache.first_line = first_line
-    self.prediction_cache.lines = lines
+    self.prediction_cache.rest_of_lines = lines
     return true
 end
 
@@ -176,7 +176,7 @@ function Prediction:redraw_extmarks()
     end
 
     local virt_lines = {}
-    for i, line in ipairs(self.prediction_cache.lines) do
+    for i, line in ipairs(self.prediction_cache.rest_of_lines) do
         table.insert(virt_lines, { { line, HLGroups.PREDICTION_TEXT } })
     end
 
