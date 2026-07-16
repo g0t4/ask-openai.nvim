@@ -6,7 +6,7 @@ local CursorController = require "ask-openai.predictions.cursor_controller"
 ---@class Prediction
 ---@field id integer
 ---@field buffer integer
----@field prediction_cache { completion: string }
+---@field prediction_cache { completion: string, cursor_prefix: string, }
 ---@field extmarks table
 ---@field abandoned boolean         # user aborted prediction
 ---@field disable_cursor_moved boolean
@@ -46,6 +46,7 @@ function Prediction.new(params)
     self.start_time = os.time()
     self.prediction_cache = {
         completion = "",
+        cursor_prefix = nil, -- make explicit
     }
 
     params = params or {}
@@ -59,12 +60,27 @@ end
 function Prediction:add_chunk_to_prediction(chunk, reasoning_content)
     if chunk then
         self.prediction_cache.completion = self.prediction_cache.completion .. chunk
+        -- TODO check for cursor_prefix duplication and update cached fields so I can use that in redraw_extmarks without recalculating this ever extmark/chunk update
     end
     if reasoning_content then
         table.insert(self.reasoning_chunks, reasoning_content)
         self.has_reasoning = true
     end
+    self:fim_fixes()
     self:redraw_extmarks()
+end
+
+function Prediction:fim_fixes()
+    -- * get cursor prefix one time
+    if self.prediction_cache.cursor_prefix == nil then
+        local controller = CursorController:new()
+        local cursor = controller:get_cursor_position()
+        local cursor_line_text = vim.api.nvim_buf_get_lines(self.buffer, cursor.line_base0, cursor.line_base0 + 1, false)[1] or ""
+        local prefix = cursor_line_text:sub(1, cursor.col_base0)
+        self.prediction_cache.cursor_prefix = prefix
+    end
+    -- TODO dedupe completion and use downstream for accepts and display
+    --  TODO that way I don't need logic in accept/display to compute overlap in prefix (or suffix later)
 end
 
 function Prediction:get_reasoning()
@@ -236,6 +252,8 @@ function Prediction:accept_first_line()
 
     -- * update prediction
     self.prediction_cache.completion = table.concat(lines, "\n")
+    self.prediction_cache.cursor_prefix = nil -- force lookup
+    self:fim_fixes()
     self:redraw_extmarks()
 end
 
@@ -295,7 +313,9 @@ function Prediction:accept_first_word()
 
     -- * update prediction
     self.prediction_cache.completion = table.concat(lines, "\n")
+    self.prediction_cache.cursor_prefix = nil -- force lookup
     -- log:warn("  self.prediction_cache", vim.inspect(self.prediction_cache))
+    self:fim_fixes()
     self:redraw_extmarks()
 end
 
@@ -315,6 +335,8 @@ function Prediction:accept_all()
 
     -- * clear prediction
     self.prediction_cache.completion = "" -- strip all lines from the prediction (and update it)
+    self.prediction_cache.cursor_prefix = nil -- force lookup
+    self:fim_fixes()
     self:redraw_extmarks()
 
     -- TODO SIGNAL next prediction when accept all? (and then consider this for other accept types if they are accepting remainder of prediction too (finishing accepting current prediction)
