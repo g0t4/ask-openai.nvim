@@ -233,6 +233,9 @@ function Prediction:accept_first_line()
         return
     end
 
+    -- TODO! add support for strip FIM prefix duplication
+    --   TODO how about store the stripped version from the streaming tokens detection so I don't have to bother with detection here
+
     -- PRN add integration testing of these buffer/cursor interactions
 
     -- * insert first line
@@ -261,6 +264,8 @@ function Prediction:accept_first_word()
         return
     end
     -- log:warn("lines", vim.inspect(lines))
+    -- TODO! add support for strip FIM prefix duplication
+    --   TODO how about store the stripped version from the streaming tokens detection so I don't have to bother with detection here
 
     -- PRN add integration testing of these buffer/cursor interactions
 
