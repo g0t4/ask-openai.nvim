@@ -198,11 +198,10 @@ function Prediction:insert_accepted(insert_lines)
     -- When models like gptoss120b repeat the cursor line's prefix (usually whitespace),
     -- we detect and strip it before insertion. This handles cases where the model
     -- outputs the full line instead of just the new code.
-    local is_blank_line = vim.tbl_isempty(insert_lines) or insert_lines[1]:match("^%s*$")
     local cursor_line_text = vim.api.nvim_buf_get_lines(self.buffer, cursor.line_base0, cursor.line_base0 + 1, false)[1] or ""
     local cursor_prefix = cursor_line_text:sub(1, cursor.col_base0)
 
-    if not is_blank_line and cursor_prefix ~= "" then
+    if cursor_prefix ~= "" then
         local first_line = insert_lines[1]
         -- Check if first line starts with the same prefix (common case: indentation repetition)
         if #first_line >= #cursor_prefix and first_line:sub(1, #cursor_prefix) == cursor_prefix then
