@@ -124,7 +124,7 @@ function Prediction:redraw_extmarks()
         -- Add subtle annotation showing what was dropped
         local annotation = string.format("[%d spaces stripped]", #cursor_prefix)
         first_line_virt_text = {
-            { stripped_line, HLGroups.PREDICTION_TEXT },
+            { stripped_line,            HLGroups.PREDICTION_TEXT },
             { " " .. annotation .. " ", HLGroups.STATS_CACHED }
         }
 
@@ -133,7 +133,7 @@ function Prediction:redraw_extmarks()
             self.buffer,
             extmarks_ns_id,
             cursor.line_base0,
-            0,  -- start from beginning of line
+            0, -- start from beginning of line
             {
                 end_line = cursor.line_base0,
                 end_col = cursor.col_base0,
