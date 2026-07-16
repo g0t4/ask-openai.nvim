@@ -105,10 +105,6 @@ function Prediction:redraw_extmarks()
         return
     end
 
-    -- * Detect FIM prefix duplication for highlighting
-    local cursor_line_text = vim.api.nvim_buf_get_lines(self.buffer, cursor.line_base0, cursor.line_base0 + 1, false)[1] or ""
-    local cursor_prefix = cursor_line_text:sub(1, cursor.col_base0)
-
     local lines = split_lines(self.prediction)
     if #lines == 0 then
         if not self.has_reasoning then
@@ -119,7 +115,9 @@ function Prediction:redraw_extmarks()
 
     local first_line_text = table.remove(lines, 1)
 
-    -- Check if first line starts with the cursor prefix (FIM duplication)
+    -- * Check if prediction's first line starts with the cursor prefix (FIM duplication)
+    local cursor_line_text = vim.api.nvim_buf_get_lines(self.buffer, cursor.line_base0, cursor.line_base0 + 1, false)[1] or ""
+    local cursor_prefix = cursor_line_text:sub(1, cursor.col_base0)
     local has_duplicate_prefix = cursor_prefix ~= ""
         and #first_line_text >= #cursor_prefix
         and first_line_text:sub(1, #cursor_prefix) == cursor_prefix
