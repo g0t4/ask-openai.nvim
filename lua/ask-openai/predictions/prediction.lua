@@ -237,8 +237,7 @@ function Prediction:accept_first_line()
 end
 
 function Prediction:accept_first_word()
-    local lines = split_lines(self.prediction_cache.completion)
-    if #lines == 0 then
+    if self.prediction_cache.no_completion_yet then
         return
     end
 
