@@ -152,6 +152,22 @@ function Prediction:insert_accepted(insert_lines)
     self.disable_cursor_moved = true
     local controller = CursorController:new()
     local cursor = controller:get_cursor_position()
+    -- * FIX: Auto-strip repeated indentation prefix from FIM completion
+    -- When models like gptoss120b repeat the cursor line's prefix (usually whitespace),
+    -- we detect and strip it before insertion. This handles cases where the model
+    -- outputs the full line instead of just the new code.
+    local is_blank_line = vim.tbl_isempty(insert_lines) or insert_lines[1]:match("^%s*$")
+    local cursor_line_text = vim.api.nvim_buf_get_lines(self.buffer, cursor.line_base0, cursor.line_base0 + 1, false)[1] or ""
+    local cursor_prefix = cursor_line_text:sub(1, cursor.col_base0)
+    
+    if not is_blank_line and cursor_prefix ~= "" then
+        local first_line = insert_lines[1]
+        -- Check if first line starts with the same prefix (common case: indentation repetition)
+        if #first_line >= #cursor_prefix and first_line:sub(1, #cursor_prefix) == cursor_prefix then
+            insert_lines[1] = first_line:sub(#cursor_prefix + 1)
+        end
+    end
+
 
     -- * insert accepted text
     -- INSERT b/c start == end == cursor position! (nothing to replace)
@@ -161,6 +177,28 @@ function Prediction:insert_accepted(insert_lines)
     local new_cursor = controller:calc_new_position(cursor, insert_lines)
     vim.api.nvim_win_set_cursor(controller.window_id, { new_cursor.line_base1, new_cursor.col_base0 }) -- (1,0)-indexed
 end
+
+-- ============================================================================
+-- Step2-AutoFixDupliateFimPrefix
+-- ============================================================================
+-- TODO: Implement chunk-level prefix stripping for streaming FIM completions.
+-- This would process chunks as they arrive rather than at accept time.
+-- 
+-- Approach:
+-- 1. Track cursor position and prefix when prediction starts
+-- 2. Accumulate chunks until we have a complete first line
+-- 3. Check if the accumulated line starts with the cursor prefix
+-- 4. If yes, strip the common prefix before adding to self.prediction
+-- 5. If no, keep as-is (normal completion)
+--
+-- Why not now:
+-- - Cursor position can change during streaming (though FIM is aborted on move)
+-- - Need to handle partial matches and token boundaries carefully
+-- - Accept-time fix (Option A) already handles the main case well
+-- - Can be implemented later as a performance/UX improvement for real-time display
+--
+-- Implementation would go in: Prediction:add_chunk_to_prediction()
+-- ============================================================================
 
 local BLANK_LINE = ""
 function Prediction:accept_first_line()
