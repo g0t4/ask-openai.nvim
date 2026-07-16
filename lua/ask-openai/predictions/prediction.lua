@@ -6,7 +6,7 @@ local CursorController = require "ask-openai.predictions.cursor_controller"
 ---@class Prediction
 ---@field id integer
 ---@field buffer integer
----@field prediction_cache { completion: string, cursor_prefix: string, rest_of_lines: string[], first_line: string, has_duplicate_prefix: boolean }
+---@field prediction_cache { completion: string, cursor_prefix: string, first_line: string, rest_of_lines: string[], has_duplicate_prefix: boolean }
 ---@field extmarks table
 ---@field abandoned boolean         # user aborted prediction
 ---@field disable_cursor_moved boolean
