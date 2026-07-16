@@ -142,66 +142,58 @@
       const res = await fetch(url)
       if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`)
 
-      // Detect format based on URL
-      const isJsonl = url.includes('-messages.jsonl')
-
-      if (isJsonl) {
-        // JSONL format: one message per line
+      // JSONL format: one message per line
+      if (url.includes('-messages.jsonl')) {
         const text = await res.text()
         const lines = text.trim().split('\n')
         messages = lines
           .filter(line => line.trim())
           .map(line => JSON.parse(line))
-      } else {
-        // *-trace.json - detect format (agent vs shell trace)
-        const rawData: unknown = await res.json()
+        return
+      }
 
-        // Detect shell trace format: has "messages" at root level + optional "response"
-        const isShellTrace = (rawData != null && typeof rawData === 'object' && 'messages' in rawData)
+      // *-trace.json - detect format (agent vs shell trace)
+      const rawData: unknown = await res.json()
 
-        if (isShellTrace) {
-          // Shell trace format: { messages: [...], response: {...} }
-          const shellData = rawData as ShellTraceJson
-          messages = shellData.messages ?? []
+      // Shell trace format: { messages: [...], response: {...} }
+      if (rawData != null && typeof rawData === 'object' && 'messages' in rawData) {
+        const shellData = rawData as ShellTraceJson
+        messages = shellData.messages ?? []
 
-          // Extract model info from response object
-          if (shellData.response?.model_name) {
-            modelInfo = {
-              model: shellData.response.model_name,
-              isAvailable: true,
-              timings: null
-            }
-          } else if (shellData.response?.model) {
-            modelInfo = {
-              model: shellData.response.model,
-              isAvailable: true,
-              timings: null
-            }
+        // Extract model info from response object
+        if (shellData.response?.model_name) {
+          modelInfo = {
+            model: shellData.response.model_name,
+            isAvailable: true,
+            timings: null
           }
-        } else {
-          // Agent trace format: { request_body: { messages: [...] }, response_message?: {...}, last_sse?: {...} }
-          const data = rawData as TraceJson
-
-          // Extract messages from request_body
-          messages = data.request_body?.messages ?? []
-
-          // Check for model info and timings in trace metadata
-          if (data.last_sse) {
-            const lastSse = data.last_sse
-            if (lastSse.model) {
-              modelInfo = {
-                model: lastSse.model,
-                isAvailable: true,
-                timings: lastSse.timings || null
-              }
-            }
-          }
-
-          // Append response_message if present
-          if (data.response_message) {
-            messages = [...messages, data.response_message]
+        } else if (shellData.response?.model) {
+          modelInfo = {
+            model: shellData.response.model,
+            isAvailable: true,
+            timings: null
           }
         }
+        return
+      }
+
+      // Agent trace format: { request_body: { messages: [...] }, response_message?: {...}, last_sse?: {...} }
+      const data = rawData as TraceJson
+      messages = data.request_body?.messages ?? []
+
+      if (data.last_sse) {
+        const lastSse = data.last_sse
+        if (lastSse.model) {
+          modelInfo = {
+            model: lastSse.model,
+            isAvailable: true,
+            timings: lastSse.timings || null
+          }
+        }
+      }
+
+      if (data.response_message) {
+        messages = [...messages, data.response_message]
       }
     } catch (e) {
       error = e instanceof Error ? e.message : 'Unknown error'
