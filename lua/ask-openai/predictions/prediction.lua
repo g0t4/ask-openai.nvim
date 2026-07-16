@@ -117,9 +117,10 @@ function Prediction:fim_fixes()
     local has_duplicate_prefix = cursor_prefix ~= ""
         and #first_line >= #cursor_prefix
         and first_line:sub(1, #cursor_prefix) == cursor_prefix
-    -- TODO fields when done
+    -- ? partial prefix duplicate match (end of prefix matches start of completion? i.e.. one tab when there are two?)
 
     if has_duplicate_prefix then
+        -- ? store duplicated part of prefix too (if not all of it)
         first_line = first_line:sub(#cursor_prefix + 1)
     end
 
@@ -150,14 +151,14 @@ function Prediction:redraw_extmarks()
 
     local first_line_virt_text
     if self.prediction_cache.has_duplicate_prefix then
-        -- -- Add subtle annotation showing what was dropped
+        -- Add subtle annotation showing what was dropped
         local annotation = string.format("[%d spaces stripped]", #self.prediction_cache.cursor_prefix)
         first_line_virt_text = {
             { self.prediction_cache.first_line, HLGroups.PREDICTION_TEXT },
-            { " " .. annotation .. " ",              HLGroups.STATS_CACHED }
+            { " " .. annotation .. " ",         HLGroups.STATS_CACHED }
         }
 
-        -- Highlight the original duplicated characters in buffer with red bg
+        -- Highlight cursor line prefix overlap with red bg
         self.extmarks.dup_highlight = vim.api.nvim_buf_set_extmark(
             self.buffer,
             extmarks_ns_id,
