@@ -7,7 +7,11 @@ local CursorController = require "ask-openai.predictions.cursor_controller"
 ---@field id integer
 ---@field buffer integer
 ---@field prediction string
----@field prediction_cache { cursor_prefix: string, first_line: string, rest_of_lines: string[], has_duplicate_prefix: boolean, no_completion_yet: boolean }
+---@field cursor_prefix: string,
+---@field first_line: string
+---@field rest_of_lines: string[]
+---@field has_duplicate_prefix: boolean
+---@field no_completion_yet: boolean
 ---@field extmarks table
 ---@field abandoned boolean         # user aborted prediction
 ---@field disable_cursor_moved boolean
@@ -90,19 +94,19 @@ end
 
 function Prediction:fim_fixes()
     -- * get cursor prefix one time
-    if self.prediction_cache.cursor_prefix == nil then
+    if self.cursor_prefix == nil then
         local controller = CursorController:new()
         local cursor = controller:get_cursor_position()
         local cursor_line_text = vim.api.nvim_buf_get_lines(self.buffer, cursor.line_base0, cursor.line_base0 + 1, false)[1] or ""
         local prefix = cursor_line_text:sub(1, cursor.col_base0)
-        self.prediction_cache.cursor_prefix = prefix
+        self.cursor_prefix = prefix
     end
 
     -- TODO suffix duplication? find traces for this first... and make sure it is common enough and then test it well
 
     -- * Check if prediction's first line starts with the cursor prefix (FIM duplication)
     local lines = split_lines(self.prediction)
-    self.prediction_cache.no_completion_yet = #lines == 0
+    self.no_completion_yet = #lines == 0
     if #lines == 0 then
         if not self.has_reasoning then
             return
@@ -111,7 +115,7 @@ function Prediction:fim_fixes()
     end
 
     local first_line = table.remove(lines, 1)
-    local cursor_prefix = self.prediction_cache.cursor_prefix
+    local cursor_prefix = self.cursor_prefix
     local has_duplicate_prefix = cursor_prefix ~= ""
         and #first_line >= #cursor_prefix
         and first_line:sub(1, #cursor_prefix) == cursor_prefix
@@ -123,9 +127,9 @@ function Prediction:fim_fixes()
     end
 
     -- cache:
-    self.prediction_cache.has_duplicate_prefix = has_duplicate_prefix
-    self.prediction_cache.first_line = first_line
-    self.prediction_cache.rest_of_lines = lines
+    self.has_duplicate_prefix = has_duplicate_prefix
+    self.first_line = first_line
+    self.rest_of_lines = lines
     return
 end
 
@@ -142,12 +146,12 @@ function Prediction:fix_fim_and_redraw_extmarks()
 
     -- FYI must call before building extmarks (if needed strips duplicate prefix)
     self:fim_fixes()
-    if self.prediction_cache.no_completion_yet then
+    if self.no_completion_yet then
         return
     end
 
     -- * highlight cursor line prefix overlap with red bg
-    if self.prediction_cache.has_duplicate_prefix then
+    if self.has_duplicate_prefix then
         self.extmarks.dup_highlight = vim.api.nvim_buf_set_extmark(
             self.buffer,
             extmarks_ns_id,
@@ -164,11 +168,11 @@ function Prediction:fix_fim_and_redraw_extmarks()
     end
 
     local virt_lines = {}
-    for i, line in ipairs(self.prediction_cache.rest_of_lines) do
+    for i, line in ipairs(self.rest_of_lines) do
         table.insert(virt_lines, { { line, HLGroups.PREDICTION_TEXT } })
     end
 
-    local first_line_virt_text = { { self.prediction_cache.first_line, HLGroups.PREDICTION_TEXT } }
+    local first_line_virt_text = { { self.first_line, HLGroups.PREDICTION_TEXT } }
     vim.api.nvim_buf_set_extmark(self.buffer, extmarks_ns_id, cursor.line_base0, cursor.col_base0, -- 0-indexed
         {
             virt_text = first_line_virt_text,
@@ -208,16 +212,16 @@ end
 local BLANK_LINE = ""
 function Prediction:accept_first_line()
     -- FYI instead of splitting every time... could make a class that buffers into line splits for me! use a table of chunks until hit \n... flush to the next line and start accumulating next line, etc
-    if self.prediction_cache.no_completion_yet then
+    if self.no_completion_yet then
         return
     end
 
     -- PRN add integration testing of these buffer/cursor interactions
 
     -- * insert first line
-    local first_line = self.prediction_cache.first_line
+    local first_line = self.first_line
     local insert_lines = { first_line }
-    if #self.prediction_cache.rest_of_lines > 0 then
+    if #self.rest_of_lines > 0 then
         -- only wrap a line if there are more lines to accept!
         insert_lines = { first_line, BLANK_LINE }
 
@@ -230,19 +234,19 @@ function Prediction:accept_first_line()
     self:insert_accepted(insert_lines)
 
     -- * update prediction
-    self.prediction = table.concat(self.prediction_cache.rest_of_lines, "\n")
-    self.prediction_cache.cursor_prefix = nil -- force lookup
+    self.prediction = table.concat(self.rest_of_lines, "\n")
+    self.cursor_prefix = nil -- force lookup
     self:fix_fim_and_redraw_extmarks()
 end
 
 function Prediction:accept_first_word()
-    if self.prediction_cache.no_completion_yet then
+    if self.no_completion_yet then
         return
     end
 
     -- PRN add integration testing of these buffer/cursor interactions
 
-    local first_line = self.prediction_cache.first_line
+    local first_line = self.first_line
     local _, word_end = first_line:find("[_%w]+") -- find first word (range)
     -- log:warn("  word_end", vim.inspect(word_end))
     local insert_lines = {}
@@ -268,7 +272,7 @@ function Prediction:accept_first_word()
         local first_word = first_line
         first_line = ""
 
-        local last_predicted_line = #self.prediction_cache.rest_of_lines == 0
+        local last_predicted_line = #self.rest_of_lines == 0
         if last_predicted_line then
             insert_lines = { first_word }
         else
@@ -286,18 +290,18 @@ function Prediction:accept_first_word()
     self:insert_accepted(insert_lines)
 
     -- * update prediction
-    self.prediction = first_line .. "\n" .. table.concat(self.prediction_cache.rest_of_lines, "\n")
+    self.prediction = first_line .. "\n" .. table.concat(self.rest_of_lines, "\n")
     -- FYI I don't need to update the cached values for first_line/rest_of_lines b/c they'll be recomputed in fix_fim_and_redraw_extmarks
-    self.prediction_cache.cursor_prefix = nil -- force lookup
+    self.cursor_prefix = nil -- force lookup
     self:fix_fim_and_redraw_extmarks()
 end
 
 function Prediction:accept_all()
-    if self.prediction_cache.no_completion_yet then
+    if self.no_completion_yet then
         return
     end
 
-    local all_lines = { self.prediction_cache.first_line, unpack(self.prediction_cache.rest_of_lines) }
+    local all_lines = { self.first_line, unpack(self.rest_of_lines) }
     self:insert_accepted(all_lines)
 
     -- FYI KEY TEST SCENARIO: complete to end of generated text
@@ -308,7 +312,7 @@ function Prediction:accept_all()
 
     -- * clear prediction
     self.prediction = "" -- strip all lines from the prediction (and update it)
-    self.prediction_cache.cursor_prefix = nil -- force lookup
+    self.cursor_prefix = nil -- force lookup
     self:fix_fim_and_redraw_extmarks()
 
     -- TODO SIGNAL next prediction when accept all? (and then consider this for other accept types if they are accepting remainder of prediction too (finishing accepting current prediction)
