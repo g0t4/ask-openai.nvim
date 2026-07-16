@@ -167,6 +167,7 @@ function Prediction:redraw_extmarks()
             self.buffer,
             extmarks_ns_id,
             cursor.line_base0,
+            -- TODO if we only match part of prefix... we shouldn't highlight all of it! rare but still support this?
             0, -- start from beginning of line
             {
                 end_line = cursor.line_base0,
@@ -215,6 +216,7 @@ function Prediction:insert_accepted(insert_lines)
     -- we detect and strip it before insertion. This handles cases where the model
     -- outputs the full line instead of just the new code.
     local cursor_prefix = self.prediction_cache.cursor_prefix
+    -- TODO use prediction_cache here
 
     if cursor_prefix ~= "" then
         local first_line = insert_lines[1]
@@ -247,9 +249,6 @@ function Prediction:accept_first_line()
         return
     end
 
-    -- TODO! add support for strip FIM prefix duplication
-    --   TODO how about store the stripped version from the streaming tokens detection so I don't have to bother with detection here
-
     -- PRN add integration testing of these buffer/cursor interactions
 
     -- * insert first line
@@ -278,9 +277,6 @@ function Prediction:accept_first_word()
     if #lines == 0 then
         return
     end
-    -- log:warn("lines", vim.inspect(lines))
-    -- TODO! add support for strip FIM prefix duplication
-    --   TODO how about store the stripped version from the streaming tokens detection so I don't have to bother with detection here
 
     -- PRN add integration testing of these buffer/cursor interactions
 
