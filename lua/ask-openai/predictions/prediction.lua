@@ -79,8 +79,10 @@ function Prediction:fim_fixes()
         local prefix = cursor_line_text:sub(1, cursor.col_base0)
         self.prediction_cache.cursor_prefix = prefix
     end
+    -- * Check if prediction's first line starts with the cursor prefix (FIM duplication)
     -- TODO dedupe completion and use downstream for accepts and display
     --  TODO that way I don't need logic in accept/display to compute overlap in prefix (or suffix later)
+    -- TODO suffix duplication? find traces first
 end
 
 function Prediction:get_reasoning()
@@ -123,11 +125,9 @@ function Prediction:redraw_extmarks()
 
     local first_line_text = table.remove(lines, 1)
 
-    -- TODO what about cursor line suffix duplication? TODO find test cases... I recall this happening too with gptoss
     -- * Check if prediction's first line starts with the cursor prefix (FIM duplication)
-    -- TODO move this earlier and only capture prefix ONCE per completion... prefix never changes b/c cursor cannot move within a completion (cursor move triggers new completion)
-    local cursor_line_text = vim.api.nvim_buf_get_lines(self.buffer, cursor.line_base0, cursor.line_base0 + 1, false)[1] or ""
-    local cursor_prefix = cursor_line_text:sub(1, cursor.col_base0)
+    -- TODO move this to fim_fixes
+    local cursor_prefix = self.prediction_cache.cursor_prefix
     local has_duplicate_prefix = cursor_prefix ~= ""
         and #first_line_text >= #cursor_prefix
         and first_line_text:sub(1, #cursor_prefix) == cursor_prefix
@@ -196,8 +196,7 @@ function Prediction:insert_accepted(insert_lines)
     -- When models like gptoss120b repeat the cursor line's prefix (usually whitespace),
     -- we detect and strip it before insertion. This handles cases where the model
     -- outputs the full line instead of just the new code.
-    local cursor_line_text = vim.api.nvim_buf_get_lines(self.buffer, cursor.line_base0, cursor.line_base0 + 1, false)[1] or ""
-    local cursor_prefix = cursor_line_text:sub(1, cursor.col_base0)
+    local cursor_prefix = self.prediction_cache.cursor_prefix
 
     if cursor_prefix ~= "" then
         local first_line = insert_lines[1]
