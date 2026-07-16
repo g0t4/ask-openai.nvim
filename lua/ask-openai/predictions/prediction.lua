@@ -100,7 +100,6 @@ function Prediction:fim_fixes()
     -- TODO suffix duplication? find traces for this first... and make sure it is common enough and then test it well
 
     -- * Check if prediction's first line starts with the cursor prefix (FIM duplication)
-    local cursor_prefix = self.prediction_cache.cursor_prefix
     local lines = split_lines(self.prediction_cache.completion)
     self.prediction_cache.no_completion_yet = #lines == 0
     if #lines == 0 then
@@ -111,6 +110,7 @@ function Prediction:fim_fixes()
     end
 
     local first_line = table.remove(lines, 1)
+    local cursor_prefix = self.prediction_cache.cursor_prefix
     local has_duplicate_prefix = cursor_prefix ~= ""
         and #first_line >= #cursor_prefix
         and first_line:sub(1, #cursor_prefix) == cursor_prefix
