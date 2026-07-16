@@ -109,7 +109,6 @@ function Prediction:redraw_extmarks()
     local cursor_line_text = vim.api.nvim_buf_get_lines(self.buffer, cursor.line_base0, cursor.line_base0 + 1, false)[1] or ""
     local cursor_prefix = cursor_line_text:sub(1, cursor.col_base0)
 
-
     local lines = split_lines(self.prediction)
     if #lines == 0 then
         if not self.has_reasoning then
@@ -119,29 +118,29 @@ function Prediction:redraw_extmarks()
     end
 
     local first_line_text = table.remove(lines, 1)
-    
+
     -- Check if first line starts with the cursor prefix (FIM duplication)
     local has_duplicate_prefix = cursor_prefix ~= ""
         and #first_line_text >= #cursor_prefix
         and first_line_text:sub(1, #cursor_prefix) == cursor_prefix
-    
+
     local first_line_virt_text
     if has_duplicate_prefix then
         -- Drop duplicate prefix and show fixed version
         local stripped_line = first_line_text:sub(#cursor_prefix + 1)
-        
+
         -- Add subtle annotation showing what was dropped
         local annotation = string.format("[%d spaces stripped]", #cursor_prefix)
         first_line_virt_text = {
             { stripped_line, HLGroups.PREDICTION_TEXT },
             { " " .. annotation .. " ", HLGroups.STATS_CACHED }
         }
-        
+
         -- Highlight the original duplicated characters in buffer with red bg
         self.extmarks.dup_highlight = vim.api.nvim_buf_set_extmark(
-            self.buffer, 
-            extmarks_ns_id, 
-            cursor.line_base0, 
+            self.buffer,
+            extmarks_ns_id,
+            cursor.line_base0,
             0,  -- start from beginning of line
             {
                 end_line = cursor.line_base0,
@@ -169,7 +168,7 @@ end
 
 function Prediction:clear_extmarks()
     vim.api.nvim_buf_clear_namespace(self.buffer, extmarks_ns_id, 0, -1)
-    
+
     -- Explicitly remove the duplicate prefix highlight if it exists
     if self.extmarks and self.extmarks.dup_highlight then
         pcall(vim.api.nvim_buf_del_extmark, self.buffer, extmarks_ns_id, self.extmarks.dup_highlight)
@@ -204,7 +203,7 @@ function Prediction:insert_accepted(insert_lines)
     local is_blank_line = vim.tbl_isempty(insert_lines) or insert_lines[1]:match("^%s*$")
     local cursor_line_text = vim.api.nvim_buf_get_lines(self.buffer, cursor.line_base0, cursor.line_base0 + 1, false)[1] or ""
     local cursor_prefix = cursor_line_text:sub(1, cursor.col_base0)
-    
+
     if not is_blank_line and cursor_prefix ~= "" then
         local first_line = insert_lines[1]
         -- Check if first line starts with the same prefix (common case: indentation repetition)
