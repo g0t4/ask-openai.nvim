@@ -243,7 +243,7 @@ function Prediction:accept_first_word()
 
     -- PRN add integration testing of these buffer/cursor interactions
 
-    local first_line = lines[1]
+    local first_line = self.prediction_cache.first_line
     local _, word_end = first_line:find("[_%w]+") -- find first word (range)
     -- log:warn("  word_end", vim.inspect(word_end))
     local insert_lines = {}
@@ -269,7 +269,7 @@ function Prediction:accept_first_word()
         local first_word = first_line
         first_line = ""
 
-        local last_predicted_line = #lines == 1
+        local last_predicted_line = #self.prediction_cache.rest_of_lines == 0
         if last_predicted_line then
             insert_lines = { first_word }
         else
@@ -282,15 +282,14 @@ function Prediction:accept_first_word()
 
         insert_lines = { first_word }
     end
-    -- log:warn("  lines[1]", vim.inspect(lines[1]))
     -- log:warn("  insert_lines", vim.inspect(insert_lines))
 
     self:insert_accepted(insert_lines)
 
     -- * update prediction
-    self.prediction_cache.completion = table.concat(lines, "\n")
+    self.prediction_cache.completion = first_line .. "\n" .. table.concat(self.prediction_cache.rest_of_lines, "\n")
+    -- FYI I don't need to update the cached values for first_line/rest_of_lines b/c they'll be recomputed in fix_fim_and_redraw_extmarks
     self.prediction_cache.cursor_prefix = nil -- force lookup
-    -- log:warn("  self.prediction_cache", vim.inspect(self.prediction_cache))
     self:fix_fim_and_redraw_extmarks()
 end
 
