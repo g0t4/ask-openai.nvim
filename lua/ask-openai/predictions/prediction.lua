@@ -164,6 +164,11 @@ function Prediction:insert_accepted(insert_lines)
         local first_line = insert_lines[1]
         -- Check if first line starts with the same prefix (common case: indentation repetition)
         if #first_line >= #cursor_prefix and first_line:sub(1, #cursor_prefix) == cursor_prefix then
+            log:info("🔧 FIM prefix auto-stripped:", {
+                cursor_prefix = vim.inspect(cursor_prefix),
+                original_first_line = vim.inspect(first_line),
+                stripped_first_line = vim.inspect(first_line:sub(#cursor_prefix + 1)),
+            })
             insert_lines[1] = first_line:sub(#cursor_prefix + 1)
         end
     end
