@@ -294,12 +294,12 @@ function Prediction:accept_first_word()
 end
 
 function Prediction:accept_all()
-    local lines = split_lines(self.prediction_cache.completion)
-    if #lines == 0 then
+    if self.prediction_cache.no_completion_yet then
         return
     end
 
-    self:insert_accepted(lines)
+    local all_lines = { self.prediction_cache.first_line, unpack(self.prediction_cache.rest_of_lines) }
+    self:insert_accepted(all_lines)
 
     -- FYI KEY TEST SCENARIO: complete to end of generated text
     --   * easy b/c no partial accept... whatever the model generates, insert it
