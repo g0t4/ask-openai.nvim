@@ -121,7 +121,7 @@ function Prediction:redraw_extmarks()
     local first_line_text = table.remove(lines, 1)
     
     -- Check if first line starts with the cursor prefix (FIM duplication)
-    local is_duplicate_prefix = is_duplicate_prefix 
+    is_duplicate_prefix = is_duplicate_prefix 
         and #first_line_text >= #cursor_prefix 
         and first_line_text:sub(1, #cursor_prefix) == cursor_prefix
     
@@ -136,6 +136,20 @@ function Prediction:redraw_extmarks()
             { stripped_line, HLGroups.PREDICTION_TEXT },
             { " " .. annotation .. " ", HLGroups.STATS_CACHED }
         }
+        
+        -- Highlight the original duplicated characters in buffer with red bg
+        self.extmarks.dup_highlight = vim.api.nvim_buf_set_extmark(
+            self.buffer, 
+            extmarks_ns_id, 
+            cursor.line_base0, 
+            0,  -- start from beginning of line
+            {
+                end_line = cursor.line_base0,
+                end_col = cursor.col_base0,
+                hl_group = HLGroups.PREDICTION_DUPLICATE_PREFIX,
+                hl_eol = false,
+            }
+        )
     else
         first_line_virt_text = { { first_line_text, HLGroups.PREDICTION_TEXT } }
     end
