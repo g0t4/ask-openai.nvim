@@ -127,13 +127,14 @@ function Prediction:redraw_extmarks()
     
     local first_line_virt_text
     if is_duplicate_prefix then
-        -- Split into duplicate prefix (highlighted) and rest (normal)
-        local prefix_part = first_line_text:sub(1, #cursor_prefix)
-        local rest_part = first_line_text:sub(#cursor_prefix + 1)
+        -- Drop duplicate prefix and show fixed version
+        local stripped_line = first_line_text:sub(#cursor_prefix + 1)
         
+        -- Add subtle annotation showing what was dropped
+        local annotation = string.format("[%d spaces stripped]", #cursor_prefix)
         first_line_virt_text = {
-            { prefix_part, HLGroups.PREDICTION_DUPLICATE_PREFIX },
-            { rest_part, HLGroups.PREDICTION_TEXT }
+            { stripped_line, HLGroups.PREDICTION_TEXT },
+            { " " .. annotation .. " ", HLGroups.STATS_CACHED }
         }
     else
         first_line_virt_text = { { first_line_text, HLGroups.PREDICTION_TEXT } }

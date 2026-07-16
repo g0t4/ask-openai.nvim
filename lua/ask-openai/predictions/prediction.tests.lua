@@ -151,8 +151,8 @@ describe("Prediction", function()
     end)
 end)
 
-describe("Prediction extmark highlighting", function()
-    it("highlights duplicate prefix in first line", function()
+describe("Prediction fixed display", function()
+    it("drops duplicate prefix and shows annotation", function()
         -- Setup: cursor on indented line
         local buffer_lines = { "def foo():", "    pass", "    " }
         local bufnr = buffers.new_buffer_with_lines(buffer_lines)
@@ -166,10 +166,10 @@ describe("Prediction extmark highlighting", function()
         prediction:redraw_extmarks()
         
         -- Assert: extmark should be set (no error means it worked)
-        -- The highlighting would show in the UI with AskPredictionDuplicatePrefix
+        -- The fixed version shows without the duplicate prefix, with annotation
     end)
     
-    it("does not highlight when prefix does not match", function()
+    it("shows normal text when no duplication detected", function()
         local buffer_lines = { "def foo():", "    pass", "    " }
         local bufnr = buffers.new_buffer_with_lines(buffer_lines)
         vim.api.nvim_win_set_cursor(0, { 3, 4 }) -- cursor after 4 spaces
@@ -181,6 +181,6 @@ describe("Prediction extmark highlighting", function()
         -- Act: redraw extmarks
         prediction:redraw_extmarks()
         
-        -- Assert: should work without error (no highlighting applied)
+        -- Assert: should work without error (no annotation applied)
     end)
 end)
