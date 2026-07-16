@@ -1,6 +1,6 @@
 <!-- Gippity took dibs -->
 <script lang="ts">
-  import type { TraceJson, Message } from './lib/types'
+  import type { TraceJson, ShellTraceJson, Message } from './lib/types'
   import { scrollToHash, setupHashListener } from './lib/hash-nav'
   import { getTimestampInfo } from './lib/timestamp-utils'
   import MessageView from './components/MessageView.svelte'
@@ -46,6 +46,7 @@
     if (url.includes('question')) return ':AskAgent'
     if (url.includes('agents')) return ':AskAgent'
     if (url.includes('fim')) return ':AskPredict'
+    if (url.includes('shell')) return ':AskShell'
     return 'Chat Viewer'
   })
 
@@ -152,27 +153,54 @@
           .filter(line => line.trim())
           .map(line => JSON.parse(line))
       } else {
-        // *-trace.json
-        const data: TraceJson = await res.json()
+        // *-trace.json - detect format (agent vs shell trace)
+        const rawData: unknown = await res.json()
 
-        // Extract messages from request_body
-        messages = data.request_body?.messages ?? []
+        // Detect shell trace format: has "messages" at root level + optional "response"
+        const isShellTrace = (rawData != null && typeof rawData === 'object' && 'messages' in rawData)
 
-        // Check for model info and timings in trace metadata
-        if (data.last_sse) {
-          const lastSse = data.last_sse
-          if (lastSse.model) {
+        if (isShellTrace) {
+          // Shell trace format: { messages: [...], response: {...} }
+          const shellData = rawData as ShellTraceJson
+          messages = shellData.messages ?? []
+
+          // Extract model info from response object
+          if (shellData.response?.model_name) {
             modelInfo = {
-              model: lastSse.model,
+              model: shellData.response.model_name,
               isAvailable: true,
-              timings: lastSse.timings || null
+              timings: null
+            }
+          } else if (shellData.response?.model) {
+            modelInfo = {
+              model: shellData.response.model,
+              isAvailable: true,
+              timings: null
             }
           }
-        }
+        } else {
+          // Agent trace format: { request_body: { messages: [...] }, response_message?: {...}, last_sse?: {...} }
+          const data = rawData as TraceJson
 
-        // Append response_message if present
-        if (data.response_message) {
-          messages = [...messages, data.response_message]
+          // Extract messages from request_body
+          messages = data.request_body?.messages ?? []
+
+          // Check for model info and timings in trace metadata
+          if (data.last_sse) {
+            const lastSse = data.last_sse
+            if (lastSse.model) {
+              modelInfo = {
+                model: lastSse.model,
+                isAvailable: true,
+                timings: lastSse.timings || null
+              }
+            }
+          }
+
+          // Append response_message if present
+          if (data.response_message) {
+            messages = [...messages, data.response_message]
+          }
         }
       }
     } catch (e) {

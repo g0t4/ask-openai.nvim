@@ -110,3 +110,21 @@ export function formatDurationMs(durationMs: number): string {
   const wholeSeconds = Math.floor(seconds % 60)
   return `${minutes}m${wholeSeconds}s`
 }
+
+// Shell trace format (different from agent traces)
+export interface ShellTraceResponse {
+  finish_reason?: string
+  model_name?: string
+  system_fingerprint?: string
+  model_provider?: string
+  model?: string
+  service?: string
+  [key: string]: unknown
+}
+
+export interface ShellTraceJson {
+  session_id?: number | string
+  messages: Message[]
+  response?: ShellTraceResponse
+  [key: string]: unknown
+}
