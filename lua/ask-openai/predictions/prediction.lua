@@ -60,7 +60,6 @@ end
 function Prediction:add_chunk_to_prediction(chunk, reasoning_content)
     if chunk then
         self.prediction_cache.completion = self.prediction_cache.completion .. chunk
-        -- TODO check for cursor_prefix duplication and update cached fields so I can use that in fix_fim_and_redraw_extmarks without recalculating this ever extmark/chunk update
     end
     if reasoning_content then
         table.insert(self.reasoning_chunks, reasoning_content)
@@ -143,7 +142,6 @@ function Prediction:fix_fim_and_redraw_extmarks()
     -- FYI must call before building extmarks (if needed strips duplicate prefix)
     self:fim_fixes()
     if self.prediction_cache.no_completion_yet then
-        -- TODO rename no_completion_yet?
         return
     end
 
