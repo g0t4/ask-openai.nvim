@@ -6,7 +6,8 @@ local CursorController = require "ask-openai.predictions.cursor_controller"
 ---@class Prediction
 ---@field id integer
 ---@field buffer integer
----@field prediction_cache { completion: string, cursor_prefix: string, first_line: string, rest_of_lines: string[], has_duplicate_prefix: boolean, no_completion_yet: boolean }
+---@field prediction string
+---@field prediction_cache { cursor_prefix: string, first_line: string, rest_of_lines: string[], has_duplicate_prefix: boolean, no_completion_yet: boolean }
 ---@field extmarks table
 ---@field abandoned boolean         # user aborted prediction
 ---@field disable_cursor_moved boolean
@@ -44,8 +45,8 @@ function Prediction.new(params)
     self.has_reasoning = false
     self.reasoning_chunks = {}
     self.start_time = os.time()
+    self.prediction = ""
     self.prediction_cache = {
-        completion = "",
         cursor_prefix = nil, -- make explicit
     }
 
@@ -59,7 +60,7 @@ end
 
 function Prediction:add_chunk_to_prediction(chunk, reasoning_content)
     if chunk then
-        self.prediction_cache.completion = self.prediction_cache.completion .. chunk
+        self.prediction = self.prediction .. chunk
     end
     if reasoning_content then
         table.insert(self.reasoning_chunks, reasoning_content)
@@ -73,7 +74,7 @@ function Prediction:get_reasoning()
 end
 
 function Prediction:any_chunks()
-    return self.prediction_cache.completion and self.prediction_cache.completion ~= ""
+    return self.prediction and self.prediction ~= ""
 end
 
 ---@param text string
@@ -100,7 +101,7 @@ function Prediction:fim_fixes()
     -- TODO suffix duplication? find traces for this first... and make sure it is common enough and then test it well
 
     -- * Check if prediction's first line starts with the cursor prefix (FIM duplication)
-    local lines = split_lines(self.prediction_cache.completion)
+    local lines = split_lines(self.prediction)
     self.prediction_cache.no_completion_yet = #lines == 0
     if #lines == 0 then
         if not self.has_reasoning then
@@ -134,7 +135,7 @@ function Prediction:fix_fim_and_redraw_extmarks()
     local controller = CursorController:new()
     local cursor = controller:get_cursor_position()
 
-    if self.prediction_cache.completion == nil then
+    if self.prediction == nil then
         print("unexpected... prediction is nil?")
         return
     end
@@ -229,7 +230,7 @@ function Prediction:accept_first_line()
     self:insert_accepted(insert_lines)
 
     -- * update prediction
-    self.prediction_cache.completion = table.concat(self.prediction_cache.rest_of_lines, "\n")
+    self.prediction = table.concat(self.prediction_cache.rest_of_lines, "\n")
     self.prediction_cache.cursor_prefix = nil -- force lookup
     self:fix_fim_and_redraw_extmarks()
 end
@@ -285,7 +286,7 @@ function Prediction:accept_first_word()
     self:insert_accepted(insert_lines)
 
     -- * update prediction
-    self.prediction_cache.completion = first_line .. "\n" .. table.concat(self.prediction_cache.rest_of_lines, "\n")
+    self.prediction = first_line .. "\n" .. table.concat(self.prediction_cache.rest_of_lines, "\n")
     -- FYI I don't need to update the cached values for first_line/rest_of_lines b/c they'll be recomputed in fix_fim_and_redraw_extmarks
     self.prediction_cache.cursor_prefix = nil -- force lookup
     self:fix_fim_and_redraw_extmarks()
@@ -306,7 +307,7 @@ function Prediction:accept_all()
     --   - no extra blank lines
 
     -- * clear prediction
-    self.prediction_cache.completion = "" -- strip all lines from the prediction (and update it)
+    self.prediction = "" -- strip all lines from the prediction (and update it)
     self.prediction_cache.cursor_prefix = nil -- force lookup
     self:fix_fim_and_redraw_extmarks()
 
