@@ -115,7 +115,9 @@ function Prediction:redraw_extmarks()
 
     local first_line_text = table.remove(lines, 1)
 
+    -- TODO what about cursor line suffix duplication? TODO find test cases... I recall this happening too with gptoss
     -- * Check if prediction's first line starts with the cursor prefix (FIM duplication)
+    -- TODO move this earlier and only capture prefix ONCE per completion... prefix never changes b/c cursor cannot move within a completion (cursor move triggers new completion)
     local cursor_line_text = vim.api.nvim_buf_get_lines(self.buffer, cursor.line_base0, cursor.line_base0 + 1, false)[1] or ""
     local cursor_prefix = cursor_line_text:sub(1, cursor.col_base0)
     local has_duplicate_prefix = cursor_prefix ~= ""
