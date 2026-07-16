@@ -6,7 +6,7 @@ local CursorController = require "ask-openai.predictions.cursor_controller"
 ---@class Prediction
 ---@field id integer
 ---@field buffer integer
----@field prediction_cache { completion: string, cursor_prefix: string, lines: string[], first_line_text: string, has_duplicate_prefix: boolean }
+---@field prediction_cache { completion: string, cursor_prefix: string, lines: string[], first_line: string, has_duplicate_prefix: boolean }
 ---@field extmarks table
 ---@field abandoned boolean         # user aborted prediction
 ---@field disable_cursor_moved boolean
@@ -113,19 +113,19 @@ function Prediction:fim_fixes()
         lines = { dots:get_still_thinking_message(self.start_time) }
     end
 
-    local first_line_text = table.remove(lines, 1)
+    local first_line = table.remove(lines, 1)
     local has_duplicate_prefix = cursor_prefix ~= ""
-        and #first_line_text >= #cursor_prefix
-        and first_line_text:sub(1, #cursor_prefix) == cursor_prefix
+        and #first_line >= #cursor_prefix
+        and first_line:sub(1, #cursor_prefix) == cursor_prefix
     -- TODO fields when done
 
     if has_duplicate_prefix then
-        first_line_text = first_line_text:sub(#cursor_prefix + 1)
+        first_line = first_line:sub(#cursor_prefix + 1)
     end
 
     -- cache:
     self.prediction_cache.has_duplicate_prefix = has_duplicate_prefix
-    self.prediction_cache.first_line_text = first_line_text
+    self.prediction_cache.first_line = first_line
     self.prediction_cache.lines = lines
     return true
 end
@@ -153,7 +153,7 @@ function Prediction:redraw_extmarks()
         -- -- Add subtle annotation showing what was dropped
         local annotation = string.format("[%d spaces stripped]", #self.prediction_cache.cursor_prefix)
         first_line_virt_text = {
-            { self.prediction_cache.first_line_text, HLGroups.PREDICTION_TEXT },
+            { self.prediction_cache.first_line, HLGroups.PREDICTION_TEXT },
             { " " .. annotation .. " ",              HLGroups.STATS_CACHED }
         }
 
@@ -172,7 +172,7 @@ function Prediction:redraw_extmarks()
             }
         )
     else
-        first_line_virt_text = { { self.prediction_cache.first_line_text, HLGroups.PREDICTION_TEXT } }
+        first_line_virt_text = { { self.prediction_cache.first_line, HLGroups.PREDICTION_TEXT } }
     end
 
     local virt_lines = {}
