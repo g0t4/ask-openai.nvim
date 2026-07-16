@@ -6,7 +6,7 @@ local CursorController = require "ask-openai.predictions.cursor_controller"
 ---@class Prediction
 ---@field id integer
 ---@field buffer integer
----@field prediction string         # content streamed so far (excluding buffered chunks)
+---@field prediction_cache { completion: string }
 ---@field extmarks table
 ---@field abandoned boolean         # user aborted prediction
 ---@field disable_cursor_moved boolean
@@ -38,13 +38,15 @@ function Prediction.new(params)
     -- see test code: lua/ask-openai/prediction/tests/benchmark/str_concat_vs_buffer.lua
 
     self.buffer = 0 -- 0 == current buffer
-    self.prediction = ""
     self.extmarks = {}
     self.abandoned = false
     self.disable_cursor_moved = false
     self.has_reasoning = false
     self.reasoning_chunks = {}
     self.start_time = os.time()
+    self.prediction_cache = {
+        completion = "",
+    }
 
     params = params or {}
     self.apply_template_only = params.apply_template_only
@@ -56,7 +58,7 @@ end
 
 function Prediction:add_chunk_to_prediction(chunk, reasoning_content)
     if chunk then
-        self.prediction = self.prediction .. chunk
+        self.prediction_cache.completion = self.prediction_cache.completion .. chunk
     end
     if reasoning_content then
         table.insert(self.reasoning_chunks, reasoning_content)
@@ -70,7 +72,7 @@ function Prediction:get_reasoning()
 end
 
 function Prediction:any_chunks()
-    return self.prediction and self.prediction ~= ""
+    return self.prediction_cache.completion and self.prediction_cache.completion ~= ""
 end
 
 ---@param text string
@@ -90,12 +92,12 @@ function Prediction:redraw_extmarks()
     local controller = CursorController:new()
     local cursor = controller:get_cursor_position()
 
-    if self.prediction == nil then
+    if self.prediction_cache.completion == nil then
         print("unexpected... prediction is nil?")
         return
     end
 
-    local lines = split_lines(self.prediction)
+    local lines = split_lines(self.prediction_cache.completion)
     if #lines == 0 then
         if not self.has_reasoning then
             return
@@ -207,7 +209,7 @@ end
 local BLANK_LINE = ""
 function Prediction:accept_first_line()
     -- FYI instead of splitting every time... could make a class that buffers into line splits for me! use a table of chunks until hit \n... flush to the next line and start accumulating next line, etc
-    local lines = split_lines(self.prediction)
+    local lines = split_lines(self.prediction_cache.completion)
     if #lines == 0 then
         return
     end
@@ -233,12 +235,12 @@ function Prediction:accept_first_line()
     self:insert_accepted(insert_lines)
 
     -- * update prediction
-    self.prediction = table.concat(lines, "\n")
+    self.prediction_cache.completion = table.concat(lines, "\n")
     self:redraw_extmarks()
 end
 
 function Prediction:accept_first_word()
-    local lines = split_lines(self.prediction)
+    local lines = split_lines(self.prediction_cache.completion)
     if #lines == 0 then
         return
     end
@@ -292,13 +294,13 @@ function Prediction:accept_first_word()
     self:insert_accepted(insert_lines)
 
     -- * update prediction
-    self.prediction = table.concat(lines, "\n")
-    -- log:warn("  self.prediction", vim.inspect(self.prediction))
+    self.prediction_cache.completion = table.concat(lines, "\n")
+    -- log:warn("  self.prediction_cache", vim.inspect(self.prediction_cache))
     self:redraw_extmarks()
 end
 
 function Prediction:accept_all()
-    local lines = split_lines(self.prediction)
+    local lines = split_lines(self.prediction_cache.completion)
     if #lines == 0 then
         return
     end
@@ -312,7 +314,7 @@ function Prediction:accept_all()
     --   - no extra blank lines
 
     -- * clear prediction
-    self.prediction = "" -- strip all lines from the prediction (and update it)
+    self.prediction_cache.completion = "" -- strip all lines from the prediction (and update it)
     self:redraw_extmarks()
 
     -- TODO SIGNAL next prediction when accept all? (and then consider this for other accept types if they are accepting remainder of prediction too (finishing accepting current prediction)
