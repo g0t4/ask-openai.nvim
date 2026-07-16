@@ -225,30 +225,6 @@ function Prediction:insert_accepted(insert_lines)
     vim.api.nvim_win_set_cursor(controller.window_id, { new_cursor.line_base1, new_cursor.col_base0 }) -- (1,0)-indexed
 end
 
--- ============================================================================
--- Step2-AutoFixDupliateFimPrefix
--- ============================================================================
--- ✅ IMPLEMENTED: Streaming prefix duplication detection & highlighting
---    - Detects when FIM completion repeats cursor line's prefix (indentation)
---    - Highlights duplicated portion with AskPredictionDuplicatePrefix highlight
---    - Shows in red background during streaming for debugging/visibility
---    - Auto-strips on accept (see insert_accepted method above)
---
--- TODO: Consider auto-stripping during streaming (not just highlighting)
--- This would require:
--- 1. Tracking cumulative chunks per line
--- 2. Stripping prefix before adding to self.prediction
--- 3. Handling token boundaries carefully
--- 4. Updating extmarks in real-time as chunks arrive
---
--- Why not yet:
--- - Accept-time fix already handles the main case well
--- - Highlighting provides good visibility for debugging
--- - Could be implemented later if needed for better UX
---
--- Implementation would go in: Prediction:add_chunk_to_prediction()
--- ============================================================================
-
 local BLANK_LINE = ""
 function Prediction:accept_first_line()
     -- FYI instead of splitting every time... could make a class that buffers into line splits for me! use a table of chunks until hit \n... flush to the next line and start accumulating next line, etc
