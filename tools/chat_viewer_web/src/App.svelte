@@ -229,17 +229,13 @@
   $effect(() => {
     const params = new URLSearchParams(window.location.search)
 
-    // New github= parameter (e.g., ?github=g0t4/datasets/master/path/to/file)
+    // Extract all params upfront
     const githubParam = params.get('github')
-
-    // Dev-only local= parameter (e.g., ?local=semantic_grep_auto_context/fims)
     const localParam = params.get('local')
-
-    // Legacy url= parameter (backward compat, files only)
     const urlParam = params.get('url')
 
+    // github=owner/repo/branch/path (production)
     if (githubParam) {
-      // Parse github=owner/repo/branch/path
       githubPath = githubParam
       localPath = null
       const parts = githubParam.split('/')
@@ -249,53 +245,52 @@
         return
       }
 
-      const owner = parts[0]
-      const repo = parts[1]
-      const branch = parts[2]
+      const [owner, repo, branch] = parts
       const path = parts.slice(3).join('/')
 
-      // Use path heuristics to detect directory
       isDirectory = isDirectoryUrl(path)
 
       if (isDirectory) {
-        // Directory - will use GitHubBrowser
         loading = false
       } else {
-        // File - fetch from jsDelivr CDN
-        const cdnUrl = `https://cdn.jsdelivr.net/gh/${owner}/${repo}@${branch}/${path}`
-        traceUrl = cdnUrl
-        loadTrace(cdnUrl)
+        traceUrl = `https://cdn.jsdelivr.net/gh/${owner}/${repo}@${branch}/${path}`
+        loadTrace(traceUrl)
       }
-    } else if (localParam && import.meta.env.MODE === 'development') {
-      // Dev-only local= parameter
+      return
+    }
+
+    // Dev-only local= parameter
+    if (localParam && import.meta.env.MODE === 'development') {
       localPath = localParam
       githubPath = null
 
-      // Use path heuristics to detect directory
       isDirectory = isDirectoryUrl(localParam)
 
       if (isDirectory) {
-        // Directory - will use LocalBrowser
         loading = false
       } else {
-        // File - fetch via API endpoint
         traceUrl = `/api/local/file?path=${encodeURIComponent(localParam)}`
         loadTrace(traceUrl)
       }
-    } else if (urlParam) {
-      // Legacy url= parameter (files only, no directory browsing)
+      return
+    }
+
+    // Legacy url= parameter (files only, no directory browsing)
+    if (urlParam) {
       traceUrl = urlParam
       githubPath = null
       localPath = null
       isDirectory = false
       loadTrace(urlParam)
-    } else {
-      loading = false
-      error =
-        import.meta.env.MODE === 'development'
-          ? 'Provide a ?github=, ?url=, or ?local= parameter.'
-          : 'Provide a ?github= or ?url= parameter.'
+      return
     }
+
+    // No valid parameter found
+    loading = false
+    error =
+      import.meta.env.MODE === 'development'
+        ? 'Provide a ?github=, ?url=, or ?local= parameter.'
+        : 'Provide a ?github= or ?url= parameter.'
   })
 
   // Scroll to hash after content loads
