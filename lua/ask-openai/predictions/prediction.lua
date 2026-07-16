@@ -105,6 +105,11 @@ function Prediction:redraw_extmarks()
         return
     end
 
+    -- * Detect FIM prefix duplication for highlighting
+    local cursor_line_text = vim.api.nvim_buf_get_lines(self.buffer, cursor.line_base0, cursor.line_base0 + 1, false)[1] or ""
+    local cursor_prefix = cursor_line_text:sub(1, cursor.col_base0)
+    local is_duplicate_prefix = cursor_prefix ~= ""
+
     local lines = split_lines(self.prediction)
     if #lines == 0 then
         if not self.has_reasoning then
@@ -113,7 +118,26 @@ function Prediction:redraw_extmarks()
         lines = { dots:get_still_thinking_message(self.start_time) }
     end
 
-    local first_line = { { table.remove(lines, 1), HLGroups.PREDICTION_TEXT } }
+    local first_line_text = table.remove(lines, 1)
+    
+    -- Check if first line starts with the cursor prefix (FIM duplication)
+    local is_duplicate_prefix = is_duplicate_prefix 
+        and #first_line_text >= #cursor_prefix 
+        and first_line_text:sub(1, #cursor_prefix) == cursor_prefix
+    
+    local first_line_virt_text
+    if is_duplicate_prefix then
+        -- Split into duplicate prefix (highlighted) and rest (normal)
+        local prefix_part = first_line_text:sub(1, #cursor_prefix)
+        local rest_part = first_line_text:sub(#cursor_prefix + 1)
+        
+        first_line_virt_text = {
+            { prefix_part, HLGroups.PREDICTION_DUPLICATE_PREFIX },
+            { rest_part, HLGroups.PREDICTION_TEXT }
+        }
+    else
+        first_line_virt_text = { { first_line_text, HLGroups.PREDICTION_TEXT } }
+    end
 
     local virt_lines = {}
     for i, line in ipairs(lines) do
@@ -122,7 +146,7 @@ function Prediction:redraw_extmarks()
 
     vim.api.nvim_buf_set_extmark(self.buffer, extmarks_ns_id, cursor.line_base0, cursor.col_base0, -- 0-indexed
         {
-            virt_text = first_line,
+            virt_text = first_line_virt_text,
             virt_lines = virt_lines,
             virt_text_pos = "inline",
         })
@@ -186,21 +210,23 @@ end
 -- ============================================================================
 -- Step2-AutoFixDupliateFimPrefix
 -- ============================================================================
--- TODO: Implement chunk-level prefix stripping for streaming FIM completions.
--- This would process chunks as they arrive rather than at accept time.
--- 
--- Approach:
--- 1. Track cursor position and prefix when prediction starts
--- 2. Accumulate chunks until we have a complete first line
--- 3. Check if the accumulated line starts with the cursor prefix
--- 4. If yes, strip the common prefix before adding to self.prediction
--- 5. If no, keep as-is (normal completion)
+-- ✅ IMPLEMENTED: Streaming prefix duplication detection & highlighting
+--    - Detects when FIM completion repeats cursor line's prefix (indentation)
+--    - Highlights duplicated portion with AskPredictionDuplicatePrefix highlight
+--    - Shows in red background during streaming for debugging/visibility
+--    - Auto-strips on accept (see insert_accepted method above)
 --
--- Why not now:
--- - Cursor position can change during streaming (though FIM is aborted on move)
--- - Need to handle partial matches and token boundaries carefully
--- - Accept-time fix (Option A) already handles the main case well
--- - Can be implemented later as a performance/UX improvement for real-time display
+-- TODO: Consider auto-stripping during streaming (not just highlighting)
+-- This would require:
+-- 1. Tracking cumulative chunks per line
+-- 2. Stripping prefix before adding to self.prediction
+-- 3. Handling token boundaries carefully
+-- 4. Updating extmarks in real-time as chunks arrive
+--
+-- Why not yet:
+-- - Accept-time fix already handles the main case well
+-- - Highlighting provides good visibility for debugging
+-- - Could be implemented later if needed for better UX
 --
 -- Implementation would go in: Prediction:add_chunk_to_prediction()
 -- ============================================================================

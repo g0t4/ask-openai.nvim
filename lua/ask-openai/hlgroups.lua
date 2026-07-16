@@ -31,6 +31,10 @@ vim.api.nvim_command("highlight default " .. HLGroups.ASK_REWRITE .. " guifg=#cc
 HLGroups.PREDICTION_TEXT = "AskPrediction"
 vim.api.nvim_set_hl(0, HLGroups.PREDICTION_TEXT, { italic = true, fg = "#dddddd" })
 
+-- * FIM duplicate prefix highlighting (when model repeats cursor line's indentation)
+HLGroups.PREDICTION_DUPLICATE_PREFIX = "AskPredictionDuplicatePrefix"
+vim.api.nvim_set_hl(0, HLGroups.PREDICTION_DUPLICATE_PREFIX, { bg = "#5f0000", fg = "#ff6666", bold = true })
+
 --- * STATS
 HLGroups.STATS_PROMPT = "AskStatsPrompt"
 HLGroups.STATS_PREDICTED = "AskStatsPredicted"
