@@ -88,6 +88,7 @@ local function split_lines(text)
     return lines
 end
 
+---@return boolean failure -- if there's no content yet, then bail on redraw -- TODO remove this hack when I don't need it anymore
 function Prediction:fim_fixes()
     -- * get cursor prefix one time
     if self.prediction_cache.cursor_prefix == nil then
@@ -101,6 +102,37 @@ function Prediction:fim_fixes()
     -- TODO dedupe completion and use downstream for accepts and display
     --  TODO that way I don't need logic in accept/display to compute overlap in prefix (or suffix later)
     -- TODO suffix duplication? find traces first
+
+    local cursor_prefix = self.prediction_cache.cursor_prefix
+    local lines = split_lines(self.prediction_cache.completion)
+    if #lines == 0 then
+        if not self.has_reasoning then
+            -- TODO? perhaps use a cached field too? and nuke return value which is weird
+            return false
+        end
+        lines = { dots:get_still_thinking_message(self.start_time) }
+    end
+
+    local first_line_text = table.remove(lines, 1)
+    local has_duplicate_prefix = cursor_prefix ~= ""
+        and #first_line_text >= #cursor_prefix
+        and first_line_text:sub(1, #cursor_prefix) == cursor_prefix
+    -- TODO fields when done
+
+    -- Drop duplicate prefix and show fixed version
+    local stripped_line -- TODO rename first_line
+    if has_duplicate_prefix then
+        stripped_line = first_line_text:sub(#cursor_prefix + 1)
+    else
+        stripped_line = first_line_text
+    end
+
+    -- cache:
+    self.prediction_cache.has_duplicate_prefix = has_duplicate_prefix
+    self.prediction_cache.stripped_line = stripped_line -- TODO just rename to first_line (and use downstream that way)
+    self.prediction_cache.first_line_text = first_line_text -- TODO shouldn't this be stripepd_line? or is stirpped line the prefix part only?
+    self.prediction_cache.lines = lines
+    return true
 end
 
 function Prediction:redraw_extmarks()
@@ -114,35 +146,20 @@ function Prediction:redraw_extmarks()
         return
     end
 
-    local lines = split_lines(self.prediction_cache.completion)
-    if #lines == 0 then
-        if not self.has_reasoning then
-            return
-        end
-        lines = { dots:get_still_thinking_message(self.start_time) }
+    -- FYI must call before building extmarks (if needed strips duplicate prefix)
+    if not self:fim_fixes() then
+        -- TODO revisit this hack to return here too
+        -- hack to bail if no chunks yet and no reasoning dots to show
+        return
     end
 
-    local first_line_text = table.remove(lines, 1)
-
-    -- * Check if prediction's first line starts with the cursor prefix (FIM duplication)
-    -- self:fim_fixes(lines, first_line_text)
-    self:fim_fixes()
-
-    local cursor_prefix = self.prediction_cache.cursor_prefix
-    local has_duplicate_prefix = cursor_prefix ~= ""
-        and #first_line_text >= #cursor_prefix
-        and first_line_text:sub(1, #cursor_prefix) == cursor_prefix
-
     local first_line_virt_text
-    if has_duplicate_prefix then
-        -- Drop duplicate prefix and show fixed version
-        local stripped_line = first_line_text:sub(#cursor_prefix + 1)
-
-        -- Add subtle annotation showing what was dropped
-        local annotation = string.format("[%d spaces stripped]", #cursor_prefix)
+    if self.prediction_cache.has_duplicate_prefix then
+        -- -- Add subtle annotation showing what was dropped
+        local annotation = string.format("[%d spaces stripped]", #self.prediction_cache.cursor_prefix)
         first_line_virt_text = {
-            { stripped_line,            HLGroups.PREDICTION_TEXT },
-            { " " .. annotation .. " ", HLGroups.STATS_CACHED }
+            { self.prediction_cache.stripped_line, HLGroups.PREDICTION_TEXT },
+            { " " .. annotation .. " ",            HLGroups.STATS_CACHED }
         }
 
         -- Highlight the original duplicated characters in buffer with red bg
@@ -159,11 +176,11 @@ function Prediction:redraw_extmarks()
             }
         )
     else
-        first_line_virt_text = { { first_line_text, HLGroups.PREDICTION_TEXT } }
+        first_line_virt_text = { { self.prediction_cache.first_line_text, HLGroups.PREDICTION_TEXT } }
     end
 
     local virt_lines = {}
-    for i, line in ipairs(lines) do
+    for i, line in ipairs(self.prediction_cache.lines) do
         table.insert(virt_lines, { { line, HLGroups.PREDICTION_TEXT } })
     end
 
