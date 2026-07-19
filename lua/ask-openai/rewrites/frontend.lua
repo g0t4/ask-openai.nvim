@@ -141,6 +141,8 @@ function RewriteFrontend.on_parsed_data_sse(sse_parsed)
     local thinking_status = nil
     -- TODO vestigial (stripping think tags), instead use reasoning_content off of SSE now (w/ --jinja on server side)
     lines, thinking_status = thinking.strip_thinking_tags(lines)
+    log:info("lines", lines)
+    log:info("  thinking_status", thinking_status)
     if thinking_status == thinking.ThinkingStatus.Thinking then
         lines = { thinking.dots:get_still_thinking_message(RewriteFrontend.last_request.start_time) }
         -- while thinking, we show the green text w/ ....
