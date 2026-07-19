@@ -121,6 +121,7 @@ end
 
 ---@type OnParsedSSE
 function RewriteFrontend.on_parsed_data_sse(sse_parsed)
+    log:info("sse", vim.inspect(sse_parsed))
     if sse_parsed.choices == nil or sse_parsed.choices[1] == nil then
         return
     end
@@ -130,6 +131,7 @@ function RewriteFrontend.on_parsed_data_sse(sse_parsed)
     --   TODO and you can add others, just provide a relevant extractor function!
     local extract_generated_text = get_extract_generated_text_func(RewriteFrontend.last_request.endpoint)
     local content_chunk = extract_generated_text(first_choice)
+    log:info("content_chunk", content_chunk)
     if not content_chunk then return end
 
     if not RewriteFrontend.displayer then return end -- else after cancel, if get another SSE, boom
