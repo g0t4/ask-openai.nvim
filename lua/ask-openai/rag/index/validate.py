@@ -135,12 +135,26 @@ async def main():
     #   python3 -m index.validate $(_repo_root)/.rag
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--verbose", "--debug", action="store_true", help="Enable verbose logging")
-    parser.add_argument("--info", action="store_true", help="Enable info logging")
+    parser.add_argument("--verbose", "--debug", action="store_true", help="verbose logging")
+    parser.add_argument("--info", action="store_true", help="info logging")
+    parser.add_argument("--warning", action="store_true", help=" warning logging")
     parser.add_argument("dot_rag_path", help="Path to the .rag directory")
     args = parser.parse_args()
 
-    log_level = logging.DEBUG if args.verbose else logging.INFO if args.info else logging.WARNING
+    # rich.inspect(args)
+
+    def get_log_level():
+        # FYI most verbose wins, maybe last one should win?
+        # basically only an issue in rvi abbr in fish that use function to pass default args and right now doesn't add any but might in the future
+        if args.verbose:
+            return logging.DEBUG
+        if args.info:
+            return logging.INFO
+        if args.warning:
+            return logging.WARNING
+        return logging.INFO  # use info else very little is logged and that might be confusing/surprising... I've used info forever now as default so keep it
+
+    log_level = get_log_level()
     logging_fwk_to_console(level=log_level)
 
     dot_rag_dir = Path(args.dot_rag_path)
