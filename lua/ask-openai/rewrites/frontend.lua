@@ -42,6 +42,11 @@ local function clear_response()
         self.accumulated_chunks = self.accumulated_chunks .. chunk
     end
 
+    function RewriteFrontend.response:split_lines()
+        local lines = text_helpers.split_lines(self.accumulated_chunks)
+        return lines
+    end
+
     return RewriteFrontend.response
 end
 clear_response()
@@ -152,8 +157,7 @@ function RewriteFrontend.on_parsed_data_sse(sse_parsed)
 
     RewriteFrontend.response:append_chunk(content_chunk)
 
-    -- TODO move split_lines to RewriteFrontend.response?
-    local lines = text_helpers.split_lines(RewriteFrontend.response.accumulated_chunks)
+    local lines = RewriteFrontend.response:split_lines()
     -- TODO move strip_md (and other response manipulation) to RewriteFrontend.response?
     lines = RewriteFrontend.strip_md_from_completion(lines)
     local thinking_status = nil
@@ -248,7 +252,7 @@ function RewriteFrontend.accept_rewrite()
     RewriteFrontend.displayer = nil
 
     vim.schedule(function()
-        local lines = text_helpers.split_lines(RewriteFrontend.response.accumulated_chunks)
+        local lines = RewriteFrontend.response:split_lines()
         lines = RewriteFrontend.strip_md_from_completion(lines)
         lines = thinking.strip_thinking_tags(lines)
         lines = ensure_new_lines_around(RewriteFrontend.selection.original_text, lines)
