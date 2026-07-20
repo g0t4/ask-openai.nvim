@@ -35,6 +35,13 @@ local function clear_response()
         accumulated_chunks = "",
         has_reasoning = false,
         is_still_thinking = false,
+        start_times = {
+            rag_start     = nil,
+            rag_end       = nil,
+            suggest_start = nil,
+            first_token   = nil,
+            suggest_end   = nil,
+        }
     }
 
     function RewriteFrontend.response:append_chunk(chunk, reasoning_chunk)
