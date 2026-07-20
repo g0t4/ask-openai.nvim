@@ -31,10 +31,6 @@ local RewriteFrontend = {}
 ---@type Selection|nil
 RewriteFrontend.selection = nil
 
---- Performance tracking instance for the current rewrite request
----@type RewritePerformance|nil
-RewriteFrontend.performance = nil
-
 local function clear_response()
     RewriteFrontend.response = {
         num_deltas_reasoning = 0, -- approximate number of tokens
@@ -44,16 +40,19 @@ local function clear_response()
         is_still_thinking = false,
         start_ns = get_time_in_ns(),
         deltas_per_second = 0,
+        performance = RewritePerformance:new(),
     }
 
-    RewriteFrontend.performance = RewritePerformance:new()
-    -- Register with performance registry for lualine display
-    perf_registry.register("rewrite", RewriteFrontend.performance)
+    perf_registry.register("rewrite", RewriteFrontend.response.performance)
 
     function RewriteFrontend.response:append_chunk(chunk, reasoning_chunk)
         -- log:info("append", vim.inspect(chunk), vim.inspect(reasoning_chunk))
         assert(chunk ~= nil) -- default ""
         assert(reasoning_chunk ~= nil) -- default ""
+
+        if ((chunk or reasoning_chunk) ~= "") then
+            self.performance:token_arrived()
+        end
 
         if chunk ~= "" then
             self.num_deltas_content = self.num_deltas_content + 1
@@ -206,11 +205,6 @@ function RewriteFrontend.on_parsed_data_sse(sse_parsed)
     local extract_generated_text = get_extract_generated_text_func(RewriteFrontend.last_request.endpoint)
     local content_chunk, reasoning_chunk = extract_generated_text(first_choice)
 
-    -- Track time to first token
-    if RewriteFrontend.performance ~= nil and (content_chunk ~= "" or reasoning_chunk ~= "") then
-        RewriteFrontend.performance:token_arrived()
-    end
-
     if not RewriteFrontend.displayer then return end -- else after cancel, if get another SSE, boom
 
     RewriteFrontend.response:append_chunk(content_chunk, reasoning_chunk)
@@ -222,12 +216,12 @@ function RewriteFrontend.on_parsed_data_sse(sse_parsed)
             dots:get_still_thinking_message(RewriteFrontend.last_request.start_time),
             tostring(RewriteFrontend.response.num_deltas_reasoning),
         }
-        local estimated_tok_sec = RewriteFrontend.performance:tokens_per_second(
+        local tok_per_sec = RewriteFrontend.response.performance:tokens_per_second(
             RewriteFrontend.response.num_deltas_content,
             RewriteFrontend.response.num_deltas_reasoning
         )
-        if estimated_tok_sec > 0 then
-            local speed = string.format("~%.0f tok/sec", estimated_tok_sec)
+        if tok_per_sec > 0 then
+            local speed = string.format("~%.0f tok/sec", tok_per_sec)
             table.insert(lines, speed)
         end
         vim.schedule(function() RewriteFrontend.displayer:show_green_preview_text(RewriteFrontend.selection, lines) end)
@@ -247,6 +241,8 @@ function RewriteFrontend.on_sse_llama_server_timings(sse)
     if sse == nil or sse.timings == nil then
         return
     end
+
+    RewriteFrontend.response.performance:overall_done()
 
     vim.schedule(function()
         -- PRN move into displayer where this belongs w/ diff preview
@@ -311,11 +307,6 @@ function RewriteFrontend.accept_rewrite()
     RewriteFrontend.stop_streaming = true -- go ahead and stop with whatever has been generated so far
     RewriteFrontend.displayer = nil
 
-    -- Record total duration
-    if RewriteFrontend.performance ~= nil then
-        RewriteFrontend.performance:overall_done()
-    end
-
     vim.schedule(function()
         local lines = RewriteFrontend.response:split_lines()
 
@@ -371,11 +362,6 @@ end
 function RewriteFrontend.cleanup_after_cancel()
     RewriteFrontend.abort_last_request()
     RewriteFrontend.displayer = nil
-
-    -- Record total duration on cancel
-    if RewriteFrontend.performance ~= nil then
-        RewriteFrontend.performance:overall_done()
-    end
 
     -- PRN store this in a last_accumulated_chunks / canceled_accumulated_chunks?
     -- log:info("Cancel rewrite (accumulated_chunks): ", M.accumulated_chunks)
@@ -556,18 +542,11 @@ local function ask_rewrite_command(opts)
                 return
             end
 
-            -- Track RAG completion timing
-            if RewriteFrontend.performance ~= nil then
-                RewriteFrontend.performance:rag_done()
-            end
-
+            RewriteFrontend.response.performance:rag_done()
             then_send_rewrite(rag_matches)
         end
 
-        -- Track RAG start timing
-        if RewriteFrontend.performance ~= nil then
-            RewriteFrontend.performance:rag_started()
-        end
+        RewriteFrontend.response.performance:rag_started()
 
         -- TODO should abort logic also clear rag_cancel/rag_request_ids?
         this_request_ids, cancel = rag_client.context_query_rewrites(user_prompt, code_context, nil, on_rag_response)

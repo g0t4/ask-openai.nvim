@@ -24,6 +24,10 @@ function M.show_prediction_stats(sse, perf)
     table.insert(messages, string.format("in: %d tokens @ %.2f tokens/sec", stats.prompt_tokens, stats.prompt_tokens_per_second))
     table.insert(messages, string.format("out: %d tokens @ %.2f tokens/sec", stats.predicted_tokens, stats.predicted_tokens_per_second))
 
+    --
+    -- TODO push these through the perf object and then into registry => lualine
+    -- TODO then share similar stats for the last frontend (not just predictions)
+
     if stats.cached_tokens ~= nil then
         table.insert(messages, string.format("cached: %d tokens", stats.cached_tokens))
     end
@@ -42,12 +46,9 @@ function M.show_prediction_stats(sse, perf)
 
     if sse.generation_settings then
         local gen = sse.generation_settings
-        table.insert(messages, "") -- blank line to split out gen inputs
-        -- temperature
+        table.insert(messages, "")
         table.insert(messages, string.format("temperature: %.2f", gen.temperature))
-        -- top_p
         table.insert(messages, string.format("top_p: %.2f", gen.top_p))
-        -- max_tokens
         table.insert(messages, string.format("max_tokens: %d", gen.max_tokens))
     end
 

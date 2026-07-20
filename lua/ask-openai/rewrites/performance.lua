@@ -20,7 +20,6 @@ function RewritePerformance:new()
     return self
 end
 
---- Called when the first token arrives (either content or reasoning)
 function RewritePerformance:token_arrived()
     if self.time_to_first_token_ms ~= nil then
         return
