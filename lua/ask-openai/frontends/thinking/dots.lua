@@ -6,7 +6,7 @@ M.dots = ""
 --- Converts seconds to a human-readable string (e.g., "1h 2m 3s").
 ---@param seconds number
 ---@return string
-local function human_readable(seconds)
+local function human_duration_from_seconds(seconds)
     local hrs = math.floor(seconds / 3600)
     local mins = math.floor((seconds % 3600) / 60)
     local secs = seconds % 60
@@ -47,7 +47,7 @@ function M:get_still_thinking_message(start_os_dot_time)
     update_dot_state(self)
 
     local elapsed_seconds = os.time() - start_os_dot_time
-    local duration = human_readable(elapsed_seconds)
+    local duration = human_duration_from_seconds(elapsed_seconds)
 
     return "thinking: " .. duration .. " ⏳" .. (self.dots or M.dots)
 end
@@ -58,7 +58,7 @@ function M:get_still_thinking_message_from_ns(start_time_ns)
     update_dot_state(self)
 
     local elapsed_ns = get_time_in_ns() - start_time_ns
-    local duration = human_readable(elapsed_ns / 1e9)
+    local duration = human_duration_from_seconds(elapsed_ns / 1e9)
 
     return "thinking: " .. duration .. " ⏳" .. (self.dots or M.dots)
 end
