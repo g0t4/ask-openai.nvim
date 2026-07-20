@@ -21,7 +21,7 @@ local harmony = require("ask-openai.backends.models.gptoss.tokenizer").harmony
 local rag_instructions = require("ask-openai.frontends.prompts.rag_instructions")
 local prompt_parser = require("ask-openai.frontends.context.prompt_parser")
 local RewritePerformance = require("ask-openai.rewrites.performance")
-local perf_registry = require("ask-openai.performance.registry")
+local perf = require("ask-openai.perf")
 
 ---@class RewriteFrontend : StreamingFrontend
 local RewriteFrontend = {}
@@ -35,11 +35,11 @@ local function clear_response()
         accumulated_chunks = "",
         has_reasoning = false,
         is_still_thinking = false,
-        start_ns = get_time_in_ns(),
+        start_ns = perf.get_time_in_ns(),
         performance = RewritePerformance:new(),
     }
 
-    perf_registry.register("rewrite", RewriteFrontend.response.performance)
+    perf.register("rewrite", RewriteFrontend.response.performance)
 
     function RewriteFrontend.response:append_chunk(chunk, reasoning_chunk)
         -- log:info("append", vim.inspect(chunk), vim.inspect(reasoning_chunk))

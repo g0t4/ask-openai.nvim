@@ -1,4 +1,5 @@
 local log = require("devtools.logs.logger").universal()
+local perf = require("devtools.performance")
 
 --- Registry for tracking performance objects across all frontends
 --- and determining the most recently used frontend
@@ -119,5 +120,7 @@ function M.get_recent_stats()
     -- Return with type prefix for clarity
     return string.format("[%s] %s", type_label, formatted)
 end
+
+M.get_time_in_ns = perf.get_time_in_ns
 
 return M

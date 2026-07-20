@@ -1,5 +1,7 @@
 local ansi = require("ask-openai.predictions.ansi")
 local log = require("devtools.logs.logger").universal()
+local perf = require("ask-openai.perf")
+
 
 -- TODO track thinking time? and merge thinking dots logic into here
 -- TODO turn this into FIMState too? and use for UX updates, i.e.
@@ -19,7 +21,7 @@ local FIMPerformance = {}
 FIMPerformance.__index = FIMPerformance
 
 function FIMPerformance:new()
-    self._prediction_start_time_ns = get_time_in_ns()
+    self._prediction_start_time_ns = perf.get_time_in_ns()
 
     self._rag_start_time_ns = nil
     self.rag_duration_ms = nil
@@ -41,7 +43,7 @@ function FIMPerformance:rag_started()
     if self._rag_start_time_ns ~= nil then
         error("rag called a second time, aborting...")
     end
-    self._rag_start_time_ns = get_time_in_ns()
+    self._rag_start_time_ns = perf.get_time_in_ns()
 end
 
 function FIMPerformance:rag_done()

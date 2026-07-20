@@ -1,5 +1,6 @@
 local ansi = require("ask-openai.predictions.ansi")
 local log = require("devtools.logs.logger").universal()
+local perf = require("ask-openai.perf")
 
 ---@class RewritePerformance
 ---@field time_to_first_token_ms? number
@@ -13,7 +14,7 @@ RewritePerformance.__index = RewritePerformance
 function RewritePerformance:new()
     self = setmetatable({}, RewritePerformance)
 
-    self._rewrite_start_time_ns = get_time_in_ns()
+    self._rewrite_start_time_ns = perf.get_time_in_ns()
 
     self._rag_start_time_ns = nil
     self.rag_duration_ms = nil
@@ -48,7 +49,7 @@ function RewritePerformance:rag_started()
     if self._rag_start_time_ns ~= nil then
         error("rag_started called a second time, aborting...")
     end
-    self._rag_start_time_ns = get_time_in_ns()
+    self._rag_start_time_ns = perf.get_time_in_ns()
 end
 
 --- Called when RAG query completes
@@ -107,7 +108,7 @@ function RewritePerformance:tokens_per_second()
         return 0
     end
 
-    local elapsed_ns = get_time_in_ns() - self._rewrite_start_time_ns
+    local elapsed_ns = perf.get_time_in_ns() - self._rewrite_start_time_ns
     if elapsed_ns <= 0 then
         return 0
     end

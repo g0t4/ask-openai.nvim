@@ -1,3 +1,5 @@
+local perf = require("ask-openai.perf")
+
 local M = {}
 
 M.count = 0
@@ -51,7 +53,7 @@ end
 --- Returns a "thinking" message with dot animation and duration from nanoseconds.
 ---@param self table The controller instance.
 function M:get_still_thinking_message_from_ns(start_time_ns)
-    local elapsed_ns = get_time_in_ns() - start_time_ns
+    local elapsed_ns = perf.get_time_in_ns() - start_time_ns
     return self:_message(elapsed_ns / 1e9)
 end
 
