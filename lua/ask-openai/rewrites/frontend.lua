@@ -57,6 +57,7 @@ local function clear_response()
 
     function RewriteFrontend.response:split_lines()
         local lines = text_helpers.split_lines(self.accumulated_chunks)
+        lines = RewriteFrontend.strip_md_from_completion(lines)
         return lines
     end
 
@@ -176,8 +177,6 @@ function RewriteFrontend.on_parsed_data_sse(sse_parsed)
     RewriteFrontend.response:append_chunk(content_chunk, reasoning_chunk)
 
     local lines = RewriteFrontend.response:split_lines()
-    -- TODO move strip_md (and other response manipulation) to RewriteFrontend.response?
-    lines = RewriteFrontend.strip_md_from_completion(lines)
 
     if RewriteFrontend.response.is_still_thinking then
         lines = {
@@ -188,6 +187,7 @@ function RewriteFrontend.on_parsed_data_sse(sse_parsed)
         return
     end
 
+    -- TODO move to split_lines too and rename split_lines
     lines = ensure_new_lines_around(RewriteFrontend.selection.original_text, lines)
 
     vim.schedule(function()
@@ -269,7 +269,6 @@ function RewriteFrontend.accept_rewrite()
 
     vim.schedule(function()
         local lines = RewriteFrontend.response:split_lines()
-        lines = RewriteFrontend.strip_md_from_completion(lines)
         lines = ensure_new_lines_around(RewriteFrontend.selection.original_text, lines)
 
         -- log:info("Accepted rewrite (inserted lines, sanitized): ", table.concat(lines, "\n"))
