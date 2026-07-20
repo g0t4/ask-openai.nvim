@@ -80,33 +80,33 @@ function RewriteFrontend.strip_md_from_completion(lines)
     return lines
 end
 
-function RewriteFrontend.ensure_new_lines_around(code, response_lines)
-    -- * Ensure preserve blank line at start of selection (if present)
-    local selected_lines = text_helpers.split_lines(code)
-    local selected_first_line = selected_lines[1]
-    local response_first_line = response_lines[1]
+function RewriteFrontend.ensure_new_lines_around(code, suggestion_lines)
+    -- * Ensure preserve blank line at start of original (aka selection)
+    local original_lines = text_helpers.split_lines(code)
+    local original_first_line = original_lines[1]
+    local suggestion_first_line = suggestion_lines[1]
 
-    local selection_starts_with_newline = selected_first_line:match("^%s*$")
-    local response_starts_with_newline =
-        response_first_line == nil or response_first_line:match("^%s*$")
+    local original_starts_with_newline = original_first_line:match("^%s*$")
+    local suggestion_starts_with_newline =
+        suggestion_first_line == nil or suggestion_first_line:match("^%s*$")
 
-    if selection_starts_with_newline and not response_starts_with_newline
+    if original_starts_with_newline and not suggestion_starts_with_newline
     then
-        table.insert(response_lines, 1, selected_first_line) -- add back the blank line at start
+        table.insert(suggestion_lines, 1, original_first_line) -- add back the blank line at start
     end
 
     -- * Ensure trailing new line is retained (if present)
-    local selected_last_line = selected_lines[#selected_lines]
-    local response_last_line = response_lines[#response_lines]
-    local selection_ends_with_newline = selected_last_line:match("^%s*$")
-    local response_ends_with_newline =
-        response_last_line == nil or response_last_line:match("^%s*$")
+    local original_last_line = original_lines[#original_lines]
+    local suggestion_last_line = suggestion_lines[#suggestion_lines]
+    local original_ends_with_newline = original_last_line:match("^%s*$")
+    local suggestion_ends_with_newline =
+        suggestion_last_line == nil or suggestion_last_line:match("^%s*$")
 
-    if selection_ends_with_newline and not response_ends_with_newline then
-        table.insert(response_lines, selected_last_line)
+    if original_ends_with_newline and not suggestion_ends_with_newline then
+        table.insert(suggestion_lines, original_last_line)
     end
 
-    return response_lines
+    return suggestion_lines
 end
 
 ---@alias ExtractGeneratedTextFromChoiceFunction fun(first_choice: table): string, string
