@@ -22,6 +22,7 @@ local harmony = require("ask-openai.backends.models.gptoss.tokenizer").harmony
 local rag_instructions = require("ask-openai.frontends.prompts.rag_instructions")
 local prompt_parser = require("ask-openai.frontends.context.prompt_parser")
 local RewritePerformance = require("ask-openai.rewrites.performance")
+local perf_registry = require("ask-openai.performance.registry")
 
 ---@class RewriteFrontend : StreamingFrontend
 local RewriteFrontend = {}
@@ -46,6 +47,8 @@ local function clear_response()
     }
 
     RewriteFrontend.performance = RewritePerformance:new()
+    -- Register with performance registry for lualine display
+    perf_registry.register("rewrite", RewriteFrontend.performance)
 
     function RewriteFrontend.response:append_chunk(chunk, reasoning_chunk)
         -- log:info("append", vim.inspect(chunk), vim.inspect(reasoning_chunk))

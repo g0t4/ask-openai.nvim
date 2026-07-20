@@ -18,6 +18,7 @@ local LinesBuilder = require("ask-openai.agents.viewer.lines_builder")
 local MessageBuilder = require("ask-openai.rewrites.message_builder")
 local prompt_parser = require("ask-openai.frontends.context.prompt_parser")
 local AgentPerformance = require("ask-openai.agents.performance")
+local perf_registry = require("ask-openai.performance.registry")
 local HLGroups = require("ask-openai.hlgroups")
 local formatters = require("ask-openai.agents.viewer.formatters")
 local ToolCallOutput = require("ask-openai.agents.tools.tool_call_output")
@@ -265,6 +266,8 @@ local function ask_agent_command(opts)
         local new_trace = AgentTrace:new(body_overrides, base_url)
         AgentsFrontend.trace = new_trace
         AgentsFrontend.performance = AgentPerformance:new() -- FYI `.trace` is intended for rare circumstances only, i.e. cancel action which has no context to pass a trace
+        -- Register with performance registry for lualine display
+        perf_registry.register("agents", AgentsFrontend.performance)
         -- log:info("sending", vim.inspect(AgentsFrontend.trace))
         AgentsFrontend.then_get_assistant_response(new_trace)
     end

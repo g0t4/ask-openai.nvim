@@ -4,6 +4,7 @@ local ansi = require("ask-openai.predictions.ansi")
 local rag_client = require("ask-openai.rag.client")
 local api = require("ask-openai.api")
 local FIMPerformance = require("ask-openai.predictions.fim_performance")
+local perf_registry = require("ask-openai.performance.registry")
 require("devtools.performance")
 local log = require("devtools.logs.logger").universal()
 require("ask-openai.predictions.prefix_suffix")
@@ -32,6 +33,8 @@ function PredictionsFrontend.ask_for_prediction(params)
     local ps_chunk = ps.get_prefix_suffix_chunk()
 
     local perf = FIMPerformance:new()
+    -- Register with performance registry for lualine display
+    perf_registry.register("fim", perf)
 
     ---@param rag_matches LSPRankedMatch[]
     function then_send_fim(rag_matches)

@@ -1,4 +1,5 @@
 local local_share = require('ask-openai.config.local_share')
+local perf_registry = require("ask-openai.performance.registry")
 local human = require('devtools.humanize')
 local llama_stats = require('ask-openai.backends.llama_cpp.stats')
 local mcp_tools = require('ask-openai.tools.mcp')
@@ -48,6 +49,12 @@ function M.lualine_components()
     local primary = {
         function()
             local icons = { '[' }
+
+            -- * Show recent performance stats from most recently used frontend
+            local recent_stats = perf_registry.get_recent_stats()
+            if recent_stats and recent_stats ~= "" then
+                table.insert(icons, recent_stats)
+            end
 
             if local_share.are_notify_stats_enabled() then
                 table.insert(icons, '󰍨')
