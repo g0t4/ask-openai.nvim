@@ -53,7 +53,6 @@ function M.show_prediction_stats(sse, perf)
 
     -- * timing
     if perf ~= nil then
-        perf:overall_done()
         table.insert(messages, "\n")
         if perf.rag_duration_ms ~= nil then
             table.insert(messages, "RAG: " .. perf.rag_duration_ms .. " ms")

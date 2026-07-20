@@ -38,7 +38,6 @@ function PredictionsFrontend.ask_for_prediction(params)
 
     ---@param rag_matches LSPRankedMatch[]
     function then_send_fim(rag_matches)
-
         -- TODO rename to FimBodyBuilder? or FimRequestBuilder? or FimPromptBuilder?
         local backend = FimBackend:new(ps_chunk, rag_matches)
         local body = backend:body_for()
@@ -141,6 +140,7 @@ function PredictionsFrontend.ask_for_prediction(params)
 
         ---@type OnParsedSSE
         local function on_sse_llama_server_timings(sse)
+            perf:overall_done()
             stats.show_prediction_stats(sse, perf)
         end
 
@@ -308,7 +308,6 @@ function PredictionsFrontend.cursor_moved_in_insert_mode()
     --  TODO do I need this anymore? I swear I setup predictions to attach on BufEnter... and that already ignores specific filetypes (and other factors)?
     if vim.tbl_contains(ignore_buftypes, vim.bo.buftype)
         or vim.tbl_contains(ignore_filetypes, vim.bo.filetype) then
-
         -- -- but, allow renames:
         -- if not is_rename_window() then
         --     return
