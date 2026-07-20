@@ -58,6 +58,7 @@ local function clear_response()
     function RewriteFrontend.response:split_lines()
         local lines = text_helpers.split_lines(self.accumulated_chunks)
         lines = RewriteFrontend.strip_md_from_completion(lines)
+        lines = RewriteFrontend.ensure_new_lines_around(RewriteFrontend.selection.original_text, lines)
         return lines
     end
 
@@ -79,7 +80,7 @@ function RewriteFrontend.strip_md_from_completion(lines)
     return lines
 end
 
-local function ensure_new_lines_around(code, response_lines)
+function RewriteFrontend.ensure_new_lines_around(code, response_lines)
     -- * Ensure preserve blank line at start of selection (if present)
     local selected_lines = text_helpers.split_lines(code)
     local selected_first_line = selected_lines[1]
@@ -187,9 +188,6 @@ function RewriteFrontend.on_parsed_data_sse(sse_parsed)
         return
     end
 
-    -- TODO move to split_lines too and rename split_lines
-    lines = ensure_new_lines_around(RewriteFrontend.selection.original_text, lines)
-
     vim.schedule(function()
         -- FYI the diff tool can handle massive changes to many, many lines... not sure what is slowing things down at times w/ llama-server and some bigger requests?
         --   almost wonder if it is the verbose logging b/c that actually ends up failing (the logs) midway and I never see final messages, (--verbose and --verbose-prompt)
@@ -269,7 +267,6 @@ function RewriteFrontend.accept_rewrite()
 
     vim.schedule(function()
         local lines = RewriteFrontend.response:split_lines()
-        lines = ensure_new_lines_around(RewriteFrontend.selection.original_text, lines)
 
         -- log:info("Accepted rewrite (inserted lines, sanitized): ", table.concat(lines, "\n"))
 
