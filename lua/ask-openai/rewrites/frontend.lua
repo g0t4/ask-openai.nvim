@@ -28,7 +28,14 @@ local RewriteFrontend = {}
 -- Initialize selection position variables at module level
 ---@type Selection|nil
 RewriteFrontend.selection = nil
-RewriteFrontend.accumulated_chunks = ""
+local function clear_response()
+    RewriteFrontend.response = {
+        num_deltas = 0, -- approximate number of tokens
+        accumulated_chunks = ""
+    }
+    return RewriteFrontend.response
+end
+clear_response()
 
 function RewriteFrontend.strip_md_from_completion(lines)
     local isFirstLineStartOfCodeBlock = lines[1]:match("^```(%S*)$")
@@ -134,9 +141,12 @@ function RewriteFrontend.on_parsed_data_sse(sse_parsed)
 
     if not RewriteFrontend.displayer then return end -- else after cancel, if get another SSE, boom
 
-    RewriteFrontend.accumulated_chunks = RewriteFrontend.accumulated_chunks .. content_chunk
+    -- TODO add accum_chunk() on RewriteFrontend.response?
+    RewriteFrontend.response.accumulated_chunks = RewriteFrontend.response.accumulated_chunks .. content_chunk
 
-    local lines = text_helpers.split_lines(RewriteFrontend.accumulated_chunks)
+    -- TODO move split_lines to RewriteFrontend.response?
+    local lines = text_helpers.split_lines(RewriteFrontend.response.accumulated_chunks)
+    -- TODO move strip_md (and other response manipulation) to RewriteFrontend.response?
     lines = RewriteFrontend.strip_md_from_completion(lines)
     local thinking_status = nil
     -- TODO vestigial (stripping think tags), instead use reasoning_content off of SSE now (w/ --jinja on server side)
@@ -230,12 +240,11 @@ function RewriteFrontend.accept_rewrite()
     RewriteFrontend.displayer = nil
 
     vim.schedule(function()
-        local lines = text_helpers.split_lines(RewriteFrontend.accumulated_chunks)
+        local lines = text_helpers.split_lines(RewriteFrontend.response.accumulated_chunks)
         lines = RewriteFrontend.strip_md_from_completion(lines)
         lines = thinking.strip_thinking_tags(lines)
         lines = ensure_new_lines_around(RewriteFrontend.selection.original_text, lines)
 
-        -- log:info("Accepted rewrite (accumulated_chunks): ", M.accumulated_chunks)
         -- log:info("Accepted rewrite (inserted lines, sanitized): ", table.concat(lines, "\n"))
 
         -- FYI this may not be a problem with the linewise only mode that I setup for now with the streaming diff
@@ -264,7 +273,7 @@ function RewriteFrontend.accept_rewrite()
             lines
         )
 
-        RewriteFrontend.accumulated_chunks = ""
+        clear_response()
     end)
 end
 
@@ -292,7 +301,7 @@ function RewriteFrontend.cleanup_after_cancel()
     -- PRN store this in a last_accumulated_chunks / canceled_accumulated_chunks?
     -- log:info("Cancel rewrite (accumulated_chunks): ", M.accumulated_chunks)
 
-    RewriteFrontend.accumulated_chunks = ""
+    clear_response()
 end
 
 ---@param opts {args:string}
@@ -306,7 +315,7 @@ local function ask_rewrite_command(opts)
 
     -- Store selection details for later use
     RewriteFrontend.selection = selection
-    RewriteFrontend.accumulated_chunks = ""
+    clear_response()
     RewriteFrontend.displayer = Displayer:new(RewriteFrontend.accept_rewrite, RewriteFrontend.cleanup_after_cancel)
     RewriteFrontend.displayer:set_keymaps()
 
@@ -499,7 +508,7 @@ local function simulate_streaming_rewrite_command(opts)
     vim.cmd("normal! 0V60jV") -- down 5 lines from current position, 2nd v ends selection ('< and '> marks now have start/end positions)
     vim.cmd("normal! 59k") -- put cursor back before next steps (since I used 5j to move down for end of selection range
     RewriteFrontend.selection = Selection.get_visual_selection_for_current_window()
-    RewriteFrontend.accumulated_chunks = ""
+    RewriteFrontend.response.accumulated_chunks = ""
     RewriteFrontend.stop_streaming = false
     RewriteFrontend.displayer = Displayer:new(RewriteFrontend.accept_rewrite, RewriteFrontend.cleanup_after_cancel)
     RewriteFrontend.displayer:set_keymaps()
@@ -570,7 +579,7 @@ local function simulate_instant_rewrite_command(opts)
     vim.cmd("normal! 0V6jV") -- down 5 lines from current position, 2nd v ends selection ('< and '> marks now have start/end positions)
     vim.cmd("normal! 5k") -- put cursor back before next steps (since I used 5j to move down for end of selection range
     RewriteFrontend.selection = Selection.get_visual_selection_for_current_window()
-    RewriteFrontend.accumulated_chunks = ""
+    RewriteFrontend.response.accumulated_chunks = ""
     RewriteFrontend.displayer = Displayer:new(RewriteFrontend.accept_rewrite, RewriteFrontend.cleanup_after_cancel)
     RewriteFrontend.displayer:set_keymaps()
 
