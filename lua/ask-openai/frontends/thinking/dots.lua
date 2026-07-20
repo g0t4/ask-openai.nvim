@@ -35,32 +35,24 @@ local function update_dot_state(self)
     end
 end
 
---- Calculates duration string from a nanosecond timestamp.
----@param start_time_ns number
----@return string
-local function format_duration_from_ns(start_time_ns)
+function M:_message(elapsed_seconds)
+    update_dot_state(self)
+    local duration = human_duration_from_seconds(elapsed_seconds)
+    return "thinking: " .. duration .. " ⏳" .. (self.dots or M.dots)
 end
 
 --- Returns a "thinking" message with dot animation and duration.
 ---@param self table The controller instance.
 function M:get_still_thinking_message(start_os_dot_time)
-    update_dot_state(self)
-
     local elapsed_seconds = os.time() - start_os_dot_time
-    local duration = human_duration_from_seconds(elapsed_seconds)
-
-    return "thinking: " .. duration .. " ⏳" .. (self.dots or M.dots)
+    return self:_message(elapsed_seconds)
 end
 
 --- Returns a "thinking" message with dot animation and duration from nanoseconds.
 ---@param self table The controller instance.
 function M:get_still_thinking_message_from_ns(start_time_ns)
-    update_dot_state(self)
-
     local elapsed_ns = get_time_in_ns() - start_time_ns
-    local duration = human_duration_from_seconds(elapsed_ns / 1e9)
-
-    return "thinking: " .. duration .. " ⏳" .. (self.dots or M.dots)
+    return self:_message(elapsed_ns / 1e9)
 end
 
 return M
