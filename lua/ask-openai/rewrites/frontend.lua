@@ -4,7 +4,7 @@ local curl = require("ask-openai.backends.curl")
 local log = require("devtools.logs.logger").universal()
 local agentica = require("ask-openai.backends.models.agentica")
 local text_helpers = require("ask-openai.helpers.text")
-local thinking = require("ask-openai.rewrites.thinking")
+local dots = require("ask-openai.frontends.thinking.dots")
 local Selection = require("ask-openai.helpers.selection")
 local Displayer = require("ask-openai.rewrites.displayer")
 local CurrentContext = require("ask-openai.frontends.context")
@@ -38,12 +38,16 @@ local function clear_response()
     }
 
     function RewriteFrontend.response:append_chunk(chunk, reasoning_chunk)
-        if chunk then
+        -- log:info("append", vim.inspect(chunk), vim.inspect(reasoning_chunk))
+        assert(chunk ~= nil) -- default ""
+        assert(reasoning_chunk ~= nil) -- default ""
+
+        if chunk ~= "" then
             self.num_deltas_content = self.num_deltas_content + 1
             self.accumulated_chunks = self.accumulated_chunks .. chunk
             self.is_still_thinking = false -- assume thinking is done when content arrives
         end
-        if reasoning_chunk then
+        if reasoning_chunk ~= "" then
             self.num_deltas_reasoning = self.num_deltas_reasoning + 1
             -- PRN later I can accumulate it if I want to show it, or log it...
             self.has_reasoning = true
@@ -158,7 +162,7 @@ end
 
 ---@type OnParsedSSE
 function RewriteFrontend.on_parsed_data_sse(sse_parsed)
-    log:info("sse", vim.inspect(sse_parsed))
+    -- log:info("sse", vim.inspect(sse_parsed))
     if sse_parsed.choices == nil or sse_parsed.choices[1] == nil then
         return
     end
@@ -174,14 +178,12 @@ function RewriteFrontend.on_parsed_data_sse(sse_parsed)
     local lines = RewriteFrontend.response:split_lines()
     -- TODO move strip_md (and other response manipulation) to RewriteFrontend.response?
     lines = RewriteFrontend.strip_md_from_completion(lines)
-    local thinking_status = nil
-    -- TODO vestigial (stripping think tags), instead use reasoning_content off of SSE now (w/ --jinja on server side)
-    lines, thinking_status = thinking.strip_thinking_tags(lines)
-    log:info("lines", lines)
-    log:info("  thinking_status", thinking_status)
-    if thinking_status == thinking.ThinkingStatus.Thinking then
-        lines = { thinking.dots:get_still_thinking_message(RewriteFrontend.last_request.start_time) }
-        -- while thinking, we show the green text w/ ....
+
+    if RewriteFrontend.response.is_still_thinking then
+        lines = {
+            dots:get_still_thinking_message(RewriteFrontend.last_request.start_time),
+            tostring(RewriteFrontend.response.num_deltas_reasoning)
+        }
         vim.schedule(function() RewriteFrontend.displayer:show_green_preview_text(RewriteFrontend.selection, lines) end)
         return
     end
@@ -268,7 +270,6 @@ function RewriteFrontend.accept_rewrite()
     vim.schedule(function()
         local lines = RewriteFrontend.response:split_lines()
         lines = RewriteFrontend.strip_md_from_completion(lines)
-        lines = thinking.strip_thinking_tags(lines)
         lines = ensure_new_lines_around(RewriteFrontend.selection.original_text, lines)
 
         -- log:info("Accepted rewrite (inserted lines, sanitized): ", table.concat(lines, "\n"))
