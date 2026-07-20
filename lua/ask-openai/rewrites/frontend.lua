@@ -94,7 +94,7 @@ local function ensure_new_lines_around(code, response_lines)
     return response_lines
 end
 
----@alias ExtractGeneratedTextFromChoiceFunction fun(first_choice: table): string
+---@alias ExtractGeneratedTextFromChoiceFunction fun(first_choice: table): string, string
 
 ---@param endpoint CompletionsEndpoints
 ---@return ExtractGeneratedTextFromChoiceFunction
@@ -107,11 +107,17 @@ local function get_extract_generated_text_func(endpoint)
         ---@type ExtractGeneratedTextFromChoiceFunction
         return function(choice)
             --- * /v1/completions
-            if choice == nil or choice.text == nil then
+            if choice == nil then
                 -- just skip if no (first) choice or no text on it (i.e. last SSE is often timing only)
-                return ""
+                return "", "" -- empty for both content/reasoning_content
             end
-            return choice.text
+
+            local content = choice.text or ""
+            if content == vim.NIL then content = "" end
+
+            log:error("TODO can I get reasoning from llama-server's v1/completions endpoint?")
+
+            return content, ""
         end
     end
 
@@ -121,14 +127,15 @@ local function get_extract_generated_text_func(endpoint)
             --- * /v1/chat/completions
             -- NOW I have access to request (url, body.model, etc) to be able to dynamically swap in the right SSE parser!
             --   I could even add another function that would handle aggregating and transforming the raw response (i.e. for harmony) into aggregate views (i.e. of thinking and final responses), also trigger events that way
-            if choice == nil
-                or choice.delta == nil
-                or choice.delta.content == nil
-                or choice.delta.content == vim.NIL
+            if choice == nil or choice.delta == nil
             then
-                return ""
+                return "", ""
             end
-            return choice.delta.content
+            local content = choice.delta.content or ""
+            if content == vim.NIL then content = "" end
+            local reasoning = choice.delta.reasoning_content or ""
+            if reasoning == vim.NIL then reasoning = "" end
+            return content, reasoning
         end
     end
 
