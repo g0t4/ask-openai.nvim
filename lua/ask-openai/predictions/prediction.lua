@@ -124,6 +124,7 @@ function Prediction:fim_fixes()
     if has_duplicate_prefix then
         -- ? store duplicated part of prefix too (if not all of it)
         first_line = first_line:sub(#cursor_prefix + 1)
+        self._trace_only_duplicate_prefix = cursor_prefix
     end
 
     -- cache:

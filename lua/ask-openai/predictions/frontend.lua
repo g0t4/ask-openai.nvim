@@ -147,6 +147,7 @@ function PredictionsFrontend.ask_for_prediction(params)
             on_curl_exited_successfully = on_curl_exited_successfully,
             explain_error = explain_error,
             on_sse_llama_server_timings = on_sse_llama_server_timings,
+            get_flags = PredictionsFrontend.get_flags,
         }
 
         Curl.spawn(fim_request, frontend)
@@ -230,6 +231,15 @@ function PredictionsFrontend.cancel_current_prediction()
 
     -- FYI both this_prediction and request are new with each keystroke
     CurlRequest.terminate(this_prediction.fim_request)
+end
+
+function PredictionsFrontend.get_flags()
+    local flags = {}
+    local current = PredictionsFrontend.current_prediction
+    if current.has_duplicate_prefix then
+        flags["fim_duplicate_prefix"] = current._trace_only_duplicate_prefix
+    end
+    return flags
 end
 
 local ignore_filetypes = {

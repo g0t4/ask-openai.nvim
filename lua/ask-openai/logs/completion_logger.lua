@@ -184,6 +184,16 @@ function M.save_trace(request, frontend, messages_snapshot, last_sse, trace_data
         --   .__verbose.content (generated raw outputs, but ONLY for stream=false)
         trace_data.last_sse = last_sse
 
+        if frontend.get_flags then
+            -- flag traces for later review, especially traces with a knonw issue that you're working on
+            -- TODO add a thumbs up keymap for all trace types?
+            --  ? OR,  update file on accept using jq command to insert thumbs up or w/e details? (rewrites and predictions would use that)
+            local flags = frontend.get_flags()
+            if flags then
+                trace_data.flags = flags
+            end
+        end
+
         file:write(json.encode(trace_data, { indent = true }))
         file:close()
     end
