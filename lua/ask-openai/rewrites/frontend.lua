@@ -87,9 +87,11 @@ function RewriteFrontend.strip_md_from_completion(lines)
     return lines
 end
 
-function RewriteFrontend.ensure_new_lines_around(code, suggestion_lines)
+---@param original_code string - selected text to rewrite
+---@param suggestion_lines table<string>
+function RewriteFrontend.ensure_new_lines_around(original_code, suggestion_lines)
     -- * Ensure preserve blank line at start of original (aka selection)
-    local original_lines = text_helpers.split_lines(code)
+    local original_lines = text_helpers.split_lines(original_code)
     local original_first_line = original_lines[1]
     local suggestion_first_line = suggestion_lines[1]
 
