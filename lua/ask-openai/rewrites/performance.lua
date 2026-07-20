@@ -82,7 +82,9 @@ function RewritePerformance:ttft_minus_rag_ms()
     return self.time_to_first_token_ms - self.rag_duration_ms
 end
 
---- Computes estimated tokens_per_second based on delta counts and elapsed time
+--- Computes estimated tokens_per_second based on delta counts and elapsed time.
+--- Automatically subtracts RAG duration from total elapsed time, since tok/sec
+--- is meant to measure completion speed only.
 --- @param num_deltas_content number
 --- @param num_deltas_reasoning number
 ---@return number|nil
@@ -98,6 +100,16 @@ function RewritePerformance:tokens_per_second(num_deltas_content, num_deltas_rea
     end
 
     local elapsed_seconds = elapsed_ns / 1e9
+    
+    -- Subtract RAG duration from total time to isolate completion speed
+    if self.rag_duration_ms ~= nil and self.rag_duration_ms > 0 then
+        elapsed_seconds = elapsed_seconds - (self.rag_duration_ms / 1000)
+    end
+
+    if elapsed_seconds <= 0 then
+        return 0 -- avoid division by zero or negative time
+    end
+
     return total_deltas / elapsed_seconds
 end
 

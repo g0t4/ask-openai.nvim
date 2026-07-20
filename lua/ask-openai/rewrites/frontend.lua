@@ -219,8 +219,12 @@ function RewriteFrontend.on_parsed_data_sse(sse_parsed)
             dots:get_still_thinking_message(RewriteFrontend.last_request.start_time),
             tostring(RewriteFrontend.response.num_deltas_reasoning),
         }
-        if RewriteFrontend.response.deltas_per_second > 0 then
-            local speed = string.format("~%.0f tok/sec", RewriteFrontend.response.deltas_per_second)
+        local estimated_tok_sec = RewriteFrontend.performance:tokens_per_second(
+            RewriteFrontend.response.num_deltas_content,
+            RewriteFrontend.response.num_deltas_reasoning
+        )
+        if estimated_tok_sec > 0 then
+            local speed = string.format("~%.0f tok/sec", estimated_tok_sec)
             table.insert(lines, speed)
         end
         vim.schedule(function() RewriteFrontend.displayer:show_green_preview_text(RewriteFrontend.selection, lines) end)
