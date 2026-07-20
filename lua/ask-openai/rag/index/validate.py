@@ -1,9 +1,11 @@
+import argparse
 import asyncio
+import humanize
+import logging
 import os
 import rich
 import subprocess
 import sys
-import humanize
 
 from collections import Counter
 from pathlib import Path
@@ -132,9 +134,16 @@ async def main():
     # usage:
     #   python3 -m index.validate $(_repo_root)/.rag
 
-    logging_fwk_to_console(level="DEBUG")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--verbose", "--debug", action="store_true", help="Enable verbose logging")
+    parser.add_argument("--info", action="store_true", help="Enable info logging")
+    parser.add_argument("dot_rag_path", help="Path to the .rag directory")
+    args = parser.parse_args()
 
-    dot_rag_dir = Path(sys.argv[1])
+    log_level = logging.DEBUG if args.verbose else logging.INFO if args.info else logging.WARNING
+    logging_fwk_to_console(level=log_level)
+
+    dot_rag_dir = Path(args.dot_rag_path)
     workspace_folder = dot_rag_dir.parent
     await workspace.from_folder(workspace_folder)
     workspace.load_datasets()
