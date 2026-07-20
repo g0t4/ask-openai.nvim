@@ -205,8 +205,8 @@ function RewriteFrontend.on_sse_llama_server_timings(sse)
         -- Use a distinct arrow (⟶) to separate ingest and predicted parts, without coloring the arrow itself
         local arrow = " ⟶  "
         local virt_text = {
-            { ingest_display, HLGroups.STATS_PROMPT },
-            { arrow, HLGroups.STATS_ARROW },
+            { ingest_display,    HLGroups.STATS_PROMPT },
+            { arrow,             HLGroups.STATS_ARROW },
             { predicted_display, HLGroups.STATS_PREDICTED },
         }
 
