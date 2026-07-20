@@ -43,30 +43,22 @@ end
 
 --- Returns a "thinking" message with dot animation and duration.
 ---@param self table The controller instance.
----@param start_time? number The start time in seconds.
-function M.get_still_thinking_message(self, start_time)
+function M:get_still_thinking_message(start_os_dot_time)
     update_dot_state(self)
 
-    local duration = ""
-    if start_time then
-        local elapsed_seconds = os.time() - start_time
-        duration = human_readable(elapsed_seconds)
-    end
+    local elapsed_seconds = os.time() - start_os_dot_time
+    local duration = human_readable(elapsed_seconds)
 
     return "thinking: " .. duration .. " ⏳" .. (self.dots or M.dots)
 end
 
 --- Returns a "thinking" message with dot animation and duration from nanoseconds.
 ---@param self table The controller instance.
----@param start_time_ns? number The start time in nanoseconds.
-function M.get_still_thinking_message_from_ns(self, start_time_ns)
+function M:get_still_thinking_message_from_ns(start_time_ns)
     update_dot_state(self)
 
-    local duration = ""
-    if start_time_ns then
-        local elapsed_ns = get_time_in_ns() - start_time_ns
-        duration = human_readable(elapsed_ns / 1e9)
-    end
+    local elapsed_ns = get_time_in_ns() - start_time_ns
+    local duration = human_readable(elapsed_ns / 1e9)
 
     return "thinking: " .. duration .. " ⏳" .. (self.dots or M.dots)
 end
