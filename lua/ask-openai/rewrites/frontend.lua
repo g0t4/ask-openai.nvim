@@ -150,8 +150,6 @@ function RewriteFrontend.on_parsed_data_sse(sse_parsed)
     local first_choice = sse_parsed.choices[1]
     local extract_generated_text = get_extract_generated_text_func(RewriteFrontend.last_request.endpoint)
     local content_chunk = extract_generated_text(first_choice)
-    log:info("content_chunk", content_chunk)
-    if not content_chunk then return end
 
     if not RewriteFrontend.displayer then return end -- else after cancel, if get another SSE, boom
 
