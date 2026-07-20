@@ -30,16 +30,25 @@ local RewriteFrontend = {}
 RewriteFrontend.selection = nil
 local function clear_response()
     RewriteFrontend.response = {
-        num_deltas = 0, -- approximate number of tokens
+        num_deltas_reasoning = 0, -- approximate number of tokens
+        num_deltas_content = 0, -- approximate number of tokens
         accumulated_chunks = "",
+        has_reasoning = false,
+        is_still_thinking = false,
     }
 
-    function RewriteFrontend.response:append_chunk(chunk)
-        if chunk == nil or chunk == "" then
-            return
+    function RewriteFrontend.response:append_chunk(chunk, reasoning_chunk)
+        if chunk then
+            self.num_deltas_content = self.num_deltas_content + 1
+            self.accumulated_chunks = self.accumulated_chunks .. chunk
+            self.is_still_thinking = false -- assume thinking is done when content arrives
         end
-        self.num_deltas = self.num_deltas + 1
-        self.accumulated_chunks = self.accumulated_chunks .. chunk
+        if reasoning_chunk then
+            self.num_deltas_reasoning = self.num_deltas_reasoning + 1
+            -- PRN later I can accumulate it if I want to show it, or log it...
+            self.has_reasoning = true
+            self.is_still_thinking = true
+        end
     end
 
     function RewriteFrontend.response:split_lines()
@@ -156,11 +165,11 @@ function RewriteFrontend.on_parsed_data_sse(sse_parsed)
 
     local first_choice = sse_parsed.choices[1]
     local extract_generated_text = get_extract_generated_text_func(RewriteFrontend.last_request.endpoint)
-    local content_chunk = extract_generated_text(first_choice)
+    local content_chunk, reasoning_chunk = extract_generated_text(first_choice)
 
     if not RewriteFrontend.displayer then return end -- else after cancel, if get another SSE, boom
 
-    RewriteFrontend.response:append_chunk(content_chunk)
+    RewriteFrontend.response:append_chunk(content_chunk, reasoning_chunk)
 
     local lines = RewriteFrontend.response:split_lines()
     -- TODO move strip_md (and other response manipulation) to RewriteFrontend.response?
