@@ -18,6 +18,7 @@ from index.stale import warn_about_stale_files
 
 logger = get_logger("validator")
 
+
 class DatasetsValidator:
 
     def __init__(self, datasets: Datasets):
@@ -108,6 +109,7 @@ class DatasetsValidator:
         present_domains = set(datasets.all_datasets.keys())
         configured_domains = set(config.allowed_semantic_domains)
 
+        # worth pointing out when there are legit domains that are not configured to be indexed... very likely a mistake
         extra_domains = present_domains - configured_domains
         if extra_domains:
             self.any_problems = True
@@ -116,13 +118,15 @@ class DatasetsValidator:
                 + ", ".join(sorted(extra_domains))
             )
 
-        missing_domains = configured_domains - present_domains
-        if missing_domains:
+        unused_domains = configured_domains - present_domains
+        if unused_domains:
             self.any_problems = True
-            logger.error( \
-                "[bold white on red]Missing datasets (configured semantic domains): "
-                + ", ".join(sorted(missing_domains))
+            # just means you have things allowed that you don't yet use, that's not an error nor a warning... maybe info at most
+            logger.debug( \
+                "Unused semantic domains (configured extensions, without an index): "
+                + ", ".join(sorted(unused_domains))
             )
+
 
 async def main():
     # usage:
@@ -147,6 +151,7 @@ async def main():
 
     if validator.any_problems:
         sys.exit(1)
+
 
 if __name__ == "__main__":
     asyncio.run(main())
