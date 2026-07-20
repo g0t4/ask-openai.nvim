@@ -25,7 +25,25 @@ function M.get_still_thinking_message(self, start_time)
     end
     local duration = ""
     if start_time then
-        duration = human_readable(os.time() - start_time)
+        local duration_seconds = os.time() - start_time
+        duration = human_readable(duration_seconds)
+    end
+    return "thinking: " .. duration .. " ⏳" .. M.dots
+end
+
+function M.get_still_thinking_message_from_ns(self, start_time_ns)
+    self.count = self.count + 1
+    if self.count % 4 == 0 then
+        self.dots = self.dots .. "."
+    end
+    if self.count > 120 then
+        self.dots = ""
+        self.count = 0
+    end
+    local duration = ""
+    if start_time_ns then
+        local ns = get_time_in_ns() - start_time_ns
+        duration = human_readable(ns / 1e9)
     end
     return "thinking: " .. duration .. " ⏳" .. M.dots
 end

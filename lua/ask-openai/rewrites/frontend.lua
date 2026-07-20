@@ -4,7 +4,6 @@ local curl = require("ask-openai.backends.curl")
 local log = require("devtools.logs.logger").universal()
 local agentica = require("ask-openai.backends.models.agentica")
 local text_helpers = require("ask-openai.helpers.text")
-local dots = require("ask-openai.frontends.thinking.dots")
 local Selection = require("ask-openai.helpers.selection")
 local Displayer = require("ask-openai.rewrites.displayer")
 local CurrentContext = require("ask-openai.frontends.context")
@@ -33,13 +32,10 @@ RewriteFrontend.selection = nil
 
 local function clear_response()
     RewriteFrontend.response = {
-        num_deltas_reasoning = 0, -- approximate number of tokens
-        num_deltas_content = 0, -- approximate number of tokens
         accumulated_chunks = "",
         has_reasoning = false,
         is_still_thinking = false,
         start_ns = get_time_in_ns(),
-        deltas_per_second = 0,
         performance = RewritePerformance:new(),
     }
 
@@ -50,27 +46,16 @@ local function clear_response()
         assert(chunk ~= nil) -- default ""
         assert(reasoning_chunk ~= nil) -- default ""
 
-        if ((chunk or reasoning_chunk) ~= "") then
-            self.performance:token_arrived()
-        end
+        self.performance:token_arrived(chunk, reasoning_chunk)
 
         if chunk ~= "" then
-            self.num_deltas_content = self.num_deltas_content + 1
             self.accumulated_chunks = self.accumulated_chunks .. chunk
             self.is_still_thinking = false -- assume thinking is done when content arrives
         end
         if reasoning_chunk ~= "" then
-            self.num_deltas_reasoning = self.num_deltas_reasoning + 1
             -- PRN later I can accumulate it if I want to show it, or log it...
             self.has_reasoning = true
             self.is_still_thinking = true
-        end
-
-        local duration_ns = get_time_in_ns() - self.start_ns
-        if duration_ns > 0 then
-            self.deltas_per_second = (self.num_deltas_content + self.num_deltas_reasoning) / (duration_ns / 1e9)
-        else
-            self.deltas_per_second = 0 -- reset to zero if no duration
         end
     end
 
@@ -212,19 +197,10 @@ function RewriteFrontend.on_parsed_data_sse(sse_parsed)
     local lines = RewriteFrontend.response:split_lines()
 
     if RewriteFrontend.response.is_still_thinking then
-        lines = {
-            dots:get_still_thinking_message(RewriteFrontend.last_request.start_time),
-            tostring(RewriteFrontend.response.num_deltas_reasoning),
-        }
-        local tok_per_sec = RewriteFrontend.response.performance:tokens_per_second(
-            RewriteFrontend.response.num_deltas_content,
-            RewriteFrontend.response.num_deltas_reasoning
-        )
-        if tok_per_sec > 0 then
-            local speed = string.format("~%.0f tok/sec", tok_per_sec)
-            table.insert(lines, speed)
-        end
-        vim.schedule(function() RewriteFrontend.displayer:show_green_preview_text(RewriteFrontend.selection, lines) end)
+        local preview_lines = RewriteFrontend.response.performance:preview_summary()
+        vim.schedule(function()
+            RewriteFrontend.displayer:show_green_preview_text(RewriteFrontend.selection, preview_lines)
+        end)
         return
     end
 

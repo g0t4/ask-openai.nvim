@@ -5,10 +5,14 @@ local log = require("devtools.logs.logger").universal()
 ---@field time_to_first_token_ms? number
 ---@field rag_duration_ms? number
 ---@field total_duration_ms? number
+---@field num_deltas_reasoning = 0
+---@field num_deltas_content = 0
 local RewritePerformance = {}
 RewritePerformance.__index = RewritePerformance
 
 function RewritePerformance:new()
+    self = setmetatable({}, RewritePerformance)
+
     self._rewrite_start_time_ns = get_time_in_ns()
 
     self._rag_start_time_ns = nil
@@ -17,14 +21,26 @@ function RewritePerformance:new()
     self.time_to_first_token_ms = nil
 
     self.total_duration_ms = nil
+
+    self.num_deltas_reasoning = 0
+    self.num_deltas_content = 0
+
     return self
 end
 
-function RewritePerformance:token_arrived()
-    if self.time_to_first_token_ms ~= nil then
-        return
+function RewritePerformance:token_arrived(chunk, reasoning_chunk)
+    -- PRN I could track status here too (i.e. natural fit to track rag start/done, completion start/thinking/completing/done, etc)
+    if chunk ~= "" then
+        self.num_deltas_content = self.num_deltas_content + 1
     end
-    self.time_to_first_token_ms = get_elapsed_time_in_rounded_ms(self._rewrite_start_time_ns)
+    if reasoning_chunk ~= "" then
+        self.num_deltas_reasoning = self.num_deltas_reasoning + 1
+    end
+
+    -- todo if set
+    if self.time_to_first_token_ms == nil then
+        self.time_to_first_token_ms = get_elapsed_time_in_rounded_ms(self._rewrite_start_time_ns)
+    end
 end
 
 --- Called when RAG query starts
@@ -84,11 +100,9 @@ end
 --- Computes estimated tokens_per_second based on delta counts and elapsed time.
 --- Automatically subtracts RAG duration from total elapsed time, since tok/sec
 --- is meant to measure completion speed only.
---- @param num_deltas_content number
---- @param num_deltas_reasoning number
 ---@return number|nil
-function RewritePerformance:tokens_per_second(num_deltas_content, num_deltas_reasoning)
-    local total_deltas = num_deltas_content + num_deltas_reasoning
+function RewritePerformance:tokens_per_second()
+    local total_deltas = self.num_deltas_content + self.num_deltas_reasoning
     if total_deltas == 0 then
         return 0
     end
@@ -110,6 +124,25 @@ function RewritePerformance:tokens_per_second(num_deltas_content, num_deltas_rea
     end
 
     return total_deltas / elapsed_seconds
+end
+
+function RewritePerformance:preview_summary()
+    local dots = require("ask-openai.frontends.thinking.dots")
+
+    local parts = {
+        dots:get_still_thinking_message_from_ns(self._rewrite_start_time_ns),
+
+        -- show reasoning count during preview since we don't show reasoning tokens
+        tostring(self.num_deltas_reasoning),
+    }
+
+    local tok_per_sec = self:tokens_per_second()
+    if tok_per_sec > 0 then
+        local speed = string.format("~%.0f tok/sec", tok_per_sec)
+        table.insert(parts, speed)
+    end
+
+    return parts
 end
 
 return RewritePerformance
