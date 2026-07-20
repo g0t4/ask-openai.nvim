@@ -84,6 +84,17 @@ function RewriteFrontend.strip_md_from_completion(lines)
         table.remove(lines, 1)
     end
 
+    -- PRN document indent issues and try adding indent?
+    -- - TODO add an indicator that markdown was stripped? or a mode where I can see it like my new FIM dedupe prefix detection
+    --   do this until try to fix anything
+    --   TODO and auto flag traces and store for review!
+    --
+    -- TODO OR, maybe... do a second pass to ask the model if things look ok and redo if not?
+    --   invalidate if not accepted?
+    --   grab context and ask model to opine on mistakes made in completion?
+    --    if any?
+    --    luac/pythonc etc check if syntax errors?
+
     return lines
 end
 
