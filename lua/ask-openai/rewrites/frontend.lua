@@ -21,6 +21,7 @@ local HLGroups = require("ask-openai.hlgroups")
 local harmony = require("ask-openai.backends.models.gptoss.tokenizer").harmony
 local rag_instructions = require("ask-openai.frontends.prompts.rag_instructions")
 local prompt_parser = require("ask-openai.frontends.context.prompt_parser")
+local RewritePerformance = require("ask-openai.rewrites.performance")
 
 ---@class RewriteFrontend : StreamingFrontend
 local RewriteFrontend = {}
@@ -28,6 +29,11 @@ local RewriteFrontend = {}
 -- Initialize selection position variables at module level
 ---@type Selection|nil
 RewriteFrontend.selection = nil
+
+--- Performance tracking instance for the current rewrite request
+---@type RewritePerformance|nil
+RewriteFrontend.performance = nil
+
 local function clear_response()
     RewriteFrontend.response = {
         num_deltas_reasoning = 0, -- approximate number of tokens
@@ -38,6 +44,8 @@ local function clear_response()
         start_ns = get_time_in_ns(),
         deltas_per_second = 0,
     }
+
+    RewriteFrontend.performance = RewritePerformance:new()
 
     function RewriteFrontend.response:append_chunk(chunk, reasoning_chunk)
         -- log:info("append", vim.inspect(chunk), vim.inspect(reasoning_chunk))
@@ -195,6 +203,11 @@ function RewriteFrontend.on_parsed_data_sse(sse_parsed)
     local extract_generated_text = get_extract_generated_text_func(RewriteFrontend.last_request.endpoint)
     local content_chunk, reasoning_chunk = extract_generated_text(first_choice)
 
+    -- Track time to first token
+    if RewriteFrontend.performance ~= nil and (content_chunk ~= "" or reasoning_chunk ~= "") then
+        RewriteFrontend.performance:token_arrived()
+    end
+
     if not RewriteFrontend.displayer then return end -- else after cancel, if get another SSE, boom
 
     RewriteFrontend.response:append_chunk(content_chunk, reasoning_chunk)
@@ -291,6 +304,11 @@ function RewriteFrontend.accept_rewrite()
     RewriteFrontend.stop_streaming = true -- go ahead and stop with whatever has been generated so far
     RewriteFrontend.displayer = nil
 
+    -- Record total duration
+    if RewriteFrontend.performance ~= nil then
+        RewriteFrontend.performance:overall_done()
+    end
+
     vim.schedule(function()
         local lines = RewriteFrontend.response:split_lines()
 
@@ -346,6 +364,11 @@ end
 function RewriteFrontend.cleanup_after_cancel()
     RewriteFrontend.abort_last_request()
     RewriteFrontend.displayer = nil
+
+    -- Record total duration on cancel
+    if RewriteFrontend.performance ~= nil then
+        RewriteFrontend.performance:overall_done()
+    end
 
     -- PRN store this in a last_accumulated_chunks / canceled_accumulated_chunks?
     -- log:info("Cancel rewrite (accumulated_chunks): ", M.accumulated_chunks)
@@ -526,7 +549,17 @@ local function ask_rewrite_command(opts)
                 return
             end
 
+            -- Track RAG completion timing
+            if RewriteFrontend.performance ~= nil then
+                RewriteFrontend.performance:rag_done()
+            end
+
             then_send_rewrite(rag_matches)
+        end
+
+        -- Track RAG start timing
+        if RewriteFrontend.performance ~= nil then
+            RewriteFrontend.performance:rag_started()
         end
 
         -- TODO should abort logic also clear rag_cancel/rag_request_ids?
