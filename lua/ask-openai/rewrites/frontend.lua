@@ -31,8 +31,17 @@ RewriteFrontend.selection = nil
 local function clear_response()
     RewriteFrontend.response = {
         num_deltas = 0, -- approximate number of tokens
-        accumulated_chunks = ""
+        accumulated_chunks = "",
     }
+
+    function RewriteFrontend.response:append_chunk(chunk)
+        if chunk == nil or chunk == "" then
+            return
+        end
+        self.num_deltas = self.num_deltas + 1
+        self.accumulated_chunks = self.accumulated_chunks .. chunk
+    end
+
     return RewriteFrontend.response
 end
 clear_response()
@@ -141,8 +150,7 @@ function RewriteFrontend.on_parsed_data_sse(sse_parsed)
 
     if not RewriteFrontend.displayer then return end -- else after cancel, if get another SSE, boom
 
-    -- TODO add accum_chunk() on RewriteFrontend.response?
-    RewriteFrontend.response.accumulated_chunks = RewriteFrontend.response.accumulated_chunks .. content_chunk
+    RewriteFrontend.response:append_chunk(content_chunk)
 
     -- TODO move split_lines to RewriteFrontend.response?
     local lines = text_helpers.split_lines(RewriteFrontend.response.accumulated_chunks)
