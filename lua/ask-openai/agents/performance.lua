@@ -11,6 +11,7 @@ local AgentTurnPerformance = {}
 AgentTurnPerformance.__index = AgentTurnPerformance
 
 function AgentTurnPerformance:new(turn_index)
+    -- TODO! THIS IS NOT REVIEWED AT ALL YET... I ASKED QWEN TO GET IT STARTED FOR ME TO THEN DO LATER
     self.turn_index = turn_index or 0
     self._turn_start_time_ns = get_time_in_ns()
     self._rag_start_time_ns = nil
@@ -68,18 +69,18 @@ function AgentTurnPerformance:tokens_per_second()
     if self.completion_duration_ms == nil or self.completion_duration_ms <= 0 then
         return 0
     end
-    
+
     local elapsed_seconds = self.completion_duration_ms / 1000
-    
+
     -- Subtract RAG duration from total time to isolate completion speed
     if self.rag_duration_ms ~= nil and self.rag_duration_ms > 0 then
         elapsed_seconds = elapsed_seconds - (self.rag_duration_ms / 1000)
     end
-    
+
     if elapsed_seconds <= 0 then
         return 0
     end
-    
+
     return self.tokens_this_turn / elapsed_seconds
 end
 
@@ -140,7 +141,7 @@ function AgentPerformance:overall_done()
     if self.total_duration_ms then
         message = message .. "TOTAL: " .. ansi.underline(self.total_duration_ms .. " ms") .. " "
     end
-    
+
     local total_tokens = 0
     for _, turn in ipairs(self.turns) do
         total_tokens = total_tokens + turn.tokens_this_turn
@@ -149,9 +150,9 @@ function AgentPerformance:overall_done()
         local overall_tok_sec = total_tokens / (self.total_duration_ms / 1000)
         message = message .. ansi.underline(string.format("%.0f tok/s", overall_tok_sec))
     end
-    
+
     log:info(message)
-    
+
     -- Log per-turn summaries
     for _, turn in ipairs(self.turns) do
         turn:log_summary()
@@ -166,10 +167,10 @@ function AgentPerformance:overall_tokens_per_second()
     if self.total_duration_ms == nil or self.total_duration_ms <= 0 then
         return nil
     end
-    
+
     local total_tokens = 0
     local total_completion_time_ms = 0
-    
+
     for _, turn in ipairs(self.turns) do
         total_tokens = total_tokens + turn.tokens_this_turn
         if turn.completion_duration_ms ~= nil and turn.completion_duration_ms > 0 then
@@ -182,11 +183,11 @@ function AgentPerformance:overall_tokens_per_second()
             end
         end
     end
-    
+
     if total_completion_time_ms <= 0 then
         return 0
     end
-    
+
     return total_tokens / (total_completion_time_ms / 1000)
 end
 
