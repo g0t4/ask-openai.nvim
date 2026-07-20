@@ -174,7 +174,10 @@ function Displayer:on_response(selection, lines)
         virt_text_pos = 'overlay',
     })
 
-    self:set_keymaps()
+    -- log:info("on_response")
+    -- FYI I noticed this is called once per token when streaming a response... and all entrypoints that create a displayer already call set_keymaps() so we shouldn't need this
+    --  makes me wonder if this is super old (before I had streaming tokens feature added to rewrites)
+    -- self:set_keymaps() --  TODO can I nuke this for good? if no issues then go for in by  2026 August...
 end
 
 function Displayer:accept()
