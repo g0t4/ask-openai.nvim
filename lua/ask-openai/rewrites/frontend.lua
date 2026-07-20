@@ -35,13 +35,8 @@ local function clear_response()
         accumulated_chunks = "",
         has_reasoning = false,
         is_still_thinking = false,
-        start_times = {
-            rag_start     = nil,
-            rag_end       = nil,
-            suggest_start = nil,
-            first_token   = nil,
-            suggest_end   = nil,
-        }
+        start_ns = get_time_in_ns(),
+        deltas_per_second = 0,
     }
 
     function RewriteFrontend.response:append_chunk(chunk, reasoning_chunk)
@@ -59,6 +54,13 @@ local function clear_response()
             -- PRN later I can accumulate it if I want to show it, or log it...
             self.has_reasoning = true
             self.is_still_thinking = true
+        end
+
+        local duration_ns = get_time_in_ns() - self.start_ns
+        if duration_ns > 0 then
+            self.deltas_per_second = (self.num_deltas_content + self.num_deltas_reasoning) / (duration_ns / 1e9)
+        else
+            self.deltas_per_second = 0 -- reset to zero if no duration
         end
     end
 
@@ -202,8 +204,12 @@ function RewriteFrontend.on_parsed_data_sse(sse_parsed)
     if RewriteFrontend.response.is_still_thinking then
         lines = {
             dots:get_still_thinking_message(RewriteFrontend.last_request.start_time),
-            tostring(RewriteFrontend.response.num_deltas_reasoning)
+            tostring(RewriteFrontend.response.num_deltas_reasoning),
         }
+        if RewriteFrontend.response.deltas_per_second > 0 then
+            local speed = string.format("~%.0f tok/sec", RewriteFrontend.response.deltas_per_second)
+            table.insert(lines, speed)
+        end
         vim.schedule(function() RewriteFrontend.displayer:show_green_preview_text(RewriteFrontend.selection, lines) end)
         return
     end
