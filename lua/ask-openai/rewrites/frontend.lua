@@ -468,7 +468,7 @@ local function ask_rewrite_command(opts)
 
         ---@param rag_matches LSPRankedMatch[]
         function on_rag_response(rag_matches)
-            log:info("on_rag_response")
+            -- log:info("on_rag_response")
             -- PRN I think this could be shared with all frontends... if they pass themself for access to ID/cancel refs
 
             -- * make sure prior (canceled) rag request doesn't still respond
