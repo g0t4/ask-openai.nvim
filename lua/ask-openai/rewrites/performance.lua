@@ -100,7 +100,7 @@ function RewritePerformance:tokens_per_second(num_deltas_content, num_deltas_rea
     end
 
     local elapsed_seconds = elapsed_ns / 1e9
-    
+
     -- Subtract RAG duration from total time to isolate completion speed
     if self.rag_duration_ms ~= nil and self.rag_duration_ms > 0 then
         elapsed_seconds = elapsed_seconds - (self.rag_duration_ms / 1000)
