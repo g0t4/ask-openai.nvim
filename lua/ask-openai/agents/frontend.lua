@@ -17,6 +17,7 @@ local model_params = require("ask-openai.agents.models.params")
 local LinesBuilder = require("ask-openai.agents.viewer.lines_builder")
 local MessageBuilder = require("ask-openai.rewrites.message_builder")
 local prompt_parser = require("ask-openai.frontends.context.prompt_parser")
+local AgentPerformance = require("ask-openai.agents.performance")
 local HLGroups = require("ask-openai.hlgroups")
 local formatters = require("ask-openai.agents.viewer.formatters")
 local ToolCallOutput = require("ask-openai.agents.tools.tool_call_output")
@@ -32,6 +33,10 @@ require("ask-openai.helpers.buffers")
 local AgentsFrontend = {}
 
 local first_turn_ns_id
+
+--- Performance tracking for the current agent session
+---@type AgentPerformance|nil
+AgentsFrontend.performance = nil
 
 local cached_files = {}
 
@@ -258,7 +263,8 @@ local function ask_agent_command(opts)
         local config = require("ask-openai.config")
         local base_url = config.get_base_url(model)
         local new_trace = AgentTrace:new(body_overrides, base_url)
-        AgentsFrontend.trace = new_trace -- FYI `.trace` is intended for rare circumstances only, i.e. cancel action which has no context to pass a trace
+        AgentsFrontend.trace = new_trace
+        AgentsFrontend.performance = AgentPerformance:new() -- FYI `.trace` is intended for rare circumstances only, i.e. cancel action which has no context to pass a trace
         -- log:info("sending", vim.inspect(AgentsFrontend.trace))
         AgentsFrontend.then_get_assistant_response(new_trace)
     end
@@ -284,7 +290,17 @@ local function ask_agent_command(opts)
                 return
             end
 
-            then_add_seed_user_messages(rag_matches)
+            -- Track RAG completion timing
+                if AgentsFrontend.performance ~= nil and AgentsFrontend.performance.turn_count > 0 then
+                    AgentsFrontend.performance.turns[#AgentsFrontend.performance.turns]:rag_done()
+                end
+
+                then_add_seed_user_messages(rag_matches)
+        end
+
+        -- Track RAG start timing
+        if AgentsFrontend.performance ~= nil and AgentsFrontend.performance.turn_count > 0 then
+            AgentsFrontend.performance.turns[#AgentsFrontend.performance.turns]:rag_started()
         end
 
         this_request_ids, cancel = rag_client.context_query_for_agents(code_bufnr, cleaned_prompt, code_context, nil, on_rag_response)
@@ -305,6 +321,9 @@ end
 ---@param trace AgentTrace
 function AgentsFrontend.then_get_assistant_response(trace)
     -- * conversation turns (track start line for streaming chunks)
+    -- Start performance tracking for this turn
+    local current_turn_perf = AgentsFrontend.performance:start_turn()
+    
     AgentsFrontend.this_turn_chat_start_line_base0 = AgentsFrontend.chat_window.buffer:get_line_count()
     -- log:info("M.this_turn_chat_start_line_base0", M.this_turn_chat_start_line_base0)
     AgentsFrontend.chat_window:mark_agent_running(true)
@@ -541,6 +560,14 @@ function AgentsFrontend.on_streaming_delta_update_message_history(choice, reques
             (rx_accum_message.reasoning_content or "") .. choice.delta.reasoning_content
     end
 
+    -- Track time to first token for current turn
+    if AgentsFrontend.performance ~= nil and AgentsFrontend.performance.turn_count > 0 then
+        local current_turn_perf = AgentsFrontend.performance.turns[#AgentsFrontend.performance.turns]
+        if current_turn_perf.time_to_first_token_ms == nil and (choice.delta.content ~= "" or choice.delta.reasoning_content ~= "") then
+            current_turn_perf:token_arrived()
+        end
+    end
+
     if choice.finish_reason ~= nil then
         -- FYI this is vim.NIL on first too
         rx_accum_message.finish_reason = choice.finish_reason -- on last delta per index/role (aka message)
@@ -654,6 +681,10 @@ function AgentsFrontend.on_curl_exited_successfully()
                 AgentsFrontend.show_user_role_as_follow_up_hint()
                 AgentsFrontend.chat_window:mark_agent_running(false)
                 AgentsFrontend.chat_window:stop_spinner("Agent Finished")
+                -- Track completion timing for current turn
+                if AgentsFrontend.performance ~= nil and AgentsFrontend.performance.turn_count > 0 then
+                    AgentsFrontend.performance.turns[#AgentsFrontend.performance.turns]:completion_done()
+                end
             end
             -- set offset after every assistant message, that way if anything goes awry the user can resume by typing below the last assistant message (i.e. "resume") and trigger follow up (even if say tool call was in progress and blew up)
             AgentsFrontend.chat_window.followup_starts_at_line_0indexed = AgentsFrontend.chat_window.buffer:get_line_count() - 1
@@ -724,6 +755,11 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(trace)
 end
 
 function AgentsFrontend.abort_request()
+    -- Record session completion timing
+    if AgentsFrontend.performance ~= nil then
+        AgentsFrontend.performance:overall_done()
+    end
+
     local trace = AgentsFrontend.trace
     if not trace then
         return
