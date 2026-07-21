@@ -238,31 +238,28 @@ local function is_semantic_grep_available()
     return true
 end
 
-function on_agg()
+--- Opens the semantic grep Telescope picker with the given command.
+--- Shows a warning if RAG is not available.
+--- @param cmd string The telescope command to execute (e.g., "Telescope ask_semantic_grep languages=GLOBAL")
+local function open_semantic_grep_picker(cmd)
     local is_available, warning_message = is_semantic_grep_available()
     if not is_available then
         vim.notify(warning_message, vim.log.levels.WARN)
         return
     end
-    vim.cmd("Telescope ask_semantic_grep languages=GLOBAL")
+    vim.cmd(cmd)
+end
+
+function on_agg()
+    open_semantic_grep_picker("Telescope ask_semantic_grep languages=GLOBAL")
 end
 
 function on_age()
-    local is_available, warning_message = is_semantic_grep_available()
-    if not is_available then
-        vim.notify(warning_message, vim.log.levels.WARN)
-        return
-    end
-    vim.cmd("Telescope ask_semantic_grep languages=EVERYTHING")
+    open_semantic_grep_picker("Telescope ask_semantic_grep languages=EVERYTHING")
 end
 
 function on_ag()
-    local is_available, warning_message = is_semantic_grep_available()
-    if not is_available then
-        vim.notify(warning_message, vim.log.levels.WARN)
-        return
-    end
-    vim.cmd("Telescope ask_semantic_grep")
+    open_semantic_grep_picker("Telescope ask_semantic_grep")
 end
 
 function M.setup_telescope_picker()
