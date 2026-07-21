@@ -1,5 +1,4 @@
 local M = {}
-local init = require("ask-openai")
 local config = require("ask-openai.config")
 local lualine = require('ask-openai.status.lualine')
 local LlamaServerClient = require('ask-openai.backends.llama_cpp.llama_server_client')
@@ -7,12 +6,12 @@ local LlamaServerClient = require('ask-openai.backends.llama_cpp.llama_server_cl
 -- * predictions *
 function M.enable_predictions()
     config.local_share.set_predictions_enabled()
-    init.start_predictions()
+    require("ask-openai.predictions.frontend").start_predictions()
 end
 
 function M.disable_predictions()
     config.local_share.set_predictions_disabled()
-    init.stop_predictions()
+    require("ask-openai.predictions.frontend").stop_predictions()
 end
 
 function M.toggle_predictions()
