@@ -2,8 +2,11 @@ local curl = require('plenary.curl')
 local TxChatMessage = require('ask-openai.agents.messages.tx')
 local log = require('devtools.logs.logger').universal()
 
+
+local M = {}
+
 ---@return string
-local function get_vim_command_suggestion(passed_context)
+function M.get_vim_command_suggestion(passed_context)
     local system_message = [[
         You are a vim expert. The user (that you are talking to) has vim open in command mode.
         They have typed part of a command that they need help with.
@@ -14,32 +17,26 @@ local function get_vim_command_suggestion(passed_context)
         If the user mentions another vim mode (i.e., normal, insert, etc.), then if possible return a command to switch to that mode and execute whatever they asked about.
         For example, if the user asks how to delete a line in normal mode, you could answer `:normal dd`.
     ]]
-    -- FYI local llama3.2-vision:11b works but it feels like it's more wrong than it should be... perhaps the prompt could be improved overall? mabye some examples?
-    -- AVOID custom model prompts for now... should be generic
-    -- PRN allow users to override the prompt?
 
     local config = require("ask-openai.config")
-    local bearer_token = config.get_validated_bearer_token()
-    local chat_url = config.get_cmdline_base_url()
-    print("chat_url", chat_url) -- FYI this shows over commandline so it is helpful to print so I can verify if smth fails where it was sent at least
-    local model = config.get_options().model
-    log:trace("model", model)
+    local base_url = config.get_endpoints().cmdline.base_url
+    local completions_url = base_url .. "/v1/chat/completions"
+    log:info("base_url", base_url)
 
-    local max_tokens = config.get_options().max_tokens
-    log:info("max_tokens", max_tokens)
+    -- TODO switch to new Curl backend like with other frontends TO ENSURE TRACES are captured
+    --  TODO or capture the traces here instead
+    --  TODO can I stream in the tokens too so I see them one at a time?! I would love that versus having to build the response in one chunk (plus I can show thinking then too like rewrites)
+    --  TODO good task to give Qwen to do (all of this, use RewriteFrontend as refernece... I would love to see a similar status indication like I have over there!
+
+    local max_tokens = config.get_options().commandline.max_tokens
     local response = curl.post({
-        url = chat_url,
-        timeout = 30000, -- PRN add timeout, long thinking can take > 10s default
+        url = completions_url,
+        timeout = 30000,
         headers = {
             ["Content-Type"] = "application/json",
-            ["Authorization"] = "Bearer " .. bearer_token,
-            ["Copilot-Integration-Id"] = "vscode-chat",
-            ["Editor-Version"] = ("Neovim/%s.%s.%s")
-                :format(vim.version().major, vim.version().minor, vim.version().patch),
-            -- FYI watch messages for failures (i.e. when I didn't have Editor-Version set it choked)
         },
         body = vim.json.encode({
-            model = model,
+            -- model = model, -- not used with llama-server currently
             messages = {
                 TxChatMessage:system(system_message),
                 TxChatMessage:user(passed_context),
@@ -71,12 +68,10 @@ local function get_vim_command_suggestion(passed_context)
         end
         return content
     else
-        print("Request failed:", response.status, response.body)
+        log:error("Request failed:", response.status, response.body)
         -- prepend : to make it extra obvious (b/c cmdline already has a : this doubles up to ::, still works just fine)
         return ':messages " request failed, run this to see why'
     end
 end
 
-return {
-    get_vim_command_suggestion = get_vim_command_suggestion
-}
+return M

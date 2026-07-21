@@ -1,6 +1,7 @@
 local M = {}
 
 local config = require("ask-openai.config")
+local log = require("devtools.logs.logger").universal()
 
 local are_predictions_running = false
 
@@ -13,7 +14,7 @@ function M.start_predictions()
 
     local predictions_frontend = require("ask-openai.predictions.frontend")
 
-    local predictions = config.get_options().tmp.predictions
+    local predictions = config.get_options().predictions
     if not predictions.keymaps then
         return
     end
@@ -84,7 +85,7 @@ function M.stop_predictions()
     -- remove event triggers
     pcall(vim.api.nvim_del_augroup_by_name, augroup) -- most del methods will throw if doesn't exist... so just ignore that
 
-    local predictions = config.get_options().tmp.predictions
+    local predictions = config.get_options().predictions
     if not predictions.keymaps then
         return
     end
@@ -107,7 +108,7 @@ local function trim_null_characters(input)
     return input:gsub("%z", "")
 end
 
-function M.ask_openai()
+function M.ask_suggest()
     local cmdline = vim.fn.getcmdline()
     print("asking...") -- overwrites showing luaeval("...") in cmdline
 
@@ -121,16 +122,20 @@ end
 
 ---@param user_options AskOpenAIOptions
 function M.setup(user_options)
+    if user_options ~= nil then
+        vim.notify("user_options are discontinued for now", vim.log.levels.WARN)
+        log:warn("user_options are discontinued for now, you passed:", user_options)
+    end
     -- FYI this is called by the plugin consumer... passing their options
-    config.setup(user_options)
+    config.setup()
 
     -- PRN feels like this belongs in cmdline_ask.setup()
-    local lhs = config.get_options().keymaps.cmdline_ask
+    local lhs = config.get_options().commandline.keymaps.cmdline_ask
     if lhs then
         -- [e]valuate vimscript expression luaeval("...") which runs nested lua code
         -- DO NOT SET silent=true, messes up putting result into cmdline, also I wanna see print messages, IIUC that would be affected
         -- FYI `<C-\>e` is critical in the following, don't remove the `e` and `\\` is to escape the `\` in lua
-        vim.api.nvim_set_keymap('c', lhs, '<C-\\>eluaeval("require(\'ask-openai\').ask_openai()")<CR>', { noremap = true, })
+        vim.api.nvim_set_keymap('c', lhs, '<C-\\>eluaeval("require(\'ask-openai\').ask_suggest()")<CR>', { noremap = true, })
     end
 
     -- PRN feels like this belongs in predictions.setup()
