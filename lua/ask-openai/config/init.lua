@@ -216,18 +216,18 @@ function M.get_base_url(config_model_slug)
 end
 
 local function _get_provider()
-    -- FYI prints below only show on first run b/c provider is cached by get_provider() so NBD to add that extra info which is useful to know config is correct w/o toggling verbose on and getting a wall of logs
+    -- TODO fold this into the same systems I use for completions for predictions/rewrites/etc... I don't need separate providers anymore (nor do I use them)
     if cached_options.provider == "copilot" then
-        print("AskOpenAI: Using Copilot")
+        log:info("AskOpenAI: Using Copilot")
         return require("ask-openai.providers.copilot")
     elseif cached_options.provider == "keyless" then
-        print("AskOpenAI: Using Keyless")
+        log:info("AskOpenAI: Using Keyless")
         return require("ask-openai.providers.keyless")
     elseif type(cached_options.provider) == "function" then
-        print("AskOpenAI: Using BYOK function")
+        log:info("AskOpenAI: Using BYOK function")
         return require("ask-openai.providers.byok")(cached_options.provider)
     else
-        error("AskOpenAI: Invalid provider")
+        log:error("AskOpenAI: Invalid provider")
     end
 end
 
