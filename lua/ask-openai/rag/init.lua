@@ -1,6 +1,7 @@
 local messages = require("devtools.messages")
 local api = require("ask-openai.api")
 local log = require("devtools.logs.logger").universal()
+local rag_client = require("ask-openai.rag.client")
 
 local M = {}
 
@@ -16,7 +17,6 @@ function M.setup_lsp()
         log:trace("NOT starting LSP (b/c RAG is toggled off)")
         return
     end
-    local rag_client = require("ask-openai.rag.client")
     if not rag_client.is_rag_supported() then
         log:error("NOT starting LSP for RAG")
         return
@@ -220,15 +220,48 @@ function M.setup_lsp()
     })
 end
 
+--- Checks if semantic grep is available for the current session.
+--- @return boolean is_available
+--- @return string? warning_message
+local function is_semantic_grep_available()
+    local rag_is_enabled = api.is_rag_enabled()
+    local rag_is_supported = rag_client.is_rag_supported()
+    
+    if not rag_is_enabled then
+        return false, "RAG is disabled. Enable it to use semantic grep."
+    end
+    
+    if not rag_is_supported then
+        return false, "RAG server is not available. Start the LSP server to use semantic grep."
+    end
+    
+    return true
+end
+
 function on_agg()
+    local is_available, warning_message = is_semantic_grep_available()
+    if not is_available then
+        vim.notify(warning_message, vim.log.levels.WARN)
+        return
+    end
     vim.cmd("Telescope ask_semantic_grep languages=GLOBAL")
 end
 
 function on_age()
+    local is_available, warning_message = is_semantic_grep_available()
+    if not is_available then
+        vim.notify(warning_message, vim.log.levels.WARN)
+        return
+    end
     vim.cmd("Telescope ask_semantic_grep languages=EVERYTHING")
 end
 
 function on_ag()
+    local is_available, warning_message = is_semantic_grep_available()
+    if not is_available then
+        vim.notify(warning_message, vim.log.levels.WARN)
+        return
+    end
     vim.cmd("Telescope ask_semantic_grep")
 end
 
