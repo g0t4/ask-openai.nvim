@@ -28,7 +28,7 @@ function M.get_vim_command_suggestion(passed_context)
     --  TODO can I stream in the tokens too so I see them one at a time?! I would love that versus having to build the response in one chunk (plus I can show thinking then too like rewrites)
     --  TODO good task to give Qwen to do (all of this, use RewriteFrontend as refernece... I would love to see a similar status indication like I have over there!
 
-    local max_tokens = config.get_options().commandline.max_tokens
+    local max_tokens = 10000 -- higher when using thinking models like 4K+ for gptoss120b (high 8K) and 10K for qwen3.6/agentworld
     local response = curl.post({
         url = completions_url,
         timeout = 30000,
@@ -96,14 +96,10 @@ function M.ask_suggest()
 end
 
 function M.setup()
-    local config = require("ask-openai.config")
-    local lhs = config.get_options().commandline.keymaps.cmdline_ask
-    if lhs then
-        -- [e]valuate vimscript expression luaeval("...") which runs nested lua code
-        -- DO NOT SET silent=true, messes up putting result into cmdline, also I wanna see print messages, IIUC that would be affected
-        -- FYI `<C-\>e` is critical in the following, don't remove the `e` and `\\` is to escape the `\` in lua
-        vim.api.nvim_set_keymap('c', lhs, '<C-\\>eluaeval("require(\'ask-openai.cmdline.suggest\').ask_suggest()")<CR>', { noremap = true, })
-    end
+    -- [e]valuate vimscript expression luaeval("...") which runs nested lua code
+    -- DO NOT SET silent=true, messes up putting result into cmdline, also I wanna see print messages, IIUC that would be affected
+    -- FYI `<C-\>e` is critical in the following, don't remove the `e` and `\\` is to escape the `\` in lua
+    vim.api.nvim_set_keymap('c', '<C-b>', '<C-\\>eluaeval("require(\'ask-openai.cmdline.suggest\').ask_suggest()")<CR>', { noremap = true, })
 end
 
 return M

@@ -359,6 +359,11 @@ local are_predictions_running = false
 
 local augroup = "ask-openai.prediction"
 
+local keymap_accept_all = '<Tab>'
+local keymap_accept_line = '<C-right>'
+local keymap_accept_word = '<M-right>'
+local keymap_redo_prediction = '<M-Tab>'
+
 function PredictionsFrontend.start_predictions()
     if are_predictions_running then
         return
@@ -366,31 +371,18 @@ function PredictionsFrontend.start_predictions()
 
     local predictions_frontend = require("ask-openai.predictions.frontend")
 
-    local predictions = config.get_options().predictions
-    if not predictions.keymaps then
-        return
-    end
+    -- hardcoded keymaps
+    vim.api.nvim_set_keymap('i', keymap_accept_all, "",
+        { noremap = true, callback = predictions_frontend.accept_all_invoked })
 
-    -- keymaps
-    if predictions.keymaps.accept_all then
-        vim.api.nvim_set_keymap('i', predictions.keymaps.accept_all, "",
-            { noremap = true, callback = predictions_frontend.accept_all_invoked })
-    end
+    vim.api.nvim_set_keymap('i', keymap_accept_line, "",
+        { noremap = true, callback = predictions_frontend.accept_line_invoked })
 
-    if predictions.keymaps.accept_line then
-        vim.api.nvim_set_keymap('i', predictions.keymaps.accept_line, "",
-            { noremap = true, callback = predictions_frontend.accept_line_invoked })
-    end
+    vim.api.nvim_set_keymap('i', keymap_accept_word, "",
+        { noremap = true, callback = predictions_frontend.accept_word_invoked })
 
-    if predictions.keymaps.accept_word then
-        vim.api.nvim_set_keymap('i', predictions.keymaps.accept_word, "",
-            { noremap = true, callback = predictions_frontend.accept_word_invoked })
-    end
-
-    if predictions.keymaps.new_prediction then
-        vim.api.nvim_set_keymap('i', predictions.keymaps.new_prediction, "",
-            { noremap = true, callback = predictions_frontend.new_prediction_invoked })
-    end
+    vim.api.nvim_set_keymap('i', keymap_redo_prediction, "",
+        { noremap = true, callback = predictions_frontend.new_prediction_invoked })
 
     -- vim.keymap.set("n", "<leader>~", "<cmd>AskDumpEdits<CR>", {})
 
@@ -437,16 +429,11 @@ function PredictionsFrontend.stop_predictions()
     -- remove event triggers
     pcall(vim.api.nvim_del_augroup_by_name, augroup) -- most del methods will throw if doesn't exist... so just ignore that
 
-    local predictions = config.get_options().predictions
-    if not predictions.keymaps then
-        return
-    end
-
-    -- remove keymaps
-    pcall(vim.api.nvim_del_keymap, 'i', predictions.keymaps.accept_all)
-    pcall(vim.api.nvim_del_keymap, 'i', predictions.keymaps.accept_line)
-    pcall(vim.api.nvim_del_keymap, 'i', predictions.keymaps.accept_word)
-    pcall(vim.api.nvim_del_keymap, 'i', predictions.keymaps.new_prediction)
+    -- remove keymaps (using same hardcoded values)
+    pcall(vim.api.nvim_del_keymap, 'i', keymap_accept_all)
+    pcall(vim.api.nvim_del_keymap, 'i', keymap_accept_line)
+    pcall(vim.api.nvim_del_keymap, 'i', keymap_accept_word)
+    pcall(vim.api.nvim_del_keymap, 'i', keymap_redo_prediction)
 
     are_predictions_running = false
 end

@@ -106,22 +106,7 @@ function M.get_llama_server_model_info(base_url, callback)
 end
 
 ---@class AskOpenAIOptions
-local default_options = {
-    commandline = {
-        keymaps = {
-            cmdline_ask = "<C-b>",
-        },
-        max_tokens = 10000, -- higher when using thinking models like 4K+ for gptoss120b (high 8K) and 10K for qwen3.6/agentworld
-    },
-    predictions = {
-        keymaps = {
-            accept_all = "<Tab>",
-            accept_line = "<C-right>",
-            accept_word = "<M-right>",
-            new_prediction = "<M-Tab>",
-        },
-    }
-}
+local default_options = {}
 
 local cached_options = default_options
 
