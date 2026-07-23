@@ -210,6 +210,7 @@ async def serve(root_dir: str | Path | None = None) -> None:
         else:
             # TODO IMPL search parents() for a dot rag dir? i.e. if in nested dir in a repo
             #  could stop at repo boundary too?
+            logger.error("root_dir is required — pass it from the MCP client or run from a workspace with a .rag dir")
             raise ValueError("root_dir is required — pass it from the MCP client or run from a workspace with a .rag dir")
 
     root_dir_path = Path(root_dir)
