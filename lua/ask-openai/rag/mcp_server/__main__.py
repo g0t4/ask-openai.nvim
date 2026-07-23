@@ -41,6 +41,9 @@ logging.getLogger("mcp").setLevel(logging.DEBUG)  # MCP SDK logs
 
 # FYI!!! USE tee to see what is sent (uncomment in my fish wrapper function)
 
+# BTW! something is broken horribly with CODEX and the fucking MCP server won't show WTF is going on ... it just sends an error notification and codex flips the fuck out about no id so codex clearly does not support JSONRPC notification messages which fuckk.. I dont care anymore for NOW
+#  FIX THIS LATER OR NEVER
+
 SEMANTIC_GREP_TOOL = Tool(
     name="semantic_grep",
     description=(
