@@ -35,9 +35,11 @@ from index import workspace
 from logs import get_logger, logging_fwk_to_mcp_server_log_file
 
 logger: logging.Logger = get_logger(__name__)
-logging_fwk_to_mcp_server_log_file(logging.INFO)
+logging_fwk_to_mcp_server_log_file(logging.DEBUG)
 
-# logging.getLogger("mcp").setLevel(logging.DEBUG)  # MCP SDK logs
+logging.getLogger("mcp").setLevel(logging.DEBUG)  # MCP SDK logs
+
+# FYI!!! USE tee to see what is sent (uncomment in my fish wrapper function)
 
 SEMANTIC_GREP_TOOL = Tool(
     name="semantic_grep",
