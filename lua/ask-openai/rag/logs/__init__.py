@@ -71,6 +71,10 @@ def logging_fwk_to_mcp_server_log_file(level):
     logging_fwk_to_log_file(level, XDG_STATE_HOME() / "mcp-servers/semantic-grep.log")
 
 
+def XDG_DATA_HOME():
+    return Path(os.environ.get("XDG_DATA_HOME", str(Path.home() / ".local" / "share")))
+
+
 def logging_fwk_to_language_server_log_file(level):
     logging_fwk_to_log_file(level, "~/.local/share/ask-openai/language.server.log")
 
