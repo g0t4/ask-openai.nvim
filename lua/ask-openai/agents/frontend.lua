@@ -478,7 +478,7 @@ local function update_ui_chat_viewer(trace)
         -- * update window title with model name and token count
         local last_message = request.accumulated_model_response_messages[#request.accumulated_model_response_messages]
         if last_message and last_message.last_sse then
-            log:info("last_message", last_message)
+            -- log:info("last_message", last_message)
             local last_sse = last_message.last_sse
             local timings = last_sse.timings
             local footers = {}

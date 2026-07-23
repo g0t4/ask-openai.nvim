@@ -80,7 +80,7 @@ function FIMPerformance:overall_done()
     if self.total_duration_ms then
         message = message .. "TOTAL: " .. ansi.underline(self.total_duration_ms .. " ms")
     end
-    log:info(message)
+    -- log:info(message)
 
     return message
 end

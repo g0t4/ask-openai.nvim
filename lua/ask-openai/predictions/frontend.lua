@@ -171,8 +171,7 @@ function PredictionsFrontend.ask_for_prediction(params)
 
         ---@param rag_matches LSPRankedMatch[]
         function on_rag_response(rag_matches)
-            log:info("on_rag_response") -- leave around for general flow checking
-            -- log:info("on_rag_response", vim.inspect(rag_matches)) -- uncomment for detailed logging
+            -- log:info("on_rag_response", vim.inspect(rag_matches))
 
             -- FYI unroll all rag specific safeguards here so that logic doesn't live inside send_fim
             performance:rag_done()
