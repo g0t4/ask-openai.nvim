@@ -28,6 +28,9 @@ function M.decode_json(json_string)
     return success, object
 end
 
+---@param json_string string
+---@return boolean success
+---@return any object
 function M.decode_json_always_logged(json_string)
     local success, object = M.decode_json(json_string)
     if success then

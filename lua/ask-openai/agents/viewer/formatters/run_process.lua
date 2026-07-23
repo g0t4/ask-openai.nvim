@@ -17,7 +17,7 @@ local function get_tool_header_text(args_json, message)
         return args_json, nil
     end
 
-    local success, object_or_error = safely.decode_json_always_logged(args_json)
+    local success, object_or_error = safely.decode_json(args_json)
     if not success then
         return "json decode failure (see logs): " .. vim.inspect(object_or_error), nil
     end
