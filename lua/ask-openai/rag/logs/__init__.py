@@ -10,6 +10,8 @@ from rich.console import Console
 from rich.logging import RichHandler
 from rich.pretty import pretty_repr
 
+from logs.xdg import XDG_STATE_HOME
+
 logging.getLogger("pygls.protocol.json_rpc").setLevel(logging.WARN)  # DEBUG messages on every message!
 logging.getLogger("pygls.protocol.language_server").setLevel(logging.WARN)  # server capabilities on startup
 logging.getLogger("pygls.feature_manager").setLevel(logging.WARN)  # what features are registered/detected
@@ -63,16 +65,8 @@ def clear_iterm_scrollback(log_file):
     # TODO does console have a clear scrollback too that blasts all possible clears? or that I can specific which term to do it for?
 
 
-def XDG_STATE_HOME():
-    return Path(os.environ.get("XDG_STATE_HOME", str(Path.home() / ".local" / "state")))
-
-
 def logging_fwk_to_mcp_server_log_file(level):
     logging_fwk_to_log_file(level, XDG_STATE_HOME() / "mcp-servers/semantic-grep.log")
-
-
-def XDG_DATA_HOME():
-    return Path(os.environ.get("XDG_DATA_HOME", str(Path.home() / ".local" / "share")))
 
 
 def logging_fwk_to_language_server_log_file(level):
