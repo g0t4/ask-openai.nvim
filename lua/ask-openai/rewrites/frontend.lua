@@ -689,7 +689,26 @@ function RewriteFrontend.setup()
     vim.keymap.set({ 'n', 'v' }, '<Leader>rwf', ':<C-u>AskRewrite /file ', { noremap = true })
 
     -- prefill prompt for AskRewrite via AskAgent /tools
-    vim.keymap.set({ 'n', 'v' }, '<Leader>rf', ':<C-u>AskAgent /tools I want to change the current file /file ... ', { noremap = true })
+    local function ask_agent_change_current_file()
+        -- TODO copy over solution here to suggest plugin and make it stream tokens into command line too!
+        --   will likely need to clear command line given I typed in a prompt, but hard to say
+        --   vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<C-u>", true, false, true), "m", false)
+
+        local filename = files.get_file_relative_path()
+
+        -- FYI I removed `/file` b/c the agent almost always looks up the file again anyways! so why not just have it do it to start with!
+        --  if this leads to a slow down b/c the model does other things first then I can add back file contents...
+        --  the reason I wanted to use this is b/c I think the full file is distracting the agent at times
+        --  specifically, I suspect this might explain why Qwen randomly won't actually change the file but will show me new code (as if I will paste it in)
+        --  seeing the full file before it asks might derail its focus on changing it with tools so I don't have to ask again!
+        --   TODO does using file path only help Qwen reliably change with tools w/o asking twice?
+        local precanned_prompt = string.format(':AskAgent /tools I want to change the current file %s', vim.fn.shellescape(filename))
+        -- FYI escaped is not necessary here but could be in other cases:
+        -- precanned_prompt = precanned_prompt:gsub("\\", "\\\\"):gsub("\n", "\\n"):gsub("\r", "\\r")
+        vim.api.nvim_feedkeys(precanned_prompt, "m", false)
+    end
+
+    vim.keymap.set({ 'n', 'v' }, '<Leader>rf', ask_agent_change_current_file, { noremap = true })
 
     vim.keymap.set({ 'n', 'v' }, '<Leader>ry', retry_last_rewrite_command, { noremap = true })
 
