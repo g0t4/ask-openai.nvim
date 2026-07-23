@@ -1,8 +1,9 @@
-from io import StringIO
 import logging
+import os
 import time
-from typing import cast
+from io import StringIO
 from pathlib import Path
+from typing import cast
 
 import rich
 from rich.console import Console
@@ -62,9 +63,19 @@ def clear_iterm_scrollback(log_file):
     # TODO does console have a clear scrollback too that blasts all possible clears? or that I can specific which term to do it for?
 
 
-def logging_fwk_to_language_server_log_file(level):
+def logging_fwk_to_mcp_server_log_file(level):
+    _xdg_state = Path(os.environ.get("XDG_STATE_HOME", str(Path.home() / ".local" / "state")))
+    _log_dir = _xdg_state / "mcp-servers"
+    _log_file = _log_dir / "semantic-grep.log"
+    logging_fwk_to_log_file(level, _log_file)
 
-    log_file_path = Path("~/.local/share/ask-openai/language.server.log").expanduser()
+
+def logging_fwk_to_language_server_log_file(level):
+    logging_fwk_to_log_file(level, "~/.local/share/ask-openai/language.server.log")
+
+
+def logging_fwk_to_log_file(level, log_file):
+    log_file_path = Path(log_file).expanduser()
     log_file_path.parent.mkdir(parents=True, exist_ok=True)
 
     log_file = open(log_file_path, "w", encoding="utf-8")
