@@ -102,7 +102,10 @@ local function ask_agent_command(opts)
         local cwd = vim.fn.getcwd()
         local cwd_text = "Current directory: " .. cwd
         local repo_root = files.get_repo_root()
-        if repo_root ~= cwd then
+        if repo_root == nil then
+            log:info("not in a repo, suggesting to agent to stay within workdir", vim.log.levels.WARN)
+            cwd_text = cwd_text .. "\nyou are not in a git repo, please only make changes in the workdir unless requested"
+        elseif repo_root ~= cwd then
             vim.notify("FYI you are in a nested directory of the repo and that tends to cause issues with gptoss making requests to change things", vim.log.levels.WARN)
             -- PRN path compare instead of text comparison? add this if you run into a problem
             cwd_text = cwd_text .. "\nRepository root: " .. repo_root
