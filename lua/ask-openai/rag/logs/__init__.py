@@ -63,9 +63,12 @@ def clear_iterm_scrollback(log_file):
     # TODO does console have a clear scrollback too that blasts all possible clears? or that I can specific which term to do it for?
 
 
+def XDG_STATE_HOME():
+    return Path(os.environ.get("XDG_STATE_HOME", str(Path.home() / ".local" / "state")))
+
+
 def logging_fwk_to_mcp_server_log_file(level):
-    _xdg_state = Path(os.environ.get("XDG_STATE_HOME", str(Path.home() / ".local" / "state")))
-    _log_dir = _xdg_state / "mcp-servers"
+    _log_dir = XDG_STATE_HOME() / "mcp-servers"
     _log_file = _log_dir / "semantic-grep.log"
     logging_fwk_to_log_file(level, _log_file)
 
