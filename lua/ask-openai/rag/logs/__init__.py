@@ -76,7 +76,7 @@ def XDG_DATA_HOME():
 
 
 def logging_fwk_to_language_server_log_file(level):
-    logging_fwk_to_log_file(level, "~/.local/share/ask-openai/language.server.log")
+    logging_fwk_to_log_file(level, XDG_STATE_HOME() / "ask-openai/language.server.log")
 
 
 def logging_fwk_to_log_file(level, log_file):
