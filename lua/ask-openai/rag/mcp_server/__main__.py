@@ -202,7 +202,7 @@ async def serve(root_dir: str | Path | None = None) -> None:
     server = Server("semantic-grep")
 
     if root_dir is None:
-        logger.info("no root_dir passed, trying to find .rag dir in Path.cwd()")
+        logger.info("no --root-dir passed, trying to find .rag dir in Path.cwd()")
         # Try to find a .rag dir from CWD
         cwd = Path.cwd()
         if (cwd / ".rag").exists():
@@ -210,8 +210,8 @@ async def serve(root_dir: str | Path | None = None) -> None:
         else:
             # TODO IMPL search parents() for a dot rag dir? i.e. if in nested dir in a repo
             #  could stop at repo boundary too?
-            logger.error("root_dir is required — pass it from the MCP client or run from a workspace with a .rag dir")
-            raise ValueError("root_dir is required — pass it from the MCP client or run from a workspace with a .rag dir")
+            logger.error("--root-dir is required — pass it from the MCP client or run from a workspace with a .rag dir")
+            raise ValueError("--root-dir is required — pass it from the MCP client or run from a workspace with a .rag dir")
 
     root_dir_path = Path(root_dir)
     await workspace.from_folder(root_dir_path)
