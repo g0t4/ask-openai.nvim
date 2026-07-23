@@ -68,8 +68,7 @@ def XDG_STATE_HOME():
 
 
 def logging_fwk_to_mcp_server_log_file(level):
-    _log_dir = XDG_STATE_HOME() / "mcp-servers"
-    _log_file = _log_dir / "semantic-grep.log"
+    _log_file = XDG_STATE_HOME() / "mcp-servers" / "semantic-grep.log"
     logging_fwk_to_log_file(level, _log_file)
 
 
