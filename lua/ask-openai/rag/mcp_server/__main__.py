@@ -197,7 +197,7 @@ async def serve(root_dir: str | Path | None = None) -> None:
     server = Server("semantic-grep")
 
     if root_dir is None:
-        logger.warn("no root_dir passed, trying to find .rag dir in Path.cwd()")
+        logger.info("no root_dir passed, trying to find .rag dir in Path.cwd()")
         # Try to find a .rag dir from CWD
         cwd = Path.cwd()
         if (cwd / ".rag").exists():
