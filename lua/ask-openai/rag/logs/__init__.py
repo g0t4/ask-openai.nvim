@@ -17,6 +17,7 @@ logging.getLogger("asyncio").setLevel(logging.WARN)  # mostly Content length mes
 
 console = None
 
+
 def setup_logging(_console: Console, level=logging.WARN):
     global console
     console = _console
@@ -39,6 +40,7 @@ def setup_logging(_console: Console, level=logging.WARN):
         force=True,  # force override root logger, in part to undo pytest hijacking root logger
     )
 
+
 def clear_iterm_scrollback(log_file):
     # FYI some imports take time and will delay this happening for a few seconds (i.e. model load on import)
     # * clear iTerm scrollback/screen!
@@ -59,6 +61,7 @@ def clear_iterm_scrollback(log_file):
     # console.clear()  # NOTE: not scrollback in iTerm (obviously)
     # TODO does console have a clear scrollback too that blasts all possible clears? or that I can specific which term to do it for?
 
+
 def logging_fwk_to_language_server_log_file(level):
 
     log_file_path = Path("~/.local/share/ask-openai/language.server.log").expanduser()
@@ -74,9 +77,11 @@ def logging_fwk_to_language_server_log_file(level):
 
     setup_logging(console, level)
 
+
 def logging_fwk_to_console(level):
     console = Console()
     setup_logging(console, level)
+
 
 def print_code(*args, **kwargs):
     """ never print code with rich.print
@@ -87,6 +92,7 @@ def print_code(*args, **kwargs):
     # could always use some fancy printing (coloring) of code by updating this one spot, too!
     import builtins
     builtins.print(*args, **kwargs)
+
 
 class Logger(logging.Logger):
 
@@ -133,13 +139,16 @@ class Logger(logging.Logger):
     def isEnabledForInfo(self):
         return self.isEnabledFor(logging.INFO)
 
+
 def get_logger(name) -> Logger:
     logging.setLoggerClass(Logger)
     logger = cast(Logger, logging.getLogger(name))
     return logger
 
+
 # by the way will have FQN, which how I run this is rag.logs for this module
 generic_logger = get_logger(__name__)
+
 
 class LogTimer:
 
@@ -156,6 +165,7 @@ class LogTimer:
         elapsed_ns = self.end_ns - self.start_ns
         elapsed_ms = elapsed_ns / 1000000
         self.logger.info(f"{self.finished_message}: {elapsed_ms:,.2f} ms")
+
 
 class Timer:
 
