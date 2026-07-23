@@ -31,7 +31,7 @@ function _semantic_grep(semantic_grep_request, lsp_buffer_number, process_result
         last_cancel_requests = nil
     end
 
-    log:info("requesting semantic_grep, last_msg_id: " .. vim.inspect(last_msg_id))
+    -- log:info("requesting semantic_grep, last_msg_id: " .. vim.inspect(last_msg_id))
     local my_msg_id, cancel_my_request -- "my" as in this closure's request
     my_msg_id, cancel_my_request = client.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, function(obj)
 
@@ -58,7 +58,7 @@ function _semantic_grep(semantic_grep_request, lsp_buffer_number, process_result
     last_cancel_requests = cancel_my_request
     last_msg_id = my_msg_id -- this is a number
 
-    log:info("semantic_grep last_msg_id: " .. vim.inspect(last_msg_id))
+    -- log:info("semantic_grep last_msg_id: " .. vim.inspect(last_msg_id))
 end
 
 local ns = vim.api.nvim_create_namespace("rag_preview")
