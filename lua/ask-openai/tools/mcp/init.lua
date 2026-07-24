@@ -550,7 +550,7 @@ local function mark_server_initialized()
     initialized_count = initialized_count + 1
     if initialized_count >= server_count then
         M.ready = true
-        log:info('All MCP servers initialized (' .. initialized_count .. '/' .. server_count .. ')')
+        -- log:info('All MCP servers initialized (' .. initialized_count .. '/' .. server_count .. ')')
     end
 end
 
