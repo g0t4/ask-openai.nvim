@@ -1,6 +1,6 @@
 local log = require("devtools.logs.logger").universal()
 local SSEDataOnlyParser = require("ask-openai.backends.sse.data_only_parser")
-local ansi = require("ask-openai.predictions.ansi")
+local ansi = require("devtools.ansi")
 local plumbing = require("ask-openai.tools.plumbing")
 local safely = require("ask-openai.helpers.safely")
 

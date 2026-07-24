@@ -1,5 +1,5 @@
 local log = require('devtools.logs.logger').universal()
-local ansi = require('ask-openai.predictions.ansi')
+local ansi = require('devtools.ansi')
 local shared = require('ask-openai.agents.messages.shared')
 
 ---@class RxAccumulatedMessage

@@ -1,6 +1,6 @@
 local uv = vim.uv
 local Prediction = require("ask-openai.predictions.prediction")
-local ansi = require("ask-openai.predictions.ansi")
+local ansi = require("devtools.ansi")
 local rag_client = require("ask-openai.rag.client")
 local api = require("ask-openai.api")
 local FIMPerformance = require("ask-openai.predictions.fim_performance")

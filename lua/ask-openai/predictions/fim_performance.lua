@@ -1,4 +1,4 @@
-local ansi = require("ask-openai.predictions.ansi")
+local ansi = require("devtools.ansi")
 local log = require("devtools.logs.logger").universal()
 local perf = require("ask-openai.perf")
 

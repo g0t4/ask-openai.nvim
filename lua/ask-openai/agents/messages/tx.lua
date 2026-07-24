@@ -1,5 +1,5 @@
 local log = require('devtools.logs.logger').universal()
-local ansi = require('ask-openai.predictions.ansi')
+local ansi = require('devtools.ansi')
 
 ---@class TxChatMessage : OpenAIChatCompletion_TxChatMessage
 local TxChatMessage = {}

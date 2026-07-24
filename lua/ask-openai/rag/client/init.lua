@@ -1,6 +1,6 @@
 local log = require("devtools.logs.logger").universal()
 local files = require("ask-openai.helpers.files")
-local ansi = require("ask-openai.predictions.ansi")
+local ansi = require("devtools.ansi")
 local safely = require("ask-openai.helpers.safely")
 local client = require("ask-openai.rag.client.client")
 
