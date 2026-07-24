@@ -254,13 +254,40 @@ function MCPStdioClient.new(name, options)
         end
     end
 
-    -- IIAC MCP's intent is for clients to inherit ENV VARs + add/override the ones provided in the list of tool registrations (above)
-    --  IOTW an MCP server might define a few additional ENV VARs but then expects to inherit the rest
-    --  thus I am mirroring that here:
-    --  in my case I only need to block VIRTUAL_ENV for python MCP servers (else they use the venv from my current dir in my terminal which is always gonna be set if that dir has a venv (or one of its parent dirs does, I walk up and auto enable first found venv)
-    --   so yeah from lua's perspective that shouldn't matter except that my neovim process launches with the VENV of the current workspace already activated and in its ENV VARs
-    local process_env = vim.tbl_extend("force", vim.loop.os_environ(), options.env or {})
-    -- log:info(options)
+    ---@param options { env?: table<string, string> }
+    ---@return table<string, string>
+    local function build_env_vars_for_mcp_server(options)
+        -- IIAC MCP client config's "env" key is intended to add/OVERRIDE env vars
+        --  ... and NOT to fully define the ENV (IOTW does NOT block inheriting parent's ENV)
+        --
+        -- MCP client config docs:
+        --    https://modelcontextprotocol.io/docs/develop/build-client#mcp-client-configuration (example shows API key only)
+        -- BTW also MCP registry "spec" which would settle what all fields should be used for max interop
+
+        -- I am mirroring that behavior below (inherit + override):
+
+        local inherit_env = vim.loop.os_environ()
+
+        -- * do not inherit select env vars
+        -- this must come before overrides so the client config can still set a value
+        for var_name in pairs(inherit_env) do
+            -- * block inheriting (VIRTUAL_ENV) python venv
+            -- also, always bignore lock the current VENV so python MCP servers use their own
+            -- I need this cuz I auto venv in fish shell as I change directories and thus neovim has my auto venv too
+            if var_name:sub(1, 11) == "VIRTUAL_ENV" then
+                log:info("DROPPING ENV VAR", var_name)
+                inherit_env[var_name] = nil
+            end
+            -- PRN any other env vars to block inheriting?
+        end
+
+        local env_overrides = options.env or {}
+        local merged_env = vim.tbl_extend("force", inherit_env, env_overrides)
+        -- log:info("merged_env", merged_env)
+        return merged_env
+    end
+
+    local process_env = build_env_vars_for_mcp_server(options)
 
     -- handle, pid_or_error, error_name = uv.spawn(options.command,
     handle, pid_or_error, error_name = uv.spawn("FAKE_COMMAND_TO_TEST_ERROR_RESULT",
@@ -305,7 +332,6 @@ function MCPStdioClient.new(name, options)
         -- PRN could assert pid_or_error is a number
         local spawn_failed = handle == nil
         if spawn_failed then
-
             local message = "\n\n  " .. ansi.bold("uv.spawn() failed")
                 .. "\n    pid_or_error: " .. ansi.white_on_red(vim.inspect(pid_or_error))
                 .. "\n    error_name: " .. vim.inspect(error_name)
