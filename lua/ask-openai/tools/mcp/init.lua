@@ -40,7 +40,7 @@ local servers = {
             os.getenv("HOME") .. "/repos/github/g0t4/mcp-servers/src/fetch",
             "mcp-server-fetch",
         },
-        env = { VIRTUAL_ENV = "" }, -- clear venv so no warning about --active vs targeted venv
+        -- env = { FOO = "BAR" }, -- example, env var overrides (BTW see below for env var inheritence + overrides logic + auto drop VIRTUAL_ENV* unless you set it in the overrides here
     },
     commands = {
         transport = "stdio",
@@ -63,7 +63,6 @@ local servers = {
             "subagents",
             -- PRN add verbosity flag across all my tools "--verbose",
         },
-        env = { VIRTUAL_ENV = "" }, -- clear venv so no warning about --active vs targeted venv
     },
     -- FYI this works but I think I'll want the tools to be opt-in per first prompt... as there are many and basically just lets your agent modify scripts in tampermonkey which I can't help but think... can't I just do this with files in a dropbox folder and have them auto sync into TM?!
     -- tampermonkey = {
@@ -254,9 +253,11 @@ function MCPStdioClient.new(name, options)
         end
     end
 
+    --- Current Process Env Vars + options.env overrides => formatted as KEY=VALUE strings
+    ---   filters VIRTUAL_ENV* vars to avoid inheriting current value (override VIRTUAL_ENV if you want to set the value, else it won't be set)
     ---@param options { env?: table<string, string> }
     ---@return table<string, string>
-    local function build_env_vars_for_mcp_server(options)
+    local function build_env_vars_for_uv_spawn_format(options)
         -- IIAC MCP client config's "env" key is intended to add/OVERRIDE env vars
         --  ... and NOT to fully define the ENV (IOTW does NOT block inheriting parent's ENV)
         --
@@ -294,7 +295,7 @@ function MCPStdioClient.new(name, options)
         return key_value_strings
     end
 
-    local process_env = build_env_vars_for_mcp_server(options)
+    local process_env = build_env_vars_for_uv_spawn_format(options)
 
     -- handle, pid_or_error, error_name = uv_spawn("FAKE_COMMAND_TO_TEST_ERROR_RESULT", {
     handle, pid_or_error, error_name = uv_spawn(options.command, {
