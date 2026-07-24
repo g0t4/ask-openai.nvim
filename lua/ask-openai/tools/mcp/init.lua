@@ -18,7 +18,7 @@ local servers = {
 
     -- PRN implement https://agentskills.io/mcp https based MCP tools... is it a websocket?
 
-    fetch        = {
+    fetch    = {
         -- PRN only include this tool if initial request includes /web?
 
         -- -- * via docker
@@ -41,7 +41,7 @@ local servers = {
         },
         env = { VIRTUAL_ENV = "" }, -- clear venv so no warning about --active vs targeted venv
     },
-    commands     = {
+    commands = {
         transport = "stdio",
         command = "npx",
         args = {
@@ -51,7 +51,7 @@ local servers = {
             "--verbose",
         },
     },
-    agents       = {
+    agents   = {
         transport = "stdio",
         command = "uv",
         args = {
