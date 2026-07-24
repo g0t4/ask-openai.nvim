@@ -231,7 +231,7 @@ function MCPStdioClient.new(name, options)
     self.pending_json = ""
 
     -- Spawn the subprocess with pipes for stdin, stdout, stderr
-    local handle, pid
+    local handle, pid_or_error, error_name
     local stdin = uv.new_pipe(false)
     local stdout = uv.new_pipe(false)
     local stderr = uv.new_pipe(false)
@@ -254,7 +254,8 @@ function MCPStdioClient.new(name, options)
         end
     end
 
-    handle, pid = uv.spawn(options.command,
+    -- handle, pid_or_error, error_name = uv.spawn(options.command,
+    handle, pid_or_error, error_name = uv.spawn("FAKE_COMMAND_TO_TEST_ERROR_RESULT",
         ---@diagnostic disable-next-line: missing-fields
         {
             args = options.args,
@@ -263,11 +264,41 @@ function MCPStdioClient.new(name, options)
         },
         on_mcp_server_exit)
 
+    local function log_if_uv_spawn_failed(handle, pid_or_error, error_name)
+        --
+        -- TODO! PUT THIS EVERYWHERE THAT YOU USE uv.spawn (neovim and hammerspoon)
+        --
+        -- NOTES:
+        -- on uv.spawn success - handle == userdata, pid_or_error == number, error_name == nil (IIAC nil)
+        -- on uv.spawn failure - handle == nil, pid_or_error == string, error_name == string
+        --    uv.spawn silently fails, you have to check the return values for the error (if any)
+        --    instead of handle/pid you get nil/error/error_name
+        --    i.e. error_name == "ENOENT"
+        --
+        -- always log if troubleshooting:
+        log:info("uv.spawn results (handle:" .. vim.inspect(handle)
+            .. ", pid_or_error:" .. vim.inspect(pid_or_error)
+            .. ", error_name:" .. vim.inspect(error_name) .. ")"
+        )
+
+        -- there might be other conditions, but it seems nil for handle means failure
+        -- not sure if handle can have non-nil values and still indicate a failure
+        -- PRN could assert pid_or_error is a number
+        local spawn_failed = handle == nil
+        if spawn_failed then
+            log:error("uv.spawn failed (handle:" .. vim.inspect(handle)
+                .. ", pid_or_error:" .. vim.inspect(pid_or_error)
+                .. ", error_name:" .. vim.inspect(error_name) .. ")"
+            )
+        end
+    end
+    log_if_uv_spawn_failed(handle, pid_or_error, error_name)
+
     self.stdin = stdin
     self.stdout = stdout
     self.stderr = stderr
     self.handle = handle
-    self.pid = pid
+    self.pid = pid_or_error
 
     -- Set up stdout reader with JSON-line buffering
     local function on_stdout(read_error, data)
