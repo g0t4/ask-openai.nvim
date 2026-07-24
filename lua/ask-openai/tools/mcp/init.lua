@@ -254,11 +254,20 @@ function MCPStdioClient.new(name, options)
         end
     end
 
+    -- IIAC MCP's intent is for clients to inherit ENV VARs + add/override the ones provided in the list of tool registrations (above)
+    --  IOTW an MCP server might define a few additional ENV VARs but then expects to inherit the rest
+    --  thus I am mirroring that here:
+    --  in my case I only need to block VIRTUAL_ENV for python MCP servers (else they use the venv from my current dir in my terminal which is always gonna be set if that dir has a venv (or one of its parent dirs does, I walk up and auto enable first found venv)
+    --   so yeah from lua's perspective that shouldn't matter except that my neovim process launches with the VENV of the current workspace already activated and in its ENV VARs
+    local process_env = vim.tbl_extend("force", vim.loop.os_environ(), options.env or {})
+    -- log:info(options)
+
     -- handle, pid_or_error, error_name = uv.spawn(options.command,
     handle, pid_or_error, error_name = uv.spawn("FAKE_COMMAND_TO_TEST_ERROR_RESULT",
         ---@diagnostic disable-next-line: missing-fields
         {
             args = options.args,
+            -- env = process_env,
             env = options.env,
             stdio = { stdin, stdout, stderr },
         },
