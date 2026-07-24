@@ -273,7 +273,17 @@ function MCPStdioClient.new(name, options)
         },
         on_mcp_server_exit)
 
-    local function log_if_uv_spawn_failed(handle, pid_or_error, error_name)
+    ---@param text string
+    local function indent_lines(text, number_of_spaces)
+        number_of_spaces = number_of_spaces or 2
+        local lines = vim.iter(vim.split(text, "\n"))
+            :map(function(line) return string.rep(" ", number_of_spaces) .. line end)
+            :totable()
+        return table.concat(lines, "\n")
+    end
+
+    ---@param context_object table -- any context that will help if there is a failure
+    local function log_if_uv_spawn_failed(handle, pid_or_error, error_name, context_object)
         --
         -- TODO! PUT THIS EVERYWHERE THAT YOU USE uv.spawn (neovim and hammerspoon)
         --
@@ -295,13 +305,19 @@ function MCPStdioClient.new(name, options)
         -- PRN could assert pid_or_error is a number
         local spawn_failed = handle == nil
         if spawn_failed then
-            log:error("uv.spawn failed (handle:" .. vim.inspect(handle)
-                .. ", pid_or_error:" .. vim.inspect(pid_or_error)
-                .. ", error_name:" .. vim.inspect(error_name) .. ")"
-            )
+
+            local message = "\n\n  " .. ansi.bold("uv.spawn() failed")
+                .. "\n    pid_or_error: " .. ansi.white_on_red(vim.inspect(pid_or_error))
+                .. "\n    error_name: " .. vim.inspect(error_name)
+                .. "\n    handle: " .. vim.inspect(handle)
+                .. ansi.yellow(ansi.italic("\n\n  CONTEXT: \n" .. indent_lines(vim.inspect(context_object))))
+                .. "\n"
+
+            log:error(message)
+            -- vim.notify("uv.spawn failed: " .. vim.inspect(pid_or_error))
         end
     end
-    log_if_uv_spawn_failed(handle, pid_or_error, error_name)
+    log_if_uv_spawn_failed(handle, pid_or_error, error_name, options)
 
     self.stdin = stdin
     self.stdout = stdout
