@@ -3,7 +3,7 @@ local SSEDataOnlyParser = require("ask-openai.backends.sse.data_only_parser")
 local ansi = require("devtools.ansi")
 local plumbing = require("ask-openai.tools.plumbing")
 local safely = require("ask-openai.helpers.safely")
-local uv_spawn = require("ask-openai.helpers.uv_spawn").uv_spawn
+local uv_spawn = require("ask-openai.helpers.uv_spawn")
 
 local uv = vim.uv
 
@@ -253,56 +253,13 @@ function MCPStdioClient.new(name, options)
         end
     end
 
-    --- Current Process Env Vars + options.env overrides => formatted as KEY=VALUE strings
-    ---   filters VIRTUAL_ENV* vars to avoid inheriting current value (override VIRTUAL_ENV if you want to set the value, else it won't be set)
-    ---@param options { env?: table<string, string> }
-    ---@return table<string, string>
-    local function build_env_vars_for_uv_spawn_format(options)
-        -- IIAC MCP client config's "env" key is intended to add/OVERRIDE env vars
-        --  ... and NOT to fully define the ENV (IOTW does NOT block inheriting parent's ENV)
-        --
-        -- MCP client config docs:
-        --    https://modelcontextprotocol.io/docs/develop/build-client#mcp-client-configuration (example shows API key only)
-        -- BTW also MCP registry "spec" which would settle what all fields should be used for max interop
+    local process_env = uv_spawn.build_env_vars_for_uv_spawn_format(options)
 
-        -- I am mirroring that behavior below (inherit + override):
-
-        local inherit_env = vim.loop.os_environ()
-
-        -- * do not inherit select env vars
-        -- this must come before overrides so the client config can still set a value
-        for var_name in pairs(inherit_env) do
-            -- * block inheriting (VIRTUAL_ENV) python venv
-            -- also, always bignore lock the current VENV so python MCP servers use their own
-            -- I need this cuz I auto venv in fish shell as I change directories and thus neovim has my auto venv too
-            if var_name:sub(1, 11) == "VIRTUAL_ENV" then
-                log:info("DROPPING ENV VAR", var_name)
-                inherit_env[var_name] = nil
-            end
-            -- PRN any other env vars to block inheriting?
-        end
-
-        local env_overrides = options.env or {}
-        local merged_env = vim.tbl_extend("force", inherit_env, env_overrides)
-        -- log:info("merged_env", merged_env)
-
-        -- build key=value strings b/c you can't pass a table of key/value pairs to uv.spawn
-        ---@type string[]
-        local flattened_key_value_env_vars = {}
-        for key, value in pairs(merged_env) do
-            table.insert(flattened_key_value_env_vars, key .. "=" .. value)
-        end
-        -- log:info("flattened_key_value_env_vars", flattened_key_value_env_vars)
-        return flattened_key_value_env_vars
-    end
-
-    local process_env = build_env_vars_for_uv_spawn_format(options)
-
-    -- handle, pid_or_error, error_name = uv_spawn("FAKE_COMMAND_TO_TEST_ERROR_RESULT", {
-    handle, pid_or_error, error_name = uv_spawn(options.command, {
+    -- handle, pid_or_error, error_name = uv_spawn.uv_spawn("FAKE_COMMAND_TO_TEST_ERROR_RESULT", {
+    handle, pid_or_error, error_name = uv_spawn.uv_spawn(options.command, {
         args = options.args,
+        -- BTW env is not an override, it is all or none
         env = process_env,
-        -- env = options.env,
         stdio = { stdin, stdout, stderr },
     }, on_mcp_server_exit)
 
@@ -467,7 +424,7 @@ function MCPHttpServer:write_to(message)
         handle:close()
     end
 
-    handle = uv_spawn("curl", {
+    handle = uv_spawn.uv_spawn("curl", {
         args = args,
         stdio = { nil, stdout, stderr },
     }, on_curl_exit)
