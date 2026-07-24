@@ -284,15 +284,16 @@ function MCPStdioClient.new(name, options)
 
         local env_overrides = options.env or {}
         local merged_env = vim.tbl_extend("force", inherit_env, env_overrides)
-        log:info("merged_env", merged_env)
+        -- log:info("merged_env", merged_env)
 
         -- build key=value strings b/c you can't pass a table of key/value pairs to uv.spawn
         ---@type string[]
-        local key_value_strings = {}
+        local flattened_key_value_env_vars = {}
         for key, value in pairs(merged_env) do
-            table.insert(key_value_strings, key .. "=" .. value)
+            table.insert(flattened_key_value_env_vars, key .. "=" .. value)
         end
-        return key_value_strings
+        -- log:info("flattened_key_value_env_vars", flattened_key_value_env_vars)
+        return flattened_key_value_env_vars
     end
 
     local process_env = build_env_vars_for_uv_spawn_format(options)
