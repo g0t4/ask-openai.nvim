@@ -3,6 +3,7 @@ local SSEDataOnlyParser = require("ask-openai.backends.sse.data_only_parser")
 local ansi = require("devtools.ansi")
 local plumbing = require("ask-openai.tools.plumbing")
 local safely = require("ask-openai.helpers.safely")
+local uv_spawn = require("ask-openai.helpers.uv_spawn").uv_spawn
 
 local uv = vim.uv
 
@@ -217,7 +218,6 @@ end
 ---@field pending_json string
 local MCPStdioClient = setmetatable({}, { __index = MCPClient })
 MCPStdioClient.__index = MCPStdioClient
-
 ---@param name string
 ---@param options table
 ---@return MCPStdioClient
@@ -289,61 +289,13 @@ function MCPStdioClient.new(name, options)
 
     local process_env = build_env_vars_for_mcp_server(options)
 
-    -- handle, pid_or_error, error_name = uv.spawn(options.command,
-    handle, pid_or_error, error_name = uv.spawn("FAKE_COMMAND_TO_TEST_ERROR_RESULT",
-        ---@diagnostic disable-next-line: missing-fields
-        {
-            args = options.args,
-            -- env = process_env,
-            env = options.env,
-            stdio = { stdin, stdout, stderr },
-        },
-        on_mcp_server_exit)
-
-    ---@param text string
-    local function indent_lines(text, number_of_spaces)
-        number_of_spaces = number_of_spaces or 2
-        local lines = vim.iter(vim.split(text, "\n"))
-            :map(function(line) return string.rep(" ", number_of_spaces) .. line end)
-            :totable()
-        return table.concat(lines, "\n")
-    end
-
-    ---@param context_object table -- any context that will help if there is a failure
-    local function log_if_uv_spawn_failed(handle, pid_or_error, error_name, context_object)
-        --
-        -- TODO! PUT THIS EVERYWHERE THAT YOU USE uv.spawn (neovim and hammerspoon)
-        --
-        -- NOTES:
-        -- on uv.spawn success - handle == userdata, pid_or_error == number, error_name == nil (IIAC nil)
-        -- on uv.spawn failure - handle == nil, pid_or_error == string, error_name == string
-        --    uv.spawn silently fails, you have to check the return values for the error (if any)
-        --    instead of handle/pid you get nil/error/error_name
-        --    i.e. error_name == "ENOENT"
-        --
-        -- always log if troubleshooting:
-        log:info("uv.spawn results (handle:" .. vim.inspect(handle)
-            .. ", pid_or_error:" .. vim.inspect(pid_or_error)
-            .. ", error_name:" .. vim.inspect(error_name) .. ")"
-        )
-
-        -- there might be other conditions, but it seems nil for handle means failure
-        -- not sure if handle can have non-nil values and still indicate a failure
-        -- PRN could assert pid_or_error is a number
-        local spawn_failed = handle == nil
-        if spawn_failed then
-            local message = "\n\n  " .. ansi.bold("uv.spawn() failed")
-                .. "\n    pid_or_error: " .. ansi.white_on_red(vim.inspect(pid_or_error))
-                .. "\n    error_name: " .. vim.inspect(error_name)
-                .. "\n    handle: " .. vim.inspect(handle)
-                .. ansi.yellow(ansi.italic("\n\n  CONTEXT: \n" .. indent_lines(vim.inspect(context_object))))
-                .. "\n"
-
-            log:error(message)
-            -- vim.notify("uv.spawn failed: " .. vim.inspect(pid_or_error))
-        end
-    end
-    log_if_uv_spawn_failed(handle, pid_or_error, error_name, options)
+    -- handle, pid_or_error, error_name = uv_spawn("FAKE_COMMAND_TO_TEST_ERROR_RESULT", {
+    handle, pid_or_error, error_name = uv_spawn(options.command, {
+        args = options.args,
+        -- env = process_env,
+        env = options.env,
+        stdio = { stdin, stdout, stderr },
+    }, on_mcp_server_exit)
 
     self.stdin = stdin
     self.stdout = stdout
@@ -506,7 +458,7 @@ function MCPHttpServer:write_to(message)
         handle:close()
     end
 
-    handle = uv.spawn("curl", {
+    handle = uv_spawn("curl", {
         args = args,
         stdio = { nil, stdout, stderr },
     }, on_curl_exit)

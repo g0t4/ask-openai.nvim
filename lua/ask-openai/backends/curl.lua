@@ -4,6 +4,7 @@ local CurlRequest = require("ask-openai.backends.curl_request")
 local SSEDataOnlyParser = require("ask-openai.backends.sse.data_only_parser")
 local safely = require("ask-openai.helpers.safely")
 local json = require('dkjson')
+local uv_spawn = require("ask-openai.helpers.uv_spawn").uv_spawn
 
 local Curl = {}
 
@@ -45,10 +46,13 @@ function Curl.spawn(request, frontend)
             "--fail-with-body",
             "-sSL",
             "--no-buffer", -- w/o this curl batches (test w/ `curl *` vs `curl * | cat` and you will see difference)
-            "-X", "POST",
+            "-X",
+            "POST",
             request:get_url(),
-            "-H", "Content-Type: application/json",
-            "-d", json_body
+            "-H",
+            "Content-Type: application/json",
+            "-d",
+            json_body
         },
     }
 
@@ -100,16 +104,13 @@ function Curl.spawn(request, frontend)
         -- - review:   vim.loop.walk(function(handle) print(handle) end)
         --   - I am seeing alot after I just startup nvim... I wonder if some are from my MCP tool comms?
         --   - and what about my timer/schduling for debounced keyboard events to trigger predictions?
-        -- - REVIEW OTHER uses of uv.spawn (and timers)... for missing cleanup logic!)
+        -- - REVIEW OTHER uses of uv.spawn (and timers)... for missing cleanup logic!
     end
 
-    request.handle, request.pid = vim.uv.spawn(options.command,
-        ---@diagnostic disable-next-line: missing-fields
-        {
-            args = options.args,
-            stdio = { nil, stdout, stderr },
-        },
-        on_exit)
+    request.handle, request.pid = uv_spawn(options.command, {
+        args = options.args,
+        stdio = { nil, stdout, stderr },
+    }, on_exit)
 
     ---@param read_error any
     ---@param data? string
