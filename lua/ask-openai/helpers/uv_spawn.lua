@@ -17,15 +17,15 @@ function M.log_if_uv_spawn_failed(handle, pid_or_error, error_name, context_obje
     --    instead of handle/pid you get nil/error/error_name
     --    i.e. error_name == "ENOENT"
 
-    log:info(
-        "uv.spawn results (handle:"
-        .. vim.inspect(handle)
-        .. ", pid_or_error:"
-        .. vim.inspect(pid_or_error)
-        .. ", error_name:"
-        .. vim.inspect(error_name)
-        .. ")"
-    )
+    -- log:info(
+    --     "uv.spawn results (handle:"
+    --     .. vim.inspect(handle)
+    --     .. ", pid_or_error:"
+    --     .. vim.inspect(pid_or_error)
+    --     .. ", error_name:"
+    --     .. vim.inspect(error_name)
+    --     .. ")"
+    -- )
 
     -- there might be other conditions, but it seems nil for handle means failure
     -- not sure if handle can have non-nil values and still indicate a failure
@@ -77,7 +77,7 @@ function M.build_env_vars_for_uv_spawn_format(options)
         -- also, always bignore lock the current VENV so python MCP servers use their own
         -- I need this cuz I auto venv in fish shell as I change directories and thus neovim has my auto venv too
         if var_name:sub(1, 11) == "VIRTUAL_ENV" then
-            log:info("DROPPING ENV VAR", var_name)
+            -- log:info("DROPPING ENV VAR", var_name)
             inherit_env[var_name] = nil
         end
         -- PRN any other env vars to block inheriting?
