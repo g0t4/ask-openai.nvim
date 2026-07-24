@@ -236,7 +236,7 @@ function MCPStdioClient.new(name, options)
     local stdout = uv.new_pipe(false)
     local stderr = uv.new_pipe(false)
 
-    local function on_exit(code, signal)
+    local function on_mcp_server_exit(code, signal)
         log:trace_on_exit_errors(code, signal)
         handle:close()
 
@@ -261,7 +261,7 @@ function MCPStdioClient.new(name, options)
             env = options.env,
             stdio = { stdin, stdout, stderr },
         },
-        on_exit)
+        on_mcp_server_exit)
 
     self.stdin = stdin
     self.stdout = stdout
@@ -418,7 +418,7 @@ function MCPHttpServer:write_to(message)
         self.url,
     }
 
-    local function on_exit(code, signal)
+    local function on_curl_exit(code, signal)
         stdout:close()
         stderr:close()
         handle:close()
@@ -427,7 +427,7 @@ function MCPHttpServer:write_to(message)
     handle = uv.spawn("curl", {
         args = args,
         stdio = { nil, stdout, stderr },
-    }, on_exit)
+    }, on_curl_exit)
 
     -- Parse SSE response body
     local parser = SSEDataOnlyParser.new(function(data_value)
