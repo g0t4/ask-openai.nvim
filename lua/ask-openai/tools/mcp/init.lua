@@ -283,8 +283,15 @@ function MCPStdioClient.new(name, options)
 
         local env_overrides = options.env or {}
         local merged_env = vim.tbl_extend("force", inherit_env, env_overrides)
-        -- log:info("merged_env", merged_env)
-        return merged_env
+        log:info("merged_env", merged_env)
+
+        -- build key=value strings b/c you can't pass a table of key/value pairs to uv.spawn
+        ---@type string[]
+        local key_value_strings = {}
+        for key, value in pairs(merged_env) do
+            table.insert(key_value_strings, key .. "=" .. value)
+        end
+        return key_value_strings
     end
 
     local process_env = build_env_vars_for_mcp_server(options)
@@ -292,8 +299,8 @@ function MCPStdioClient.new(name, options)
     -- handle, pid_or_error, error_name = uv_spawn("FAKE_COMMAND_TO_TEST_ERROR_RESULT", {
     handle, pid_or_error, error_name = uv_spawn(options.command, {
         args = options.args,
-        -- env = process_env,
-        env = options.env,
+        env = process_env,
+        -- env = options.env,
         stdio = { stdin, stdout, stderr },
     }, on_mcp_server_exit)
 
