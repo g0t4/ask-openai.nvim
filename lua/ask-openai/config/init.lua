@@ -31,6 +31,8 @@ local MODEL_PATTERNS = {
     { pattern = "/gpt%-oss",         abbrev = "gptoss" },
     -- google/gemma-4-26B-A4B-it-qat-q4_0-gguf
     { pattern = "/gemma%-4",         abbrev = "gemma4" },
+    -- ggml-org/GLM-4.7-Flash-GGUF:Q8_0
+    { pattern = "/GLM%-4.7%-Flash",  abbrev = "glm" },
 }
 
 --- Abbreviate a raw model name using pattern matching, or return the original name.
@@ -123,6 +125,7 @@ function M.get_endpoints()
     local gptoss_url = "http://ask.lan:8013"
     local qwen3_url = "http://ask.lan:8012"
     local gemma4_url = "http://ask.lan:8011"
+    local glm_url = "http://ask.lan:8010"
 
     -- FYI fine by me to collapse Endpoint into a string
     -- I used to handle name here too but that became a hot mess due to async vs sync
@@ -140,6 +143,9 @@ function M.get_endpoints()
         },
         gemma4 = {
             base_url = gemma4_url,
+        },
+        glm = {
+            base_url = glm_url,
         },
     }
 end

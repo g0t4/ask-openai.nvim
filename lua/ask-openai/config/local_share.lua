@@ -155,7 +155,9 @@ function M.toggle_agents_model()
         next_model = "qwen"
     elseif current == "qwen" then
         next_model = "gemma4"
-    else
+    elseif current == "gemma4" then
+        next_model = "glm"
+    elseif current == "glm" then
         next_model = "gptoss"
     end
     M.set_agents_model(next_model)
@@ -182,7 +184,9 @@ function M.toggle_rewrite_model()
         next_model = "qwen"
     elseif current == "qwen" then
         next_model = "gemma4"
-    else
+    elseif current == "gemma4" then
+        next_model = "glm"
+    elseif current == "glm" then
         next_model = "gptoss"
     end
     M.set_rewrite_model(next_model)
@@ -209,7 +213,9 @@ function M.toggle_fim_model()
         next_model = "qwen"
     elseif current == "qwen" then
         next_model = "gemma4"
-    else
+    elseif current == "gemma4" then
+        next_model = "glm"
+    elseif current == "glm" then
         next_model = "gptoss"
     end
     M.set_fim_model(next_model)

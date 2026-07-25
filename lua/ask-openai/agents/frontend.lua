@@ -254,6 +254,8 @@ local function ask_agent_command(opts)
             body_overrides = model_params.new_gemma4_chat_body_llama_server(_body, context)
         elseif model == "qwen" then
             body_overrides = model_params.new_qwen3coder_llama_server_chat_body(_body, context)
+        elseif model == "glm" then
+            body_overrides = model_params.new_glm47flash_chat_body_llama_server(_body, context)
         else
             error("model not supported" .. tostring(model))
         end

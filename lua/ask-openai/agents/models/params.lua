@@ -47,6 +47,30 @@ function M.new_gptoss_chat_body_llama_server(request_body, context)
     return default_to_recommended(request_body, recommended)
 end
 
+function M.new_glm47flash_chat_body_llama_server(request_body, context)
+    throw_if_no_messages(request_body)
+    -- FYI RECOMMMENDS: https://huggingface.co/zai-org/GLM-4.7-Flash#evaluation-parameters
+    --   TODO! recommends preserved thinking mode for terminal bench (similar to what my intent here is)
+    --     TODO https://docs.z.ai/guides/capabilities/thinking-mode
+
+    -- TODO try out default recommends too? this is where having my own evals could help!
+    local recommends_default = {
+        temperature = 1.0,
+        top_p       = 0.95,
+        max_tokens  = 131072,
+    }
+    local recommends_for_terminal_bench_swe = {
+        temperature = 0.7,
+        top_p = 1.0,
+        -- max_tokens = 16384, -- PRN adjust for my own taste? this seems mostly reasonable unless generating a huge file?
+    }
+
+    -- TODO disabled thinking:
+    -- "thinking": { "type": "disabled" }
+
+    return default_to_recommended(request_body, recommends_for_terminal_bench_swe)
+end
+
 function M.new_gemma4_chat_body_llama_server(request_body, context)
     throw_if_no_messages(request_body)
     --  Thinking config: https://huggingface.co/google/gemma-4-26B-A4B#2-thinking-mode-configuration

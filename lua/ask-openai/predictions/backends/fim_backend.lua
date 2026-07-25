@@ -37,7 +37,7 @@ function FimBackend.set_fim_model(model)
         else
             FimBackend.endpoint = CompletionsEndpoints.oai_v1_chat_completions
         end
-    elseif model == "gemma4" then
+    elseif model == "gemma4" or model == "glm" then
         FimBackend.endpoint = CompletionsEndpoints.oai_v1_chat_completions
     else
         FimBackend.endpoint = CompletionsEndpoints.llamacpp_completions -- * preferred for qwen2.5-coder
@@ -140,9 +140,11 @@ function FimBackend:body_for()
         body.stop = fim.bytedance_seed_coder.qwen_sentinels.fim_stop_tokens_from_qwen25_coder -- llama-server /completions endpoint uses top-level stop
         body.options.stop = fim.bytedance_seed_coder.qwen_sentinels.fim_stop_tokens_from_qwen25_coder
     elseif string.find(model, "gptoss", nil, true)
-        or string.find(model, "gemma", nil, true) -- I just wanna try FIM with gemma using gptoss style (chat completions only)
-    -- TODO if gemma is any good at FIM, setup FIM for it
+        or string.find(model, "gemma", nil, true)
+        or string.find(model, "glm", nil, true)
     then
+        -- FYI I am using my gptoss FIM chat completions FIM style for other chat model FIM setups (not specific to any one of them)
+
         if use_gptoss_raw then
             -- * /completions legacy endpoint:
             builder = function()

@@ -82,6 +82,12 @@ function M.lualine_components()
                 fim_status = "qwen" -- keep it short
             elseif fim_status == "gemma4" then
                 -- TODO reasoning level for gemma4?
+                fim_status = "gemma4"
+            elseif fim_status == "glm" then
+                fim_status = "GLM"
+                -- TODO reasoning level for glm
+                --  TODO disable reasoning (OFF) is doable: https://docs.z.ai/guides/capabilities/thinking-mode
+                --  TODO preserved thinking mode (or always on) per the repo it says to use this in multi turn agents (IIAC keep reasoning traces for tool calls too - interleaved reasoning before final response from model on each turn)
             end
             fim_status = "fim/" .. fim_status
             table.insert(icons, fim_status)
@@ -89,25 +95,32 @@ function M.lualine_components()
             -- * rewrite status
             -- btw gray out on rewrite level does not mean it is disabled, it will still work fine even when FIM is disabled
             local rewrite_model = local_share.get_rewrite_model()
-            local rewrite_status = "re/" .. rewrite_model
+            local rewrite_status = rewrite_model
             if rewrite_model == "gptoss" then
-                -- TODO add level for gemma4 too and
+                -- TODO gemma4/glm/qwen3? thinking
                 -- TODO setup qwen3+ to reason about FIM with chat completions style too? (right now qwen uses FIM only raw prompt from qwen2.5-coder)
                 --   perhaps setup qwen25coder with raw prompt only and then qwen3 could toggle between chat completions and raw? heck I wonder how qwen2.5coder would do with chat completions gptoss like FIM prompt messages
                 local level = local_share.get_rewrite_reasoning_level():sub(1, 1):upper()
                 rewrite_status = rewrite_status .. level
+            elseif rewrite_model == "glm" then
+                rewrite_status = "GLM"
+                -- TODO disable thinking? levels?
             end
+            rewrite_status = "re/" .. rewrite_status
             table.insert(icons, rewrite_status)
 
             -- * agents status
             local agents_model = local_share.get_agents_model()
-            local agents_status = "a/" .. agents_model
+            local agents_status = agents_model
             if agents_model == "gptoss" then
-                -- TODO gemma4 thinking
-                -- TODO qwen3+ thinking?
+                -- TODO gemma4/glm/qwen3? thinking
                 local level = local_share.get_agents_reasoning_level():sub(1, 1):upper()
                 agents_status = agents_status .. level
+            elseif agents_model == "glm" then
+                agents_status = "GLM"
+                -- TODO disable thinking? levels?
             end
+            agents_status = "a/" .. agents_status
             table.insert(icons, agents_status)
 
             if M.last_fim_stats then
