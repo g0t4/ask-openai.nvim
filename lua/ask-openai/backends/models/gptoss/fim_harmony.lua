@@ -164,11 +164,11 @@ function HarmonyFimPromptBuilder.fim_prompt(request)
 
     local fim_user_message =
         "Please suggest text to replace "
-        .. qwen.FIM_MIDDLE
+        .. qwen.FIM_MIDDLE -- TODO try diff cursor markers? with evals to evaluate each model... TODO check FIM trace of messages to make sure no other references to FIM_MIDDLE when I change this...
         .. ":\n\n```"
         .. current_file_relative_path .. "\n"
         .. request.ps_chunk.prefix
-        .. qwen.FIM_MIDDLE
+        .. qwen.FIM_MIDDLE -- TODO try diff cursor markers? with evals to evaluate each model... TODO check FIM trace of messages to make sure no other references to FIM_MIDDLE when I change this...
         .. request.ps_chunk.suffix
         .. "\n```"
         .. get_reminder_nudges(request)
