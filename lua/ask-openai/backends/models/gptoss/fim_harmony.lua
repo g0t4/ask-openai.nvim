@@ -49,10 +49,11 @@ Reasoning: ]] .. api.get_fim_reasoning_level() [[
     return self
 end
 
+local FIM_CHAT_STYLE_CURSOR_MARKER = "<|CURSOR_IS_HERE|>"  -- qwen.FIM_MIDDLE)
 HarmonyFimPromptBuilder.developer_message =
     files
     .read_text("~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/backends/models/gptoss/prompts/fim_dev.md")
-    :gsub("<<FIM_CURSOR_MARKER>>", qwen.FIM_MIDDLE)
+    :gsub("<<FIM_CURSOR_MARKER>>", FIM_CHAT_STYLE_CURSOR_MARKER)
 -- TODO ideas if indent issues persist:
 --   for blank lines (sans indents at start, before cursor)... run FIM as if empty line entirely
 --      in cursory testing, this is markedly better about completing things at a higher level of indent than where cursor is currently at
@@ -73,6 +74,7 @@ HarmonyFimPromptBuilder.developer_message =
 --- - and available function tools
 ---@return HarmonyFimPromptBuilder self
 function HarmonyFimPromptBuilder:developer()
+    error("TODO update this FIM approach for new FIM_CHAT_STYLE_CURSOR_MARKER... I only did chat completions gptoss style and not raw")
     table.insert(self._parts, harmony.START .. "developer" .. harmony.MESSAGE .. HarmonyFimPromptBuilder.developer_message .. harmony.END)
     return self
 end
@@ -164,11 +166,14 @@ function HarmonyFimPromptBuilder.fim_prompt(request)
 
     local fim_user_message =
         "Please suggest text to replace "
-        .. qwen.FIM_MIDDLE -- TODO try diff cursor markers? with evals to evaluate each model... TODO check FIM trace of messages to make sure no other references to FIM_MIDDLE when I change this...
+        --
+        -- TODO try diff cursor markers? with evals to evaluate each model... TODO check FIM trace of messages to make sure no other references to FIM_MIDDLE when I change this...
+        .. FIM_CHAT_STYLE_CURSOR_MARKER
+        --
         .. ":\n\n```"
         .. current_file_relative_path .. "\n"
         .. request.ps_chunk.prefix
-        .. qwen.FIM_MIDDLE -- TODO try diff cursor markers? with evals to evaluate each model... TODO check FIM trace of messages to make sure no other references to FIM_MIDDLE when I change this...
+        .. FIM_CHAT_STYLE_CURSOR_MARKER
         .. request.ps_chunk.suffix
         .. "\n```"
         .. get_reminder_nudges(request)
