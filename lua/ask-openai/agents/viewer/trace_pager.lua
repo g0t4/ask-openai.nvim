@@ -70,6 +70,18 @@ local function setup_trace_keymaps(bufnr)
             vim.cmd("?" .. PATTERN_ASSISTANT)
         end,
     }))
+
+    -- cursor nav (use n/N to find next/prev after this)
+    vim.keymap.set("n", "nc", "", vim.tbl_extend("force", base_opts, {
+        callback = function()
+            vim.cmd("/<|CURSOR_IS_HERE|>\\|<|FIM_MIDDLE|>")
+        end,
+    }))
+    vim.keymap.set("n", "pc", "", vim.tbl_extend("force", base_opts, {
+        callback = function()
+            vim.cmd("?<|CURSOR_IS_HERE|>\\|<|FIM_MIDDLE|>")
+        end,
+    }))
 end
 
 ---@param trace_path string path to a *-trace.json file
