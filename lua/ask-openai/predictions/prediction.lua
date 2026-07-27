@@ -148,6 +148,7 @@ function Prediction:fix_fim_and_redraw_extmarks()
         if not self.has_reasoning then
             return
         end
+        -- * thinking dots
         self.first_line = dots:get_still_thinking_message(self.start_time)
         self.rest_of_lines = {}
     end
