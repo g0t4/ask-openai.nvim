@@ -11,7 +11,7 @@ local CursorController = require "ask-openai.predictions.cursor_controller"
 ---@field first_line: string
 ---@field rest_of_lines: string[]
 ---@field has_duplicate_prefix: boolean
----@field no_completion_yet: boolean
+---@field has_prediction: boolean
 ---@field extmarks table
 ---@field abandoned boolean         # user aborted prediction
 ---@field disable_cursor_moved boolean
@@ -106,16 +106,17 @@ function Prediction:fim_fixes()
 
     -- * Check if prediction's first line starts with the cursor prefix (FIM duplication)
     local lines = split_lines(self.prediction)
-    self.no_completion_yet = #lines == 0
-    if #lines == 0 then
+    self.has_prediction = #lines > 0
+    if not self.has_prediction then
+        -- TODO move this to usage?
         if not self.has_reasoning then
             return
         end
         self.first_line = dots:get_still_thinking_message(self.start_time)
         self.rest_of_lines = {}
-        self.no_completion_yet = false
         return
     end
+
 
     local first_line = table.remove(lines, 1)
     local cursor_prefix = self.cursor_prefix
@@ -150,8 +151,11 @@ function Prediction:fix_fim_and_redraw_extmarks()
 
     -- FYI must call before building extmarks (if needed strips duplicate prefix)
     self:fim_fixes()
-    if self.no_completion_yet then
-        return
+    if not self.has_prediction then
+        -- TODO move logic here for thinking dots?
+        if not self.has_reasoning then
+            return
+        end
     end
 
     -- * highlight cursor line prefix overlap with red bg
@@ -216,7 +220,7 @@ end
 local BLANK_LINE = ""
 function Prediction:accept_first_line()
     -- FYI instead of splitting every time... could make a class that buffers into line splits for me! use a table of chunks until hit \n... flush to the next line and start accumulating next line, etc
-    if self.no_completion_yet then
+    if self.has_prediction then
         return
     end
 
@@ -244,7 +248,7 @@ function Prediction:accept_first_line()
 end
 
 function Prediction:accept_first_word()
-    if self.no_completion_yet then
+    if self.has_prediction then
         return
     end
 
@@ -301,7 +305,7 @@ function Prediction:accept_first_word()
 end
 
 function Prediction:accept_all()
-    if self.no_completion_yet then
+    if self.has_prediction then
         return
     end
 
