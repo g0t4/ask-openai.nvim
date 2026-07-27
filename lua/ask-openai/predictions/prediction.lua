@@ -108,15 +108,8 @@ function Prediction:fim_fixes()
     local lines = split_lines(self.prediction)
     self.has_prediction = #lines > 0
     if not self.has_prediction then
-        -- TODO move this to usage?
-        if not self.has_reasoning then
-            return
-        end
-        self.first_line = dots:get_still_thinking_message(self.start_time)
-        self.rest_of_lines = {}
         return
     end
-
 
     local first_line = table.remove(lines, 1)
     local cursor_prefix = self.cursor_prefix
@@ -152,10 +145,11 @@ function Prediction:fix_fim_and_redraw_extmarks()
     -- FYI must call before building extmarks (if needed strips duplicate prefix)
     self:fim_fixes()
     if not self.has_prediction then
-        -- TODO move logic here for thinking dots?
         if not self.has_reasoning then
             return
         end
+        self.first_line = dots:get_still_thinking_message(self.start_time)
+        self.rest_of_lines = {}
     end
 
     -- * highlight cursor line prefix overlap with red bg
