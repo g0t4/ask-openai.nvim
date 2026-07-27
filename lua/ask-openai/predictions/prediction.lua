@@ -215,7 +215,7 @@ end
 local BLANK_LINE = ""
 function Prediction:accept_first_line()
     -- FYI instead of splitting every time... could make a class that buffers into line splits for me! use a table of chunks until hit \n... flush to the next line and start accumulating next line, etc
-    if self.has_prediction then
+    if not self.has_prediction then
         return
     end
 
@@ -243,7 +243,7 @@ function Prediction:accept_first_line()
 end
 
 function Prediction:accept_first_word()
-    if self.has_prediction then
+    if not self.has_prediction then
         return
     end
 
@@ -300,7 +300,7 @@ function Prediction:accept_first_word()
 end
 
 function Prediction:accept_all()
-    if self.has_prediction then
+    if not self.has_prediction then
         return
     end
 
