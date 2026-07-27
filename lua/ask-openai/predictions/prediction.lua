@@ -165,6 +165,7 @@ function Prediction:fix_fim_and_redraw_extmarks()
         -- FYI concat every time is TERRIBLY inefficient, just concat on each token or whenever you want to show part of it
         --  but O(n) over concat which is O(n) too is O(n^2) and terrible lol
         self.rest_of_lines = split_lines(reasoning)
+        -- TODO style reasoning different vs suggestion so I know the difference!
     end
 
     -- * highlight cursor line prefix overlap with red bg
