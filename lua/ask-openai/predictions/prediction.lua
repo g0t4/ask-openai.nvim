@@ -145,6 +145,12 @@ function Prediction:fix_fim_and_redraw_extmarks()
     -- FYI must call before building extmarks (if needed strips duplicate prefix)
     self:fim_fixes()
     if not self.has_prediction then
+        if self.has_accepts then
+            -- quick hack to make sure we don't go back to showing reasoning after full accept
+            --  TODO fix this to not be so hacky (name wise)
+            --     TODO differentiate when fully accepted and just reset at that point!
+            return
+        end
         if not self.has_reasoning then
             return
         end
@@ -156,8 +162,9 @@ function Prediction:fix_fim_and_redraw_extmarks()
         -- then in that case I see thinking?
         --  heck maybe model specific + reasoning level (i.e. gptoss off/low do not show, medium/high show)? glm4.7/qwen3.6 show
         local reasoning = self:get_reasoning()
+        -- FYI concat every time is TERRIBLY inefficient, just concat on each token or whenever you want to show part of it
+        --  but O(n) over concat which is O(n) too is O(n^2) and terrible lol
         self.rest_of_lines = split_lines(reasoning)
-        -- TODO fix for when I accept, do not show the reasoning again for a split second until cleared
     end
 
     -- * highlight cursor line prefix overlap with red bg
@@ -245,6 +252,7 @@ function Prediction:accept_first_line()
 
     -- * update prediction
     self.prediction = table.concat(self.rest_of_lines, "\n")
+    self.has_accepts = true
     self.cursor_prefix = nil -- force lookup
     self:fix_fim_and_redraw_extmarks()
 end
@@ -301,6 +309,7 @@ function Prediction:accept_first_word()
 
     -- * update prediction
     self.prediction = first_line .. "\n" .. table.concat(self.rest_of_lines, "\n")
+    self.has_accepts = true
     -- FYI I don't need to update the cached values for first_line/rest_of_lines b/c they'll be recomputed in fix_fim_and_redraw_extmarks
     self.cursor_prefix = nil -- force lookup
     self:fix_fim_and_redraw_extmarks()
@@ -322,6 +331,7 @@ function Prediction:accept_all()
 
     -- * clear prediction
     self.prediction = "" -- strip all lines from the prediction (and update it)
+    self.has_accepts = true
     self.cursor_prefix = nil -- force lookup
     self:fix_fim_and_redraw_extmarks()
 
