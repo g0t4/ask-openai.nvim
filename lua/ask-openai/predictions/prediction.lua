@@ -111,7 +111,10 @@ function Prediction:fim_fixes()
         if not self.has_reasoning then
             return
         end
-        lines = { dots:get_still_thinking_message(self.start_time) }
+        self.first_line = dots:get_still_thinking_message(self.start_time)
+        self.rest_of_lines = {}
+        self.no_completion_yet = false
+        return
     end
 
     local first_line = table.remove(lines, 1)
