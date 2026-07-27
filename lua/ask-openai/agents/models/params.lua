@@ -18,6 +18,15 @@ local function throw_if_no_messages(request_body)
     end
 end
 
+---@param body table
+---@param reasoning_level string
+---@return table
+local function set_enable_thinking(body, reasoning_level)
+    body.chat_template_kwargs = body.chat_template_kwargs or {}
+    body.chat_template_kwargs.enable_thinking = reasoning_level ~= local_share.THINKING_OFF
+    return body
+end
+
 ---@param request_body table
 ---@param context CurrentContext
 ---@return table
@@ -64,11 +73,7 @@ function M.new_glm47flash_chat_body_llama_server(request_body, context, reasonin
     }
 
     local body = default_to_recommended(request_body, recommends_for_terminal_bench_swe)
-
-    -- TODO improve merging
-    body.chat_template_kwargs = body.chat_template_kwargs or {}
-    body.chat_template_kwargs.enable_thinking = reasoning_level ~= local_share.THINKING_OFF
-    return body
+    return set_enable_thinking(body, reasoning_level)
 end
 
 function M.new_gemma4_chat_body_llama_server(request_body, context, reasoning_level)
@@ -91,11 +96,7 @@ function M.new_gemma4_chat_body_llama_server(request_body, context, reasoning_le
         top_k = 64,
     }
     local body = default_to_recommended(request_body, recommended)
-
-    -- TODO improve merging
-    body.chat_template_kwargs = body.chat_template_kwargs or {}
-    body.chat_template_kwargs.enable_thinking = reasoning_level ~= local_share.THINKING_OFF
-    return body
+    return set_enable_thinking(body, reasoning_level)
 end
 
 function M.new_qwen3coder_llama_server_chat_body(request_body, context, reasoning_level) -- this is a duplicate
@@ -115,10 +116,7 @@ function M.new_qwen3coder_llama_server_chat_body(request_body, context, reasonin
         --  FYI I inlined these values into predictions handler, it's not using chat completions endpoint so not gonna conflate the two here
     }
     local body = default_to_recommended(request_body, recommended)
-    -- TODO improve merging
-    body.chat_template_kwargs = body.chat_template_kwargs or {}
-    body.chat_template_kwargs.enable_thinking = reasoning_level ~= local_share.THINKING_OFF
-    return body
+    return set_enable_thinking(body, reasoning_level)
 end
 
 function M.new_qwen25coder_ollama_body(request_body)
