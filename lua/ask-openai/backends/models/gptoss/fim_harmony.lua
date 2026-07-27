@@ -295,7 +295,7 @@ end
 
 ---@param request FimBackend
 ---@param level GptOssReasoningLevel
-function HarmonyFimPromptBuilder.gptoss.get_fim_chat_messages(request, level)
+function HarmonyFimPromptBuilder.gptoss.get_fim_chat_messages(request, level, model)
     local messages = {
         -- FYI developer or system message must be first, and ONLY ONE
         -- => both map to developer role in jinja template (hence I chose system b/c it doesn't matter and that's more generic if I want to test my message prompts with a different model)
@@ -307,7 +307,7 @@ function HarmonyFimPromptBuilder.gptoss.get_fim_chat_messages(request, level)
         table.insert(messages, rag_message)
     end
     table.insert(messages, TxChatMessage:user(HarmonyFimPromptBuilder.fim_prompt(request)))
-    if level == "off" then
+    if level == "off" and model == "gptoss" then
         -- TODO get rid of raw prompt approach above? or just keep it around as "RETIRED" ??
         local fixed_thoughts = HarmonyFimPromptBuilder.deep_thoughts_about_fim
 

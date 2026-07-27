@@ -75,18 +75,15 @@ function M.lualine_components()
 
             -- * FIM status
             local fim_status = local_share.get_fim_model()
+            local level = local_share.get_fim_reasoning_level():upper()
             if fim_status == "gptoss" then
-                local level = local_share.get_fim_reasoning_level()
-                fim_status = "gptoss" .. level:sub(1, 1):upper()
+                fim_status = "gptoss" .. level:sub(1, 1)
             elseif fim_status == "qwen" then
-                fim_status = "qwen" -- keep it short
+                fim_status = "qwen" .. level
             elseif fim_status == "gemma4" then
-                -- TODO reasoning level for gemma4?
-                fim_status = "gemma4"
+                fim_status = "gemma4" .. level
             elseif fim_status == "glm" then
-                fim_status = "GLM"
-                -- TODO reasoning level for glm
-                --  TODO disable reasoning (OFF) is doable: https://docs.z.ai/guides/capabilities/thinking-mode
+                fim_status = "GLM" .. level
                 --  TODO preserved thinking mode (or always on) per the repo it says to use this in multi turn agents (IIAC keep reasoning traces for tool calls too - interleaved reasoning before final response from model on each turn)
             end
             fim_status = "fim/" .. fim_status
@@ -95,30 +92,24 @@ function M.lualine_components()
             -- * rewrite status
             -- btw gray out on rewrite level does not mean it is disabled, it will still work fine even when FIM is disabled
             local rewrite_model = local_share.get_rewrite_model()
-            local rewrite_status = rewrite_model
+            local level = local_share.get_rewrite_reasoning_level():upper()
+            local rewrite_status = rewrite_model .. level
             if rewrite_model == "gptoss" then
-                -- TODO gemma4/glm/qwen3? thinking
-                -- TODO setup qwen3+ to reason about FIM with chat completions style too? (right now qwen uses FIM only raw prompt from qwen2.5-coder)
-                --   perhaps setup qwen25coder with raw prompt only and then qwen3 could toggle between chat completions and raw? heck I wonder how qwen2.5coder would do with chat completions gptoss like FIM prompt messages
-                local level = local_share.get_rewrite_reasoning_level():sub(1, 1):upper()
-                rewrite_status = rewrite_status .. level
+                rewrite_status = rewrite_status .. level:sub(1, 1)
             elseif rewrite_model == "glm" then
-                rewrite_status = "GLM"
-                -- TODO disable thinking? levels?
+                rewrite_status = "GLM" .. level
             end
             rewrite_status = "re/" .. rewrite_status
             table.insert(icons, rewrite_status)
 
             -- * agents status
             local agents_model = local_share.get_agents_model()
-            local agents_status = agents_model
+            local level = local_share.get_agents_reasoning_level():upper()
+            local agents_status = agents_model .. level
             if agents_model == "gptoss" then
-                -- TODO gemma4/glm/qwen3? thinking
-                local level = local_share.get_agents_reasoning_level():sub(1, 1):upper()
-                agents_status = agents_status .. level
+                agents_status = agents_status .. level:sub(1, 1)
             elseif agents_model == "glm" then
                 agents_status = "GLM"
-                -- TODO disable thinking? levels?
             end
             agents_status = "a/" .. agents_status
             table.insert(icons, agents_status)

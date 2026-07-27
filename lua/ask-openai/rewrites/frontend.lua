@@ -476,14 +476,15 @@ local function ask_rewrite_command(opts)
 
         local body_overrides
         local model = api.get_rewrite_model()
+        local reasoning_level = context.includes:get_reasoning_level() or api.get_rewrite_reasoning_level()
         if model == "gptoss" then
-            body_overrides = model_params.new_gptoss_chat_body_llama_server(_body, context)
+            body_overrides = model_params.new_gptoss_chat_body_llama_server(_body, context, reasoning_level)
         elseif model == "gemma4" then
-            body_overrides = model_params.new_gemma4_chat_body_llama_server(_body, context)
+            body_overrides = model_params.new_gemma4_chat_body_llama_server(_body, context, reasoning_level)
         elseif model == "qwen" then
-            body_overrides = model_params.new_qwen3coder_llama_server_chat_body(_body, context)
+            body_overrides = model_params.new_qwen3coder_llama_server_chat_body(_body, context, reasoning_level)
         elseif model == "glm" then
-            body_overrides = model_params.new_glm47flash_chat_body_llama_server(_body, context)
+            body_overrides = model_params.new_glm47flash_chat_body_llama_server(_body, context, reasoning_level)
         else
             error("model not supported" .. tostring(model))
         end

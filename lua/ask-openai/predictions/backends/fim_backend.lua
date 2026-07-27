@@ -130,6 +130,10 @@ function FimBackend:body_for()
         builder = function()
             return fim.qwen25coder.get_fim_prompt(self)
         end
+        local level = api.get_fim_reasoning_level()
+        if level ~= "off" then
+            log:warn("qwen FIM style does not support thinking, OFF is only logical value.. if you setup chat completions style with qwen3 then you can have thinking")
+        end
     elseif string.find(model, "bytedance-seed-coder-8b", nil, true) then
         builder = function()
             return fim.qwen25coder.get_fim_prompt(self) -- WORKS FOR repo level using qwen's format entirely! (plus set qwen's stop_tokens to avoid rambles / trailing stop tokens)
@@ -139,13 +143,16 @@ function FimBackend:body_for()
         -- MUST set qwent's tokens as stop tokens too (when using Qwen's repo level fim format)
         body.stop = fim.bytedance_seed_coder.qwen_sentinels.fim_stop_tokens_from_qwen25_coder -- llama-server /completions endpoint uses top-level stop
         body.options.stop = fim.bytedance_seed_coder.qwen_sentinels.fim_stop_tokens_from_qwen25_coder
-    elseif string.find(model, "gptoss", nil, true)
-        or string.find(model, "gemma", nil, true)
-        or string.find(model, "glm", nil, true)
+    elseif model == "gptoss"
+        or model == "gemma4"
+        or model == "glm"
     then
+        -- FYI extra logic here is to reuse one template across models when it is the FIM chat completion style I use for gptoss
+        --  TODO! strip out glm/gemma4 reuse of gptoss template into own block? would this be less messy?
+        --    TODO I should probably rewrite this to not be so hacky given I have special "off" logic for gptoss raw and even in not-raw
         -- FYI I am using my gptoss FIM chat completions FIM style for other chat model FIM setups (not specific to any one of them)
-
-        if use_gptoss_raw then
+        if use_gptoss_raw and model == "gptoss" then
+            -- RAW is gptoss specific
             -- * /completions legacy endpoint:
             builder = function()
                 -- * raw prompt /completions, no thinking (I could have model think too, just need to parse that then)
@@ -157,11 +164,18 @@ function FimBackend:body_for()
         else
             -- * /v1/chat/completions endpoint (use to have llama-server parse the response, i.e. analsys/thoughts => reasoning_content)
             local level = api.get_fim_reasoning_level()
-            body.messages = fim_harmony.gptoss.get_fim_chat_messages(self, level)
+            body.messages = fim_harmony.gptoss.get_fim_chat_messages(self, level, model)
             body.raw = false -- set here even though was set above
-            body.chat_template_kwargs = {
-                reasoning_effort = level
-            }
+            if model == "gptoss" then
+                body.chat_template_kwargs = {
+                    reasoning_effort = level
+                }
+            elseif model == "glm" or model == "gemma4" then
+                body.chat_template_kwargs = {
+                    -- confirmed works with glm
+                    enable_thinking = level ~= "off"
+                }
+            end
 
             body.max_tokens = gptoss_tokenizer.get_gptoss_max_tokens_for_level(level)
         end

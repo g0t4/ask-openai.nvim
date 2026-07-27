@@ -40,14 +40,27 @@ local LEVEL_NUMBER_TO_TEXT = {
 }
 local DEFAULT_LOG_LEVEL_NUMBER = LEVEL_NUMBERS.WARN
 
+M.GPTOSS = "gptoss"
+M.QWEN = "qwen"
+M.GLM = "glm"
+M.GEMMA4 = "gemma4"
+M.DEFAULT_MODEL = M.GPTOSS
+
 local function load_config()
     local default = {
         predictions = { enabled = true },
         notify_stats = false,
         rag = { enabled = true },
         log_threshold_text = LEVEL_NUMBER_TO_TEXT[DEFAULT_LOG_LEVEL_NUMBER],
+
+        -- model agnostic params
         fim = { semantic_grep = { all_files = false } },
-        gptoss = {} -- allow downstream to define defaults
+
+        -- model specific params
+        [M.GPTOSS] = {}, -- allow downstream to define defaults
+        [M.QWEN] = {},
+        [M.GLM] = {},
+        [M.GEMMA4] = {},
     }
 
     if file_exists(config_path) then
@@ -138,7 +151,7 @@ end
 -- * agents model
 function M.get_agents_model()
     local cfg = get()
-    return cfg.agents and cfg.agents.model or "gptoss" -- default to gptoss
+    return cfg.agents and cfg.agents.model or M.DEFAULT_MODEL
 end
 
 function M.set_agents_model(model)
@@ -148,18 +161,18 @@ function M.set_agents_model(model)
     save()
 end
 
-function M.toggle_agents_model()
-    local current = M.get_agents_model()
-    local next_model
-    if current == "gptoss" then
-        next_model = "qwen"
-    elseif current == "qwen" then
-        next_model = "gemma4"
-    elseif current == "gemma4" then
-        next_model = "glm"
-    elseif current == "glm" then
-        next_model = "gptoss"
+local _model_cycle = { M.GPTOSS, M.QWEN, M.GEMMA4, M.GLM }
+local function _next_model(current)
+    for i, m in ipairs(_model_cycle) do
+        if m == current then
+            return _model_cycle[i % #_model_cycle + 1]
+        end
     end
+    return _model_cycle[1]
+end
+
+function M.toggle_agents_model()
+    local next_model = _next_model(M.get_agents_model())
     M.set_agents_model(next_model)
     return next_model
 end
@@ -167,7 +180,7 @@ end
 -- * rewrite model
 function M.get_rewrite_model()
     local cfg = get()
-    return cfg.rewrite and cfg.rewrite.model or "gptoss" -- default to gptoss
+    return cfg.rewrite and cfg.rewrite.model or M.DEFAULT_MODEL
 end
 
 function M.set_rewrite_model(model)
@@ -178,17 +191,7 @@ function M.set_rewrite_model(model)
 end
 
 function M.toggle_rewrite_model()
-    local current = M.get_rewrite_model()
-    local next_model
-    if current == "gptoss" then
-        next_model = "qwen"
-    elseif current == "qwen" then
-        next_model = "gemma4"
-    elseif current == "gemma4" then
-        next_model = "glm"
-    elseif current == "glm" then
-        next_model = "gptoss"
-    end
+    local next_model = _next_model(M.get_rewrite_model())
     M.set_rewrite_model(next_model)
     return next_model
 end
@@ -196,7 +199,7 @@ end
 -- * FIM model
 function M.get_fim_model()
     local cfg = get()
-    return cfg.fim and cfg.fim.model or "gptoss" -- default to gptoss
+    return cfg.fim and cfg.fim.model or M.DEFAULT_MODEL
 end
 
 function M.set_fim_model(model)
@@ -207,17 +210,7 @@ function M.set_fim_model(model)
 end
 
 function M.toggle_fim_model()
-    local current = M.get_fim_model()
-    local next_model
-    if current == "gptoss" then
-        next_model = "qwen"
-    elseif current == "qwen" then
-        next_model = "gemma4"
-    elseif current == "gemma4" then
-        next_model = "glm"
-    elseif current == "glm" then
-        next_model = "gptoss"
-    end
+    local next_model = _next_model(M.get_fim_model())
     M.set_fim_model(next_model)
     return next_model
 end
@@ -245,8 +238,9 @@ end
 -- thinking model's reasoning level (for thinking models, including FIM)
 function M.set_fim_reasoning_level(level)
     local cfg = get()
-    cfg.gptoss = cfg.gptoss or {}
-    cfg.gptoss.fim_reasoning_level = level
+    local model = M.get_fim_model()
+    cfg[model] = cfg[model] or {}
+    cfg[model].fim_reasoning_level = level
     save()
 end
 
@@ -258,26 +252,37 @@ M.GptOssReasoningLevel = {
     high = "high"
 }
 
----@return GptOssReasoningLevel
+M.THINKING_OFF = "off"
+M.THINKING_ON = "on"
+
+---@return string GptOssReasoningLevel
 function M.get_fim_reasoning_level()
-    -- TODO rename to get_fim_reasoning_level (and related code too)
     local cfg = get()
-    cfg.gptoss = cfg.gptoss or {}
-    return cfg.gptoss.fim_reasoning_level or M.GptOssReasoningLevel.low
+    local model = M.get_fim_model()
+    cfg[model] = cfg[model] or {}
+    return cfg[model].fim_reasoning_level or M.THINKING_OFF -- off can be default since that is universal in my experience (chat template prefill forces no thinking)
+end
+
+local function _cycle_reasoning_level(current, model)
+    if model == M.GPTOSS then
+        if current == M.GptOssReasoningLevel.off then
+            return M.GptOssReasoningLevel.low
+        elseif current == M.GptOssReasoningLevel.low then
+            return M.GptOssReasoningLevel.medium
+        elseif current == M.GptOssReasoningLevel.medium then
+            return M.GptOssReasoningLevel.high
+        else
+            return M.GptOssReasoningLevel.off
+        end
+    else
+        return current == M.THINKING_OFF and M.THINKING_ON or M.THINKING_OFF
+    end
 end
 
 function M.cycle_fim_reasoning_level()
     local current = M.get_fim_reasoning_level()
-    local next_level = ""
-    if current == M.GptOssReasoningLevel.off then
-        next_level = M.GptOssReasoningLevel.low
-    elseif current == M.GptOssReasoningLevel.low then
-        next_level = M.GptOssReasoningLevel.medium
-    elseif current == M.GptOssReasoningLevel.medium then
-        next_level = M.GptOssReasoningLevel.high
-    else
-        next_level = M.GptOssReasoningLevel.off
-    end
+    local model = M.get_fim_model()
+    local next_level = _cycle_reasoning_level(current, model)
     M.set_fim_reasoning_level(next_level)
     return next_level
 end
@@ -286,29 +291,25 @@ end
 function M.set_agents_reasoning_level(level)
     -- FYI I routinely use different levels per frontend
     local cfg = get()
-    cfg.gptoss = cfg.gptoss or {}
-    cfg.gptoss.agents_reasoning_level = level
+    local model = M.get_agents_model()
+    -- TODO! check name is stored normalized (same as expected for settings)
+    cfg[model] = cfg[model] or {}
+    cfg[model].agents_reasoning_level = level
     save()
 end
 
 function M.get_agents_reasoning_level()
     local cfg = get()
-    cfg.gptoss = cfg.gptoss or {}
-    return cfg.gptoss.agents_reasoning_level or M.GptOssReasoningLevel.low
+    local model = M.get_agents_model()
+    -- TODO! check name is stored normalized (same as expected for settings)
+    cfg[model] = cfg[model] or {}
+    return cfg[model].agents_reasoning_level or M.THINKING_OFF
 end
 
 function M.cycle_agents_reasoning_level()
     local current = M.get_agents_reasoning_level()
-    local next_level = ""
-    if current == M.GptOssReasoningLevel.off then
-        next_level = M.GptOssReasoningLevel.low
-    elseif current == M.GptOssReasoningLevel.low then
-        next_level = M.GptOssReasoningLevel.medium
-    elseif current == M.GptOssReasoningLevel.medium then
-        next_level = M.GptOssReasoningLevel.high
-    else
-        next_level = M.GptOssReasoningLevel.off
-    end
+    local model = M.get_agents_model()
+    local next_level = _cycle_reasoning_level(current, model)
     M.set_agents_reasoning_level(next_level)
     return next_level
 end
@@ -316,29 +317,23 @@ end
 -- * RewriteFrontend reasoning level
 function M.set_rewrite_reasoning_level(level)
     local cfg = get()
-    cfg.gptoss = cfg.gptoss or {}
-    cfg.gptoss.rewrite_reasoning_level = level
+    local model = M.get_rewrite_model()
+    cfg[model] = cfg[model] or {}
+    cfg[model].rewrite_reasoning_level = level or M.THINKING_OFF
     save()
 end
 
 function M.get_rewrite_reasoning_level()
     local cfg = get()
-    cfg.gptoss = cfg.gptoss or {}
-    return cfg.gptoss.rewrite_reasoning_level or M.GptOssReasoningLevel.low
+    local model = M.get_rewrite_model()
+    cfg[model] = cfg[model] or {}
+    return cfg[model].rewrite_reasoning_level or M.GptOssReasoningLevel.low
 end
 
 function M.cycle_rewrite_reasoning_level()
     local current = M.get_rewrite_reasoning_level()
-    local next_level = ""
-    if current == M.GptOssReasoningLevel.off then
-        next_level = M.GptOssReasoningLevel.low
-    elseif current == M.GptOssReasoningLevel.low then
-        next_level = M.GptOssReasoningLevel.medium
-    elseif current == M.GptOssReasoningLevel.medium then
-        next_level = M.GptOssReasoningLevel.high
-    else
-        next_level = M.GptOssReasoningLevel.off
-    end
+    local model = M.get_rewrite_model()
+    local next_level = _cycle_reasoning_level(current, model)
     M.set_rewrite_reasoning_level(next_level)
     return next_level
 end

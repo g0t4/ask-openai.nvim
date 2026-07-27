@@ -21,13 +21,11 @@ end
 ---@param request_body table
 ---@param context CurrentContext
 ---@return table
-function M.new_gptoss_chat_body_llama_server(request_body, context)
+function M.new_gptoss_chat_body_llama_server(request_body, context, reasoning_level)
     throw_if_no_messages(request_body)
 
-    local level = context.includes:get_reasoning_level()
-        or api.get_rewrite_reasoning_level()
 
-    local max_tokens = gptoss_tokenizer.get_gptoss_max_tokens_for_level(level)
+    local max_tokens = gptoss_tokenizer.get_gptoss_max_tokens_for_level(reasoning_level)
 
     local recommended = {
 
@@ -37,7 +35,7 @@ function M.new_gptoss_chat_body_llama_server(request_body, context)
         top_p = 1.0,
 
         chat_template_kwargs = {
-            reasoning_effort = level,
+            reasoning_effort = reasoning_level,
         },
         max_tokens = max_tokens,
 
@@ -47,7 +45,7 @@ function M.new_gptoss_chat_body_llama_server(request_body, context)
     return default_to_recommended(request_body, recommended)
 end
 
-function M.new_glm47flash_chat_body_llama_server(request_body, context)
+function M.new_glm47flash_chat_body_llama_server(request_body, context, reasoning_level)
     throw_if_no_messages(request_body)
     -- FYI RECOMMMENDS: https://huggingface.co/zai-org/GLM-4.7-Flash#evaluation-parameters
     --   TODO! recommends preserved thinking mode for terminal bench (similar to what my intent here is)
@@ -65,13 +63,15 @@ function M.new_glm47flash_chat_body_llama_server(request_body, context)
         -- max_tokens = 16384, -- PRN adjust for my own taste? this seems mostly reasonable unless generating a huge file?
     }
 
-    -- TODO disabled thinking:
-    -- "thinking": { "type": "disabled" }
+    local body = default_to_recommended(request_body, recommends_for_terminal_bench_swe)
 
-    return default_to_recommended(request_body, recommends_for_terminal_bench_swe)
+    -- TODO improve merging
+    body.chat_template_kwargs = body.chat_template_kwargs or {}
+    body.chat_template_kwargs.enable_thinking = reasoning_level ~= local_share.THINKING_OFF
+    return body
 end
 
-function M.new_gemma4_chat_body_llama_server(request_body, context)
+function M.new_gemma4_chat_body_llama_server(request_body, context, reasoning_level)
     throw_if_no_messages(request_body)
     --  Thinking config: https://huggingface.co/google/gemma-4-26B-A4B#2-thinking-mode-configuration
     --    Thinking is enabled by including the <|think|> token at the start of the system prompt. To disable thinking, remove the token.
@@ -90,10 +90,15 @@ function M.new_gemma4_chat_body_llama_server(request_body, context)
         top_p = 0.95,
         top_k = 64,
     }
-    return default_to_recommended(request_body, recommended)
+    local body = default_to_recommended(request_body, recommended)
+
+    -- TODO improve merging
+    body.chat_template_kwargs = body.chat_template_kwargs or {}
+    body.chat_template_kwargs.enable_thinking = reasoning_level ~= local_share.THINKING_OFF
+    return body
 end
 
-function M.new_qwen3coder_llama_server_chat_body(request_body, context) -- this is a duplicate
+function M.new_qwen3coder_llama_server_chat_body(request_body, context, reasoning_level) -- this is a duplicate
     throw_if_no_messages(request_body)
 
     local recommended = {
@@ -109,7 +114,11 @@ function M.new_qwen3coder_llama_server_chat_body(request_body, context) -- this 
         top_k = 20,
         --  FYI I inlined these values into predictions handler, it's not using chat completions endpoint so not gonna conflate the two here
     }
-    return default_to_recommended(request_body, recommended)
+    local body = default_to_recommended(request_body, recommended)
+    -- TODO improve merging
+    body.chat_template_kwargs = body.chat_template_kwargs or {}
+    body.chat_template_kwargs.enable_thinking = reasoning_level ~= local_share.THINKING_OFF
+    return body
 end
 
 function M.new_qwen25coder_ollama_body(request_body)
