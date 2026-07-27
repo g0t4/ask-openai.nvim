@@ -175,7 +175,7 @@ function Prediction:fix_fim_and_redraw_extmarks()
         -- Set reasoning extmarks with different highlight
         vim.api.nvim_buf_set_extmark(self.buffer, extmarks_ns_id, cursor.line_base0, cursor.col_base0, -- 0-indexed
             {
-                virt_text = { { self.first_line, HLGroups.PREDICTION_TEXT } },
+                virt_text = { { self.first_line, HLGroups.PREDICTION_THINKING } },
                 virt_lines = reasoning_virt_lines,
                 virt_text_pos = "inline",
             })

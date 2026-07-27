@@ -32,6 +32,9 @@ HLGroups.PREDICTION_TEXT = "AskPrediction"
 vim.api.nvim_set_hl(0, HLGroups.PREDICTION_TEXT, { italic = true, fg = "#dddddd" })
 
 HLGroups.PREDICTION_REASONING = "AskPredictionReasoning"
+
+HLGroups.PREDICTION_THINKING = "AskPredictionThinking"
+vim.api.nvim_set_hl(0, HLGroups.PREDICTION_THINKING, { italic = true, fg = "#2EBE10" })
 vim.api.nvim_set_hl(0, HLGroups.PREDICTION_REASONING, { fg = "#808080", italic = true })
 
 -- * FIM duplicate prefix highlighting (when model repeats cursor line's indentation)
