@@ -107,10 +107,10 @@ function PredictionsFrontend.ask_for_prediction(params)
 
                 if done then
                     if this_prediction.has_reasoning then
-                        -- log:info(ansi.yellow_bold("REASONING:\n"), ansi.yellow(this_prediction:get_reasoning()))
+                        log:info(ansi.yellow_bold("REASONING:\n"), ansi.yellow(this_prediction:get_reasoning()))
                     end
                     if this_prediction:any_chunks() then
-                        -- log:info(ansi.cyan_bold("PREDICTION:\n"), ansi.cyan(this_prediction.prediction))
+                        log:info(ansi.cyan_bold("PREDICTION:\n"), ansi.cyan(this_prediction.prediction))
                     else
                         -- FYI great way to test this, go to a line that is done (i.e. a return) and go into insert mode before the returned variable and it almost always suggests that is EOS (at least with qwen2.5-coder + ollama)
                         log:trace(ansi.yellow_bold("DONE, empty prediction") .. ", done reason: '" .. (done_reason or "") .. "'")
@@ -153,6 +153,7 @@ function PredictionsFrontend.ask_for_prediction(params)
             get_flags = PredictionsFrontend.get_flags,
         }
 
+        log:info("Curl.spawn(fim)")
         Curl.spawn(fim_request, frontend)
     end
 
