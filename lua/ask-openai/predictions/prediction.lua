@@ -150,7 +150,14 @@ function Prediction:fix_fim_and_redraw_extmarks()
         end
         -- * thinking dots
         self.first_line = dots:get_still_thinking_message(self.start_time)
-        self.rest_of_lines = {}
+
+        -- show reasoning (kinda fun to see! slower models this might make it palatable)
+        -- maybe a runtime toggle so if I crank up level of thinking in gptoss (or use slower or verbose thinker model)
+        -- then in that case I see thinking?
+        --  heck maybe model specific + reasoning level (i.e. gptoss off/low do not show, medium/high show)? glm4.7/qwen3.6 show
+        local reasoning = self:get_reasoning()
+        self.rest_of_lines = split_lines(reasoning)
+        -- TODO fix for when I accept, do not show the reasoning again for a split second until cleared
     end
 
     -- * highlight cursor line prefix overlap with red bg
