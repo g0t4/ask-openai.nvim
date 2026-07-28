@@ -91,6 +91,11 @@ describe("E2E - FIM predictions", function()
         -- * accept prediction by pressing tab
         predictions_frontend.accept_all_invoked()
 
+        -- TODO assert on buffer contents
+
+        -- * TODO run other tests w/ accept_line_invoked and accept_word_invoked
+        --  and verify how they behave!!!
+
         -- * Display full buffer after prediction accepted (prediction is here)
         local full_buffer = e2e.get_buffer_text(bufnr)
         print("\n========== FULL BUFFER AFTER PREDICTION ==========")
