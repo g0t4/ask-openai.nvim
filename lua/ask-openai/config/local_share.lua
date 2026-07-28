@@ -29,7 +29,6 @@ local function load_config()
         predictions = { enabled = true },
         notify_stats = false,
         rag = { enabled = true },
-        log_threshold_text = "WARN",
 
         -- model agnostic params
         fim = { semantic_grep = { all_files = false } },
