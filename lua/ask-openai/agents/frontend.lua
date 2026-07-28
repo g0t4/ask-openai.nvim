@@ -821,24 +821,19 @@ local function remove_last_message(args)
     vim.print("Removed", removed_messages)
 end
 
+local trace_restorer = require("ask-openai.agents.viewer.trace_restorer")
+
 local function restore_trace(trace_path)
     log:info("Restoring session from: " .. trace_path)
-    local trace_restorer = require("ask-openai.agents.viewer.trace_restorer")
     local success = trace_restorer.restore_session(trace_path)
     if not success then
         error("Failed to restore session from: " .. trace_path)
     end
 end
 
---- Restore a past agent session/trace into the chat viewer window.
---- Clears the window and draws all messages from the trace file using
---- the same formatters as real-time display (but with final message state).
----
 ---@param opts table -- options table with args field containing session_id
 local function restore_session_command(opts)
     local session_id = opts.args and opts.args:match("^%s*(.-)%s*$") or nil
-    local trace_restorer = require("ask-openai.agents.viewer.trace_restorer")
-
     local trace_path = trace_restorer.resolve_trace_path(session_id)
     if not trace_path then
         local msg = session_id
