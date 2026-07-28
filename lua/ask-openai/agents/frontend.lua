@@ -847,6 +847,16 @@ local function restore_session_command(opts)
     end
 end
 
+local function restore_trace_command(opts)
+    local trace_path = opts.args
+    log:info("Restoring session from: " .. trace_path)
+    local trace_restorer = require("ask-openai.agents.viewer.trace_restorer")
+    local success = trace_restorer.restore_session(trace_path)
+    if not success then
+        error("Failed to restore session from: " .. trace_path)
+    end
+end
+
 function AgentsFrontend.setup()
     -- * AskAgent
     vim.api.nvim_create_user_command(
@@ -888,9 +898,13 @@ function AgentsFrontend.setup()
     vim.api.nvim_create_user_command("AskDumpAgentTrace", ask_dump_agent_trace_command, {})
 
     -- * AgentSessionRestore
-    vim.api.nvim_create_user_command("AgentSessionRestore", restore_session_command, {
+    vim.api.nvim_create_user_command("AgentRestoreSessionID", restore_session_command, {
         nargs = "?",
         desc = "Restore a past agent session/trace into the chat viewer (session_id is unix timestamp or *-trace.json filename; omit for most recent)"
+    })
+    vim.api.nvim_create_user_command("AgentRestoreTrace", restore_trace_command, {
+        nargs = "?",
+        desc = "Restore a past agent trace file into the chat viewer"
     })
     -- * AskViewTrace
     vim.api.nvim_create_user_command("AskViewTrace", function(opts)
