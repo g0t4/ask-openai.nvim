@@ -68,11 +68,26 @@ describe("E2E - FIM predictions", function()
             .. current_prediction.prediction .. "'"
         )
 
-        -- * Display full buffer after prediction (prediction is shown as virtual text)
+        -- Retrieve all extmarks from the buffer, including virtual text and virtual lines.
+        -- The Neovim API requires the `details` option to be set to obtain `virt_text`
+        -- and `virt_lines` fields. Using `{ details = true }` returns all available
+        -- details for each extmark.
+        local all_ns = -1
+        local prediction_extmarks = vim.api.nvim_buf_get_extmarks(
+            current_prediction.buffer,
+            all_ns,
+            0,
+            -1,
+            { details = true }
+        )
+        vim.print(prediction_extmarks)
+
+        -- * Display full buffer after prediction (prediction is shown as extmarks so you won't see it here)
         local full_buffer = e2e.get_buffer_text(bufnr)
         print("\n========== FULL BUFFER AFTER PREDICTION ==========")
         print(full_buffer)
         print("==================================================\n")
+
 
         -- * Cleanup: cancel the prediction to free resources
         predictions_frontend.cancel_current_prediction()
