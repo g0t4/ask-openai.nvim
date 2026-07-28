@@ -17,22 +17,7 @@ local function mkdir_p(path)
     vim.fn.mkdir(vim.fn.fnamemodify(path, ':h'), 'p')
 end
 
-
--- * log level constants
-local LEVEL_NUMBERS = {
-    TRACE = 0,
-    INFO = 1,
-    WARN = 2,
-    ERROR = 3,
-}
-local LEVEL_NUMBER_TO_TEXT = {
-    [LEVEL_NUMBERS.TRACE] = "TRACE",
-    [LEVEL_NUMBERS.INFO]  = "INFO",
-    [LEVEL_NUMBERS.WARN]  = "WARN",
-    [LEVEL_NUMBERS.ERROR] = "ERROR",
-}
-local DEFAULT_LOG_LEVEL_NUMBER = LEVEL_NUMBERS.WARN
-
+-- * model constants
 M.GPTOSS = "gptoss"
 M.QWEN = "qwen"
 M.GLM = "glm"
@@ -44,7 +29,7 @@ local function load_config()
         predictions = { enabled = true },
         notify_stats = false,
         rag = { enabled = true },
-        log_threshold_text = LEVEL_NUMBER_TO_TEXT[DEFAULT_LOG_LEVEL_NUMBER],
+        log_threshold_text = "WARN",
 
         -- model agnostic params
         fim = { semantic_grep = { all_files = false } },
