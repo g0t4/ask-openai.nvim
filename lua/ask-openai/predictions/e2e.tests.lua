@@ -83,24 +83,27 @@ describe("E2E - FIM predictions", function()
         vim.print(prediction_extmarks)
 
         -- * Display full buffer after prediction (prediction is shown as extmarks so you won't see it here)
-        local full_buffer = e2e.get_buffer_text(bufnr)
+        local full_buffer_before_accept = e2e.get_buffer_text(bufnr)
         print("\n========== FULL BUFFER AFTER PREDICTION ==========")
-        print(full_buffer)
+        print(full_buffer_before_accept)
         print("==================================================\n")
 
         -- * accept prediction by pressing tab
         predictions_frontend.accept_all_invoked()
 
-        -- TODO assert on buffer contents
+        -- * Display full buffer after prediction accepted (prediction is here)
+        local full_buffer_after_accept = e2e.get_buffer_text(bufnr)
+        print("\n========== FULL BUFFER AFTER PREDICTION ==========")
+        print(full_buffer_after_accept)
+        print("==================================================\n")
+
+        should.be_same({
+            "def add(x, y):",
+            "   return x + y "
+        }, vim.split(full_buffer_after_accept, "\n"))
 
         -- * TODO run other tests w/ accept_line_invoked and accept_word_invoked
         --  and verify how they behave!!!
-
-        -- * Display full buffer after prediction accepted (prediction is here)
-        local full_buffer = e2e.get_buffer_text(bufnr)
-        print("\n========== FULL BUFFER AFTER PREDICTION ==========")
-        print(full_buffer)
-        print("==================================================\n")
 
 
         -- * Cleanup: cancel the prediction to free resources
