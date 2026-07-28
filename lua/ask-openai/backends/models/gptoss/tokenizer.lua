@@ -1,4 +1,5 @@
 local local_share = require("ask-openai.config.local_share")
+local models = require("ask-openai.config.models")
 local M = {}
 
 ---@param level any
@@ -8,13 +9,13 @@ function M.get_gptoss_max_tokens_for_level(level)
     --   consider passing the type here so it is all in one spot still.. the levels are?
     --   or just duplicate this function below and keep it all together
 
-    if level == local_share.GptOssReasoningLevel.high then
+    if level == models.GptOssReasoningLevel.high then
         return 16384
-    elseif level == local_share.GptOssReasoningLevel.medium then
+    elseif level == models.GptOssReasoningLevel.medium then
         return 8192
-    elseif level == local_share.GptOssReasoningLevel.low then
+    elseif level == models.GptOssReasoningLevel.low then
         return 4096
-    elseif level == local_share.GptOssReasoningLevel.off then
+    elseif level == models.GptOssReasoningLevel.off then
         return 2048
     else
         return 2048

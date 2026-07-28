@@ -1,6 +1,7 @@
 local log = require("devtools.logs.logger").universal()
 local instructs = require("ask-openai.frontends.instructs")
 local local_share = require("ask-openai.config.local_share")
+local models = require("ask-openai.config.models")
 
 local M = {}
 
@@ -60,13 +61,13 @@ end
 function Includes.get_reasoning_level(self)
     -- TODO as needed, map this to other model reasoning effort/level values... if they differ from low/medium/high/off
     if self.reasoning_low then
-        return local_share.GptOssReasoningLevel.low
+        return models.GptOssReasoningLevel.low
     elseif self.reasoning_medium then
-        return local_share.GptOssReasoningLevel.medium
+        return models.GptOssReasoningLevel.medium
     elseif self.reasoning_high then
-        return local_share.GptOssReasoningLevel.high
+        return models.GptOssReasoningLevel.high
     elseif self.reasoning_off then
-        return local_share.GptOssReasoningLevel.off
+        return models.GptOssReasoningLevel.off
     else
         return nil
     end

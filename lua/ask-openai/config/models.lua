@@ -13,4 +13,12 @@ M.DEFAULT_MODEL = M.GPTOSS
 M.THINKING_ON = "on"
 M.THINKING_OFF = "off"
 
+--- @enum GptOssReasoningLevel
+M.GptOssReasoningLevel = {
+    off = "off",
+    low = "low",
+    medium = "medium",
+    high = "high"
+}
+
 return M
