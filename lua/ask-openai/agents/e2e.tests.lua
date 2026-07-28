@@ -1,5 +1,10 @@
 require("ask-openai.helpers.test_setup").modify_package_path()
 
+-- * Register only the AskAgent user command without loading the full plugin.
+--   The full init loads telescope (via rag) which isn't available in headless mode.
+local frontend = require("ask-openai.agents.frontend")
+frontend.setup()
+
 local describe = require("devtools.tests.define.describe")
 local should = require("devtools.tests.should")
 local assert = require("luassert")
@@ -118,14 +123,20 @@ describe("E2E - AskAgent /tools with date question", function()
         print("========================================\n")
 
         -- * Assert: response should contain date-related content
-        local has_date_content = full_response:lower():match("date")
+        -- Note: string.match returns the matched string (truthy) or nil (falsy),
+        --   so we use assert.is_not_nil to check truthiness
+        local has_date_keyword = full_response:lower():match("date")
             or full_response:lower():match("today")
-            or full_response:lower():match("%d{4}%-?%d{2}%-?%d{2}")
-            or full_response:lower():match("%w+ %d+, %d{4}")
+        assert.is_not_nil(
+            has_date_keyword,
+            "Response should contain 'date' or 'today'. Got: " .. full_response
+        )
 
-        assert.is_true(
-            has_date_content,
-            "Response should contain date-related information. Got: " .. full_response
+        -- Lua patterns don't support {4} quantifiers, so spell out the digits
+        local has_iso_date = full_response:match("%d%d%d%d%-?%d%d%-?%d%d")
+        assert.is_not_nil(
+            has_iso_date,
+            "Response should contain a date string (YYYY-MM-DD). Got: " .. full_response
         )
 
         -- * Assert: response should not be empty or just tool call artifacts
