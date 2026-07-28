@@ -9,7 +9,6 @@ frontend.setup()
 local mcp_tools = require("ask-openai.tools.mcp")
 
 print("\n========== WAITING FOR MCP SERVERS TO INITIALIZE ==========")
-local mcp_ready = false
 local wait_count = 0
 while not mcp_tools.ready and wait_count < 100 do
     vim.wait(500) -- Wait 500ms
@@ -32,6 +31,14 @@ for name, tool in pairs(mcp_tools.tools_available or {}) do
     print("  - " .. name)
 end
 print("========================================\n")
+
+-- * Assert: run_process tool must be available for this test
+local has_run_process_tool = mcp_tools.tools_available["run_process"] ~= nil
+assert.is_true(
+    has_run_process_tool,
+    "MCP tools must include 'run_process' for this test. Available tools:\n"
+    .. table.concat(vim.tbl_keys(mcp_tools.tools_available or {}), ", ")
+)
 
 local describe = require("devtools.tests.define.describe")
 local should = require("devtools.tests.should")
