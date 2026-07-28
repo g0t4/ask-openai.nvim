@@ -76,13 +76,13 @@ function M.lualine_components()
             -- * FIM status
             local fim_status = local_share.get_fim_model()
             local level = local_share.get_fim_reasoning_level():upper()
-            if fim_status == "gptoss" then
+            if fim_status == local_share.GPTOSS then
                 fim_status = "gptoss" .. level:sub(1, 1)
-            elseif fim_status == "qwen" then
+            elseif fim_status == local_share.QWEN then
                 fim_status = "qwen" .. level
-            elseif fim_status == "gemma4" then
+            elseif fim_status == local_share.GEMMA4 then
                 fim_status = "gemma4" .. level
-            elseif fim_status == "glm" then
+            elseif fim_status == local_share.GLM then
                 fim_status = "GLM" .. level
                 --  TODO preserved thinking mode (or always on) per the repo it says to use this in multi turn agents (IIAC keep reasoning traces for tool calls too - interleaved reasoning before final response from model on each turn)
             end
@@ -94,9 +94,9 @@ function M.lualine_components()
             local rewrite_model = local_share.get_rewrite_model()
             local level = local_share.get_rewrite_reasoning_level():upper()
             local rewrite_status = rewrite_model .. level
-            if rewrite_model == "gptoss" then
+            if rewrite_model == local_share.GPTOSS then
                 rewrite_status = rewrite_status .. level:sub(1, 1)
-            elseif rewrite_model == "glm" then
+            elseif rewrite_model == local_share.GLM then
                 rewrite_status = "GLM" .. level
             end
             rewrite_status = "re/" .. rewrite_status
@@ -106,9 +106,9 @@ function M.lualine_components()
             local agents_model = local_share.get_agents_model()
             local level = local_share.get_agents_reasoning_level():upper()
             local agents_status = agents_model .. level
-            if agents_model == "gptoss" then
+            if agents_model == local_share.GPTOSS then
                 agents_status = agents_status .. level:sub(1, 1)
-            elseif agents_model == "glm" then
+            elseif agents_model == local_share.GLM then
                 agents_status = "GLM"
             end
             agents_status = "a/" .. agents_status

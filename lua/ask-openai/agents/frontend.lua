@@ -1,4 +1,5 @@
 local buffers = require("ask-openai.helpers.buffers")
+local local_share = require("ask-openai.config.local_share")
 local log = require("devtools.logs.logger").universal()
 local completion_logger = require("ask-openai.logs.completion_logger")
 local tool_router = require("ask-openai.tools.router")
@@ -249,13 +250,13 @@ local function ask_agent_command(opts)
         local body_overrides
         local model = api.get_agents_model()
         local reasoning_level = context.includes:get_reasoning_level() or api.get_agents_reasoning_level()
-        if model == "gptoss" then
+        if model == local_share.GPTOSS then
             body_overrides = model_params.new_gptoss_chat_body_llama_server(_body, context, reasoning_level)
-        elseif model == "gemma4" then
+        elseif model == local_share.GEMMA4 then
             body_overrides = model_params.new_gemma4_chat_body_llama_server(_body, context, reasoning_level)
-        elseif model == "qwen" then
+        elseif model == local_share.QWEN then
             body_overrides = model_params.new_qwen3coder_llama_server_chat_body(_body, context, reasoning_level)
-        elseif model == "glm" then
+        elseif model == local_share.GLM then
             body_overrides = model_params.new_glm47flash_chat_body_llama_server(_body, context, reasoning_level)
         else
             error("model not supported" .. tostring(model))
