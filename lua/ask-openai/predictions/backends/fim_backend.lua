@@ -1,5 +1,6 @@
 local log = require("devtools.logs.logger").universal()
 local local_share = require("ask-openai.config.local_share")
+local models = require("ask-openai.config.models")
 local CurrentContext = require("ask-openai.frontends.context")
 local fim = require("ask-openai.backends.models.fim")
 local qwen = fim.qwen25coder.sentinel_tokens
@@ -29,7 +30,7 @@ function FimBackend.set_fim_model(model)
     -- FYI right now, given I am using llama-server exclusively, toggling is just about changing between the two instances I run at the same time
     --   so, toggling the port/endpoint :)
     FimBackend.base_url = config.get_endpoints()[model].base_url
-    if model == local_share.GPTOSS then
+    if model == models.GPTOSS then
         -- Base URL now derived from configuration (agents subsystem)
         if use_gptoss_raw then
             -- manually formatted prompt to disable thinking
@@ -38,7 +39,7 @@ function FimBackend.set_fim_model(model)
         else
             FimBackend.endpoint = CompletionsEndpoints.oai_v1_chat_completions
         end
-    elseif model == local_share.GEMMA4 or model == local_share.GLM then
+    elseif model == models.GEMMA4 or model == models.GLM then
         FimBackend.endpoint = CompletionsEndpoints.oai_v1_chat_completions
     else
         FimBackend.endpoint = CompletionsEndpoints.llamacpp_completions -- * preferred for qwen2.5-coder
@@ -144,15 +145,15 @@ function FimBackend:body_for()
         -- MUST set qwent's tokens as stop tokens too (when using Qwen's repo level fim format)
         body.stop = fim.bytedance_seed_coder.qwen_sentinels.fim_stop_tokens_from_qwen25_coder -- llama-server /completions endpoint uses top-level stop
         body.options.stop = fim.bytedance_seed_coder.qwen_sentinels.fim_stop_tokens_from_qwen25_coder
-    elseif model == local_share.GPTOSS
-        or model == local_share.GEMMA4
-        or model == local_share.GLM
+    elseif model == models.GPTOSS
+        or model == models.GEMMA4
+        or model == models.GLM
     then
         -- FYI extra logic here is to reuse one template across models when it is the FIM chat completion style I use for gptoss
         --  TODO! strip out glm/gemma4 reuse of gptoss template into own block? would this be less messy?
         --    TODO I should probably rewrite this to not be so hacky given I have special "off" logic for gptoss raw and even in not-raw
         -- FYI I am using my gptoss FIM chat completions FIM style for other chat model FIM setups (not specific to any one of them)
-        if use_gptoss_raw and model == local_share.GPTOSS then
+        if use_gptoss_raw and model == models.GPTOSS then
             -- RAW is gptoss specific
             -- * /completions legacy endpoint:
             builder = function()
@@ -167,11 +168,11 @@ function FimBackend:body_for()
             local level = api.get_fim_reasoning_level()
             body.messages = fim_harmony.gptoss.get_fim_chat_messages(self, level, model)
             body.raw = false -- set here even though was set above
-            if model == local_share.GPTOSS then
+            if model == models.GPTOSS then
                 body.chat_template_kwargs = {
                     reasoning_effort = level
                 }
-            elseif model == local_share.GLM or model == local_share.GEMMA4 then
+            elseif model == models.GLM or model == models.GEMMA4 then
                 body.chat_template_kwargs = {
                     -- confirmed works with glm
                     enable_thinking = level ~= "off"

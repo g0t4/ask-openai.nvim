@@ -1,5 +1,7 @@
 local M = {}
 
+local models = require("ask-openai.config.models")
+
 local config = nil
 
 local config_path = vim.fn.stdpath('data') .. '/ask-openai/config.json'
@@ -17,13 +19,6 @@ local function mkdir_p(path)
     vim.fn.mkdir(vim.fn.fnamemodify(path, ':h'), 'p')
 end
 
--- * model constants
-M.GPTOSS = "gptoss"
-M.QWEN = "qwen"
-M.GLM = "glm"
-M.GEMMA4 = "gemma4"
-M.DEFAULT_MODEL = M.GPTOSS
-
 local function load_config()
     local default = {
         predictions = { enabled = true },
@@ -34,10 +29,10 @@ local function load_config()
         fim = { semantic_grep = { all_files = false } },
 
         -- model specific params
-        [M.GPTOSS] = {}, -- allow downstream to define defaults
-        [M.QWEN] = {},
-        [M.GLM] = {},
-        [M.GEMMA4] = {},
+        [models.GPTOSS] = {}, -- allow downstream to define defaults
+        [models.QWEN] = {},
+        [models.GLM] = {},
+        [models.GEMMA4] = {},
     }
 
     if file_exists(config_path) then
@@ -75,7 +70,6 @@ local function save()
         save_config(config)
     end
 end
-
 
 -- * predictions *
 function M.set_predictions_enabled()
@@ -128,7 +122,7 @@ end
 -- * agents model
 function M.get_agents_model()
     local cfg = get()
-    return cfg.agents and cfg.agents.model or M.DEFAULT_MODEL
+    return cfg.agents and cfg.agents.model or models.DEFAULT_MODEL
 end
 
 function M.set_agents_model(model)
@@ -138,7 +132,7 @@ function M.set_agents_model(model)
     save()
 end
 
-local _model_cycle = { M.GPTOSS, M.QWEN, M.GEMMA4, M.GLM }
+local _model_cycle = { models.GPTOSS, models.QWEN, models.GEMMA4, models.GLM }
 local function _next_model(current)
     for i, m in ipairs(_model_cycle) do
         if m == current then
@@ -157,7 +151,7 @@ end
 -- * rewrite model
 function M.get_rewrite_model()
     local cfg = get()
-    return cfg.rewrite and cfg.rewrite.model or M.DEFAULT_MODEL
+    return cfg.rewrite and cfg.rewrite.model or models.DEFAULT_MODEL
 end
 
 function M.set_rewrite_model(model)
@@ -176,7 +170,7 @@ end
 -- * FIM model
 function M.get_fim_model()
     local cfg = get()
-    return cfg.fim and cfg.fim.model or M.DEFAULT_MODEL
+    return cfg.fim and cfg.fim.model or models.DEFAULT_MODEL
 end
 
 function M.set_fim_model(model)
@@ -229,19 +223,17 @@ M.GptOssReasoningLevel = {
     high = "high"
 }
 
-M.THINKING_OFF = "off"
-M.THINKING_ON = "on"
 
 ---@return string GptOssReasoningLevel
 function M.get_fim_reasoning_level()
     local cfg = get()
     local model = M.get_fim_model()
     cfg[model] = cfg[model] or {}
-    return cfg[model].fim_reasoning_level or M.THINKING_OFF -- off can be default since that is universal in my experience (chat template prefill forces no thinking)
+    return cfg[model].fim_reasoning_level or models.THINKING_OFF -- off can be default since that is universal in my experience (chat template prefill forces no thinking)
 end
 
 local function _cycle_reasoning_level(current, model)
-    if model == M.GPTOSS then
+    if model == models.GPTOSS then
         if current == M.GptOssReasoningLevel.off then
             return M.GptOssReasoningLevel.low
         elseif current == M.GptOssReasoningLevel.low then
@@ -252,7 +244,7 @@ local function _cycle_reasoning_level(current, model)
             return M.GptOssReasoningLevel.off
         end
     else
-        return current == M.THINKING_OFF and M.THINKING_ON or M.THINKING_OFF
+        return current == models.THINKING_OFF and models.THINKING_ON or models.THINKING_OFF
     end
 end
 
@@ -280,7 +272,7 @@ function M.get_agents_reasoning_level()
     local model = M.get_agents_model()
     -- TODO! check name is stored normalized (same as expected for settings)
     cfg[model] = cfg[model] or {}
-    return cfg[model].agents_reasoning_level or M.THINKING_OFF
+    return cfg[model].agents_reasoning_level or models.THINKING_OFF
 end
 
 function M.cycle_agents_reasoning_level()
@@ -296,7 +288,7 @@ function M.set_rewrite_reasoning_level(level)
     local cfg = get()
     local model = M.get_rewrite_model()
     cfg[model] = cfg[model] or {}
-    cfg[model].rewrite_reasoning_level = level or M.THINKING_OFF
+    cfg[model].rewrite_reasoning_level = level or models.THINKING_OFF
     save()
 end
 

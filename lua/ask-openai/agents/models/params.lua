@@ -1,6 +1,7 @@
 local log = require("devtools.logs.logger").universal()
 local api = require("ask-openai.api")
 local local_share = require("ask-openai.config.local_share")
+local models = require("ask-openai.config.models")
 local gptoss_tokenizer = require("ask-openai.backends.models.gptoss.tokenizer")
 
 local M = {}
@@ -23,7 +24,7 @@ end
 ---@return table
 local function set_enable_thinking(body, reasoning_level)
     body.chat_template_kwargs = body.chat_template_kwargs or {}
-    body.chat_template_kwargs.enable_thinking = reasoning_level ~= local_share.THINKING_OFF
+    body.chat_template_kwargs.enable_thinking = reasoning_level ~= models.THINKING_OFF
     return body
 end
 

@@ -1,3 +1,4 @@
+local models = require("ask-openai.config.models")
 local local_share = require('ask-openai.config.local_share')
 local perf = require("ask-openai.perf")
 local human = require('devtools.humanize')
@@ -76,13 +77,13 @@ function M.lualine_components()
             -- * FIM status
             local fim_status = local_share.get_fim_model()
             local level = local_share.get_fim_reasoning_level():upper()
-            if fim_status == local_share.GPTOSS then
+            if fim_status == models.GPTOSS then
                 fim_status = "gptoss" .. level:sub(1, 1)
-            elseif fim_status == local_share.QWEN then
+            elseif fim_status == models.QWEN then
                 fim_status = "qwen" .. level
-            elseif fim_status == local_share.GEMMA4 then
+            elseif fim_status == models.GEMMA4 then
                 fim_status = "gemma4" .. level
-            elseif fim_status == local_share.GLM then
+            elseif fim_status == models.GLM then
                 fim_status = "GLM" .. level
                 --  TODO preserved thinking mode (or always on) per the repo it says to use this in multi turn agents (IIAC keep reasoning traces for tool calls too - interleaved reasoning before final response from model on each turn)
             end
@@ -94,9 +95,9 @@ function M.lualine_components()
             local rewrite_model = local_share.get_rewrite_model()
             local level = local_share.get_rewrite_reasoning_level():upper()
             local rewrite_status = rewrite_model .. level
-            if rewrite_model == local_share.GPTOSS then
+            if rewrite_model == models.GPTOSS then
                 rewrite_status = rewrite_status .. level:sub(1, 1)
-            elseif rewrite_model == local_share.GLM then
+            elseif rewrite_model == models.GLM then
                 rewrite_status = "GLM" .. level
             end
             rewrite_status = "re/" .. rewrite_status
@@ -106,9 +107,9 @@ function M.lualine_components()
             local agents_model = local_share.get_agents_model()
             local level = local_share.get_agents_reasoning_level():upper()
             local agents_status = agents_model .. level
-            if agents_model == local_share.GPTOSS then
+            if agents_model == models.GPTOSS then
                 agents_status = agents_status .. level:sub(1, 1)
-            elseif agents_model == local_share.GLM then
+            elseif agents_model == models.GLM then
                 agents_status = "GLM"
             end
             agents_status = "a/" .. agents_status
