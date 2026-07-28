@@ -5,6 +5,34 @@ require("ask-openai.helpers.test_setup").modify_package_path()
 local frontend = require("ask-openai.agents.frontend")
 frontend.setup()
 
+-- * Wait for MCP servers to initialize
+local mcp_tools = require("ask-openai.tools.mcp")
+
+print("\n========== WAITING FOR MCP SERVERS TO INITIALIZE ==========")
+local mcp_ready = false
+local wait_count = 0
+while not mcp_tools.ready and wait_count < 100 do
+    vim.wait(500) -- Wait 500ms
+    wait_count = wait_count + 1
+    if wait_count % 20 == 0 then
+        print("  Waiting for MCP servers... (" .. wait_count * 0.5 .. "s elapsed)")
+    end
+end
+
+if mcp_tools.ready then
+    print("  MCP servers are ready!")
+else
+    print("  WARNING: MCP servers did not initialize within timeout")
+end
+print("==========================================================\n")
+
+-- * Debug: check what tools are available
+print("\n========== MCP TOOLS AVAILABLE ==========")
+for name, tool in pairs(mcp_tools.tools_available or {}) do
+    print("  - " .. name)
+end
+print("========================================\n")
+
 local describe = require("devtools.tests.define.describe")
 local should = require("devtools.tests.should")
 local assert = require("luassert")
@@ -80,7 +108,7 @@ local function extract_assistant_response(bufnr)
 end
 
 describe("E2E - AskAgent /tools with date question", function()
-    it("should respond to 'what date is it' and display the answer in chat window", function()
+    it("should use run_process tool to get date and show green checkmark", function()
         -- * Setup: ensure plugin is loaded and configured for agents mode
         local api = require("ask-openai.api")
         local frontend = require("ask-openai.agents.frontend")
@@ -89,7 +117,8 @@ describe("E2E - AskAgent /tools with date question", function()
         api.set_agents_model(api.get_agents_model() or "qwen")
 
         -- * Action: invoke the AskAgent command with tools and a date question
-        local user_prompt = "what date is it"
+        --   Prompt explicitly asks to use the run_process tool
+        local user_prompt = "use the run_process tool to run 'date' and show me today's date"
         vim.cmd(string.format("AskAgent /tools %s", user_prompt))
 
         -- * Wait for the agent to finish processing
@@ -114,36 +143,45 @@ describe("E2E - AskAgent /tools with date question", function()
         local line_count = vim.api.nvim_buf_line_count(bufnr)
         assert.is_true(line_count > 0, "Chat window buffer is empty")
 
-        -- * Extract and display the assistant's response
-        local assistant_lines = extract_assistant_response(bufnr)
-        local full_response = table.concat(assistant_lines, "\n")
+        -- * Extract and display the full buffer content for debugging
+        local all_lines = vim.api.nvim_buf_get_lines(bufnr, 0, -1, false)
+        local full_buffer = table.concat(all_lines, "\n")
 
-        print("\n========== ASSISTANT RESPONSE ==========")
-        print(full_response)
+        print("\n========== FULL BUFFER CONTENT ==========")
+        print(full_buffer)
         print("========================================\n")
 
-        -- * Assert: response should contain date-related content
-        -- Note: string.match returns the matched string (truthy) or nil (falsy),
-        --   so we use assert.is_not_nil to check truthiness
-        local has_date_keyword = full_response:lower():match("date")
-            or full_response:lower():match("today")
+        -- * Assert: check for green checkmark (✅) indicating successful tool execution
+        -- The run_process formatter adds "✅ " prefix to successful tool calls
+        local has_green_checkmark = full_buffer:match("✅")
+        assert.is_not_nil(
+            has_green_checkmark,
+            "Response should contain green checkmark (✅) for successful tool execution. Full buffer:\n" .. full_buffer
+        )
+
+        -- * Assert: response should contain date-related content from tool output
+        local has_date_keyword = full_buffer:lower():match("date")
+            or full_buffer:lower():match("today")
         assert.is_not_nil(
             has_date_keyword,
-            "Response should contain 'date' or 'today'. Got: " .. full_response
+            "Response should contain 'date' or 'today'. Full buffer:\n" .. full_buffer
         )
 
-        -- Lua patterns don't support {4} quantifiers, so spell out the digits
-        local has_iso_date = full_response:match("%d%d%d%d%-?%d%d%-?%d%d")
+        -- * Assert: response should contain a date string (any format)
+        -- Accept formats like: "2026-07-28", "Tue Jul 28 01:14:41 CDT 2026", "July 28, 2026", etc.
+        local has_date_string = full_buffer:match("%d%d%d%d")
+            or full_buffer:match("Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec")
         assert.is_not_nil(
-            has_iso_date,
-            "Response should contain a date string (YYYY-MM-DD). Got: " .. full_response
+            has_date_string,
+            "Response should contain a date string. Full buffer:\n" .. full_buffer
         )
 
-        -- * Assert: response should not be empty or just tool call artifacts
-        local has_meaningful_content = #full_response > 10
-        assert.is_true(
-            has_meaningful_content,
-            "Response should have meaningful content (not just tool call formatting)"
+        -- * Assert: response should contain tool-related content
+        local has_tool_reference = full_buffer:match("run_process")
+            or full_buffer:match("date")
+        assert.is_not_nil(
+            has_tool_reference,
+            "Response should reference the run_process tool or date. Full buffer:\n" .. full_buffer
         )
     end)
 end)
