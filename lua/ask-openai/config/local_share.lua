@@ -226,14 +226,14 @@ end
 
 local function _cycle_reasoning_level(current, model)
     if model == models.GPTOSS then
-        if current == models.GptOssReasoningLevel.off then
-            return models.GptOssReasoningLevel.low
-        elseif current == models.GptOssReasoningLevel.low then
-            return models.GptOssReasoningLevel.medium
-        elseif current == models.GptOssReasoningLevel.medium then
-            return models.GptOssReasoningLevel.high
+        if current == models.GptOssReasoningLevel.OFF then
+            return models.GptOssReasoningLevel.LOW
+        elseif current == models.GptOssReasoningLevel.LOW then
+            return models.GptOssReasoningLevel.MEDIUM
+        elseif current == models.GptOssReasoningLevel.MEDIUM then
+            return models.GptOssReasoningLevel.HIGH
         else
-            return models.GptOssReasoningLevel.off
+            return models.GptOssReasoningLevel.OFF
         end
     else
         return current == models.THINKING_OFF and models.THINKING_ON or models.THINKING_OFF
@@ -288,7 +288,7 @@ function M.get_rewrite_reasoning_level()
     local cfg = get()
     local model = M.get_rewrite_model()
     cfg[model] = cfg[model] or {}
-    return cfg[model].rewrite_reasoning_level or models.GptOssReasoningLevel.low
+    return cfg[model].rewrite_reasoning_level or models.GptOssReasoningLevel.LOW
 end
 
 function M.cycle_rewrite_reasoning_level()

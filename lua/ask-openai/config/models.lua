@@ -15,10 +15,10 @@ M.THINKING_OFF = "off"
 
 --- @enum GptOssReasoningLevel
 M.GptOssReasoningLevel = {
-    off = "off",
-    low = "low",
-    medium = "medium",
-    high = "high"
+    OFF = "off",
+    LOW = "low",
+    MEDIUM = "medium",
+    HIGH = "high"
 }
 
 return M
