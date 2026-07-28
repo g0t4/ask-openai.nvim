@@ -449,7 +449,7 @@ local function update_ui_chat_viewer(trace)
         end
 
         for _, tool_call in ipairs(rx_message.tool_calls) do
-            local function_name = tool_call["function"].name or ""
+            local function_name = tool_call["function"] and tool_call["function"].name or ""
             local formatter = formatters.get_formatter(function_name)
             local ok, err = pcall(function() formatter(lines, tool_call, rx_message) end)
             if not ok then
