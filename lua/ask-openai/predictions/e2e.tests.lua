@@ -88,6 +88,15 @@ describe("E2E - FIM predictions", function()
         print(full_buffer)
         print("==================================================\n")
 
+        -- * accept prediction by pressing tab
+        predictions_frontend.accept_all_invoked()
+
+        -- * Display full buffer after prediction accepted (prediction is here)
+        local full_buffer = e2e.get_buffer_text(bufnr)
+        print("\n========== FULL BUFFER AFTER PREDICTION ==========")
+        print(full_buffer)
+        print("==================================================\n")
+
 
         -- * Cleanup: cancel the prediction to free resources
         predictions_frontend.cancel_current_prediction()
