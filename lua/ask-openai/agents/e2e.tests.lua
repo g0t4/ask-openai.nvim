@@ -5,20 +5,39 @@ require("ask-openai.helpers.test_setup").modify_package_path()
 local frontend = require("ask-openai.agents.frontend")
 frontend.setup()
 
+--- Wait for a condition to become true, polling every `poll_ms` milliseconds.
+--- @param predicate fun(): boolean
+--- @param timeout_ms number Maximum time to wait in milliseconds
+--- @param poll_ms number Time between polls in milliseconds
+--- @return boolean success Whether the condition became true before timeout
+local function wait_for(predicate, timeout_ms, poll_ms)
+    poll_ms = poll_ms or 100
+    local start_time = vim.uv.hrtime() / 1e6
+
+    while true do
+        if predicate() then
+            return true
+        end
+
+        local elapsed = vim.uv.hrtime() / 1e6 - start_time
+        if elapsed >= timeout_ms then
+            return false
+        end
+
+        -- Yield to let async operations (SSE, timers) process
+        vim.wait(poll_ms)
+    end
+end
+
 -- * Wait for MCP servers to initialize
 local mcp_tools = require("ask-openai.tools.mcp")
 
 print("\n========== WAITING FOR MCP SERVERS TO INITIALIZE ==========")
-local wait_count = 0
-while not mcp_tools.ready and wait_count < 100 do
-    vim.wait(500) -- Wait 500ms
-    wait_count = wait_count + 1
-    if wait_count % 20 == 0 then
-        print("  Waiting for MCP servers... (" .. wait_count * 0.5 .. "s elapsed)")
-    end
-end
+local mcp_ready = wait_for(function()
+    return mcp_tools.ready
+end, 50000, 500) -- 50 second timeout, poll every 500ms
 
-if mcp_tools.ready then
+if mcp_ready then
     print("  MCP servers are ready!")
 else
     print("  WARNING: MCP servers did not initialize within timeout")
@@ -43,30 +62,6 @@ assert.is_true(
 local describe = require("devtools.tests.define.describe")
 local should = require("devtools.tests.should")
 local assert = require("luassert")
-
---- Wait for a condition to become true, polling every `poll_ms` milliseconds.
---- @param predicate fun(): boolean
---- @param timeout_ms number Maximum time to wait in milliseconds
---- @param poll_ms number Time between polls in milliseconds
---- @return boolean success Whether the condition became true before timeout
-local function wait_for(predicate, timeout_ms, poll_ms)
-    poll_ms = poll_ms or 100
-    local start_time = vim.uv.hrtime() / 1e6
-
-    while true do
-        if predicate() then
-            return true
-        end
-
-        local elapsed = vim.uv.hrtime() / 1e6 - start_time
-        if elapsed >= timeout_ms then
-            return false
-        end
-
-        -- Yield to let async operations (SSE, timers) process
-        vim.wait(poll_ms)
-    end
-end
 
 --- Extract the assistant's response text from the chat window buffer.
 --- Looks for lines that are not role headers, system messages, or blank lines.
