@@ -427,10 +427,8 @@ local function convert_trace_messages_to_tx_messages(messages)
 
         if role == "system" then
             table.insert(tx_messages, TxChatMessage:system(msg.content or ""))
-
         elseif role == "user" then
             table.insert(tx_messages, TxChatMessage:user(msg.content or ""))
-
         elseif role == "assistant" then
             -- Construct a TxChatMessage for assistant with reasoning and tool_calls
             local tx_msg = TxChatMessage:new("assistant", msg.content or "")
@@ -457,7 +455,6 @@ local function convert_trace_messages_to_tx_messages(messages)
             end
 
             table.insert(tx_messages, tx_msg)
-
         elseif role == "tool" then
             -- Construct a TxChatMessage:tool_result from the tool_call_id and content
             local tool_call_id = msg.tool_call_id or ""
@@ -479,7 +476,6 @@ local function convert_trace_messages_to_tx_messages(messages)
             }
 
             table.insert(tx_messages, TxChatMessage:tool_result(synthetic_tool_call))
-
         else
             -- Unknown role, just add as user message
             table.insert(tx_messages, TxChatMessage:user(msg.content or ""))
@@ -506,7 +502,7 @@ local function build_followup_params()
 
     -- Build params similar to ask_agent_command but without system message
     local params = {
-        model = "",  -- irrelevant for llama-server
+        model = "", -- irrelevant for llama-server
         verbose = true,
     }
 
