@@ -16,7 +16,8 @@ describe("E2E - FIM predictions", function()
         -- * Setup: create a buffer with code and position cursor
         local buffer_lines = {
             "def add(x, y):",
-            "    ", -- cursor will be here, expecting "return x + y"
+            "     ", -- cursor will be here, expecting "return x + y"
+            -- TODO verify where you want cursor for this test, if you move it left gptoss will FIM w/o spaces indent and then you'll tab complete with 3 spaces (or less for each char you remove on this last line for indent)
         }
         local bufnr = e2e.create_test_buffer(buffer_lines)
 
@@ -31,7 +32,6 @@ describe("E2E - FIM predictions", function()
 
         print("\n========== TRIGGERING FIM PREDICTION ==========")
         print("  Buffer lines: " .. table.concat(buffer_lines, ", "))
-        print("  Cursor: line 2, col 4")
         print("  FIM model: " .. fim_model)
         print("==============================================\n")
 
@@ -97,9 +97,10 @@ describe("E2E - FIM predictions", function()
         print(full_buffer_after_accept)
         print("==================================================\n")
 
+        -- TODO review cursor placement above
         should.be_same({
             "def add(x, y):",
-            "   return x + y "
+            "    return x + y "
         }, vim.split(full_buffer_after_accept, "\n"))
 
         -- * TODO run other tests w/ accept_line_invoked and accept_word_invoked
