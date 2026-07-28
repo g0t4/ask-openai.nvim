@@ -79,6 +79,17 @@ function M.resolve_trace_path(session_id)
         return full_path
     end
 
+    -- * fallback check datasets repo for shared trace
+    local datsets_dir = vim.fn.expand("~/repos/github/g0t4/datasets/ask_traces/agents")
+    -- ~/repos/github/g0t4/datasets/ask_traces/agents/2026-05/2026-05-28_004/1780021404-trace.json
+    -- search in any subdir of agents for the file
+    local pattern = datsets_dir .. "/**/" .. trace_filename
+    local matches = vim.fn.glob(pattern, false, true)
+    if #matches > 0 then
+        log:info("Found trace in datasets: " .. matches[1])
+        return matches[1]
+    end
+
     log:error("Trace file not found: " .. full_path)
     return nil
 end
