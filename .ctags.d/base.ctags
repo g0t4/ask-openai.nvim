@@ -15,5 +15,18 @@
 # and at least luarc
 --exclude=.luarc.json
 --exclude=tmp
+#
 # test exercise files, dont need indexed:
---exclude=lua/ask-openai/prediction/tests
+# --exclude=lua/ask-openai/predictions/tests # I used to exclude, am not so sure now...
+# build output of vite
+--exclude=tools/chat_viewer_web/dist/**
+#
+# mostly things that are test cases in files (i.e. treesitter indexing tests)
+--exclude=lua/ask-openai/rag/chunks/test_cases/**
+
+--exclude=*.min.js
+--exclude=.git
+--exclude=*.pyc
+--exclude=__pycache__/**
+#
+#
