@@ -85,8 +85,8 @@ async def semantic_grep(
         filter_global_languages = global_search and config.global_query_domains and len(config.global_query_domains) > 0
         if filter_global_languages:
             num_languages = 0
-            for lang in config.global_query_domains:
-                if lang in datasets.all_datasets:
+            for domain in config.global_query_domains:
+                if domain in datasets.all_datasets:
                     num_languages += 1
         else:
             num_languages = len(datasets.all_datasets)
@@ -96,12 +96,12 @@ async def semantic_grep(
         top_k_per_lang = max(1, round(1.5 * query_embed_top_k / num_languages))  # over sample each language by 50%
         # logger.info(f"{top_k_per_lang=}")
 
-        for lang, ds in datasets.all_datasets.items():
-            if filter_global_languages and lang not in config.global_query_domains:
-                logger.warning(f"skipping dataset for {lang=}")
+        for domain, ds in datasets.all_datasets.items():
+            if filter_global_languages and domain not in config.global_query_domains:
+                logger.warning(f"skipping dataset for {domain=}")
                 continue
 
-            logger.info(f"searching dataset for {lang=}")
+            logger.info(f"searching dataset for {domain=}")
             _scores, _ids = ds.index.search(query_vector, top_k_per_lang)
             scores.extend(_scores[0])
             ids.extend(_ids[0])
