@@ -294,9 +294,9 @@ def load_file_stats_by_file(files_json_path: Path):
 
 def load_prior_data(dot_rag_dir: Path, domain: str) -> RAGDataset:
     """Load prior indexed data for a given semantic domain."""
-    language_dir = dot_rag_dir / domain
+    domain_dir = dot_rag_dir / domain
 
-    vectors_index_path = language_dir / "vectors.index"
+    vectors_index_path = domain_dir / "vectors.index"
     index = None
     if vectors_index_path.exists():
         try:
@@ -306,7 +306,7 @@ def load_prior_data(dot_rag_dir: Path, domain: str) -> RAGDataset:
     else:
         logger.info(f"No vectors.index: {vectors_index_path}")
 
-    chunks_json_path = language_dir / "chunks.json"
+    chunks_json_path = domain_dir / "chunks.json"
     chunks_by_file: dict[str, list[Chunk]] = {}
 
     if chunks_json_path.exists():
@@ -317,7 +317,7 @@ def load_prior_data(dot_rag_dir: Path, domain: str) -> RAGDataset:
     else:
         logger.info(f"No chunks.json: {chunks_json_path}")
 
-    files_json_path = language_dir / "files.json"
+    files_json_path = domain_dir / "files.json"
     files_by_path = {}
     if files_json_path.exists():
         try:
@@ -338,7 +338,7 @@ def load_prior_data(dot_rag_dir: Path, domain: str) -> RAGDataset:
     return dataset
 
 
-def find_language_dirs(dot_rag_dir: Path) -> list[Path]:
+def get_domain_dirs(dot_rag_dir: Path) -> list[Path]:
     dot_rag_dir = Path(dot_rag_dir)
     if not dot_rag_dir.exists():
         raise ValueError(f"{dot_rag_dir=} does not exist")
@@ -355,13 +355,13 @@ def load_all_datasets(dot_rag_dir: Path) -> Datasets:
     so "yaml/" contains both .yaml and .yml files.
     """
     dot_rag_dir = Path(dot_rag_dir)
-    language_dirs = find_language_dirs(dot_rag_dir)
+    domain_dirs = get_domain_dirs(dot_rag_dir)
     datasets = {}
     total_chunks = 0
     total_vectors = 0
     total_files = 0
-    for lang_dir in language_dirs:
-        domain = lang_dir.name
+    for dir in domain_dirs:
+        domain = dir.name
         dataset = load_prior_data(dot_rag_dir, domain)
         datasets[domain] = dataset
         total_chunks += dataset.num_chunks()
