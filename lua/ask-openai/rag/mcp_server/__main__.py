@@ -25,7 +25,7 @@ _RAG_ROOT = Path(__file__).resolve().parent.parent
 if str(_RAG_ROOT) not in sys.path:
     sys.path.insert(0, str(_RAG_ROOT))
 
-from index.storage import Datasets, load_all_datasets
+from index.storage import Datasets
 from inference.client.retrieval import (
     LSPRankedMatch,
     LSPSemanticGrepRequest,

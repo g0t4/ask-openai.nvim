@@ -11,7 +11,7 @@ from collections import Counter
 from pathlib import Path
 from typing import Set
 from logs import get_logger, logging_fwk_to_console
-from index.storage import load_all_datasets, Datasets
+from index.storage import Datasets
 from chunks.chunker import get_file_stat
 from index import workspace
 

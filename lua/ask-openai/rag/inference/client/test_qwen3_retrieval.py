@@ -3,7 +3,6 @@ import rich
 from pathlib import Path
 
 from logs import get_logger, logging_fwk_to_console, print_code
-from index.storage import load_all_datasets
 from inference.client.retrieval import *
 from index import workspace
 
