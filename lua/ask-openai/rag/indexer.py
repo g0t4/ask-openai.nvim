@@ -88,8 +88,10 @@ class IncrementalRAGIndexer:
                 continue
             await self.build_index(domain, files)
 
-        self.flag_unindexed_domains(allowed_domains, files_by_domain)
-        self.trash_vestigial_domains(allowed_domains)
+        # Only flag/trash when doing a full reindex (no --domain override)
+        if not self.program_args or not self.program_args.domain:
+            self.flag_unindexed_domains(allowed_domains, files_by_domain)
+            self.trash_vestigial_domains(allowed_domains)
         await signal_hotpath_done_in_background()
 
     def trash_vestigial_domains(self, allowed_domains: set[str]):
