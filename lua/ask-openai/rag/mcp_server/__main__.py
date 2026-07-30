@@ -60,7 +60,7 @@ SEMANTIC_GREP_TOOL = Tool(
             "current_file_absolute_path": {
                 "type": "string",
                 "description": (
-                    "Absolute path of the current file (used to determine which language "
+                    "Absolute path of the current file (used to determine which domain "
                     "dataset to search). Pass empty string or omit for global search."
                 ),
             },
@@ -132,7 +132,7 @@ async def handle_semantic_grep(
     query: str,
     current_file_absolute_path: str | None = None,
     vim_filetype: str | None = None,
-    languages: str = "",
+    domains: str = "",
     skip_same_file: bool = False,
     top_k: int = 5,
     embed_top_k: int | None = None,
@@ -146,8 +146,8 @@ async def handle_semantic_grep(
     if not instruct:
         raise ValueError("instruct is required — must be specific to the query type")
 
-    if languages not in ("", "GLOBAL", "EVERYTHING"):
-        raise ValueError(f"languages must be one of: '', 'GLOBAL', 'EVERYTHING', got '{languages}'")
+    if domains not in ("", "GLOBAL", "EVERYTHING"):
+        raise ValueError(f"languages must be one of: '', 'GLOBAL', 'EVERYTHING', got '{domains}'")
 
     if top_k < 1:
         raise ValueError("top_k must be >= 1")
@@ -161,7 +161,7 @@ async def handle_semantic_grep(
         skipSameFile=skip_same_file,
         topK=top_k,
         embedTopK=embed_top_k,
-        domains=languages,
+        domains=domains,
     )
 
     # Execute the semantic_grep query (reuse existing function)
@@ -242,7 +242,8 @@ async def serve(root_dir: str | Path | None = None) -> None:
             query: str = arguments.get("query", "")
             current_file_path: str | None = arguments.get("current_file_absolute_path") or None
             vim_filetype: str | None = arguments.get("vim_filetype") or None
-            languages: str = arguments.get("languages", "") or ""
+            # TODO have the model provide languages or domains? this MCP server is experimental, will need to consider this if I start using it.
+            domains: str = arguments.get("languages", "") or ""
             skip_same_file: bool = arguments.get("skip_same_file", False)
             top_k: int = int(arguments.get("top_k", 5))
             embed_top_k: int | None = arguments.get("embed_top_k")
@@ -252,7 +253,7 @@ async def serve(root_dir: str | Path | None = None) -> None:
                 query=query,
                 current_file_absolute_path=current_file_path,
                 vim_filetype=vim_filetype,
-                languages=languages,
+                domains=domains,
                 skip_same_file=skip_same_file,
                 top_k=top_k,
                 embed_top_k=embed_top_k,
