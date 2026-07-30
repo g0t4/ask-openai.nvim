@@ -39,8 +39,8 @@ end
 
 function M:_message(elapsed_seconds)
     update_dot_state(self)
-    local duration = human_duration_from_seconds(elapsed_seconds)
-    return "thinking: " .. duration .. " ⏳" .. (self.dots or M.dots)
+    local formatted_duration = string.format("%.1fs", elapsed_seconds)
+    return "thinking: " .. formatted_duration .. " ⏳" .. (self.dots or M.dots)
 end
 
 --- Returns a "thinking" message with dot animation and duration.

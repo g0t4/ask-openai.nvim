@@ -134,7 +134,7 @@ function RewritePerformance:preview_summary()
         dots:get_still_thinking_message_from_ns(self._rewrite_start_time_ns),
 
         -- show reasoning count during preview since we don't show reasoning tokens
-        tostring(self.num_deltas_reasoning),
+        "tokens: "..tostring(self.num_deltas_reasoning),
     }
 
     local tok_per_sec = self:tokens_per_second()
