@@ -8,6 +8,7 @@ from index.storage import ChunkType, Datasets
 from inference.client import *
 from index import workspace
 
+
 @dataclass
 class LSPRankedMatch:
     id: str
@@ -32,7 +33,9 @@ class LSPRankedMatch:
     embed_rank: int = -1
     rerank_rank: int = -1
 
+
 FAKE_STOPPER = Stopper("fake")
+
 
 @attrs.define
 class LSPSemanticGrepRequest:
@@ -46,6 +49,7 @@ class LSPSemanticGrepRequest:
     topK: int = 50
     embedTopK: int | None = None
     # MAKE SURE TO GIVE DEFAULT VALUES IF NOT REQUIRED
+
 
 async def semantic_grep(
     args: LSPSemanticGrepRequest,
@@ -78,12 +82,12 @@ async def semantic_grep(
         scores = []
         ids = []
 
-        # * top_k_per_lang
+        # * top_k_per_domain
         # crude calculations for splitting top_k... these can and will be changed long-term
-        #   consider just configuring how much per language in the global_languages config list (make each a configurable object)
+        #   consider just configuring how much per domain in the global_domains config list (make each a configurable object)
         config = workspace.get_config()
-        filter_global_languages = global_search and config.global_query_domains and len(config.global_query_domains) > 0
-        if filter_global_languages:
+        filter_global_domains = global_search and config.global_query_domains and len(config.global_query_domains) > 0
+        if filter_global_domains:
             num_domains = 0
             for domain in config.global_query_domains:
                 if domain in datasets.all_datasets:
@@ -91,22 +95,23 @@ async def semantic_grep(
         else:
             num_domains = len(datasets.all_datasets)
         if num_domains == 0:
-            logger.error(f"no languages for multi-language Semantic Grep using: {args.domains=}")
-            raise Exception(f"No languages for multi-language Semantic Grep using: {args.domains=}")
-        top_k_per_lang = max(1, round(1.5 * query_embed_top_k / num_domains))  # over sample each language by 50%
-        # logger.info(f"{top_k_per_lang=}")
+            message = f"No domains for multi-domain Semantic Grep using: {args.domains=}"
+            logger.error(message)
+            raise Exception(message)
+        top_k_per_domain = max(1, round(1.5 * query_embed_top_k / num_domains))  # over sample each domain by 50%
+        # logger.info(f"{top_k_per_domain=}")
 
         for domain, ds in datasets.all_datasets.items():
-            if filter_global_languages and domain not in config.global_query_domains:
+            if filter_global_domains and domain not in config.global_query_domains:
                 logger.warning(f"skipping dataset for {domain=}")
                 continue
 
             logger.info(f"searching dataset for {domain=}")
-            _scores, _ids = ds.index.search(query_vector, top_k_per_lang)
+            _scores, _ids = ds.index.search(query_vector, top_k_per_domain)
             scores.extend(_scores[0])
             ids.extend(_ids[0])
     else:
-        # ? rework to use languages for one language?
+        # ? rework to use domains for one domain?
         dataset = datasets.for_file(args.currentFileAbsolutePath, vim_filetype=args.vimFiletype)
         if dataset is None:
             logger.error(f"No dataset for currentFileAbsolutePath='{args.currentFileAbsolutePath}' and vim_filetype='{args.vimFiletype}'")
@@ -123,8 +128,8 @@ async def semantic_grep(
     # * lookup matching chunks (filter any exclusions on metadata)
     id_score_pairs = zip(ids, scores)
     if global_search or everything_search:
-        # IIRC within each language, the results are sorted by score
-        #   thus need to sort across languages when there are multiple
+        # IIRC within each domain, the results are sorted by score
+        #   thus need to sort across domains when there are multiple
         id_score_pairs = sorted(id_score_pairs, key=lambda x: x[1], reverse=True)
 
     matches: list[LSPRankedMatch] = []
@@ -167,7 +172,7 @@ async def semantic_grep(
         if num_embeds >= embed_top_k:
             # this is the case when we need to skipSameFile
             # - over query with query_embed_top_k
-            # - also over query when doing global_languages/everything_languages (not just top_k/num_languages)
+            # - also over query when doing global_domains/everything_domains (not just top_k/num_domains)
             break
 
     if len(matches) == 0:
