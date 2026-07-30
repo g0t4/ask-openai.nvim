@@ -290,7 +290,7 @@ function semantic_grep_current_filetype_picker(opts)
         -- PRN other file types?
     }
     -- FYI right now languages is for GLOBAL/EVERYTHING only
-    semantic_grep_request.languages = opts.languages
+    semantic_grep_request.domains = opts.languages
 
     local lsp_buffer_number = vim.api.nvim_get_current_buf()
 

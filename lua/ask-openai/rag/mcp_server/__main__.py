@@ -161,7 +161,7 @@ async def handle_semantic_grep(
         skipSameFile=skip_same_file,
         topK=top_k,
         embedTopK=embed_top_k,
-        languages=languages,
+        domains=languages,
     )
 
     # Execute the semantic_grep query (reuse existing function)

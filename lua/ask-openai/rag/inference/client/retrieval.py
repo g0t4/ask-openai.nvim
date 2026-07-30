@@ -41,7 +41,7 @@ class LSPSemanticGrepRequest:
     currentFileAbsolutePath: str | None = None
     vimFiletype: str | None = None
     msgId: str = ""  # cannot bind underscores... this is not a bound param (LS handler sets it)
-    languages: str = ""
+    domains: str = ""
     skipSameFile: bool = False
     topK: int = 50
     embedTopK: int | None = None
@@ -53,8 +53,8 @@ async def semantic_grep(
     stopper: Stopper = FAKE_STOPPER,
 ) -> list[LSPRankedMatch]:
     logger.info(f"semantic_grep query: {args}")
-    global_search = args.languages == "GLOBAL"
-    everything_search = args.languages == "EVERYTHING"
+    global_search = args.domains == "GLOBAL"
+    everything_search = args.domains == "EVERYTHING"
 
     rerank_top_k = args.topK
     embed_top_k = args.embedTopK or args.topK
@@ -91,8 +91,8 @@ async def semantic_grep(
         else:
             num_domains = len(datasets.all_datasets)
         if num_domains == 0:
-            logger.error(f"no languages for multi-language Semantic Grep using: {args.languages=}")
-            raise Exception(f"No languages for multi-language Semantic Grep using: {args.languages=}")
+            logger.error(f"no languages for multi-language Semantic Grep using: {args.domains=}")
+            raise Exception(f"No languages for multi-language Semantic Grep using: {args.domains=}")
         top_k_per_lang = max(1, round(1.5 * query_embed_top_k / num_domains))  # over sample each language by 50%
         # logger.info(f"{top_k_per_lang=}")
 

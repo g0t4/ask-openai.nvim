@@ -43,13 +43,13 @@ local M = {
 ---@param parsed_args table
 ---@param callback ToolCallDoneCallback
 function M.call(parsed_args, callback)
-    local languages = ""
+    local domains = ""
     -- log:info("parsed_args", vim.inspect(parsed_args))
     if parsed_args.filetype == nil or parsed_args.filetype:match("^%s*$") then
         -- PRN use EVERYTHING instead of GLOBAL?
         -- when using tools that might make more sense
         -- but for now, assume if I limit the list then I did that for a good reason that likely benefits agent tool use
-        languages = "GLOBAL" -- GLOBAL is subject to rag.yaml -> global_languages
+        domains = "GLOBAL" -- GLOBAL is subject to rag.yaml -> global_languages
     end
 
     ---@type LSPSemanticGrepRequest
@@ -60,7 +60,7 @@ function M.call(parsed_args, callback)
         currentFileAbsolutePath = "",
         -- TODO NEED TO make sure no issues using filetype vs extension....
         vimFiletype = parsed_args.filetype,
-        languages = languages,
+        domains = domains,
         skipSameFile = false,
         topK = parsed_args.top_k or 5,
         embedTopK = parsed_args.embed_top_k or 18,

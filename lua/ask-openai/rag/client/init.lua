@@ -202,7 +202,7 @@ local ChunkType = {
 ---@field vimFiletype string
 ---@field currentFileAbsolutePath string
 ---@field instruct string
----@field languages? string
+---@field domains? string
 ---@field skipSameFile? boolean
 ---@field topK? integer
 ---@field embedTopK? integer
