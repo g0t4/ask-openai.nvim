@@ -20,7 +20,7 @@ import numpy as np
 
 from index.pydants import write_json
 
-from index.storage import Chunk, FileStat, load_prior_data
+from index.storage import Chunk, FileStat, load_domain
 from chunks.chunker import RAGChunkerOptions, build_chunks_from_file, get_file_stat
 from config import RagConfig, load_config
 from index.ignores import is_file_ignored_allchecks
@@ -218,7 +218,7 @@ class IncrementalRAGIndexer:
     async def build_index(self, domain: str, current_files: set[str] = set()):
         """Build or update the RAG index incrementally for a given semantic domain."""
 
-        prior_files = load_prior_data(self.dot_rag_dir, domain)
+        prior_files = load_domain(self.dot_rag_dir, domain)
 
         files_diff = self.get_files_diff(current_files, prior_files.stat_by_path)
 

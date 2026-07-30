@@ -16,7 +16,7 @@ import rich
 from indexer import IncrementalRAGIndexer
 from chunks.chunker import RAGChunkerOptions
 from inference.client.embedder import encode_query
-from index.storage import ChunkType, load_all_datasets, load_chunks_by_file, load_file_stats_by_file
+from index.storage import ChunkType, load_all_domains, load_chunks_by_file, load_file_stats_by_file
 from config import RagConfig
 from index.ignores import reset_cache_bewteen_tests
 from index import workspace
@@ -338,7 +338,7 @@ class TestBuildIndex:
         # * build initial index
         await self.build_lua_index()
 
-        workspace.datasets = load_all_datasets(dot_rag_dir)
+        workspace.datasets = load_all_domains(dot_rag_dir)
 
         copy_file("numbers.50.txt", "numbers.lua")  # 50 lines, 3 chunks
         target_file_path = temp_workspace_folder / "numbers.lua"

@@ -292,7 +292,7 @@ def load_file_stats_by_file(files_json_path: Path):
         return files_by_path
 
 
-def load_prior_data(dot_rag_dir: Path, domain: str) -> RAGDataset:
+def load_domain(dot_rag_dir: Path, domain: str) -> RAGDataset:
     """Load prior indexed data for a given semantic domain."""
     domain_dir = dot_rag_dir / domain
 
@@ -348,11 +348,12 @@ def get_domain_dirs(dot_rag_dir: Path) -> list[Path]:
     return [p for p in Path(dot_rag_dir).glob("*") if p.is_dir()]
 
 
-def load_all_datasets(dot_rag_dir: Path) -> Datasets:
-    """Load all indexed datasets from disk.
+def load_all_domains(dot_rag_dir: Path) -> Datasets:
+    """Load all indexed domains from disk (.rag/ dir)
 
-    Directory names under .rag/ are now semantic domains (not file extensions, nor filetypes/vim_filetypes),
-    so "yaml/" contains both .yaml and .yml files.
+    Directory names under .rag/ are now semantic domains
+    - not file extensions, nor filetypes/vim_filetypes
+    - i.e. "yaml/" contains both .yaml and .yml files
     """
     dot_rag_dir = Path(dot_rag_dir)
     domain_dirs = get_domain_dirs(dot_rag_dir)
@@ -362,7 +363,7 @@ def load_all_datasets(dot_rag_dir: Path) -> Datasets:
     total_files = 0
     for dir in domain_dirs:
         domain = dir.name
-        dataset = load_prior_data(dot_rag_dir, domain)
+        dataset = load_domain(dot_rag_dir, domain)
         datasets[domain] = dataset
         total_chunks += dataset.num_chunks()
         total_vectors += dataset.num_vectors()
