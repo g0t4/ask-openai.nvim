@@ -193,6 +193,7 @@ class Datasets:
     _chunks_by_faiss_id: dict[int, Chunk] = field(default_factory=dict)
 
     def __post_init__(self):
+        # * build _chunks_by_faiss_id off of chunks_by_file
         for dataset in self.all_datasets.values():
             for _, chunks in dataset.chunks_by_file.items():
                 for chunk in chunks:
