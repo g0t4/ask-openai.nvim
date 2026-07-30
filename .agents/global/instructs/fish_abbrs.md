@@ -1,5 +1,4 @@
 ---
-name: fish_abbrs
 description: guidance for writing fish abbrs
 auto_attach: true
 # FYI start with one abbrs guidance file and split as it gets too big
