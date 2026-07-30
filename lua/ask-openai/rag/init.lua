@@ -226,21 +226,21 @@ end
 local function is_semantic_grep_available()
     local rag_is_enabled = api.is_rag_enabled()
     local rag_is_supported = rag_client.is_rag_supported()
-    
+
     if not rag_is_enabled then
         return false, "RAG is disabled. Enable it to use semantic grep."
     end
-    
+
     if not rag_is_supported then
         return false, "RAG server is not available. Start the LSP server to use semantic grep."
     end
-    
+
     return true
 end
 
 --- Opens the semantic grep Telescope picker with the given command.
 --- Shows a warning if RAG is not available.
---- @param cmd string The telescope command to execute (e.g., "Telescope ask_semantic_grep languages=GLOBAL")
+--- @param cmd string The telescope command to execute (e.g., "Telescope ask_semantic_grep domains=GLOBAL")
 local function open_semantic_grep_picker(cmd)
     local is_available, warning_message = is_semantic_grep_available()
     if not is_available then
@@ -251,11 +251,11 @@ local function open_semantic_grep_picker(cmd)
 end
 
 function on_agg()
-    open_semantic_grep_picker("Telescope ask_semantic_grep languages=GLOBAL")
+    open_semantic_grep_picker("Telescope ask_semantic_grep domains=GLOBAL")
 end
 
 function on_age()
-    open_semantic_grep_picker("Telescope ask_semantic_grep languages=EVERYTHING")
+    open_semantic_grep_picker("Telescope ask_semantic_grep domains=EVERYTHING")
 end
 
 function on_ag()
@@ -269,10 +269,10 @@ function M.setup_telescope_picker()
         { noremap = true, silent = true, desc = 'Semantic grep Telescope picker, current filetype only' }
     )
     vim.keymap.set('n', '<leader>agg', on_agg,
-        { noremap = true, silent = true, desc = 'Semantic grep, Telescope picker, global languages (subject to rag.yaml -> global_languages)' }
+        { noremap = true, silent = true, desc = 'Semantic grep, Telescope picker, global domains (subject to rag.yaml -> global_domains)' }
     )
     vim.keymap.set('n', '<leader>age', on_age,
-        { noremap = true, silent = true, desc = 'Semantic grep, Telescope picker, everything (NOT subject to rag.yaml -> global_languages)' }
+        { noremap = true, silent = true, desc = 'Semantic grep, Telescope picker, everything (NOT subject to rag.yaml -> global_domains)' }
     )
 end
 

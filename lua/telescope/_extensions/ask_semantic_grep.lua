@@ -289,8 +289,8 @@ function semantic_grep_current_filetype_picker(opts)
         skipSameFile = false,
         -- PRN other file types?
     }
-    -- FYI right now languages is for GLOBAL/EVERYTHING only
-    semantic_grep_request.domains = opts.languages
+    -- FYI! right now domains is for GLOBAL/EVERYTHING only
+    semantic_grep_request.domains = opts.domains
 
     local lsp_buffer_number = vim.api.nvim_get_current_buf()
 
@@ -360,10 +360,10 @@ function semantic_grep_current_filetype_picker(opts)
 
     opts_previewer = {}
     local prompt_title = 'semantic grep 󰕡 ' .. tostring(vim.o.filetype)
-    if opts.languages == "GLOBAL" then
-        prompt_title = 'semantic grep 󰕡 GLOBAL languages'
+    if opts.domains == "GLOBAL" then
+        prompt_title = 'semantic grep 󰕡 GLOBAL domains'
     end
-    if opts.languages == "EVERYTHING" then
+    if opts.domains == "EVERYTHING" then
         prompt_title = 'semantic grep 󰕡 EVERYTHING'
     end
 
