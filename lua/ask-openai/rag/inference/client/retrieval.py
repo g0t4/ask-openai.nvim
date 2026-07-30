@@ -84,16 +84,16 @@ async def semantic_grep(
         config = workspace.get_config()
         filter_global_languages = global_search and config.global_query_domains and len(config.global_query_domains) > 0
         if filter_global_languages:
-            num_languages = 0
+            num_domains = 0
             for domain in config.global_query_domains:
                 if domain in datasets.all_datasets:
-                    num_languages += 1
+                    num_domains += 1
         else:
-            num_languages = len(datasets.all_datasets)
-        if num_languages == 0:
+            num_domains = len(datasets.all_datasets)
+        if num_domains == 0:
             logger.error(f"no languages for multi-language Semantic Grep using: {args.languages=}")
             raise Exception(f"No languages for multi-language Semantic Grep using: {args.languages=}")
-        top_k_per_lang = max(1, round(1.5 * query_embed_top_k / num_languages))  # over sample each language by 50%
+        top_k_per_lang = max(1, round(1.5 * query_embed_top_k / num_domains))  # over sample each language by 50%
         # logger.info(f"{top_k_per_lang=}")
 
         for domain, ds in datasets.all_datasets.items():
