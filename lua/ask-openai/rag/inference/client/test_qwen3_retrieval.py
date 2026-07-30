@@ -27,7 +27,7 @@ async def main():
         skipSameFile=False,
         topK=4,
         embedTopK=8,
-        domains="EVERYTHING",  # test search across languages
+        domains="EVERYTHING",  # test search across domains
     )
 
     ranked_matches = await semantic_grep(

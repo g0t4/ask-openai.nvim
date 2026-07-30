@@ -71,12 +71,12 @@ SEMANTIC_GREP_TOOL = Tool(
                     "(e.g. 'lua', 'py', 'ts')."
                 ),
             },
-            "languages": {
+            "domains": {
                 "type": "string",
                 "enum": ["GLOBAL", "EVERYTHING"],
                 "description": (
-                    "Search scope. 'GLOBAL' searches only configured global_languages from "
-                    "rag.yaml. 'EVERYTHING' searches all indexed languages."
+                    "Search scope. 'GLOBAL' searches _configured_ global_domains from "
+                    "rag.yaml. 'EVERYTHING' searches all indexed domains. Leave empty otherwise."
                 ),
             },
             "skip_same_file": {
@@ -147,7 +147,7 @@ async def handle_semantic_grep(
         raise ValueError("instruct is required — must be specific to the query type")
 
     if domains not in ("", "GLOBAL", "EVERYTHING"):
-        raise ValueError(f"languages must be one of: '', 'GLOBAL', 'EVERYTHING', got '{domains}'")
+        raise ValueError(f"domains currently are limited to one of: '' (empty ), 'GLOBAL', 'EVERYTHING', got '{domains}'")
 
     if top_k < 1:
         raise ValueError("top_k must be >= 1")
@@ -242,8 +242,7 @@ async def serve(root_dir: str | Path | None = None) -> None:
             query: str = arguments.get("query", "")
             current_file_path: str | None = arguments.get("current_file_absolute_path") or None
             vim_filetype: str | None = arguments.get("vim_filetype") or None
-            # TODO have the model provide languages or domains? this MCP server is experimental, will need to consider this if I start using it.
-            domains: str = arguments.get("languages", "") or ""
+            domains: str = arguments.get("domains", "") or ""
             skip_same_file: bool = arguments.get("skip_same_file", False)
             top_k: int = int(arguments.get("top_k", 5))
             embed_top_k: int | None = arguments.get("embed_top_k")
