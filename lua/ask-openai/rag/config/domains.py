@@ -407,7 +407,7 @@ def resolve_semantic_domain(file_path: str | Path) -> Optional[str]:
         if domain is not None:
             return domain
         logger.info(f"No semantic domain resolved for extensionless file: {file_path}")
-        return "unknown"
+        return None
 
     domain = EXTENSION_TO_SEMANTIC_DOMAIN.get(ext)
     if domain is not None:

@@ -13,6 +13,7 @@ from config.domains import (
     resolve_semantic_domain,
 )
 
+
 class TestShebangToSemanticDomainEdgeCases:
     # FYI many technically duplicated tests for sheangs,
     # - leave them so we have confidence in COMMON shebangs
@@ -79,27 +80,27 @@ class TestShebangToSemanticDomainEdgeCases:
         f.write_text("just some text\nno shebang here\n")
         assert resolve_semantic_domain(f) == "json"
 
-    def test_extensionless_with_no_shebang__returns_unknown(self, tmp_path):
+    def test_extensionless_with_no_shebang__returns_none(self, tmp_path):
         f = tmp_path / "random_file"
         f.write_text("just some text\nno shebang here\n")
-        assert resolve_semantic_domain(f) == "unknown"
+        assert resolve_semantic_domain(f) == None
 
     def test_extension_with_shebang_not_first_line__returns_extension(self, tmp_path):
         f = tmp_path / "wrong_shebang.json"
         f.write_text("some text\n#!/usr/bin/env python\n")
         assert resolve_semantic_domain(f) == "json"
 
-    def test_extensionless_with_shebang_not_first_line__returns_unknown(self, tmp_path):
+    def test_extensionless_with_shebang_not_first_line__returns_none(self, tmp_path):
         f = tmp_path / "wrong_shebang"
         f.write_text("some text\n#!/usr/bin/env python\n")
-        assert resolve_semantic_domain(f) == "unknown"
+        assert resolve_semantic_domain(f) == None
 
     def test_extension_on_binary_file__returns_extension(self, tmp_path):
         f = tmp_path / "foo.json"
         f.write_bytes(b"\x00\x01\x02\x03")
         assert resolve_semantic_domain(f) == "json"
 
-    def test_extensionless_binary_file__returns_unknown(self, tmp_path):
+    def test_extensionless_binary_file__returns_none(self, tmp_path):
         # BTW handling binary format is largely up to the chunker, semantic domain right now focuses on filename (with exception for shebangs)
         #  I am inclined to map binary files to binary/None but lets hold off for now as that would require reading file contents...
         #  actually I am inclined to use `file` command to find out the type of binary format so we can expand into images/pdfs/videos/audio/etc... save for later
@@ -107,7 +108,7 @@ class TestShebangToSemanticDomainEdgeCases:
         #     this would make possible a semantic file picker... ala spotlight that doesn't suck! could even cover both name/path/file/stat and contents of file!
         f = tmp_path / "foo"
         f.write_bytes(b"\x00\x01\x02\x03")
-        assert resolve_semantic_domain(f) == "unknown"
+        assert resolve_semantic_domain(f) == None
 
     def test_python_versioned_shebang(self, tmp_path):
         """python3.11 should still match python."""
@@ -120,6 +121,7 @@ class TestShebangToSemanticDomainEdgeCases:
         f = tmp_path / "script"
         f.write_text("#!/usr/bin/python3\nprint('hi')\n")
         assert resolve_semantic_domain(f) == "py"
+
 
 class TestResolveSemanticDomain:
     """
@@ -154,7 +156,9 @@ class TestResolveSemanticDomain:
         assert resolve_semantic_domain(Path(".gitignore")) == "git"
         assert resolve_semantic_domain(Path(".rs")) == "rust"
 
+
 from config import domains
+
 
 class TestFilePathRegexFallback:
 
@@ -171,12 +175,12 @@ class TestFilePathRegexFallback:
         f = tmp_path / ".config/fd/ignore"
         f.parent.mkdir(parents=True, exist_ok=True)
         f.write_text("some random config\n")
-        assert resolve_semantic_domain(f) == "unknown"
+        assert resolve_semantic_domain(f) == None
 
-    def test_extensionless_file_returns_unknown_with_warning(self, tmp_path, caplog):
+    def test_extensionless_file_returns_none_with_warning(self, tmp_path, caplog):
         domains.FILEPATH_REGEX_TO_SEMANTIC_DOMAIN = []
         f = tmp_path / "random_extensionless_file"
         f.write_text("some content\n")
         domain = resolve_semantic_domain(f)
-        assert domain == "unknown"
+        assert domain == None
         assert "No semantic domain resolved for extensionless file" in caplog.text
