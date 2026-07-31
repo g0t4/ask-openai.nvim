@@ -81,7 +81,8 @@ class IncrementalRAGIndexer:
             return
 
         allowed_domains = self.config.allowed_semantic_domains
-        if self.program_args and self.program_args.domain:
+        only_one_domain = self.program_args and self.program_args.domain
+        if only_one_domain:
             allowed_domains = {self.program_args.domain}
             logger.info(f"Indexing ONLY THIS semantic domain: {allowed_domains}")
 
@@ -94,7 +95,7 @@ class IncrementalRAGIndexer:
             await self.build_index(domain, files)
 
         # Only flag/trash when doing a full reindex (no --domain override)
-        if not self.program_args or not self.program_args.domain:
+        if not only_one_domain:
             self.flag_unindexed_domains(allowed_domains, files_by_domain)
             self.trash_vestigial_domains(allowed_domains)
         await signal_hotpath_done_in_background()
