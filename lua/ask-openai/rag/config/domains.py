@@ -356,6 +356,7 @@ FILEPATH_REGEX_TO_SEMANTIC_DOMAIN: list[tuple[re.Pattern, str]] = [
     (re.compile(r".config/ripgrep/ripgreprc$"), "ini"),
 ]
 
+
 def resolve_semantic_domain_for_vim_filetype(vim_filetype: str):
     # TODO actually lets prompt the agent to provide a semantic/retrieval domain instead of vim_filetype?
     #  we would need to give them a list (allowed_domains) in the tool call definition, or explain that they can provide a vim filetype too
@@ -363,12 +364,14 @@ def resolve_semantic_domain_for_vim_filetype(vim_filetype: str):
     as_file_extension = f".{vim_filetype}"
     return resolve_semantic_domain(as_file_extension)
 
+
 def _resolve_semantic_domain_from_filepath_regex(file_path: Path) -> Optional[str]:
     path_str = str(file_path)
     for pattern, domain in FILEPATH_REGEX_TO_SEMANTIC_DOMAIN:
         if pattern.search(path_str):
             return domain
     return None
+
 
 def resolve_semantic_domain(file_path: str | Path) -> Optional[str]:
     """Resolve the semantic/retrieval domain for a file, the group used for narrow querying of related files...
@@ -415,10 +418,12 @@ def resolve_semantic_domain(file_path: str | Path) -> Optional[str]:
 
     return ext
 
+
 # Matches both:
 #   #!/usr/bin/env python3
 #   #!/bin/bash
 _SHEBANG_RE = re.compile(rb"^#!\s*(?:/usr/bin/env\s+)?(\S+)")
+
 
 def _detect_semantic_domain_from_shebang(file_path: Path) -> Optional[str]:
     """
@@ -456,6 +461,7 @@ def _detect_semantic_domain_from_shebang(file_path: Path) -> Optional[str]:
             return value
 
     return binary_name
+
 
 DEFAULT_ALLOWED_SEMANTIC_DOMAINS: set[str] = {
     # --- Programming languages ---
@@ -524,6 +530,7 @@ DEFAULT_ALLOWED_SEMANTIC_DOMAINS: set[str] = {
     "diff",
     "text",
 }
+
 
 def find_files_by_semantic_domain(source_code_dir: Path) -> dict[str, set[str]]:
     # find ALL domains, regardless of configuration
