@@ -522,18 +522,22 @@ DEFAULT_ALLOWED_SEMANTIC_DOMAINS: set[str] = {
 
 def find_files_by_semantic_domain(source_code_dir: Path) -> dict[str, set[str]]:
     # find ALL domains, regardless of configuration
-    # ? do we ever want hidden files? might want to make an option in .rag.yaml to add extensions for that?
-    fd_command = [
-        "fd",
-        "--type", "file", \
-        "--absolute-path",
-        ".",
-        str(source_code_dir),
-    ]
-    out = subprocess.check_output(fd_command, text=True)
+
+    def list_files_in_directory(source_code_dir: Path) -> list[str]:
+        """Execute fd command and return list of absolute file paths."""
+        # ? do we ever want hidden files? might want to make an option in .rag.yaml to add extensions for that?
+        fd_command = [
+            "fd",
+            "--type", "file", \
+            "--absolute-path",
+            ".",
+            str(source_code_dir),
+        ]
+        out = subprocess.check_output(fd_command, text=True)
+        return out.splitlines()
 
     files_by_domain = {}
-    for file_path in out.splitlines():
+    for file_path in list_files_in_directory(source_code_dir):
         domain = resolve_semantic_domain(file_path)
         if domain:
             files_by_domain.setdefault(domain, set()) \
