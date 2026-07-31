@@ -1,3 +1,4 @@
+import argcomplete
 import argparse
 import asyncio
 import json
@@ -299,6 +300,8 @@ def main() -> None:
         default="fim",
         help="trace from_dir: fim, rewrite, agents",
     )
+
+    argcomplete.autocomplete(parser)
     args = parser.parse_args()
     browser = TraceBrowser(args.from_dir)
     asyncio.run(input_loop(browser))

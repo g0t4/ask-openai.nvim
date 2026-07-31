@@ -5,6 +5,7 @@ from inference.client.embedder import get_shape, encode_passages, signal_hotpath
 
 logger = get_logger(__name__)
 
+import argcomplete
 import itertools
 import argparse
 import logging
@@ -304,6 +305,7 @@ async def main():
         parser.add_argument("--githook", action="store_true", help="Run in git hook mode")
         parser.add_argument("--domain", type=str, help="Only process files with the specified semantic domain")
 
+        argcomplete.autocomplete(parser)
         args = parser.parse_args()
 
         program_args = ProgramArgs(

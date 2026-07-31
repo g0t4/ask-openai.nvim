@@ -7,3 +7,4 @@ huggingface-hub>=0.15.0
 tokenizers>=0.13.0
 safetensors>=0.3.0
 rich>=13.0.0
+argcomplete

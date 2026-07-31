@@ -1,3 +1,4 @@
+import argcomplete
 import argparse
 import asyncio
 import humanize
@@ -139,6 +140,8 @@ async def main():
     parser.add_argument("--info", action="store_true", help="info logging")
     parser.add_argument("--warning", action="store_true", help=" warning logging")
     parser.add_argument("dot_rag_path", help="Path to the .rag directory")
+
+    argcomplete.autocomplete(parser)
     args = parser.parse_args()
 
     # rich.inspect(args)

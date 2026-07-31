@@ -4,6 +4,7 @@ Extracts and displays all run_process / run_command tool calls from a trace,
 showing both command_line and argv styles with bash syntax highlighting.
 """
 
+import argcomplete
 import argparse
 import json
 import subprocess
@@ -246,6 +247,9 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=False,
         help="Output plain text without colors or panel borders.",
     )
+
+    argcomplete.autocomplete(parser)
+
     return parser.parse_args(argv)
 
 

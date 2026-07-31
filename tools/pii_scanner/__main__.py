@@ -15,6 +15,7 @@ Examples:
     python -m tools.pii_scanner --extract-paths trace.json   # extract from single file
 """
 
+import argcomplete
 import argparse
 import json as json_module
 import sys
@@ -76,6 +77,9 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         action="store_true",
         help="Extract file paths from *-trace.json files (skips PII scanning)",
     )
+
+    argcomplete.autocomplete(parser)
+
     return parser.parse_args(argv)
 
 
