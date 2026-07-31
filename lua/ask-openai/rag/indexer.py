@@ -126,7 +126,7 @@ class IncrementalRAGIndexer:
         ]
 
         if unindexed:
-            logger.debug(f"Found files in unindexed domains: {' '.join(unindexed)}")
+            logger.info(f"Found files in unindexed domains: {' '.join(unindexed)}")
 
     def get_files_diff(self, current_files_path_strs: set[str], prior_files_stat_by_path: dict[str, FileStat]) -> FilesDiff:
         """Split files into: changed (added/updated), unchanged, deleted"""
