@@ -1,3 +1,4 @@
+import logging
 import re
 import tempfile
 from pathlib import Path
@@ -178,6 +179,7 @@ class TestFilePathRegexFallback:
         assert resolve_semantic_domain(f) == None
 
     def test_extensionless_file_returns_none_with_warning(self, tmp_path, caplog):
+        caplog.set_level(logging.INFO)  # info level required for log message
         domains.FILEPATH_REGEX_TO_SEMANTIC_DOMAIN = []
         f = tmp_path / "random_extensionless_file"
         f.write_text("some content\n")
