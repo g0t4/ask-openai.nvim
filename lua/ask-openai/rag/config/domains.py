@@ -522,6 +522,7 @@ DEFAULT_ALLOWED_SEMANTIC_DOMAINS: set[str] = {
 
 def find_files_by_semantic_domain(source_code_dir: Path) -> dict[str, set[str]]:
     # find ALL domains, regardless of configuration
+    # ? do we ever want hidden files? might want to make an option in .rag.yaml to add extensions for that?
     fd_command = [
         "fd",
         "--type", "file", \
