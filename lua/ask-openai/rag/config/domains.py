@@ -390,11 +390,15 @@ def resolve_semantic_domain(file_path: str | Path) -> Optional[str]:
         return domain
 
     # Handle dotfiles (.gitignore) where suffix is empty but the name IS the extension
-    suffix = file_path.suffix
-    if not suffix and file_path.name.startswith("."):
-        ext = file_path.name[1:].lower()
-    else:
-        ext = suffix.lstrip(".").lower()
+    def get_ext():
+        suffix = file_path.suffix
+        if not suffix and file_path.name.startswith("."):
+            ext = file_path.name[1:].lower()
+        else:
+            ext = suffix.lstrip(".").lower()
+        return ext
+
+    ext = get_ext()
 
     if ext:
         return EXTENSION_TO_SEMANTIC_DOMAIN.get(ext) or ext
