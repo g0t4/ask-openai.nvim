@@ -83,7 +83,7 @@ class IncrementalRAGIndexer:
         allowed_domains = self.config.allowed_semantic_domains
         only_one_domain = self.program_args and self.program_args.domain
         if only_one_domain:
-            allowed_domains = {self.program_args.domain}
+            allowed_domains: set[str] = {self.program_args.domain}
             logger.info(f"Indexing ONLY THIS semantic domain: {allowed_domains}")
 
         files_by_domain = find_files_by_semantic_domain(self.source_code_dir)
