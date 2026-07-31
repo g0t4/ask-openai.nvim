@@ -51,6 +51,7 @@ class ProgramArgs:
     info: bool
     in_githook: bool
     rebuild: bool
+    dry_run: bool
     level: int
     domain: str | None = None
 
@@ -110,10 +111,14 @@ class IncrementalRAGIndexer:
 
         logger.warning(f'FYI found {vestigial_domains=}, removing...')
 
+        is_dry_run = self.program_args and self.program_args.dry_run
         for name in vestigial_domains:
             domain_dir = self.dot_rag_dir / name
-            logger.warning(f"Removing vestigial rag dir: {domain_dir}")
-            trash_dir(domain_dir)
+            if is_dry_run:
+                logger.warning(f"[DRY RUN] Would remove vestigial rag dir: {domain_dir}")
+            else:
+                logger.warning(f"Removing vestigial rag dir: {domain_dir}")
+                trash_dir(domain_dir)
 
     def flag_unindexed_domains(self, allowed_domains: set[str], files_by_domain: dict[str, set[str]]):
         """Warn about semantic domains present in the repo but not being indexed."""
@@ -236,6 +241,13 @@ class IncrementalRAGIndexer:
             logger.debug("[green]No changes detected, index is up to date!")
             return
 
+        if self.program_args.dry_run:
+            if files_diff.changed:
+                logger.warning(f"[DRY RUN] Changed files: {sorted(str(p) for p in files_diff.changed)}")
+            if files_diff.deleted:
+                logger.warning(f"[DRY RUN] Deleted files: {sorted(files_diff.deleted)}")
+            return
+
         all_stat_by_path = {path_str: prior_files.stat_by_path[path_str] for path_str in files_diff.not_changed}
         not_changed_chunks_by_file = {path_str: prior_files.chunks_by_file[path_str] for path_str in files_diff.not_changed}
         logger.info(f'{len(files_diff.changed)} changed, {len(files_diff.deleted)} deleted')
@@ -272,6 +284,7 @@ class IncrementalRAGIndexer:
         domain_dir = self.dot_rag_dir / domain
         domain_dir.mkdir(exist_ok=True, parents=True)
 
+        is_dry_run = self.program_args and self.program_args.dry_run
         faiss.write_index(index, str(domain_dir / "vectors.index"))
 
         logger.pp_debug("ids: ", prior_files.index_view.ids)
@@ -303,6 +316,7 @@ async def main():
         parser.add_argument("--verbose", "--debug", action="store_true", help="Enable verbose logging")
         parser.add_argument("--info", action="store_true", help="Enable info logging")
         parser.add_argument("--rebuild", action="store_true", help="Rebuild index")
+        parser.add_argument("--dry-run", action="store_true", help="Dry run: compute changes but don't write anything")
         parser.add_argument("--githook", action="store_true", help="Run in git hook mode")
         parser.add_argument("--domain", type=str, help="Only process files with the specified semantic domain")
 
@@ -314,6 +328,7 @@ async def main():
             info=args.info,
             in_githook=args.githook,
             rebuild=args.rebuild,
+            dry_run=args.dry_run,
             level=logging.WARNING,
             domain=args.domain,
         )
@@ -333,8 +348,12 @@ async def main():
 
         await workspace.for_indexer()
 
+        is_dry_run = args.dry_run
         if args.rebuild:
-            trash_dir(workspace.project.dot_rag_dir)
+            if is_dry_run:
+                logger.warning(f"[DRY RUN] Would trash rag dir: {workspace.project.dot_rag_dir}")
+            else:
+                trash_dir(workspace.project.dot_rag_dir)
 
         indexer = IncrementalRAGIndexer(RAGChunkerOptions.ProductionOptions(), args)
         await indexer.main()
