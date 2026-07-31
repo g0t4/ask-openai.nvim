@@ -384,13 +384,11 @@ def resolve_semantic_domain(file_path: str | Path) -> Optional[str]:
     """
     file_path = Path(file_path)
 
-    # --- * basename * ---
     basename = file_path.name
     domain = BASENAME_TO_SEMANTIC_DOMAIN.get(basename)
     if domain is not None:
         return domain
 
-    # --- * file extension * ---
     # Handle dotfiles (.gitignore) where suffix is empty but the name IS the extension
     suffix = file_path.suffix
     if not suffix and file_path.name.startswith("."):
@@ -398,8 +396,8 @@ def resolve_semantic_domain(file_path: str | Path) -> Optional[str]:
     else:
         ext = suffix.lstrip(".").lower()
     if not ext:
+        # no file extension
 
-        # --- * shebang * ---
         domain = _detect_semantic_domain_from_shebang(file_path)
         if domain is not None:
             return domain
@@ -412,11 +410,8 @@ def resolve_semantic_domain(file_path: str | Path) -> Optional[str]:
         logger.info(f"No semantic domain resolved for extensionless file: {file_path}")
         return None
 
-    domain = EXTENSION_TO_SEMANTIC_DOMAIN.get(ext)
-    if domain is not None:
-        return domain
-
-    return ext
+    # has file extension
+    return EXTENSION_TO_SEMANTIC_DOMAIN.get(ext) or ext
 
 
 # Matches both:
