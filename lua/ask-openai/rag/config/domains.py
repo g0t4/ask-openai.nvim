@@ -365,7 +365,7 @@ def resolve_semantic_domain_for_vim_filetype(vim_filetype: str):
     return resolve_semantic_domain(as_file_extension)
 
 
-def _resolve_semantic_domain_from_filepath_regex(file_path: Path) -> Optional[str]:
+def _get_domain_from_filepath_regex(file_path: Path) -> Optional[str]:
     path_str = str(file_path)
     for pattern, domain in FILEPATH_REGEX_TO_SEMANTIC_DOMAIN:
         if pattern.search(path_str):
@@ -406,13 +406,13 @@ def resolve_semantic_domain(file_path: str | Path) -> Optional[str]:
         return EXTENSION_TO_SEMANTIC_DOMAIN.get(extension) or extension
 
     # * no file extension *
-    domain = _detect_semantic_domain_from_shebang(file_path)
+    domain = _get_domain_from_shebang(file_path)
     if domain is not None:
         return domain
 
     # FYI file path regexes fallback is only for extensionless until real need arises for files with an extension
     #   keep in mind this is overhead, don't blindly add everywhere for an oddball case where the file could be given an extension instead!
-    domain = _resolve_semantic_domain_from_filepath_regex(file_path)
+    domain = _get_domain_from_filepath_regex(file_path)
     if domain is not None:
         return domain
 
@@ -426,7 +426,7 @@ def resolve_semantic_domain(file_path: str | Path) -> Optional[str]:
 _SHEBANG_RE = re.compile(rb"^#!\s*(?:/usr/bin/env\s+)?(\S+)")
 
 
-def _detect_semantic_domain_from_shebang(file_path: Path) -> Optional[str]:
+def _get_domain_from_shebang(file_path: Path) -> Optional[str]:
     """
     Handles both /usr/bin/env style and direct paths, including versioned
     interpreters like python3.11 or bash5.2.
