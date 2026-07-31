@@ -35,12 +35,14 @@ from index import workspace
 IGNORE_FAILURE = False
 STOP_ON_FAILURE = True
 
+
 @dataclass
 class FilesDiff:
     # FYI type mismatch IS FINE with type hints... LEAVE IT!
     changed: Set[Path]
     deleted: Set[str]
     not_changed: Set[str]
+
 
 @dataclass
 class ProgramArgs:
@@ -51,11 +53,13 @@ class ProgramArgs:
     level: int
     domain: str | None = None
 
+
 def trash_dir(directory):
     directory = Path(directory)
     if not directory.exists():
         return
     subprocess.run(["trash", directory], check=IGNORE_FAILURE)
+
 
 class IncrementalRAGIndexer:
 
@@ -288,6 +292,7 @@ class IncrementalRAGIndexer:
         if files_diff.deleted:
             logger.debug(f"[green]Removed {len(files_diff.deleted)} deleted files")
 
+
 async def main():
     from logs import logging_fwk_to_console
 
@@ -310,7 +315,7 @@ async def main():
             domain=args.domain,
         )
         if args.githook:
-            level = logging.INFO
+            program_args.level = logging.WARN
         else:
             program_args.level = logging.DEBUG if args.verbose else (logging.INFO if args.info else logging.WARNING)
 
@@ -330,6 +335,7 @@ async def main():
 
         indexer = IncrementalRAGIndexer(RAGChunkerOptions.ProductionOptions(), args)
         await indexer.main()
+
 
 if __name__ == "__main__":
     asyncio.run(main())
