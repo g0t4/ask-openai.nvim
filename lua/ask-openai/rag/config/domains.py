@@ -393,10 +393,9 @@ def resolve_semantic_domain(file_path: str | Path) -> Optional[str]:
     def get_ext():
         suffix = file_path.suffix
         if not suffix and file_path.name.startswith("."):
-            ext = file_path.name[1:].lower()
+            return file_path.name[1:].lower()
         else:
-            ext = suffix.lstrip(".").lower()
-        return ext
+            return suffix.lstrip(".").lower()
 
     ext = get_ext()
 
