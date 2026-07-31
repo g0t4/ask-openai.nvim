@@ -373,6 +373,18 @@ def _resolve_semantic_domain_from_filepath_regex(file_path: Path) -> Optional[st
     return None
 
 
+def _get_extension(file_path):
+    suffix = file_path.suffix
+    if suffix:
+        return suffix.lstrip(".").lower()
+
+    # Handle dotfiles (.gitignore) where suffix is empty but the name IS the extension
+    # suffix is "" here
+    if file_path.name.startswith("."):
+        return file_path.name[1:].lower()
+    return ""
+
+
 def resolve_semantic_domain(file_path: str | Path) -> Optional[str]:
     """Resolve the semantic/retrieval domain for a file, the group used for narrow querying of related files...
 
@@ -389,18 +401,7 @@ def resolve_semantic_domain(file_path: str | Path) -> Optional[str]:
     if domain is not None:
         return domain
 
-    # Handle dotfiles (.gitignore) where suffix is empty but the name IS the extension
-    def get_extension(file_path):
-        suffix = file_path.suffix
-        if suffix:
-            return suffix.lstrip(".").lower()
-
-        # suffix is "" here
-        if file_path.name.startswith("."):
-            return file_path.name[1:].lower()
-        return ""
-
-    extension = get_extension(file_path)
+    extension = _get_extension(file_path)
     if extension:
         return EXTENSION_TO_SEMANTIC_DOMAIN.get(extension) or extension
 
@@ -414,6 +415,7 @@ def resolve_semantic_domain(file_path: str | Path) -> Optional[str]:
     domain = _resolve_semantic_domain_from_filepath_regex(file_path)
     if domain is not None:
         return domain
+
     logger.info(f"No semantic domain resolved for extensionless file: {file_path}")
     return None
 
