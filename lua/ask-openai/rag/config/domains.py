@@ -395,23 +395,22 @@ def resolve_semantic_domain(file_path: str | Path) -> Optional[str]:
         ext = file_path.name[1:].lower()
     else:
         ext = suffix.lstrip(".").lower()
-    if not ext:
-        # no file extension
 
-        domain = _detect_semantic_domain_from_shebang(file_path)
-        if domain is not None:
-            return domain
+    if ext:
+        return EXTENSION_TO_SEMANTIC_DOMAIN.get(ext) or ext
 
-        # FYI file path regexes fallback is only for extensionless until real need arises for files with an extension
-        #   keep in mind this is overhead, don't blindly add everywhere for an oddball case where the file could be given an extension instead!
-        domain = _resolve_semantic_domain_from_filepath_regex(file_path)
-        if domain is not None:
-            return domain
-        logger.info(f"No semantic domain resolved for extensionless file: {file_path}")
-        return None
+    # * no file extension *
+    domain = _detect_semantic_domain_from_shebang(file_path)
+    if domain is not None:
+        return domain
 
-    # has file extension
-    return EXTENSION_TO_SEMANTIC_DOMAIN.get(ext) or ext
+    # FYI file path regexes fallback is only for extensionless until real need arises for files with an extension
+    #   keep in mind this is overhead, don't blindly add everywhere for an oddball case where the file could be given an extension instead!
+    domain = _resolve_semantic_domain_from_filepath_regex(file_path)
+    if domain is not None:
+        return domain
+    logger.info(f"No semantic domain resolved for extensionless file: {file_path}")
+    return None
 
 
 # Matches both:
