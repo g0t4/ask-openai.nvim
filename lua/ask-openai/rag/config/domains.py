@@ -535,7 +535,8 @@ def find_files_by_semantic_domain(source_code_dir: Path) -> dict[str, set[str]]:
     for file_path in out.splitlines():
         domain = resolve_semantic_domain(file_path)
         if domain:
-            files_by_domain.setdefault(domain, set()).add(file_path)
+            files_by_domain.setdefault(domain, set()) \
+                .add(file_path)
         else:
             logger.warning(f"Could not resolve semantic domain for {file_path}")
 
