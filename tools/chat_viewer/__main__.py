@@ -16,6 +16,8 @@ from rich.text import Text
 from rich.tree import Tree
 from typing import Any, Iterable, Iterator, Dict
 import hashlib
+import argparse
+import argcomplete
 
 from tools.chat_viewer.markdown_utils import split_h2_markdown_sections
 from tools.chat_viewer.tree_wrapper import TreeWrapper
@@ -854,29 +856,43 @@ def print_message(msg: dict, idx: int):
 def main() -> None:
     global SHOW_ALL
 
-    export_html = False
-    html_path: str | None = None
+    parser = argparse.ArgumentParser(description="View chat traces")
+    parser.add_argument(
+        "trace_file",
+        nargs="?",
+        default=None,
+        help="path to trace file (or stdin if omitted)",
+    )
+    parser.add_argument("--all", action="store_true", help="show all content (no exclusions)")
+    parser.add_argument("--html", action="store_true", help="export rendered output as HTML")
 
-    if "--all" in sys.argv:
+    argcomplete.autocomplete(parser)
+    args = parser.parse_args()
+
+    if args.all:
         SHOW_ALL = True
-        sys.argv.remove("--all")
 
-    if "--html" in sys.argv:
-        export_html = True
-        sys.argv.remove("--html")
+    export_html = args.html
+    if export_html:
         _console.record = True
+    html_path: str | None = None
 
     load_preapproved_files()
 
-    if len(sys.argv) < 2:
+    trace_file_path = Path(args.trace_file) if args.trace_file else None
+
+    if trace_file_path is None and not sys.stdin.isatty():
+        # No file arg and stdin has data (piped)
         messages, model_name, timings = load_trace_messages_from_stream(sys.stdin)
         if export_html:
             html_path = "stdout.html"
-    else:
-        trace_file = Path(sys.argv[1])
-        messages, model_name, timings = load_trace_messages_from_path(trace_file)
+    elif trace_file_path is not None:
+        messages, model_name, timings = load_trace_messages_from_path(trace_file_path)
         if export_html:
-            html_path = str(trace_file) + ".html"
+            html_path = str(trace_file_path) + ".html"
+    else:
+        parser.print_help()
+        return
 
     print_model_info(model_name, timings)
 
