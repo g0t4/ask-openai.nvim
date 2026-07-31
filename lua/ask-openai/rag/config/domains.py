@@ -427,18 +427,15 @@ def _detect_semantic_domain_from_shebang(file_path: Path) -> Optional[str]:
     """
     try:
         with open(file_path, "rb") as f:
-            first_line = f.readline(256)  # read up to 256 bytes (seems wreckless for two reasons: way too much for most files, possibly not enough when there is a shebang)
+            # linux kernel limits to 255 chars
+            # macOS IIUC has 512... so set way above and we're fine:
+            first_line = f.readline(2048)
     except (OSError, UnicodeDecodeError):
         return None
 
     match = _SHEBANG_RE.match(first_line)
     if not match:
         return None
-
-    # TODO? if \n is not in first 256 chars then read more?
-    #  could even read less to find the shebang? don't need 256 to find #!
-    #   why not read 2 chars for shebang and then read more for the few files that show shebang is possible?
-    #  TDD this, you must have tests to drive this
 
     interpreter = match.group(1).decode("utf-8", errors="replace")
     # Extract just the binary name (strip path and version suffix)
