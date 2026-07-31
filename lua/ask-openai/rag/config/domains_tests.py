@@ -135,11 +135,14 @@ class TestResolveSemanticDomain:
         assert resolve_semantic_domain("compose.yaml") == "docker"
         assert resolve_semantic_domain("Dockerfile.j2") == "docker"
 
-    def test_shebang_wins_vs_file_extension(self, tmp_path):
-        # sh => bash normally, but here it should be fish b/c of shebang
+    def test_file_extension_wins_over_shebang(self, tmp_path):
+        # extension wins else we have to check every file for this which is nuts in terms of performance hit
+        # when there are very few (if any) sane examples...
+        # i.e. if I had a fish script, I'd name it `.fish` and not `.sh`
+        # and honestly for shell scripts, I am likely to group those into one domain anyways
         f = tmp_path / "script.sh"
         f.write_text("#!fish\necho hi\n")
-        assert resolve_semantic_domain(f) == "fish"
+        assert resolve_semantic_domain(f) == "bash"
 
     def test_basename_lookup_for_extensionless(self, tmp_path):
         f = tmp_path / "Dockerfile"
