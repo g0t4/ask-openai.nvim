@@ -13,8 +13,7 @@ _G.CompletionsEndpoints = {
     -- llama-server non-openai:
     llamacpp_completions = "/completions",
 
-    -- OpenAI compatible:
-    oai_v1_completions = "/v1/completions",
+    -- openai compat (but I've been developing this for llama-server for so long I can't guarantee that without testing)
     v1_chat_completions = "/v1/chat/completions",
 }
 

@@ -132,28 +132,6 @@ end
 ---@param endpoint CompletionsEndpoints
 ---@return ExtractGeneratedTextFromChoiceFunction
 local function get_extract_generated_text_func(endpoint)
-    -- * /completions  CompletionsEndpoints.llamacpp_completions
-    --   3rd ExtractGeneratedTextFromChoiceFunction for non-openai /completions endpoint on llama-server
-    --     => no sse.choice so I'd have to change how M.on_one_data_value works to not assume sse.choices
-    --     whereas with non-openai /completions it would just use top-level to get text (.content)
-    if endpoint == CompletionsEndpoints.oai_v1_completions then
-        ---@type ExtractGeneratedTextFromChoiceFunction
-        return function(choice)
-            --- * /v1/completions
-            if choice == nil then
-                -- just skip if no (first) choice or no text on it (i.e. last SSE is often timing only)
-                return "", "" -- empty for both content/reasoning_content
-            end
-
-            local content = choice.text or ""
-            if content == vim.NIL then content = "" end
-
-            log:error("TODO can I get reasoning from llama-server's v1/completions endpoint?")
-
-            return content, ""
-        end
-    end
-
     if endpoint == CompletionsEndpoints.v1_chat_completions then
         ---@type ExtractGeneratedTextFromChoiceFunction
         return function(choice)
