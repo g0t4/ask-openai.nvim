@@ -43,21 +43,14 @@ function M.get_vim_command_suggestion(passed_context)
             },
             max_tokens = max_tokens,
             n = 1,
-            stream = false, -- FYI must set this for ollama, doesn't hurt to do for all
         }),
-        synchronous = true -- might be fun to try to make this stream! not a huge value though for streaming a short cmdline but would teach me lua async
+        synchronous = true -- TODO make stream response tokens! and prolly use CurlRequest too
     })
     log:info("cmdline-response", vim.inspect(response))
 
     if response and response.status == 200 then
         -- vim.fn.writefile({ response.body }, "/tmp/ask-openai-response.json", "a")
         local result = vim.json.decode(response.body)
-        if result.message then
-            -- PRN check if choices is present first? then message?
-            -- DERP use /v1/chat/completions (careful of fail messages on inavlid model, but yes this works so I dont need special request/response for ollama)
-            -- ollama only returns a single choice (currently)
-            return result.message.content
-        end
         -- assume openai
         local first_choice = result.choices[1]
         local content = first_choice.message.content
