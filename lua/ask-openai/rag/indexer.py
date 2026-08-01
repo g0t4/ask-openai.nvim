@@ -47,13 +47,16 @@ class FilesDiff:
 
 @dataclass
 class ProgramArgs:
-    verbose: bool
-    info: bool
-    in_githook: bool
-    rebuild: bool
-    dry_run: bool
-    level: int
+    verbose: bool = False
+    info: bool = False
+    in_githook: bool = False
+    rebuild: bool = False
+    dry_run: bool = False
+    level: int = 0
     domain: str | None = None
+
+    def is_only_one_domain(self):
+        return self.domain is not None
 
 
 def trash_dir(directory):
@@ -73,7 +76,7 @@ class IncrementalRAGIndexer:
         self.options = options
         self.dot_rag_dir = workspace.project.dot_rag_dir
         self.source_code_dir = workspace.project.folder
-        self.program_args = program_args
+        self.program_args = program_args or ProgramArgs()
         self.config = workspace.get_config()
 
     async def main(self):
@@ -82,8 +85,7 @@ class IncrementalRAGIndexer:
             return
 
         allowed_domains = self.config.allowed_semantic_domains
-        only_one_domain = self.program_args and self.program_args.domain
-        if only_one_domain:
+        if self.program_args.is_only_one_domain():
             allowed_domains: set[str] = {self.program_args.domain}
             logger.info(f"Indexing ONLY THIS semantic domain: {allowed_domains}")
 
@@ -96,7 +98,7 @@ class IncrementalRAGIndexer:
             await self.build_index(domain, files)
 
         # Only flag/trash when doing a full reindex (no --domain override)
-        if not only_one_domain:
+        if not self.program_args.is_only_one_domain():
             self.flag_unindexed_domains(allowed_domains, files_by_domain)
             self.trash_vestigial_domains(allowed_domains)
         await signal_hotpath_done_in_background()
@@ -111,7 +113,7 @@ class IncrementalRAGIndexer:
 
         logger.warning(f'FYI found {vestigial_domains=}, removing...')
 
-        is_dry_run = self.program_args and self.program_args.dry_run
+        is_dry_run = self.program_args.dry_run
         for name in vestigial_domains:
             domain_dir = self.dot_rag_dir / name
             if is_dry_run:
@@ -288,7 +290,7 @@ class IncrementalRAGIndexer:
         domain_dir = self.dot_rag_dir / domain
         domain_dir.mkdir(exist_ok=True, parents=True)
 
-        is_dry_run = self.program_args and self.program_args.dry_run
+        is_dry_run = self.program_args.dry_run
         faiss.write_index(index, str(domain_dir / "vectors.index"))
 
         logger.pp_debug("ids: ", prior_files.index_view.ids)
