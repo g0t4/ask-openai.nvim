@@ -23,7 +23,6 @@ taken from AgentsFrontend right before sending a new question trace
         -- model = "gemma3:12b-it-q8_0", -- btw -base- does terrible here :)
         -- temperature = 0.2, -- TODO what temp?
         -- model = "huggingface.co/lmstudio-community/openhands-lm-32b-v0.1-GGUF:latest", -- qwen fine tuned for SWE ... not doing well... same issue as qwen2.5-coder
-    -- local body = agentica.DeepCoder.build_chat_body(system_prompt, user_message)
 ```
 
 ## context size

@@ -34,5 +34,4 @@ model = "huggingface.co/unsloth/Qwen3-Coder-30B-A3B-Instruct-GGUF:Q4_K_M",
 model = "deepseek-r1:8b-0528-qwen3-q8_0", -- /nothink doesn't work :(
 
 model = "gemma3:12b-it-q8_0",
--- local body = agentica.DeepCoder.build_chat_body(system_prompt, user_message)
 ```
