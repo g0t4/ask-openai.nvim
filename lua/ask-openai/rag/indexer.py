@@ -238,7 +238,11 @@ class IncrementalRAGIndexer:
         logger.pp_debug("files_diff", files_diff)
 
         if not files_diff.changed and not files_diff.deleted:
-            logger.debug("[green]No changes detected, index is up to date!")
+            message = f"[green]No changes detected, [white bold]{domain}[/] index is up to date!"
+            if self.program_args.dry_run:
+                logger.warning(message)
+            else:
+                logger.info(message)
             return
 
         if self.program_args.dry_run:
