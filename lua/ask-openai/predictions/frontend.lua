@@ -85,16 +85,21 @@ function PredictionsFrontend.ask_for_prediction(params)
                     return
                 end
 
-                local chunk, done, done_reason, reasoning_content
+                local sse_result
                 if FimBackend.endpoint == CompletionsEndpoints.llamacpp_completions then
                     -- FYI content parsing works, no reasoning parsing (see notes in parser logic):
-                    chunk, done, done_reason = parse_sse_llamacpp_completions(sse_parsed)
+                    sse_result = parse_sse_llamacpp_completions(sse_parsed)
                 elseif FimBackend.endpoint == CompletionsEndpoints.v1_chat_completions then
                     -- FYI fully works, including reasoning:
-                    chunk, done, done_reason, reasoning_content = parse_sse_v1_chat_completions(sse_parsed)
+                    sse_result = parse_sse_v1_chat_completions(sse_parsed)
                 else
                     error("Unsupported FIM endpoint: " .. tostring(FimBackend.endpoint))
                 end
+
+                local chunk = sse_result.content
+                local done = sse_result.done
+                local done_reason = sse_result.finish_reason
+                local reasoning_content = sse_result.reasoning_content or ""
 
                 if chunk or reasoning_content then
                     this_prediction:add_chunk_to_prediction(chunk, reasoning_content)

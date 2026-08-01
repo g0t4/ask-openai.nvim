@@ -2,6 +2,13 @@ local log = require("devtools.logs.logger"):universal()
 
 -- logic for parsing SSEs from all completion backends
 
+---@class SseParseResult
+---@field content string The content chunk from this SSE
+---@field done boolean Whether this is the final SSE (generation complete)
+---@field finish_reason string|nil Reason why generation stopped (e.g., "stop", "length", "eos")
+---@field reasoning_content? string Reasoning/thinking content if available
+---@field prob? number Probability of the selected token
+
 function get_probs(choice)
     -- PRN parse logprobs
     -- * post_sampling_probs = TRUE =>
@@ -94,6 +101,7 @@ function get_probs(choice)
 end
 
 ---@param sse OpenAIChatCompletionChunk
+---@return SseParseResult
 function parse_sse_v1_chat_completions(sse)
     local content = ""
     local reasoning_content = ""
@@ -118,15 +126,23 @@ function parse_sse_v1_chat_completions(sse)
             reasoning_content = ""
         end
 
-        prob = get_probs(first_choice)
+        local prob = get_probs(first_choice)
         -- log:info("prob", prob)
 
         finish_reason = first_choice.finish_reason
         done = finish_reason ~= nil and finish_reason ~= vim.NIL -- vim.NIL == JSON null
     end
-    return content, done, finish_reason, reasoning_content, prob
+    return {
+        content = content,
+        done = done,
+        finish_reason = finish_reason,
+        reasoning_content = reasoning_content,
+        prob = prob,
+    }
 end
 
+---@param sse LlamaCppCompletionSSE
+---@return SseParseResult
 function parse_sse_llamacpp_completions(sse)
     -- FYI response_fields limits fields per SSE...
     --    I set it to stop prompt and generation_settings on final SSE
@@ -145,7 +161,11 @@ function parse_sse_llamacpp_completions(sse)
     --
     -- Going forward, use /completions for RAW only
     -- use /v1/chat/completions for any chat template conversations
-    local reasoning = nil -- FYI not likely to ever use this
-    local prob = nil -- TODO support this for qwen2.5coder/gptoss_raw?
-    return sse.content, sse.stop, sse.stop_type, reasoning, prob
+    return {
+        content = sse.content or "",
+        done = sse.stop == true,
+        finish_reason = sse.stop_type,
+        reasoning_content = "",
+        prob = nil,
+    }
 end
