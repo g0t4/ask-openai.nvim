@@ -37,6 +37,12 @@ function parse_sse_llamacpp_completions(sse)
     -- "stopping_word": "", -- FYI this is for last token that stopped generation (if applicable) ... and IIRC it does not get added into the content
     -- log:info("sse /completions", vim.inspect(sse))
 
-    -- ?? reasoning_content ... is there a way for this to be parsed in legacy completions endpoint?
+    -- TWO ways to use llama-server's /completions
+    --   non-raw - can't recall using this on anything material - this might have reasoning parsers but I would prefer use chat completions for that
+    --   raw - I've used this for gptoss and qwen2.5coder - I could build a reasoning parser myself but it would be a layer above this
+    --   TLDR not likely to ever use reasoning with this endpoint (unless I need manual parsing)
+    --
+    -- Going forward, use /completions for RAW only
+    -- use /v1/chat/completions for any chat template conversations
     return sse.content, sse.stop, sse.stop_type
 end

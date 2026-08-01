@@ -87,7 +87,7 @@ function PredictionsFrontend.ask_for_prediction(params)
 
                 local chunk, done, done_reason, reasoning_content
                 if FimBackend.endpoint == CompletionsEndpoints.llamacpp_completions then
-                    -- TODO content parsing works, no reasoning parser (yet)
+                    -- FYI content parsing works, no reasoning parsing (see notes in parser logic):
                     chunk, done, done_reason = parse_sse_llamacpp_completions(sse_parsed)
                 elseif FimBackend.endpoint == CompletionsEndpoints.v1_chat_completions then
                     -- FYI fully works, including reasoning:
