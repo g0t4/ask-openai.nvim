@@ -59,10 +59,9 @@ def warn_about_file_differences(datasets: Datasets, root_dir: Path) -> None:
     Compares indexed files against all files found via semantic domain matching.
     Reports: added (unindexed), stale (hash mismatch), mtime-only, and deleted files.
     """
-    source_code_dir = root_dir
 
     # * files on disk *
-    files_by_domain = find_files_by_semantic_domain(source_code_dir)
+    files_by_domain = find_files_by_semantic_domain(root_dir)
     all_disk_files: dict[str, FileStat] = {}
     for domain_files in files_by_domain.values():
         for path in domain_files:
