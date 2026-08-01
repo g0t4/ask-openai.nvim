@@ -65,7 +65,7 @@ def warn_about_file_differences(datasets: Datasets, config: RagConfig, root_dir:
     Reports: added (unindexed), stale (hash mismatch), mtime-only, and deleted files.
     """
 
-    HIDE_NOT_IN_CONFIG = "NOT_IN_CONFIG"
+    HIDE_NOT_ALLOWED = "NOT_ALLOWED"
     HIDE_IGNORED = "IGNORED"
     show_hidden = logger.isEnabledFor(logging.DEBUG)
 
@@ -76,9 +76,7 @@ def warn_about_file_differences(datasets: Datasets, config: RagConfig, root_dir:
     for domain, files in files_by_domain.items():
         for path in files:
             if domain not in config.allowed_semantic_domains:
-                # FYI I could bulk mark entire domain as hidden instead of individual files
-                #    also might wanna show hidden by domain? (could call into same display logic with hidden reason (None/HIDE_IGNORED/HIDE_NOT_IN_CONFIG/etc)
-                hide_reason_by_file_path[path] = HIDE_NOT_IN_CONFIG
+                hide_reason_by_file_path[path] = HIDE_NOT_ALLOWED
                 if not show_hidden:
                     continue
             # TODO revisit _is_file_ignored_allchecks instead of only l_is_gitignored here?
