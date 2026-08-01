@@ -96,7 +96,6 @@ function PredictionsFrontend.ask_for_prediction(params)
                     error("Unsupported FIM endpoint: " .. tostring(FimBackend.endpoint))
                 end
 
-                local done_reason = sse_result.finish_reason
                 local reasoning_content = sse_result.reasoning_content or ""
 
                 if sse_result.content or reasoning_content then
@@ -111,7 +110,7 @@ function PredictionsFrontend.ask_for_prediction(params)
                         log:info(ansi.cyan_bold("PREDICTION:\n"), ansi.cyan(this_prediction.prediction))
                     else
                         -- FYI great way to test this, go to a line that is done (i.e. a return) and go into insert mode before the returned variable and it almost always suggests that is EOS (at least with qwen2.5-coder)
-                        log:trace(ansi.yellow_bold("DONE, empty prediction") .. ", done reason: '" .. (done_reason or "") .. "'")
+                        log:trace(ansi.yellow_bold("DONE, empty prediction") .. ", done reason: '" .. (sse_result.finish_reason or "") .. "'")
 
                         -- TODO real fix for empty response to remove thinking tokens:
                         -- good test case is to go b/w ends (below) and insert new line (empty) will likely result in a blank eventually (check reasoning too to confirm)
