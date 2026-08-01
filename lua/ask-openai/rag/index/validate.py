@@ -17,7 +17,7 @@ from chunks.chunker import get_file_stat
 from index import workspace
 
 from config.domains import resolve_semantic_domain
-from index.stale import warn_about_stale_files
+from index.file_differences import warn_about_file_differences
 
 logger = get_logger("validator")
 
@@ -171,7 +171,7 @@ async def main():
     validator.validate_datasets()
     validator.warn_about_unindexed_domains(workspace.datasets)
 
-    warn_about_stale_files(workspace.datasets, workspace_folder)
+    warn_about_file_differences(workspace.datasets, workspace_folder)
 
     config = await workspace.load_rag_config(workspace_folder)
     validator.compare_config_vs_indexed_domains(workspace.datasets, config)
