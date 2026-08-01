@@ -68,6 +68,19 @@ function PredictionsFrontend.ask_for_prediction(params)
         })
         this_prediction.fim_request = fim_request
 
+        --- Extracts the appropriate SSE parsing result based on the current FIM backend.
+        ---@param sse_parsed table The raw SSE data to be parsed.
+        ---@return table sse_result The parsed SSE result.
+        local function _extract_sse_fields(sse_parsed)
+            if FimBackend.endpoint == CompletionsEndpoints.llamacpp_completions then
+                return parse_sse_llamacpp_completions(sse_parsed)
+            end
+            if FimBackend.endpoint == CompletionsEndpoints.v1_chat_completions then
+                return parse_sse_v1_chat_completions(sse_parsed)
+            end
+            error("Unsupported FIM endpoint: " .. tostring(FimBackend.endpoint))
+        end
+
         ---@type OnParsedSSE
         local function on_parsed_data_sse(sse_parsed)
             performance:token_arrived()
@@ -85,26 +98,13 @@ function PredictionsFrontend.ask_for_prediction(params)
                     return
                 end
 
-                --- Extracts the appropriate SSE parsing result based on the current FIM backend.
-                ---@param sse_parsed table The raw SSE data to be parsed.
-                ---@return table sse_result The parsed SSE result.
-                local function extract_sse_result(sse_parsed)
-                    if FimBackend.endpoint == CompletionsEndpoints.llamacpp_completions then
-                        return parse_sse_llamacpp_completions(sse_parsed)
-                    end
-                    if FimBackend.endpoint == CompletionsEndpoints.v1_chat_completions then
-                        return parse_sse_v1_chat_completions(sse_parsed)
-                    end
-                    error("Unsupported FIM endpoint: " .. tostring(FimBackend.endpoint))
+                local sse_fields = _extract_sse_fields(sse_parsed)
+
+                if sse_fields.content or sse_fields.reasoning_content then
+                    this_prediction:add_chunk_to_prediction(sse_fields.content, sse_fields.reasoning_content)
                 end
 
-                local sse_result = extract_sse_result(sse_parsed)
-
-                if sse_result.content or sse_result.reasoning_content then
-                    this_prediction:add_chunk_to_prediction(sse_result.content, sse_result.reasoning_content)
-                end
-
-                if sse_result.done then
+                if sse_fields.done then
                     if this_prediction.has_reasoning then
                         log:info(ansi.yellow_bold("REASONING:\n"), ansi.yellow(this_prediction:get_reasoning()))
                     end
@@ -112,7 +112,7 @@ function PredictionsFrontend.ask_for_prediction(params)
                         log:info(ansi.cyan_bold("PREDICTION:\n"), ansi.cyan(this_prediction.prediction))
                     else
                         -- FYI great way to test this, go to a line that is done (i.e. a return) and go into insert mode before the returned variable and it almost always suggests that is EOS (at least with qwen2.5-coder)
-                        log:trace(ansi.yellow_bold("DONE, empty prediction") .. ", done reason: '" .. (sse_result.finish_reason or "") .. "'")
+                        log:trace(ansi.yellow_bold("DONE, empty prediction") .. ", done reason: '" .. (sse_fields.finish_reason or "") .. "'")
 
                         -- TODO real fix for empty response to remove thinking tokens:
                         -- good test case is to go b/w ends (below) and insert new line (empty) will likely result in a blank eventually (check reasoning too to confirm)
