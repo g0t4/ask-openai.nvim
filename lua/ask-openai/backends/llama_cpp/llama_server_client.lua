@@ -113,7 +113,7 @@ function LlamaServerClient.extract_model_info(body)
         )
     end
 
-    -- Fallback: older shape with .models array (e.g. Ollama-style responses)
+    -- fallback to models array => name (llama-server has this, ollama too IIRC)
     if type(body.models) == "table" and #body.models > 0 then
         local first_model = body.models[1]
         if type(first_model) == "table" and first_model.name then

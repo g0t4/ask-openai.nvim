@@ -143,8 +143,8 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
             local sample_body = {
                 models = {
                     {
-                        name = "ollama-model:latest",
-                        model = "ollama-model:latest",
+                        name = "model-name:latest",
+                        model = "model-name:latest",
                     },
                 },
                 object = "list",
@@ -152,7 +152,7 @@ describe("testing prompt rendering in llama-server with gpt-oss jinja template",
 
             local model_info = LlamaServerClient.extract_model_info(sample_body)
             assert.is_not_nil(model_info)
-            assert.same("ollama-model:latest", model_info.name)
+            assert.same("model-name:latest", model_info.name)
             assert.same("", model_info.alias)
             assert.same(0, model_info.created)
             assert.same("", model_info.owned_by)
