@@ -165,13 +165,13 @@ function Prediction:fix_fim_and_redraw_extmarks()
         -- FYI concat every time is TERRIBLY inefficient, just concat on each token or whenever you want to show part of it
         --  but O(n) over concat which is O(n) too is O(n^2) and terrible lol
         self.rest_of_lines = split_lines(reasoning)
-        
+
         -- Build reasoning virtual lines with different highlight group
         local reasoning_virt_lines = {}
         for i, line in ipairs(self.rest_of_lines) do
             table.insert(reasoning_virt_lines, { { line, HLGroups.PREDICTION_REASONING } })
         end
-        
+
         -- Set reasoning extmarks with different highlight
         vim.api.nvim_buf_set_extmark(self.buffer, extmarks_ns_id, cursor.line_base0, cursor.col_base0, -- 0-indexed
             {

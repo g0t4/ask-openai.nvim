@@ -18,8 +18,14 @@ function parse_sse_oai_chat_completions(sse)
             --    skip these too
             content = ""
         end
+
         -- llama-server's /v1/chat/comppletions endpoint uses delta.reasoning_content
         reasoning_content = first_choice.delta.reasoning_content
+        if reasoning_content == nil or reasoning_content == vim.NIL then
+            -- FYI I have yet to seel reasoning_content come back with vim.NIL (and maybe not even nil?)
+            reasoning_content = ""
+        end
+
         finish_reason = first_choice.finish_reason
         done = finish_reason ~= nil and finish_reason ~= vim.NIL -- vim.NIL == JSON null
     end
