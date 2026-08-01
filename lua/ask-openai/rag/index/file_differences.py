@@ -143,7 +143,7 @@ def warn_about_file_differences(datasets: Datasets, config: RagConfig, root_dir:
         table = Table(width=100)
         table.add_column(justify="right", header="age", header_style="not bold white italic")
         table.add_column(justify="left", header="added (not yet indexed)")
-        table.add_column(justify="left", header="hidden")
+        table.add_column(justify="left", header="hidden" if verbose else "")
         for added_file in added_files:
             file_age = time.time() - added_file.current_stat.mtime
             age_str = format_age(file_age)
@@ -158,7 +158,7 @@ def warn_about_file_differences(datasets: Datasets, config: RagConfig, root_dir:
         table.add_column(justify="left", header="path")
         table.add_column(justify="left", header="size")
         table.add_column(justify="left", header="hash")
-        table.add_column(justify="left", header="hidden")
+        table.add_column(justify="left", header="hidden" if verbose else "")
         for stale_file in content_differs:
             last_indexed = format_age(time.time() - stale_file.stored_stat.mtime)
 
@@ -179,7 +179,7 @@ def warn_about_file_differences(datasets: Datasets, config: RagConfig, root_dir:
         table = Table(width=100)
         table.add_column(justify="right", header="last indexed", header_style="not bold white italic")
         table.add_column(justify="left", header="only mtime differs, contents match")
-        table.add_column(justify="left", header="hidden")
+        table.add_column(justify="left", header="hidden" if verbose else "")
         for mtime_file in only_mtime_differs_files:
             hidden = hide_reason_by_file_path.get(mtime_file.path)
             last_indexed = format_age(time.time() - mtime_file.stored_stat.mtime)
@@ -191,7 +191,7 @@ def warn_about_file_differences(datasets: Datasets, config: RagConfig, root_dir:
         table = Table(width=100)
         table.add_column(justify="right", header="last indexed", header_style="not bold white italic")
         table.add_column(justify="left", header="deleted files")
-        table.add_column(justify="left", header="hidden")
+        table.add_column(justify="left", header="hidden" if verbose else "")
         for deleted_file in deleted_files:
             hidden = hide_reason_by_file_path.get(deleted_file.path)
             last_indexed = format_age(time.time() - deleted_file.stored_stat.mtime)
