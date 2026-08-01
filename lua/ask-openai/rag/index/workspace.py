@@ -8,7 +8,6 @@ from typing import Optional
 from logs import get_logger
 from config import RagConfig, load_config
 from index.storage import Datasets, load_all_domains
-from index.validate import DatasetsValidator
 
 logger = get_logger(__name__)
 
@@ -120,6 +119,8 @@ def get_relative_path_to(path: Path | str, override_root_path: Path | None = Non
 def validate_datasets():
     if datasets is None:
         raise RuntimeError("cannot validate datasets because datasets are not yet loaded!")
+
+    from index.validate import DatasetsValidator
 
     validator = DatasetsValidator(datasets)
     validator.validate_datasets()

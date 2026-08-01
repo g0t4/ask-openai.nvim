@@ -7,7 +7,7 @@ from rich.console import Console
 
 from config.domains import find_files_by_semantic_domain
 from index.storage import Datasets, FileStat
-from index import workspace
+from index.workspace import RagConfig, get_relative_path_to
 from chunks.chunker import get_file_stat
 
 logger = logging.getLogger(__name__)
@@ -53,7 +53,7 @@ class DeletedFile:
     stored_stat: FileStat
 
 
-def warn_about_file_differences(datasets: Datasets, root_dir: Path) -> None:
+def warn_about_file_differences(datasets: Datasets, config: RagConfig, root_dir: Path) -> None:
     """Warn about files that differ between the index and the filesystem.
 
     Compares indexed files against all files found via semantic domain matching.
@@ -63,8 +63,11 @@ def warn_about_file_differences(datasets: Datasets, root_dir: Path) -> None:
     # * files on disk *
     files_by_domain = find_files_by_semantic_domain(root_dir)
     all_disk_stats: dict[str, FileStat] = {}
-    for domain_files in files_by_domain.values():
-        for path in domain_files:
+    for domain, files in files_by_domain.items():
+        if domain not in config.allowed_semantic_domains:
+            # TODO not allowed => flag if in index and no longer allowed?
+            continue
+        for path in files:
             all_disk_stats[path] = get_file_stat(path)
 
     # * files in index *
@@ -79,7 +82,7 @@ def warn_about_file_differences(datasets: Datasets, root_dir: Path) -> None:
 
     # * indexed files comparison
     for path, index_stat in all_index_stats.items():
-        display_path = workspace.get_relative_path_to(path, override_root_path=root_dir)
+        display_path = get_relative_path_to(path, override_root_path=root_dir)
 
         # * deleted files
         if path not in all_disk_stats:
@@ -102,7 +105,7 @@ def warn_about_file_differences(datasets: Datasets, root_dir: Path) -> None:
     # * added files
     for path, disk_stat in all_disk_stats.items():
         if path not in all_index_stats:
-            display_path = workspace.get_relative_path_to(path, override_root_path=root_dir)
+            display_path = get_relative_path_to(path, override_root_path=root_dir)
             added_files.append(AddedFile(display_path, disk_stat))
 
     if not (added_files or content_differs or only_mtime_differs_files or deleted_files):

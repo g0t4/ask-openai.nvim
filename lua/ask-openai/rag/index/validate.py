@@ -171,9 +171,10 @@ async def main():
     validator.validate_datasets()
     validator.warn_about_unindexed_domains(workspace.datasets)
 
-    warn_about_file_differences(workspace.datasets, workspace_folder)
-
     config = await workspace.load_rag_config(workspace_folder)
+
+    warn_about_file_differences(workspace.datasets, config, workspace_folder)
+
     validator.compare_config_vs_indexed_domains(workspace.datasets, config)
 
     if validator.any_problems:
