@@ -151,10 +151,9 @@ local function get_extract_generated_text_func(endpoint)
     end
 
     if endpoint == CompletionsEndpoints.llamacpp_completions then
-        error("TODO /completions endpoint's ExtractGeneratedTextFromChoiceFunction")
+        error("NOT YET IMPLEMENTED llama-sever /completions endpoint")
     end
 
-    -- TODO CompletionsEndpoints.llamacpp_completions /completions for 3rd ExtractGeneratedTextFromChoiceFunction
     error("Not yet implemented: " .. endpoint)
 end
 
