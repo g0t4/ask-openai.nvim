@@ -62,10 +62,10 @@ def warn_about_file_differences(datasets: Datasets, root_dir: Path) -> None:
 
     # * files on disk *
     files_by_domain = find_files_by_semantic_domain(root_dir)
-    all_disk_files: dict[str, FileStat] = {}
+    all_disk_stats: dict[str, FileStat] = {}
     for domain_files in files_by_domain.values():
         for path in domain_files:
-            all_disk_files[path] = get_file_stat(path)
+            all_disk_stats[path] = get_file_stat(path)
 
     # * files in index *
     all_index_stats: dict[str, FileStat] = {}
@@ -74,7 +74,7 @@ def warn_about_file_differences(datasets: Datasets, root_dir: Path) -> None:
 
     added_files: list[AddedFile] = []
     content_differs: list[StaleFile] = []
-    mtime_only_files: list[MtimeOnlyFile] = []
+    only_mtime_differs_files: list[MtimeOnlyFile] = []
     deleted_files: list[DeletedFile] = []
 
     # * indexed files comparison
@@ -82,11 +82,11 @@ def warn_about_file_differences(datasets: Datasets, root_dir: Path) -> None:
         display_path = workspace.get_relative_path_to(path, override_root_path=root_dir)
 
         # * deleted files
-        if path not in all_disk_files:
+        if path not in all_disk_stats:
             deleted_files.append(DeletedFile(display_path, index_stat))
             continue
 
-        disk_stat = all_disk_files[path]
+        disk_stat = all_disk_stats[path]
         hash_differs = disk_stat.hash != index_stat.hash
 
         # * content differs
@@ -97,15 +97,15 @@ def warn_about_file_differences(datasets: Datasets, root_dir: Path) -> None:
         # * mtime differes
         mtime_differs = abs(index_stat.mtime - disk_stat.mtime) > 0
         if mtime_differs:
-            mtime_only_files.append(MtimeOnlyFile(display_path, index_stat, disk_stat))
+            only_mtime_differs_files.append(MtimeOnlyFile(display_path, index_stat, disk_stat))
 
     # * added files
-    for path, disk_stat in all_disk_files.items():
+    for path, disk_stat in all_disk_stats.items():
         if path not in all_index_stats:
             display_path = workspace.get_relative_path_to(path, override_root_path=root_dir)
             added_files.append(AddedFile(display_path, disk_stat))
 
-    if not (added_files or content_differs or mtime_only_files or deleted_files):
+    if not (added_files or content_differs or only_mtime_differs_files or deleted_files):
         logger.info("[bold green]All files are in sync — no differences found![/]")
         return
 
@@ -114,7 +114,6 @@ def warn_about_file_differences(datasets: Datasets, root_dir: Path) -> None:
     console.print("[bold white]FILE DIFFERENCES:[/]")
     console.print("[italic]  run [bold]rag_indexer[/bold] to update the index...[/]\n")
 
-    # Added files (not yet indexed)
     if added_files:
         added_files.sort(key=lambda x: x.current_stat.mtime, reverse=True)
         table = Table(width=100)
@@ -126,7 +125,6 @@ def warn_about_file_differences(datasets: Datasets, root_dir: Path) -> None:
             table.add_row(age_str, str(added_file.display_path))
         console.print(table)
 
-    # Stale files (hash mismatch)
     if content_differs:
         content_differs.sort(key=lambda x: x.stored_stat.mtime, reverse=True)
         table = Table(width=100)
@@ -148,18 +146,16 @@ def warn_about_file_differences(datasets: Datasets, root_dir: Path) -> None:
             table.add_row(last_indexed, str(stale_file.display_path), size_str, hash_str)
         console.print(table)
 
-    # Mtime-only files (hash matches, mtime differs)
-    if mtime_only_files:
-        mtime_only_files.sort(key=lambda x: x.stored_stat.mtime, reverse=True)
+    if only_mtime_differs_files:
+        only_mtime_differs_files.sort(key=lambda x: x.stored_stat.mtime, reverse=True)
         table = Table(width=100)
         table.add_column(justify="right", header="last indexed", header_style="not bold white italic")
         table.add_column(justify="left", header="only mtime differs, contents match")
-        for mtime_file in mtime_only_files:
+        for mtime_file in only_mtime_differs_files:
             last_indexed = format_age(time.time() - mtime_file.stored_stat.mtime)
             table.add_row(last_indexed, str(mtime_file.display_path))
         console.print(table)
 
-    # Deleted files
     if deleted_files:
         deleted_files.sort(key=lambda x: x.stored_stat.mtime, reverse=True)
         table = Table(width=100)
