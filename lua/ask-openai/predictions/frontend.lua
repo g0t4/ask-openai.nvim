@@ -90,14 +90,12 @@ function PredictionsFrontend.ask_for_prediction(params)
                 ---@return table sse_result The parsed SSE result.
                 local function extract_sse_result(sse_parsed)
                     if FimBackend.endpoint == CompletionsEndpoints.llamacpp_completions then
-                        -- FYI content parsing works, no reasoning parsing (see notes in parser logic):
                         return parse_sse_llamacpp_completions(sse_parsed)
-                    elseif FimBackend.endpoint == CompletionsEndpoints.v1_chat_completions then
-                        -- FYI fully works, including reasoning:
-                        return parse_sse_v1_chat_completions(sse_parsed)
-                    else
-                        error("Unsupported FIM endpoint: " .. tostring(FimBackend.endpoint))
                     end
+                    if FimBackend.endpoint == CompletionsEndpoints.v1_chat_completions then
+                        return parse_sse_v1_chat_completions(sse_parsed)
+                    end
+                    error("Unsupported FIM endpoint: " .. tostring(FimBackend.endpoint))
                 end
 
                 local sse_result = extract_sse_result(sse_parsed)
