@@ -155,7 +155,8 @@ async def main():
             return logging.INFO
         if args.warning:
             return logging.WARNING
-        return logging.INFO  # use info else very little is logged and that might be confusing/surprising... I've used info forever now as default so keep it
+        # use info else very little is logged and that might be confusing/surprising
+        return logging.INFO
 
     log_level = get_log_level()
     logging_fwk_to_console(level=log_level)
