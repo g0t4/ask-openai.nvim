@@ -72,8 +72,7 @@ def warn_about_file_differences(datasets: Datasets, root_dir: Path) -> None:
     for domain_files in files_by_domain.values():
         for file_path_str in domain_files:
             file_path = Path(file_path_str)
-            if file_path.is_file():
-                all_disk_files[file_path_str] = get_file_stat(file_path)
+            all_disk_files[file_path_str] = get_file_stat(file_path)
 
     added_files: list[AddedFile] = []
     stale_files: list[StaleFile] = []
