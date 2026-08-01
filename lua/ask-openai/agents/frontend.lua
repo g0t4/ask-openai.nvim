@@ -321,7 +321,7 @@ function AgentsFrontend.then_get_assistant_response(trace)
     local next_request = CurlRequestForTrace:new({
         body = trace:next_curl_request_body(),
         base_url = trace.base_url,
-        endpoint = CompletionsEndpoints.oai_v1_chat_completions,
+        endpoint = CompletionsEndpoints.v1_chat_completions,
         type = "agents",
     })
     log:luaify_trace("body:", next_request.body)
@@ -613,7 +613,7 @@ function AgentsFrontend.on_parsed_data_sse(sse_parsed)
     --   I added this guard based on review of on-on_streaming_delta_update_message_history that appears (IIRC) to be using /v1/chat/completions ONLY compatible fields
     local trace = AgentsFrontend.trace
     local request = trace.last_request
-    if request.endpoint ~= CompletionsEndpoints.oai_v1_chat_completions then
+    if request.endpoint ~= CompletionsEndpoints.v1_chat_completions then
         -- fail fast in this case
         -- TODO (when I need it)... you very likely can support other endpoints (see what you've done in both PredictionsFrontend and RewriteFrontend (both have some multi endpoint support)
         local message = "AgentsFrontend SSEs not supported for endpoint: " .. tostring(request.endpoint)

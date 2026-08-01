@@ -154,7 +154,7 @@ local function get_extract_generated_text_func(endpoint)
         end
     end
 
-    if endpoint == CompletionsEndpoints.oai_v1_chat_completions then
+    if endpoint == CompletionsEndpoints.v1_chat_completions then
         ---@type ExtractGeneratedTextFromChoiceFunction
         return function(choice)
             --- * /v1/chat/completions
@@ -494,7 +494,7 @@ local function ask_rewrite_command(opts)
         RewriteFrontend.last_request = CurlRequest:new({
             body = body_overrides,
             base_url = base_url,
-            endpoint = CompletionsEndpoints.oai_v1_chat_completions,
+            endpoint = CompletionsEndpoints.v1_chat_completions,
             type = "rewrite",
         })
         curl.spawn(RewriteFrontend.last_request, RewriteFrontend)
@@ -552,7 +552,7 @@ local function simulate_streaming_rewrite_command(opts)
     -- use this for timing and to test streaming diff!
 
     RewriteFrontend.abort_last_request()
-    RewriteFrontend.last_request = CurlRequest:new({ body = {}, base_url = "base", endpoint = CompletionsEndpoints.oai_v1_chat_completions, })
+    RewriteFrontend.last_request = CurlRequest:new({ body = {}, base_url = "base", endpoint = CompletionsEndpoints.v1_chat_completions, })
     vim.cmd("normal! 0V60jV") -- down 5 lines from current position, 2nd v ends selection ('< and '> marks now have start/end positions)
     vim.cmd("normal! 59k") -- put cursor back before next steps (since I used 5j to move down for end of selection range
     RewriteFrontend.selection = Selection.get_visual_selection_for_current_window()
@@ -623,7 +623,7 @@ end
 
 local function simulate_instant_rewrite_command(opts)
     RewriteFrontend.abort_last_request()
-    RewriteFrontend.last_request = CurlRequest:new({ body = {}, base_url = "base", endpoint = CompletionsEndpoints.oai_v1_chat_completions, })
+    RewriteFrontend.last_request = CurlRequest:new({ body = {}, base_url = "base", endpoint = CompletionsEndpoints.v1_chat_completions, })
     vim.cmd("normal! 0V6jV") -- down 5 lines from current position, 2nd v ends selection ('< and '> marks now have start/end positions)
     vim.cmd("normal! 5k") -- put cursor back before next steps (since I used 5j to move down for end of selection range
     RewriteFrontend.selection = Selection.get_visual_selection_for_current_window()

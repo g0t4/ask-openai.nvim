@@ -37,10 +37,10 @@ function FimBackend.set_fim_model(model)
             -- FYI can also do this with prefill on v1/chat/completions endpoint so this is not necessary to disable thinking
             FimBackend.endpoint = CompletionsEndpoints.llamacpp_completions
         else
-            FimBackend.endpoint = CompletionsEndpoints.oai_v1_chat_completions
+            FimBackend.endpoint = CompletionsEndpoints.v1_chat_completions
         end
     elseif model == models.GEMMA4 or model == models.GLM then
-        FimBackend.endpoint = CompletionsEndpoints.oai_v1_chat_completions
+        FimBackend.endpoint = CompletionsEndpoints.v1_chat_completions
     else
         FimBackend.endpoint = CompletionsEndpoints.llamacpp_completions -- * preferred for qwen2.5-coder
         -- /completions - raw prompt # https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md#post-completion-given-a-prompt-it-returns-the-predicted-completion

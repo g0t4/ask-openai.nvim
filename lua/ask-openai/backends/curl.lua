@@ -15,7 +15,7 @@ _G.CompletionsEndpoints = {
 
     -- OpenAI compatible:
     oai_v1_completions = "/v1/completions",
-    oai_v1_chat_completions = "/v1/chat/completions",
+    v1_chat_completions = "/v1/chat/completions",
 }
 
 ---@alias OnParsedSSE fun(sse_parsed: table)

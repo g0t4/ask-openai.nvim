@@ -89,7 +89,7 @@ describe("E2E - AskRewrite", function()
         rewrite_frontend.last_request = CurlRequest:new({
             body = {},
             base_url = "http://localhost:8012",
-            endpoint = CompletionsEndpoints.oai_v1_chat_completions,
+            endpoint = CompletionsEndpoints.v1_chat_completions,
             type = "rewrite",
         })
 
