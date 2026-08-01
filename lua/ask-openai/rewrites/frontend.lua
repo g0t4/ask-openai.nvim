@@ -673,7 +673,7 @@ local function retry_last_rewrite_command()
 
     -- schedule so it runs after any cancel logic that is scheduled
     vim.schedule(function()
-        -- for when the last command failed, try it again, i.e. you forgot to start ollama
+        -- for when the last command failed, try it again, i.e. you forgot to start server
         -- assume can just go back in history and grab it and run it
         -- by the way, AFAICT there's no way to search command history
         run_last_command_that_started_with('AskRewrite')

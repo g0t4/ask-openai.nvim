@@ -29,6 +29,4 @@ describe("test strip markdown from completion responses", function()
         local input_text = "This is some text\n```\nprint('Hello World')\n```\nfoo the bar"
         test_strip_md_from_completion(input_text, input_text)
     end)
-    -- PRN can I find a library/algo someone already setup to do this?
-    -- or can I use structured outputs with ollama? I know I can with vllm... that might help too
 end)
