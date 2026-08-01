@@ -143,16 +143,12 @@ def warn_about_file_differences(datasets: Datasets, config: RagConfig, root_dir:
         table = Table(width=100)
         table.add_column(justify="right", header="age", header_style="not bold white italic")
         table.add_column(justify="left", header="added (not yet indexed)")
-        if verbose:
-            table.add_column(justify="left", header="hidden")
+        table.add_column(justify="left", header="hidden")
         for added_file in added_files:
             file_age = time.time() - added_file.current_stat.mtime
             age_str = format_age(file_age)
-            if verbose:
-                hidden = hide_reason_by_file_path.get(added_file.path)
-                table.add_row(age_str, str(added_file.display_path), hidden)
-            else:
-                table.add_row(age_str, str(added_file.display_path))
+            hidden = hide_reason_by_file_path.get(added_file.path)
+            table.add_row(age_str, str(added_file.display_path), hidden)
         console.print(table)
 
     if content_differs:
