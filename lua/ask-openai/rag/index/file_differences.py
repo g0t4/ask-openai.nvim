@@ -67,7 +67,8 @@ def warn_about_file_differences(datasets: Datasets, config: RagConfig, root_dir:
 
     HIDE_NOT_IN_CONFIG = "NOT_IN_CONFIG"
     HIDE_IGNORED = "IGNORED"
-    show_hidden = False
+    show_hidden = logger.isEnabledFor(logging.DEBUG)
+
     # * files on disk *
     files_by_domain = find_files_by_semantic_domain(root_dir)
     all_disk_stats: dict[str, FileStat] = {}
