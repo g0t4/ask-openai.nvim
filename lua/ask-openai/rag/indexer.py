@@ -55,12 +55,12 @@ class ProgramArgs:
     level: int = 0
     domain: str | None = None
 
-    def is_only_one_domain(self) -> bool:
+    def limited_to_one_domain(self) -> bool:
         return self.domain is not None
 
     def get_allowed_domains(self, default_allowed_domains: set[str]) -> set[str]:
         """Return the effective set of domains to index based on command-line args."""
-        if self.is_only_one_domain():
+        if self.limited_to_one_domain():
             allowed_domains: set[str] = {self.domain}
             logger.info(f"Indexing ONLY THIS semantic domain: {allowed_domains}")
             return allowed_domains
@@ -103,7 +103,7 @@ class IncrementalRAGIndexer:
             await self.build_index(domain, files)
 
         # Only flag/trash when doing a full reindex (no --domain override)
-        if not self.program_args.is_only_one_domain():
+        if not self.program_args.limited_to_one_domain():
             self.flag_unindexed_domains(allowed_domains, files_by_domain)
             self.trash_vestigial_domains(allowed_domains)
         await signal_hotpath_done_in_background()
