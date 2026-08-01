@@ -3,13 +3,14 @@ local log = require("devtools.logs.logger"):universal()
 -- logic for parsing SSEs from all completion backends
 
 ---@param sse OpenAIChatCompletionChunk
-function parse_sse_oai_chat_completions(sse)
+function parse_sse_v1_chat_completions(sse)
     local content = ""
     local reasoning_content = ""
     local done = false
     local finish_reason = nil
     if sse.choices and sse.choices[1] then
         local first_choice = sse.choices[1]
+
         content = first_choice.delta.content
         if content == nil or content == vim.NIL then
             -- content == vim.NIL => with llama-server the first response is content: null b/c it is setting the role to asssistant (maybe to do with roles/channels in harmony parser)... doesn't matter, just ignore it
