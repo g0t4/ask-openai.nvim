@@ -9,6 +9,7 @@ from config.domains import find_files_by_semantic_domain
 from index.storage import Datasets, FileStat
 from index.workspace import RagConfig, get_relative_path_to
 from chunks.chunker import get_file_stat
+from index.ignores import _is_gitignored
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +27,7 @@ def format_age(age_seconds: float) -> str:
 @dataclass(frozen=True)
 class AddedFile:
     """A file present in the repo but not yet indexed."""
+    path: str
     display_path: Path
     current_stat: FileStat
 
@@ -33,6 +35,7 @@ class AddedFile:
 @dataclass(frozen=True)
 class StaleFile:
     """An indexed file whose stored hash differs from current hash."""
+    path: str
     display_path: Path
     stored_stat: FileStat
     current_stat: FileStat
@@ -41,6 +44,7 @@ class StaleFile:
 @dataclass(frozen=True)
 class MtimeOnlyFile:
     """An indexed file with only mtime difference (hash matches)."""
+    path: str
     display_path: Path
     stored_stat: FileStat
     current_stat: FileStat
@@ -49,6 +53,7 @@ class MtimeOnlyFile:
 @dataclass(frozen=True)
 class DeletedFile:
     """An indexed file that no longer exists on disk."""
+    path: str
     display_path: Path
     stored_stat: FileStat
 
@@ -60,14 +65,25 @@ def warn_about_file_differences(datasets: Datasets, config: RagConfig, root_dir:
     Reports: added (unindexed), stale (hash mismatch), mtime-only, and deleted files.
     """
 
+    HIDE_NOT_IN_CONFIG = "NOT_IN_CONFIG"
+    HIDE_IGNORED = "IGNORED"
     # * files on disk *
     files_by_domain = find_files_by_semantic_domain(root_dir)
     all_disk_stats: dict[str, FileStat] = {}
+    hide_reason_by_file_path: dict[str, str] = {}
     for domain, files in files_by_domain.items():
-        if domain not in config.allowed_semantic_domains:
-            # TODO not allowed => flag if in index and no longer allowed?
-            continue
         for path in files:
+            # TODO revisit _is_file_ignored_allchecks and cleanup mess? can I reuse same check across consumers? should I?
+            #   PRN might split out lookup semantic domain from check config => that way I can lookup domain in different ways
+            if domain not in config.allowed_semantic_domains:
+                hide_reason_by_file_path[path] = HIDE_NOT_IN_CONFIG
+                # PRN can bulk mark entire domain as hidden instead of individual files
+                #    maybe then show those files by domain?
+                # continue # TODO remove if I am happy with showing these too
+            if _is_gitignored(path, root_dir, config):
+                hide_reason_by_file_path[path] = "IGNORED"
+                # continue # TODO remove if I am happy with showing these too
+
             all_disk_stats[path] = get_file_stat(path)
 
     # * files in index *
@@ -86,7 +102,7 @@ def warn_about_file_differences(datasets: Datasets, config: RagConfig, root_dir:
 
         # * deleted files
         if path not in all_disk_stats:
-            deleted_files.append(DeletedFile(display_path, index_stat))
+            deleted_files.append(DeletedFile(path, display_path, index_stat))
             continue
 
         disk_stat = all_disk_stats[path]
@@ -94,19 +110,19 @@ def warn_about_file_differences(datasets: Datasets, config: RagConfig, root_dir:
         # * content differs
         hash_differs = disk_stat.hash != index_stat.hash
         if hash_differs:
-            content_differs.append(StaleFile(display_path, index_stat, disk_stat))
+            content_differs.append(StaleFile(path, display_path, index_stat, disk_stat))
             continue
 
         # * only mtime differs
         mtime_differs = abs(index_stat.mtime - disk_stat.mtime) > 0
         if mtime_differs:
-            only_mtime_differs_files.append(MtimeOnlyFile(display_path, index_stat, disk_stat))
+            only_mtime_differs_files.append(MtimeOnlyFile(path, display_path, index_stat, disk_stat))
 
     # * added files
     for path, disk_stat in all_disk_stats.items():
         if path not in all_index_stats:
             display_path = get_relative_path_to(path, override_root_path=root_dir)
-            added_files.append(AddedFile(display_path, disk_stat))
+            added_files.append(AddedFile(path, display_path, disk_stat))
 
     if not (added_files or content_differs or only_mtime_differs_files or deleted_files):
         logger.info("[bold green]All files are in sync — no differences found![/]")
@@ -122,10 +138,12 @@ def warn_about_file_differences(datasets: Datasets, config: RagConfig, root_dir:
         table = Table(width=100)
         table.add_column(justify="right", header="age", header_style="not bold white italic")
         table.add_column(justify="left", header="added (not yet indexed)")
+        table.add_column(justify="left", header="hidden")
         for added_file in added_files:
+            hidden = hide_reason_by_file_path.get(added_file.path)
             file_age = time.time() - added_file.current_stat.mtime
             age_str = format_age(file_age)
-            table.add_row(age_str, str(added_file.display_path))
+            table.add_row(age_str, str(added_file.display_path), hidden)
         console.print(table)
 
     if content_differs:
@@ -135,6 +153,7 @@ def warn_about_file_differences(datasets: Datasets, config: RagConfig, root_dir:
         table.add_column(justify="left", header="path")
         table.add_column(justify="left", header="size")
         table.add_column(justify="left", header="hash")
+        table.add_column(justify="left", header="hidden")
         for stale_file in content_differs:
             last_indexed = format_age(time.time() - stale_file.stored_stat.mtime)
 
@@ -145,8 +164,9 @@ def warn_about_file_differences(datasets: Datasets, config: RagConfig, root_dir:
             else:
                 size_str = ""
 
+            hidden = hide_reason_by_file_path.get(stale_file.path)
             hash_str = f"{stale_file.stored_stat.hash[:8]}→{stale_file.current_stat.hash[:8]}"
-            table.add_row(last_indexed, str(stale_file.display_path), size_str, hash_str)
+            table.add_row(last_indexed, str(stale_file.display_path), size_str, hash_str, hidden)
         console.print(table)
 
     if only_mtime_differs_files:
@@ -154,9 +174,11 @@ def warn_about_file_differences(datasets: Datasets, config: RagConfig, root_dir:
         table = Table(width=100)
         table.add_column(justify="right", header="last indexed", header_style="not bold white italic")
         table.add_column(justify="left", header="only mtime differs, contents match")
+        table.add_column(justify="left", header="hidden")
         for mtime_file in only_mtime_differs_files:
+            hidden = hide_reason_by_file_path.get(mtime_file.path)
             last_indexed = format_age(time.time() - mtime_file.stored_stat.mtime)
-            table.add_row(last_indexed, str(mtime_file.display_path))
+            table.add_row(last_indexed, str(mtime_file.display_path), hidden)
         console.print(table)
 
     if deleted_files:
@@ -164,7 +186,9 @@ def warn_about_file_differences(datasets: Datasets, config: RagConfig, root_dir:
         table = Table(width=100)
         table.add_column(justify="right", header="last indexed", header_style="not bold white italic")
         table.add_column(justify="left", header="deleted files")
+        table.add_column(justify="left", header="hidden")
         for deleted_file in deleted_files:
+            hidden = hide_reason_by_file_path.get(deleted_file.path)
             last_indexed = format_age(time.time() - deleted_file.stored_stat.mtime)
-            table.add_row(last_indexed, str(deleted_file.display_path))
+            table.add_row(last_indexed, str(deleted_file.display_path), hidden)
         console.print(table)
