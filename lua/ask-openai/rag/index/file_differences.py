@@ -62,12 +62,12 @@ def warn_about_file_differences(datasets: Datasets, root_dir: Path) -> None:
     source_code_dir = root_dir
     files_by_domain = find_files_by_semantic_domain(source_code_dir)
 
-    # Build a set of all indexed file paths across all domains
-    indexed_paths: dict[str, FileStat] = {}
+    # Build a set of all indexed file stats
+    all_indexed_stats: dict[str, FileStat] = {}
     for dataset in datasets.all_datasets.values():
-        indexed_paths.update(dataset.stat_by_path)
+        all_indexed_stats.update(dataset.stat_by_path)
 
-    # Build a set of all actual files on disk grouped by domain
+    # Build a set of all actual files
     all_disk_files: dict[str, FileStat] = {}
     for domain_files in files_by_domain.values():
         for file_path_str in domain_files:
@@ -81,7 +81,7 @@ def warn_about_file_differences(datasets: Datasets, root_dir: Path) -> None:
     deleted_files: list[DeletedFile] = []
 
     # Check indexed files against disk (find stale, mtime-only, and deleted)
-    for path_str, stored_stat in indexed_paths.items():
+    for path_str, stored_stat in all_indexed_stats.items():
         file_path = Path(path_str)
         display_path = workspace.get_relative_path_to(file_path, override_root_path=root_dir)
 
@@ -101,7 +101,7 @@ def warn_about_file_differences(datasets: Datasets, root_dir: Path) -> None:
 
     # Check disk files against index (find added/unindexed)
     for path_str, current_stat in all_disk_files.items():
-        if path_str not in indexed_paths:
+        if path_str not in all_indexed_stats:
             file_path = Path(path_str)
             display_path = workspace.get_relative_path_to(file_path, override_root_path=root_dir)
             added_files.append(AddedFile(display_path, current_stat))
