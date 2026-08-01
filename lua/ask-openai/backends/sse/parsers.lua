@@ -27,6 +27,80 @@ function parse_sse_v1_chat_completions(sse)
             reasoning_content = ""
         end
 
+        -- PRN parse logprobs
+        -- * post_sampling_probs = TRUE =>
+        --
+        --     material diff is returning probability (0 to 1)
+        --       also truncates any tokens that round to zero probability
+        --       whereas below logprobs will show those
+        --
+        --     choices[1].logprobs.content.{prob,top_probs}
+        --     top_probs[1].prob
+        --
+        --     logprobs = {
+        --       content = { {
+        --           bytes = { 32, 105, 110, 115, 101, 114, 116 },
+        --           id = 10898,
+        --           prob = 0.95149838924408,
+        --           token = " insert",
+        --           top_probs = { {
+        --               bytes = { 32, 105, 110, 115, 101, 114, 116 },
+        --               id = 10898,
+        --               prob = 0.95149838924408,
+        --               token = " insert"
+        --             }, {
+        --               bytes = { 32, 97, 100, 100 },
+        --               id = 1147,
+        --               prob = 0.048501636832952,
+        --               token = " add"
+        --             } }
+        --         } }
+        --     }
+        --
+        --
+        -- * post_sampling_probs = FALSE =>
+        --
+        --     material diff is returning logits (IIAC -infinity to 0)
+        --        e^0 == 1 (100% probability)
+        --
+        --     choices[1].logprobs.content.{logprob,top_logprobs}
+        --     top_logprobs[1].logprob
+        --
+        --     logprobs = {
+        --         content = { {
+        --             bytes = { 32, 105, 110, 115, 101, 114, 116 },
+        --             id = 10898,
+        --             logprob = -0.020740794017911,
+        --             token = " insert",
+        --             top_logprobs = { {
+        --                 bytes = { 32, 105, 110, 115, 101, 114, 116 },
+        --                 id = 10898,
+        --                 logprob = -0.020740794017911,
+        --                 token = " insert"
+        --               }, {
+        --                 bytes = { 32, 97, 100, 100 },
+        --                 id = 1147,
+        --                 logprob = -4.3584332466125,
+        --                 token = " add"
+        --               }, {
+        --                 bytes = { 32, 102, 105, 108, 108 },
+        --                 id = 6954,
+        --                 logprob = -5.1742367744446,
+        --                 token = " fill"
+        --               }, {
+        --                 bytes = { 32, 115, 117, 103, 103, 101, 115, 116 },
+        --                 id = 6108,
+        --                 logprob = -6.732141494751,
+        --                 token = " suggest"
+        --               }, {
+        --                 bytes = { 32, 114, 101, 112, 108, 97, 99, 101 },
+        --                 id = 13284,
+        --                 logprob = -7.2061409950256,
+        --                 token = " replace"
+        --               } }
+        --           } }
+        --       }
+
         finish_reason = first_choice.finish_reason
         done = finish_reason ~= nil and finish_reason ~= vim.NIL -- vim.NIL == JSON null
     end

@@ -80,13 +80,15 @@ function FimBackend:body_for()
         max_tokens = max_tokens, -- works for: llama-server /completions, OpenAI's compat endpoints
         -- n_predict = max_tokens, -- llama-server specific (avoid for consistency)
 
+
         options = {}, -- empty so I can set stop_tokens below
 
-        -- logprobs = true,
+
+        logprobs = true,
         -- post_sampling_probs = true, -- map to 0 to 1.0 (appears to truncate anything that ~0 for probability
         --  whereas if you turn off post_sampling_probs=false => will include very low probability tokens too and not normalize values
-        -- top_logprobs =  5,
-        n_cmpl = 3, -- OMFG yes I want a toggle to show them too and let me alt+1 to take first, 2 for second etc!
+        top_logprobs =  5,
+        n_cmpl = 1, -- OMFG yes I want a toggle to show them too and let me alt+1 to take first, 2 for second etc!
         -- PRN
         -- TODO! setup n_cmpl -- are these in parallel if fits context size?
 
