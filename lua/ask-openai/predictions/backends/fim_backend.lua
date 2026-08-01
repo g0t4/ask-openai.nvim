@@ -79,9 +79,8 @@ function FimBackend:body_for()
         -- * MAX tokens (very important)
         max_tokens = max_tokens, -- works for: llama-server /completions, OpenAI's compat endpoints
         -- n_predict = max_tokens, -- llama-server specific (avoid for consistency)
-        -- options.num_predict = max_tokens, -- ollama's /api/generate
 
-        options = {}, -- empty so I can set stop_tokens below (IIRC for ollama only?)
+        options = {}, -- empty so I can set stop_tokens below
 
         -- logprobs = true,
         -- post_sampling_probs = true, -- map to 0 to 1.0 (appears to truncate anything that ~0 for probability
@@ -111,12 +110,9 @@ function FimBackend:body_for()
 
         -- codellama uses (codellama.EOT) that seems to not be set as param in modelfile (at least for FIM?)
         --   without this change you will see (codellama.EOT) in code at end of completions
-        -- ollama show codellama:7b-code-q8_0 --parameters # => no stop param
         body.options.stop = { meta.codellama.sentinel_tokens.EOT }
 
         error("review FIM requirements for codellama, make sure you are using expected template, it used to work with qwen like FIM but I changed that to repo level now and would need to test it")
-        -- also ollama warns about:
-        --    level=WARN source=types.go:512 msg="invalid option provided" option=rope_frequency_base
     elseif string.find(model, "Mellum") then
         -- body.options.stop = {
         --     fim.mellum.sentinel_tokens.EOS_TOKEN,
@@ -201,11 +197,6 @@ function FimBackend:body_for()
         builder = function()
             return fim.codestral.get_fim_prompt(self)
         end
-        -- TODO? DROP temperature per:
-        --   https://github.com/ollama/ollama/issues/4709
-        --   make it more repeatable?
-        -- body.options.temperature = 0.0
-        -- body.options.stop = { fim.codestral.sentinel_tokens.EOS_TOKEN }
     elseif string.find(model, "deepseek-coder-v2", nil, true) then
         builder = function()
             return fim.deepseek_coder_v2.get_fim_prompt(self)
