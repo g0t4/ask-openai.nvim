@@ -70,9 +70,8 @@ def warn_about_file_differences(datasets: Datasets, root_dir: Path) -> None:
     # Build a set of all actual files
     all_disk_files: dict[str, FileStat] = {}
     for domain_files in files_by_domain.values():
-        for file_path_str in domain_files:
-            file_path = Path(file_path_str)
-            all_disk_files[file_path_str] = get_file_stat(file_path)
+        for path in domain_files:
+            all_disk_files[path] = get_file_stat(path)
 
     added_files: list[AddedFile] = []
     content_differs: list[StaleFile] = []
@@ -81,8 +80,7 @@ def warn_about_file_differences(datasets: Datasets, root_dir: Path) -> None:
 
     # * indexed files comparison
     for path_str, index_stat in all_index_stats.items():
-        file_path = Path(path_str)
-        display_path = workspace.get_relative_path_to(file_path, override_root_path=root_dir)
+        display_path = workspace.get_relative_path_to(path_str, override_root_path=root_dir)
 
         # * deleted files
         if path_str not in all_disk_files:
@@ -105,8 +103,7 @@ def warn_about_file_differences(datasets: Datasets, root_dir: Path) -> None:
     # * added files
     for path_str, disk_stat in all_disk_files.items():
         if path_str not in all_index_stats:
-            file_path = Path(path_str)
-            display_path = workspace.get_relative_path_to(file_path, override_root_path=root_dir)
+            display_path = workspace.get_relative_path_to(path_str, override_root_path=root_dir)
             added_files.append(AddedFile(display_path, disk_stat))
 
     if not (added_files or content_differs or mtime_only_files or deleted_files):
