@@ -101,7 +101,7 @@ function PredictionsFrontend.ask_for_prediction(params)
                 local sse_fields = _extract_sse_fields(sse_parsed)
 
                 if sse_fields.content or sse_fields.reasoning_content then
-                    this_prediction:add_chunk_to_prediction(sse_fields.content, sse_fields.reasoning_content)
+                    this_prediction:add_chunk_to_prediction(sse_fields)
                 end
 
                 if sse_fields.done then

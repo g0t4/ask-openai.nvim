@@ -62,9 +62,12 @@ function Prediction.new(params)
     return self
 end
 
-function Prediction:add_chunk_to_prediction(chunk, reasoning_content)
-    if chunk then
-        self.prediction = self.prediction .. chunk
+---@param sse_fields SseFieldsResult
+function Prediction:add_chunk_to_prediction(sse_fields)
+    local content = sse_fields.content
+    local reasoning_content = sse_fields.reasoning_content
+    if content then
+        self.prediction = self.prediction .. content
     end
     if reasoning_content then
         table.insert(self.reasoning_chunks, reasoning_content)

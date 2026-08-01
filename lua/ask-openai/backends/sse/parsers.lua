@@ -2,7 +2,7 @@ local log = require("devtools.logs.logger"):universal()
 
 -- logic for parsing SSEs from all completion backends
 
----@class SseParseResult
+---@class SseFieldsResult
 ---@field content string The content chunk from this SSE
 ---@field done boolean Whether this is the final SSE (generation complete)
 ---@field finish_reason string|nil Reason why generation stopped (e.g., "stop", "length", "eos")
@@ -101,7 +101,7 @@ function get_probs(choice)
 end
 
 ---@param sse OpenAIChatCompletionChunk
----@return SseParseResult
+---@return SseFieldsResult
 function parse_sse_v1_chat_completions(sse)
     local content = ""
     local reasoning_content = ""
@@ -142,7 +142,7 @@ function parse_sse_v1_chat_completions(sse)
 end
 
 ---@param sse LlamaCppCompletionSSE
----@return SseParseResult
+---@return SseFieldsResult
 function parse_sse_llamacpp_completions(sse)
     -- FYI response_fields limits fields per SSE...
     --    I set it to stop prompt and generation_settings on final SSE
