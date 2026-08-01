@@ -362,7 +362,7 @@ def load_all_domains(dot_rag_dir: Path) -> Datasets:
     total_chunks = 0
     total_vectors = 0
     total_files = 0
-    for dir in domain_dirs:
+    for dir in sorted(domain_dirs):
         domain = dir.name
         dataset = load_domain(dot_rag_dir, domain)
         datasets[domain] = dataset
