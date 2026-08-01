@@ -87,14 +87,14 @@ def warn_about_file_differences(datasets: Datasets, root_dir: Path) -> None:
             continue
 
         disk_stat = all_disk_stats[path]
-        hash_differs = disk_stat.hash != index_stat.hash
 
         # * content differs
+        hash_differs = disk_stat.hash != index_stat.hash
         if hash_differs:
             content_differs.append(StaleFile(display_path, index_stat, disk_stat))
             continue
 
-        # * mtime differes
+        # * only mtime differs
         mtime_differs = abs(index_stat.mtime - disk_stat.mtime) > 0
         if mtime_differs:
             only_mtime_differs_files.append(MtimeOnlyFile(display_path, index_stat, disk_stat))
