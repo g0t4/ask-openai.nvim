@@ -75,37 +75,41 @@ def warn_about_file_differences(datasets: Datasets, root_dir: Path) -> None:
             all_disk_files[file_path_str] = get_file_stat(file_path)
 
     added_files: list[AddedFile] = []
-    stale_files: list[StaleFile] = []
+    content_differs: list[StaleFile] = []
     mtime_only_files: list[MtimeOnlyFile] = []
     deleted_files: list[DeletedFile] = []
 
-    # Check indexed files against disk (find stale, mtime-only, and deleted)
+    # * indexed files comparison
     for path_str, index_stat in all_index_stats.items():
         file_path = Path(path_str)
         display_path = workspace.get_relative_path_to(file_path, override_root_path=root_dir)
 
+        # * deleted files
         if path_str not in all_disk_files:
             deleted_files.append(DeletedFile(display_path, index_stat))
             continue
 
-        current_stat = all_disk_files[path_str]
-        hash_differs = current_stat.hash != index_stat.hash
+        disk_stat = all_disk_files[path_str]
+        hash_differs = disk_stat.hash != index_stat.hash
 
+        # * content differs
         if hash_differs:
-            stale_files.append(StaleFile(display_path, index_stat, current_stat))
-        else:
-            mtime_differs = abs(index_stat.mtime - current_stat.mtime) > 0
-            if mtime_differs:
-                mtime_only_files.append(MtimeOnlyFile(display_path, index_stat, current_stat))
+            content_differs.append(StaleFile(display_path, index_stat, disk_stat))
+            continue
 
-    # Check disk files against index (find added/unindexed)
-    for path_str, current_stat in all_disk_files.items():
+        # * mtime differes
+        mtime_differs = abs(index_stat.mtime - disk_stat.mtime) > 0
+        if mtime_differs:
+            mtime_only_files.append(MtimeOnlyFile(display_path, index_stat, disk_stat))
+
+    # * added files
+    for path_str, disk_stat in all_disk_files.items():
         if path_str not in all_index_stats:
             file_path = Path(path_str)
             display_path = workspace.get_relative_path_to(file_path, override_root_path=root_dir)
-            added_files.append(AddedFile(display_path, current_stat))
+            added_files.append(AddedFile(display_path, disk_stat))
 
-    if not (added_files or stale_files or mtime_only_files or deleted_files):
+    if not (added_files or content_differs or mtime_only_files or deleted_files):
         logger.info("[bold green]All files are in sync — no differences found![/]")
         return
 
@@ -127,14 +131,14 @@ def warn_about_file_differences(datasets: Datasets, root_dir: Path) -> None:
         console.print(table)
 
     # Stale files (hash mismatch)
-    if stale_files:
-        stale_files.sort(key=lambda x: x.stored_stat.mtime, reverse=True)
+    if content_differs:
+        content_differs.sort(key=lambda x: x.stored_stat.mtime, reverse=True)
         table = Table(width=100)
         table.add_column(justify="right", header="last indexed", header_style="not bold white italic")
         table.add_column(justify="left", header="path")
         table.add_column(justify="left", header="size")
         table.add_column(justify="left", header="hash")
-        for stale_file in stale_files:
+        for stale_file in content_differs:
             last_indexed = format_age(time.time() - stale_file.stored_stat.mtime)
 
             if stale_file.current_stat.size != stale_file.stored_stat.size:
