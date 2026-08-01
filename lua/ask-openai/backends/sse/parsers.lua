@@ -119,13 +119,12 @@ function parse_sse_v1_chat_completions(sse)
         end
 
         prob = get_probs(first_choice)
-        log:info("prob", prob)
-
+        -- log:info("prob", prob)
 
         finish_reason = first_choice.finish_reason
         done = finish_reason ~= nil and finish_reason ~= vim.NIL -- vim.NIL == JSON null
     end
-    return content, done, finish_reason, reasoning_content
+    return content, done, finish_reason, reasoning_content, prob
 end
 
 function parse_sse_llamacpp_completions(sse)
@@ -146,5 +145,7 @@ function parse_sse_llamacpp_completions(sse)
     --
     -- Going forward, use /completions for RAW only
     -- use /v1/chat/completions for any chat template conversations
-    return sse.content, sse.stop, sse.stop_type
+    local reasoning = nil -- FYI not likely to ever use this
+    local prob = nil -- TODO support this for qwen2.5coder/gptoss_raw?
+    return sse.content, sse.stop, sse.stop_type, reasoning, prob
 end
