@@ -50,8 +50,8 @@ def _map_allowed_file_extensions_to_semantic_domains(raw_includes: set[str]) -> 
             verbatim_domains.add(include)
 
     unified_domains = domains_from_extensions | verbatim_domains
-    logger.info(f"Domains from extensions: {sorted(domains_from_extensions)}")
-    logger.info(f"Verbatim domains: {sorted(verbatim_domains)}")
+    # logger.info(f"Domains from extensions: {sorted(domains_from_extensions)}")
+    # logger.info(f"Verbatim domains: {sorted(verbatim_domains)}")
     return unified_domains
 
 @dataclass
