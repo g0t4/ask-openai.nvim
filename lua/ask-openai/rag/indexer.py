@@ -55,8 +55,16 @@ class ProgramArgs:
     level: int = 0
     domain: str | None = None
 
-    def is_only_one_domain(self):
+    def is_only_one_domain(self) -> bool:
         return self.domain is not None
+
+    def get_allowed_domains(self, default_allowed_domains: set[str]) -> set[str]:
+        """Return the effective set of domains to index based on command-line args."""
+        if self.is_only_one_domain():
+            allowed_domains: set[str] = {self.domain}
+            logger.info(f"Indexing ONLY THIS semantic domain: {allowed_domains}")
+            return allowed_domains
+        return default_allowed_domains
 
 
 def trash_dir(directory):
@@ -84,10 +92,7 @@ class IncrementalRAGIndexer:
             logger.warning(f"RAG indexing disabled in {self.source_code_dir / '.rag.yaml'}, ")
             return
 
-        allowed_domains = self.config.allowed_semantic_domains
-        if self.program_args.is_only_one_domain():
-            allowed_domains: set[str] = {self.program_args.domain}
-            logger.info(f"Indexing ONLY THIS semantic domain: {allowed_domains}")
+        allowed_domains = self.program_args.get_allowed_domains(self.config.allowed_semantic_domains)
 
         files_by_domain = find_files_by_semantic_domain(self.source_code_dir)
 
