@@ -60,18 +60,18 @@ def warn_about_file_differences(datasets: Datasets, root_dir: Path) -> None:
     Reports: added (unindexed), stale (hash mismatch), mtime-only, and deleted files.
     """
     source_code_dir = root_dir
+
+    # * files on disk *
     files_by_domain = find_files_by_semantic_domain(source_code_dir)
-
-    # Build a set of all indexed file stats
-    all_index_stats: dict[str, FileStat] = {}
-    for dataset in datasets.all_datasets.values():
-        all_index_stats.update(dataset.stat_by_path)
-
-    # Build a set of all actual files
     all_disk_files: dict[str, FileStat] = {}
     for domain_files in files_by_domain.values():
         for path in domain_files:
             all_disk_files[path] = get_file_stat(path)
+
+    # * files in index *
+    all_index_stats: dict[str, FileStat] = {}
+    for dataset in datasets.all_datasets.values():
+        all_index_stats.update(dataset.stat_by_path)
 
     added_files: list[AddedFile] = []
     content_differs: list[StaleFile] = []
