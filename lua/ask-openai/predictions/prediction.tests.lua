@@ -160,7 +160,6 @@ describe("Prediction fixed display", function()
 
         local prediction = Prediction.new({})
         prediction.buffer = bufnr
-        prediction.prediction_cache.completion = "    return x" -- FIM completion with repeated prefix
 
         -- Act: redraw extmarks (this is called when chunks arrive)
         prediction:fix_fim_and_redraw_extmarks()
@@ -176,7 +175,6 @@ describe("Prediction fixed display", function()
 
         local prediction = Prediction.new({})
         prediction.buffer = bufnr
-        prediction.prediction_cache.completion = "return x" -- No prefix repetition
 
         -- Act: redraw extmarks
         prediction:fix_fim_and_redraw_extmarks()

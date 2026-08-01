@@ -7,6 +7,7 @@ local CursorController = require "ask-openai.predictions.cursor_controller"
 ---@field id integer
 ---@field buffer integer
 ---@field prediction string
+---@field all_sses SseFieldsResult[]
 ---@field cursor_prefix: string,
 ---@field first_line: string
 ---@field rest_of_lines: string[]
@@ -50,9 +51,7 @@ function Prediction.new(params)
     self.reasoning_chunks = {}
     self.start_time = os.time()
     self.prediction = ""
-    self.prediction_cache = {
-        cursor_prefix = nil, -- make explicit
-    }
+    self.all_sses = {}
 
     params = params or {}
     self.apply_template_only = params.apply_template_only
@@ -64,6 +63,7 @@ end
 
 ---@param sse_fields SseFieldsResult
 function Prediction:add_chunk_sse(sse_fields)
+    table.insert(self.all_sses, sse_fields)
     if sse_fields.content then
         self.prediction = self.prediction .. sse_fields.content
     end
