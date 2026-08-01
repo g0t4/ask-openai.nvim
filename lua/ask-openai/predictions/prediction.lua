@@ -64,10 +64,9 @@ end
 
 ---@param sse_fields SseFieldsResult
 function Prediction:add_chunk_sse(sse_fields)
-    local content = sse_fields.content
     local reasoning_content = sse_fields.reasoning_content
-    if content then
-        self.prediction = self.prediction .. content
+    if sse_fields.content then
+        self.prediction = self.prediction .. sse_fields.content
     end
     if reasoning_content then
         table.insert(self.reasoning_chunks, reasoning_content)
