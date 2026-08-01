@@ -30,25 +30,6 @@ function parse_sse_oai_chat_completions(sse)
     return content, done, finish_reason, reasoning_content
 end
 
-function parse_sse_ollama_api_chat(sse)
-    -- vim.print(sse)
-    --   created_at = "2025-08-06T03:41:18.754207861Z",
-    --   done = true,
-    --   done_reason = "load",
-    --   message = TxChatMessage:assistant("")
-
-    -- it has "thinking"!
-    -- gpt-oss:
-    --   "message":{"role":"assistant","content":"","thinking":"   "},"done":false}
-
-    local message = ""
-    if sse.message then
-        message = sse.message.content
-    end
-    -- TODO reasoning_content
-    return message, sse.done, sse.done_reason
-end
-
 function parse_sse_llamacpp_completions(sse)
     -- FYI response_fields limits fields per SSE...
     --    I set it to stop prompt and generation_settings on final SSE
@@ -62,14 +43,4 @@ function parse_sse_llamacpp_completions(sse)
 
     -- ?? reasoning_content ... is there a way for this to be parsed in legacy completions endpoint?
     return sse.content, sse.stop, sse.stop_type
-end
-
-function parse_sse_ollama_api_generate(sse)
-    -- *** examples /api/generate:
-    --    {"model":"qwen2.5-coder:3b","created_at":"2025-01-26T11:24:56.1915236Z","response":"\n","done":false}
-    --  done example:
-    --    {"model":"qwen2.5-coder:3b","created_at":"2025-01-26T11:24:56.2800621Z","response":"","done":true,"done_reason":"stop","total_duration":131193100,"load_duration":16550700,"prompt_eval_count":19,"prompt_eval_duration":5000000,"eval_count":12,"eval_duration":106000000}
-
-    -- TODO reasoning_content
-    return sse.response, sse.done, sse.done_reason
 end

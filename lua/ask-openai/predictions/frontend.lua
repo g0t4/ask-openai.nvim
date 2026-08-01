@@ -92,12 +92,6 @@ function PredictionsFrontend.ask_for_prediction(params)
                 elseif FimBackend.endpoint == CompletionsEndpoints.oai_v1_chat_completions then
                     -- FYI fully works, including reasoning:
                     chunk, done, done_reason, reasoning_content = parse_sse_oai_chat_completions(sse_parsed)
-                elseif FimBackend.endpoint == CompletionsEndpoints.ollama_api_chat then
-                    -- FYI not a priority to support beyond what it does now:
-                    chunk, done, done_reason = parse_sse_ollama_api_chat(sse_parsed)
-                elseif FimBackend.endpoint == CompletionsEndpoints.ollama_api_generate then
-                    -- FYI not a priority to support beyond what it does now:
-                    chunk, done, done_reason = parse_sse_ollama_api_generate(sse_parsed)
                 else
                     error("Unsupported FIM endpoint: " .. tostring(FimBackend.endpoint))
                 end

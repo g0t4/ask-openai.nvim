@@ -45,12 +45,6 @@ function FimBackend.set_fim_model(model)
         FimBackend.endpoint = CompletionsEndpoints.llamacpp_completions -- * preferred for qwen2.5-coder
         -- /completions - raw prompt # https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md#post-completion-given-a-prompt-it-returns-the-predicted-completion
     end
-
-    -- * ollama
-    -- FimBackend.url = "http://ollama:11434"
-    -- FimBackend.endpoint = CompletionsEndpoints.ollama_api_generate -- raw prompt: qwen2.5-coder(ollama)
-    -- FimBackend.endpoint = CompletionsEndpoints.ollama_api_chat -- gpt-oss(ollama works)
-    -- FimBackend.endpoint = CompletionsEndpoints.oai_v1_chat_completions -- gpt-oss(ollama works)
 end
 
 ---@param ps_chunk PrefixSuffixChunk
