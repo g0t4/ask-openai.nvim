@@ -64,12 +64,11 @@ end
 
 ---@param sse_fields SseFieldsResult
 function Prediction:add_chunk_sse(sse_fields)
-    local reasoning_content = sse_fields.reasoning_content
     if sse_fields.content then
         self.prediction = self.prediction .. sse_fields.content
     end
-    if reasoning_content then
-        table.insert(self.reasoning_chunks, reasoning_content)
+    if sse_fields.reasoning_content then
+        table.insert(self.reasoning_chunks, sse_fields.reasoning_content)
         self.has_reasoning = true
     end
     self:fix_fim_and_redraw_extmarks()
