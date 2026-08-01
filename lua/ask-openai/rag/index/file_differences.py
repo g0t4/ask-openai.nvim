@@ -67,22 +67,27 @@ def warn_about_file_differences(datasets: Datasets, config: RagConfig, root_dir:
 
     HIDE_NOT_IN_CONFIG = "NOT_IN_CONFIG"
     HIDE_IGNORED = "IGNORED"
+    verbose = False
     # * files on disk *
     files_by_domain = find_files_by_semantic_domain(root_dir)
     all_disk_stats: dict[str, FileStat] = {}
     hide_reason_by_file_path: dict[str, str] = {}
     for domain, files in files_by_domain.items():
         for path in files:
-            # TODO revisit _is_file_ignored_allchecks and cleanup mess? can I reuse same check across consumers? should I?
-            #   PRN might split out lookup semantic domain from check config => that way I can lookup domain in different ways
             if domain not in config.allowed_semantic_domains:
+                # FYI I could bulk mark entire domain as hidden instead of individual files
+                #    also might wanna show hidden by domain? (could call into same display logic with hidden reason (None/HIDE_IGNORED/HIDE_NOT_IN_CONFIG/etc)
                 hide_reason_by_file_path[path] = HIDE_NOT_IN_CONFIG
-                # PRN can bulk mark entire domain as hidden instead of individual files
-                #    maybe then show those files by domain?
-                # continue # TODO remove if I am happy with showing these too
+                if not verbose:
+                    continue
+            # TODO revisit _is_file_ignored_allchecks instead of only l_is_gitignored here?
+            #   ? reuse same checks across all consumers?
+            #   perhaps return hidden reason there instead of here too?
+            #   PRN split out lookup semantic domain from check config if domain is allowed? => that way I can lookup domain in different ways but keep rest of logic the same?
             if _is_gitignored(path, root_dir, config):
-                hide_reason_by_file_path[path] = "IGNORED"
-                # continue # TODO remove if I am happy with showing these too
+                hide_reason_by_file_path[path] = HIDE_IGNORED
+                if not verbose:
+                    continue
 
             all_disk_stats[path] = get_file_stat(path)
 
@@ -138,12 +143,16 @@ def warn_about_file_differences(datasets: Datasets, config: RagConfig, root_dir:
         table = Table(width=100)
         table.add_column(justify="right", header="age", header_style="not bold white italic")
         table.add_column(justify="left", header="added (not yet indexed)")
-        table.add_column(justify="left", header="hidden")
+        if verbose:
+            table.add_column(justify="left", header="hidden")
         for added_file in added_files:
-            hidden = hide_reason_by_file_path.get(added_file.path)
             file_age = time.time() - added_file.current_stat.mtime
             age_str = format_age(file_age)
-            table.add_row(age_str, str(added_file.display_path), hidden)
+            if verbose:
+                hidden = hide_reason_by_file_path.get(added_file.path)
+                table.add_row(age_str, str(added_file.display_path), hidden)
+            else:
+                table.add_row(age_str, str(added_file.display_path))
         console.print(table)
 
     if content_differs:
