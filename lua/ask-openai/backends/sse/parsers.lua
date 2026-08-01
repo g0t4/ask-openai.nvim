@@ -107,6 +107,7 @@ function parse_sse_v1_chat_completions(sse)
     local reasoning_content = ""
     local done = false
     local finish_reason = nil
+    local prob = nil
     if sse.choices and sse.choices[1] then
         local first_choice = sse.choices[1]
 
@@ -126,7 +127,7 @@ function parse_sse_v1_chat_completions(sse)
             reasoning_content = ""
         end
 
-        local prob = get_probs(first_choice)
+        prob = get_probs(first_choice)
         -- log:info("prob", prob)
 
         finish_reason = first_choice.finish_reason
