@@ -60,7 +60,6 @@ end)
 
 describe("starcoder2", function()
     -- by the way, the following would be used if I didn't have "raw" on the request (that's PSM right there!)
-    --    ollama show --template starcoder2:7b-q8_0
     --
     -- (starcoder.FILE_SEP)
     -- {{- if .Suffix }}(starcoder.FIM_PREFIX)
@@ -162,11 +161,4 @@ describe("mellum", function()
 
         should.be_equal(expected, prompt)
     end)
-
-    -- btw
-    -- no hints in prompt template:
-    --   ollama show --template huggingface.co/JetBrains/Mellum-4b-base-gguf:latest
-    -- {{ .Prompt }}
-    --
-    --  TLDR => raw!
 end)

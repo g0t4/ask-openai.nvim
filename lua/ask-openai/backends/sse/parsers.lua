@@ -20,10 +20,6 @@ function parse_sse_oai_chat_completions(sse)
         end
         -- llama-server's /v1/chat/comppletions endpoint uses delta.reasoning_content
         reasoning_content = first_choice.delta.reasoning_content
-        if not reasoning_content then
-            -- ollama's uses delta.reasoning
-            reasoning_content = first_choice.delta.reasoning
-        end
         finish_reason = first_choice.finish_reason
         done = finish_reason ~= nil and finish_reason ~= vim.NIL -- vim.NIL == JSON null
     end
