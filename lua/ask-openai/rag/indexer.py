@@ -294,8 +294,6 @@ class IncrementalRAGIndexer:
             all_chunks_by_file.update(updated_chunks_by_file)
             # logger.pp_debug("all_chunks_by_file", all_chunks_by_file)
             # logger.pp_debug("all_stat_by_path", all_stat_by_path)
-
-        with logger.timer("Save chunks"):
             write_json(all_chunks_by_file, domain_dir / "chunks.json")
 
         with logger.timer("Save file stats"):
