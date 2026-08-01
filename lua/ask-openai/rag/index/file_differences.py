@@ -63,9 +63,9 @@ def warn_about_file_differences(datasets: Datasets, root_dir: Path) -> None:
     files_by_domain = find_files_by_semantic_domain(source_code_dir)
 
     # Build a set of all indexed file stats
-    all_indexed_stats: dict[str, FileStat] = {}
+    all_index_stats: dict[str, FileStat] = {}
     for dataset in datasets.all_datasets.values():
-        all_indexed_stats.update(dataset.stat_by_path)
+        all_index_stats.update(dataset.stat_by_path)
 
     # Build a set of all actual files
     all_disk_files: dict[str, FileStat] = {}
@@ -80,27 +80,27 @@ def warn_about_file_differences(datasets: Datasets, root_dir: Path) -> None:
     deleted_files: list[DeletedFile] = []
 
     # Check indexed files against disk (find stale, mtime-only, and deleted)
-    for path_str, stored_stat in all_indexed_stats.items():
+    for path_str, index_stat in all_index_stats.items():
         file_path = Path(path_str)
         display_path = workspace.get_relative_path_to(file_path, override_root_path=root_dir)
 
         if path_str not in all_disk_files:
-            deleted_files.append(DeletedFile(display_path, stored_stat))
+            deleted_files.append(DeletedFile(display_path, index_stat))
             continue
 
         current_stat = all_disk_files[path_str]
-        hash_differs = current_stat.hash != stored_stat.hash
+        hash_differs = current_stat.hash != index_stat.hash
 
         if hash_differs:
-            stale_files.append(StaleFile(display_path, stored_stat, current_stat))
+            stale_files.append(StaleFile(display_path, index_stat, current_stat))
         else:
-            mtime_differs = abs(stored_stat.mtime - current_stat.mtime) > 0
+            mtime_differs = abs(index_stat.mtime - current_stat.mtime) > 0
             if mtime_differs:
-                mtime_only_files.append(MtimeOnlyFile(display_path, stored_stat, current_stat))
+                mtime_only_files.append(MtimeOnlyFile(display_path, index_stat, current_stat))
 
     # Check disk files against index (find added/unindexed)
     for path_str, current_stat in all_disk_files.items():
-        if path_str not in all_indexed_stats:
+        if path_str not in all_index_stats:
             file_path = Path(path_str)
             display_path = workspace.get_relative_path_to(file_path, override_root_path=root_dir)
             added_files.append(AddedFile(display_path, current_stat))
