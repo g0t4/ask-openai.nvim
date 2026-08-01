@@ -96,16 +96,14 @@ function PredictionsFrontend.ask_for_prediction(params)
                     error("Unsupported FIM endpoint: " .. tostring(FimBackend.endpoint))
                 end
 
-                local chunk = sse_result.content
-                local done = sse_result.done
                 local done_reason = sse_result.finish_reason
                 local reasoning_content = sse_result.reasoning_content or ""
 
-                if chunk or reasoning_content then
-                    this_prediction:add_chunk_to_prediction(chunk, reasoning_content)
+                if sse_result.content or reasoning_content then
+                    this_prediction:add_chunk_to_prediction(sse_result.content, reasoning_content)
                 end
 
-                if done then
+                if sse_result.done then
                     if this_prediction.has_reasoning then
                         log:info(ansi.yellow_bold("REASONING:\n"), ansi.yellow(this_prediction:get_reasoning()))
                     end
