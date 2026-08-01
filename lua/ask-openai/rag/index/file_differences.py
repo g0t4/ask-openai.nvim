@@ -67,7 +67,7 @@ def warn_about_file_differences(datasets: Datasets, config: RagConfig, root_dir:
 
     HIDE_NOT_IN_CONFIG = "NOT_IN_CONFIG"
     HIDE_IGNORED = "IGNORED"
-    verbose = False
+    show_hidden = False
     # * files on disk *
     files_by_domain = find_files_by_semantic_domain(root_dir)
     all_disk_stats: dict[str, FileStat] = {}
@@ -78,7 +78,7 @@ def warn_about_file_differences(datasets: Datasets, config: RagConfig, root_dir:
                 # FYI I could bulk mark entire domain as hidden instead of individual files
                 #    also might wanna show hidden by domain? (could call into same display logic with hidden reason (None/HIDE_IGNORED/HIDE_NOT_IN_CONFIG/etc)
                 hide_reason_by_file_path[path] = HIDE_NOT_IN_CONFIG
-                if not verbose:
+                if not show_hidden:
                     continue
             # TODO revisit _is_file_ignored_allchecks instead of only l_is_gitignored here?
             #   ? reuse same checks across all consumers?
@@ -86,7 +86,7 @@ def warn_about_file_differences(datasets: Datasets, config: RagConfig, root_dir:
             #   PRN split out lookup semantic domain from check config if domain is allowed? => that way I can lookup domain in different ways but keep rest of logic the same?
             if _is_gitignored(path, root_dir, config):
                 hide_reason_by_file_path[path] = HIDE_IGNORED
-                if not verbose:
+                if not show_hidden:
                     continue
 
             all_disk_stats[path] = get_file_stat(path)
@@ -143,7 +143,7 @@ def warn_about_file_differences(datasets: Datasets, config: RagConfig, root_dir:
         table = Table(width=100)
         table.add_column(justify="right", header="age", header_style="not bold white italic")
         table.add_column(justify="left", header="added (not yet indexed)")
-        table.add_column(justify="left", header="hidden" if verbose else "")
+        table.add_column(justify="left", header="hidden" if show_hidden else "")
         for added_file in added_files:
             file_age = time.time() - added_file.current_stat.mtime
             age_str = format_age(file_age)
@@ -158,7 +158,7 @@ def warn_about_file_differences(datasets: Datasets, config: RagConfig, root_dir:
         table.add_column(justify="left", header="path")
         table.add_column(justify="left", header="size")
         table.add_column(justify="left", header="hash")
-        table.add_column(justify="left", header="hidden" if verbose else "")
+        table.add_column(justify="left", header="hidden" if show_hidden else "")
         for stale_file in content_differs:
             last_indexed = format_age(time.time() - stale_file.stored_stat.mtime)
 
@@ -179,7 +179,7 @@ def warn_about_file_differences(datasets: Datasets, config: RagConfig, root_dir:
         table = Table(width=100)
         table.add_column(justify="right", header="last indexed", header_style="not bold white italic")
         table.add_column(justify="left", header="only mtime differs, contents match")
-        table.add_column(justify="left", header="hidden" if verbose else "")
+        table.add_column(justify="left", header="hidden" if show_hidden else "")
         for mtime_file in only_mtime_differs_files:
             hidden = hide_reason_by_file_path.get(mtime_file.path)
             last_indexed = format_age(time.time() - mtime_file.stored_stat.mtime)
@@ -191,7 +191,7 @@ def warn_about_file_differences(datasets: Datasets, config: RagConfig, root_dir:
         table = Table(width=100)
         table.add_column(justify="right", header="last indexed", header_style="not bold white italic")
         table.add_column(justify="left", header="deleted files")
-        table.add_column(justify="left", header="hidden" if verbose else "")
+        table.add_column(justify="left", header="hidden" if show_hidden else "")
         for deleted_file in deleted_files:
             hidden = hide_reason_by_file_path.get(deleted_file.path)
             last_indexed = format_age(time.time() - deleted_file.stored_stat.mtime)
