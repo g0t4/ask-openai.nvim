@@ -79,15 +79,15 @@ def warn_about_file_differences(datasets: Datasets, root_dir: Path) -> None:
     deleted_files: list[DeletedFile] = []
 
     # * indexed files comparison
-    for path_str, index_stat in all_index_stats.items():
-        display_path = workspace.get_relative_path_to(path_str, override_root_path=root_dir)
+    for path, index_stat in all_index_stats.items():
+        display_path = workspace.get_relative_path_to(path, override_root_path=root_dir)
 
         # * deleted files
-        if path_str not in all_disk_files:
+        if path not in all_disk_files:
             deleted_files.append(DeletedFile(display_path, index_stat))
             continue
 
-        disk_stat = all_disk_files[path_str]
+        disk_stat = all_disk_files[path]
         hash_differs = disk_stat.hash != index_stat.hash
 
         # * content differs
@@ -101,9 +101,9 @@ def warn_about_file_differences(datasets: Datasets, root_dir: Path) -> None:
             mtime_only_files.append(MtimeOnlyFile(display_path, index_stat, disk_stat))
 
     # * added files
-    for path_str, disk_stat in all_disk_files.items():
-        if path_str not in all_index_stats:
-            display_path = workspace.get_relative_path_to(path_str, override_root_path=root_dir)
+    for path, disk_stat in all_disk_files.items():
+        if path not in all_index_stats:
+            display_path = workspace.get_relative_path_to(path, override_root_path=root_dir)
             added_files.append(AddedFile(display_path, disk_stat))
 
     if not (added_files or content_differs or mtime_only_files or deleted_files):
