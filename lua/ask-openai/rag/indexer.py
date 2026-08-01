@@ -89,7 +89,7 @@ class IncrementalRAGIndexer:
 
         files_by_domain = find_files_by_semantic_domain(self.source_code_dir)
 
-        for domain in allowed_domains:
+        for domain in sorted(allowed_domains):
             files = files_by_domain.get(domain, set())
             if not any(files):
                 continue
