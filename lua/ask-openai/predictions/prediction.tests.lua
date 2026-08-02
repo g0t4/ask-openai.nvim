@@ -16,8 +16,7 @@ describe("Prediction", function()
             local bufnr = buffers.new_buffer_with_lines(buffer_lines)
             vim.api.nvim_win_set_cursor(0, { 3, 4 }) -- cursor after 4 spaces
 
-            local prediction = Prediction.new({})
-            prediction.buffer = bufnr
+            local prediction = Prediction.new({ bufnr = bufnr })
 
             -- Simulate FIM completion that repeats the indentation
             local insert_lines = { "    return x" }
@@ -27,7 +26,7 @@ describe("Prediction", function()
 
             -- Assert: the inserted portion (after cursor position) should be stripped
             -- Insert happens at col 4, so we check from col 4 onwards
-            local actual_line = vim.api.nvim_buf_get_lines(prediction.buffer, 2, 3, false)[1]
+            local actual_line = vim.api.nvim_buf_get_lines(prediction.bufnr, 2, 3, false)[1]
             local inserted_portion = actual_line:sub(5) -- col 4 is index 5 (1-indexed)
             -- Trim trailing whitespace (buffer may add extra space)
             assert.equal("return x", vim.trim(inserted_portion))
@@ -42,8 +41,7 @@ describe("Prediction", function()
             local bufnr = buffers.new_buffer_with_lines(buffer_lines)
             vim.api.nvim_win_set_cursor(0, { 3, 4 }) -- cursor after 4 spaces
 
-            local prediction = Prediction.new({})
-            prediction.buffer = bufnr
+            local prediction = Prediction.new({ bufnr = bufnr })
 
             -- Simulate FIM completion with different prefix (not matching)
             local insert_lines = { "    return x + y" }
@@ -51,7 +49,7 @@ describe("Prediction", function()
             prediction:insert_accepted(insert_lines)
 
             -- Should strip because it matches the cursor prefix (4 spaces)
-            local actual_line = vim.api.nvim_buf_get_lines(prediction.buffer, 2, 3, false)[1]
+            local actual_line = vim.api.nvim_buf_get_lines(prediction.bufnr, 2, 3, false)[1]
             local inserted_portion = actual_line:sub(5) -- col 4 is index 5 (1-indexed)
             assert.equal("return x + y", vim.trim(inserted_portion))
         end)
@@ -61,14 +59,13 @@ describe("Prediction", function()
             local bufnr = buffers.new_buffer_with_lines(buffer_lines)
             vim.api.nvim_win_set_cursor(0, { 2, 0 }) -- cursor at start of empty line
 
-            local prediction = Prediction.new({})
-            prediction.buffer = bufnr
+            local prediction = Prediction.new({ bufnr = bufnr })
 
             -- Blank line should not trigger prefix stripping logic
             prediction:insert_accepted({ "" })
 
             -- Should just insert blank line at cursor position
-            local actual_line = vim.api.nvim_buf_get_lines(prediction.buffer, 1, 2, false)[1]
+            local actual_line = vim.api.nvim_buf_get_lines(prediction.bufnr, 1, 2, false)[1]
             assert.equal("", actual_line)
         end)
 
@@ -77,14 +74,13 @@ describe("Prediction", function()
             local bufnr = buffers.new_buffer_with_lines(buffer_lines)
             vim.api.nvim_win_set_cursor(0, { 2, 0 }) -- cursor at start of empty line
 
-            local prediction = Prediction.new({})
-            prediction.buffer = bufnr
+            local prediction = Prediction.new({ bufnr = bufnr })
 
             -- No prefix to strip when cursor is at column 0
             prediction:insert_accepted({ "    new code" })
 
             -- Should insert as-is (no stripping)
-            local actual_line = vim.api.nvim_buf_get_lines(prediction.buffer, 1, 2, false)[1]
+            local actual_line = vim.api.nvim_buf_get_lines(prediction.bufnr, 1, 2, false)[1]
             assert.equal("    new code", actual_line)
         end)
 
@@ -93,8 +89,7 @@ describe("Prediction", function()
             local bufnr = buffers.new_buffer_with_lines(buffer_lines)
             vim.api.nvim_win_set_cursor(0, { 2, 4 }) -- cursor after 4 spaces
 
-            local prediction = Prediction.new({})
-            prediction.buffer = bufnr
+            local prediction = Prediction.new({ bufnr = bufnr })
 
             -- Insert line with MORE indentation than cursor prefix
             local insert_lines = { "        more indent" } -- 8 spaces
@@ -103,7 +98,7 @@ describe("Prediction", function()
 
             -- Should strip the first 4 spaces (matching cursor prefix)
             -- Insert at col 4, so we check from col 4 onwards
-            local actual_line = vim.api.nvim_buf_get_lines(prediction.buffer, 1, 2, false)[1]
+            local actual_line = vim.api.nvim_buf_get_lines(prediction.bufnr, 1, 2, false)[1]
             local inserted_portion = actual_line:sub(5) -- col 4 is index 5 (1-indexed)
             -- After stripping 4 spaces from 8, we have 4 remaining spaces + text
             -- Use gsub to remove only trailing whitespace (not leading)
@@ -116,8 +111,7 @@ describe("Prediction", function()
             local bufnr = buffers.new_buffer_with_lines(buffer_lines)
             vim.api.nvim_win_set_cursor(0, { 2, 8 }) -- cursor after 8 spaces
 
-            local prediction = Prediction.new({})
-            prediction.buffer = bufnr
+            local prediction = Prediction.new({ bufnr = bufnr })
 
             -- Insert line that is shorter than the prefix
             local insert_lines = { "short" }
@@ -125,7 +119,7 @@ describe("Prediction", function()
             -- Should not error and should not strip (condition #first_line >= #cursor_prefix fails)
             prediction:insert_accepted(insert_lines)
 
-            local actual_line = vim.api.nvim_buf_get_lines(prediction.buffer, 1, 2, false)[1]
+            local actual_line = vim.api.nvim_buf_get_lines(prediction.bufnr, 1, 2, false)[1]
             assert.equal("short", actual_line)
         end)
 
@@ -134,8 +128,7 @@ describe("Prediction", function()
             local bufnr = buffers.new_buffer_with_lines(buffer_lines)
             vim.api.nvim_win_set_cursor(0, { 3, 8 }) -- cursor after 8 spaces
 
-            local prediction = Prediction.new({})
-            prediction.buffer = bufnr
+            local prediction = Prediction.new({ bufnr = bufnr })
 
             -- Simulate FIM completion that repeats the indentation
             local insert_lines = { "        return x" }
@@ -144,7 +137,7 @@ describe("Prediction", function()
 
             -- Should strip the first 8 spaces
             -- Insert at col 8, so we check from col 8 onwards
-            local actual_line = vim.api.nvim_buf_get_lines(prediction.buffer, 2, 3, false)[1]
+            local actual_line = vim.api.nvim_buf_get_lines(prediction.bufnr, 2, 3, false)[1]
             local inserted_portion = actual_line:sub(9) -- col 8 is index 9 (1-indexed)
             assert.equal("return x", vim.trim(inserted_portion))
         end)
@@ -158,8 +151,7 @@ describe("Prediction fixed display", function()
         local bufnr = buffers.new_buffer_with_lines(buffer_lines)
         vim.api.nvim_win_set_cursor(0, { 3, 4 }) -- cursor after 4 spaces
 
-        local prediction = Prediction.new({})
-        prediction.buffer = bufnr
+        local prediction = Prediction.new({ bufnr = bufnr })
 
         -- Act: redraw extmarks (this is called when chunks arrive)
         prediction:fix_fim_and_redraw_extmarks()
@@ -173,8 +165,7 @@ describe("Prediction fixed display", function()
         local bufnr = buffers.new_buffer_with_lines(buffer_lines)
         vim.api.nvim_win_set_cursor(0, { 3, 4 }) -- cursor after 4 spaces
 
-        local prediction = Prediction.new({})
-        prediction.buffer = bufnr
+        local prediction = Prediction.new({ bufnr = bufnr })
 
         -- Act: redraw extmarks
         prediction:fix_fim_and_redraw_extmarks()

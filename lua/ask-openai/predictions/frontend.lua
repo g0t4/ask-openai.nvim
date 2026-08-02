@@ -15,19 +15,35 @@ local CurlRequest = require("ask-openai.backends.curl_request")
 local FimBackend = require("ask-openai.predictions.backends.fim_backend")
 local llama_server_client = require("ask-openai.backends.llama_cpp.llama_server_client")
 local config = require("ask-openai.config")
+local buffer_state = require("ask-openai.predictions.buffer_state")
 
 ---@class PredictionsFrontend : StreamingFrontend
----@field current_prediction Prediction|nil
 local PredictionsFrontend = {}
 
-PredictionsFrontend.current_prediction = nil
+--- Get the current prediction for the active buffer.
+--- @param bufnr integer
+--- @return Prediction|nil
+function PredictionsFrontend._get_current_prediction(bufnr)
+    log:info("GET", bufnr)
+    if bufnr == nil or bufnr == 0 then
+        error("bufnr must be non-zero in _get_current_prediction" .. tostring(bufnr))
+    end
+    return buffer_state.buffer_state_for(bufnr).ask_openai_current_prediction
+end
+
+--- Set the current prediction for the active buffer.
+--- @param prediction Prediction|nil
+function PredictionsFrontend._set_current_prediction(bufnr, prediction)
+    log:info("SET", bufnr, prediction)
+    buffer_state.buffer_state_for(bufnr).ask_openai_current_prediction = prediction
+end
 
 ---@param params? PredictionParameters
 function PredictionsFrontend.ask_for_prediction(params)
-    PredictionsFrontend.cancel_current_prediction()
+    PredictionsFrontend.cancel_current_prediction(params.bufnr)
 
     local this_prediction = Prediction.new(params)
-    PredictionsFrontend.current_prediction = this_prediction
+    PredictionsFrontend._set_current_prediction(params.bufnr, this_prediction)
 
     local enable_rag = api.is_rag_enabled()
     local ps_chunk = ps.get_prefix_suffix_chunk()
@@ -149,7 +165,10 @@ function PredictionsFrontend.ask_for_prediction(params)
             on_curl_exited_successfully = on_curl_exited_successfully,
             explain_error = explain_error,
             on_sse_llama_server_timings = on_sse_llama_server_timings,
-            get_flags = PredictionsFrontend.get_flags,
+            -- FYI use closure to capture current context so we don't have to jump through hoops later in saving the trace
+            --   I should be able to get current prediction via trace too but let's not deal with it right now
+            --   IOTW refactor this crap later when the buffer local predictions is solid and pays dividends
+            get_flags_wrapper = function() return PredictionsFrontend.get_flags(params.bufnr) end,
         }
 
         log:info("Curl.spawn(fim)")
@@ -215,16 +234,17 @@ function PredictionsFrontend.ask_for_prediction(params)
     end
 end
 
-function PredictionsFrontend.cancel_current_prediction()
+--- @param bufnr integer
+function PredictionsFrontend.cancel_current_prediction(bufnr)
     -- PRN stdout/stderr:read_stop() to halt on_stdout/stderr callbacks from firing again (before handle:close())?!
     if PredictionsFrontend.rag_cancel then
         PredictionsFrontend.rag_cancel()
     end
-    local this_prediction = PredictionsFrontend.current_prediction
+    local this_prediction = PredictionsFrontend._get_current_prediction(bufnr)
     if not this_prediction then
         return
     end
-    PredictionsFrontend.current_prediction = nil
+    PredictionsFrontend._set_current_prediction(bufnr, nil)
     this_prediction:mark_as_abandoned()
 
     vim.schedule(function()
@@ -235,10 +255,10 @@ function PredictionsFrontend.cancel_current_prediction()
     CurlRequest.terminate(this_prediction.fim_request)
 end
 
-function PredictionsFrontend.get_flags()
+function PredictionsFrontend.get_flags(bufnr)
     local flags = {}
-    local current = PredictionsFrontend.current_prediction
-    if current.has_duplicate_prefix then
+    local current = PredictionsFrontend._get_current_prediction(bufnr)
+    if current and current.has_duplicate_prefix then
         flags["fim_duplicate_prefix"] = current._trace_only_duplicate_prefix
     end
     return flags
@@ -277,13 +297,19 @@ local ignore_buftypes = {
 }
 local keys = require("ask-openai.predictions.keys")
 local keypresses, debounced = keys.create_keypresses_observables()
-local keypresses_subscription = keypresses:subscribe(function()
+local keypresses_subscription = keypresses:subscribe(function(event)
+    --- @cast event ObservableKeyPressEvent
+
     -- immediately clear/hide prediction, else slides as you type
+    -- TODO schedule or not?
     vim.schedule(function()
-        PredictionsFrontend.cancel_current_prediction()
+        log:info("keypress", event)
+        PredictionsFrontend.cancel_current_prediction(event.bufnr)
     end)
 end)
-local debounced_subscription = debounced:subscribe(function()
+local debounced_subscription = debounced:subscribe(function(event)
+    --- @cast event ObservableKeyPressEvent
+    log:info("debounced", event)
     vim.schedule(function()
         -- log:trace("CursorMovedI debounced")
 
@@ -291,14 +317,15 @@ local debounced_subscription = debounced:subscribe(function()
             return
         end
 
-        PredictionsFrontend.ask_for_prediction()
+        PredictionsFrontend.ask_for_prediction({ bufnr = event.bufnr })
     end)
 end)
 
-function PredictionsFrontend.cursor_moved_in_insert_mode()
-    if PredictionsFrontend.current_prediction ~= nil and PredictionsFrontend.current_prediction.disable_cursor_moved == true then
+function PredictionsFrontend.cursor_moved_in_insert_mode(bufnr)
+    local current_prediction = PredictionsFrontend._get_current_prediction(bufnr)
+    if current_prediction and current_prediction.disable_cursor_moved == true then
         -- log:trace("Disabled CursorMovedI, skipping...")
-        PredictionsFrontend.current_prediction.disable_cursor_moved = false -- skip once
+        current_prediction.disable_cursor_moved = false -- skip once
         -- called after accepting/inserting text (AFAICT only once per accept)
         return
     end
@@ -314,44 +341,78 @@ function PredictionsFrontend.cursor_moved_in_insert_mode()
         return
     end
 
-    keypresses:onNext({})
+    keypresses:onNext({ bufnr = bufnr })
 end
 
-function PredictionsFrontend.leaving_insert_mode()
-    PredictionsFrontend.cancel_current_prediction()
+---@param event vim.api.keyset.create_autocmd.callback_args
+function PredictionsFrontend.leaving_insert_mode(event)
+    -- {
+    --   buf = 5,
+    --   event = "InsertLeavePre",
+    --   file = "/Users/wesdemos/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/predictions/frontend.lua",
+    --   group = 85,
+    --   id = 147,
+    --   match = "/Users/wesdemos/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/predictions/frontend.lua"
+    -- }
+    log:info("leaving_insert_mode", event)
+    PredictionsFrontend.cancel_current_prediction(event.buf)
 end
 
-function PredictionsFrontend.entering_insert_mode()
-    PredictionsFrontend.cursor_moved_in_insert_mode()
+---@param event vim.api.keyset.create_autocmd.callback_args
+function PredictionsFrontend.entering_insert_mode(event)
+    -- {
+    --   buf = 5,
+    --   event = "InsertEnter",
+    --   file = "/Users/wesdemos/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/predictions/frontend.lua",
+    --   group = 85,
+    --   id = 148,
+    --   match = "/Users/wesdemos/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/predictions/frontend.lua"
+    -- }
+    log:info("entering_insert_mode", event)
+    PredictionsFrontend.cursor_moved_in_insert_mode(event.buf)
 end
 
 function PredictionsFrontend.accept_all_invoked()
-    if not PredictionsFrontend.current_prediction then
+    local bufnr = vim.fn.bufnr()
+    log:info("accept_all_invoked", bufnr)
+    local current_prediction = PredictionsFrontend._get_current_prediction(bufnr)
+    if not current_prediction then
         return
     end
-    PredictionsFrontend.current_prediction:accept_all()
+    current_prediction:accept_all()
 end
 
 function PredictionsFrontend.accept_line_invoked()
-    if not PredictionsFrontend.current_prediction then
+    local bufnr = vim.fn.bufnr()
+    log:info("accept_line_invoked", bufnr)
+    local current_prediction = PredictionsFrontend._get_current_prediction(bufnr)
+    if not current_prediction then
         return
     end
-    PredictionsFrontend.current_prediction:accept_first_line()
+    current_prediction:accept_first_line()
 end
 
-function PredictionsFrontend.accept_word_invoked()
-    if not PredictionsFrontend.current_prediction then
+function PredictionsFrontend.accept_word_invoked(event)
+    local bufnr = vim.fn.bufnr()
+    log:info("accept_word_invoked", bufnr)
+    local current_prediction = PredictionsFrontend._get_current_prediction(bufnr)
+    if not current_prediction then
         return
     end
-    PredictionsFrontend.current_prediction:accept_first_word()
+    current_prediction:accept_first_word()
 end
 
 function PredictionsFrontend.new_prediction_invoked()
-    PredictionsFrontend.cursor_moved_in_insert_mode()
+    local bufnr = vim.fn.bufnr()
+    log:info("new_prediction_invoked", bufnr)
+    PredictionsFrontend.cursor_moved_in_insert_mode(bufnr)
 end
 
-function PredictionsFrontend.vim_is_quitting()
-    PredictionsFrontend.cancel_current_prediction()
+function PredictionsFrontend.vim_is_quitting(event)
+    local bufnr = vim.fn.bufnr()
+    -- TODO wire up, this is valuable if a long running FIM is left to keep going even after neovim shutsdown
+    log:info("vim_is_quitting", bufnr)
+    PredictionsFrontend.cancel_current_prediction(bufnr)
 end
 
 local are_predictions_running = false
@@ -386,7 +447,12 @@ function PredictionsFrontend.start_predictions()
     -- vim.keymap.set("n", "<leader>~", "<cmd>AskDumpEdits<CR>", {})
 
     function trigger_apply_template_dump()
-        predictions_frontend.ask_for_prediction({ apply_template_only = true })
+        local bufnr = vim.fn.bufnr()
+        log:info("trigger_apply_template_dump", bufnr)
+        predictions_frontend.ask_for_prediction({
+            bufnr = bufnr,
+            apply_template_only = true,
+        })
     end
 
     vim.keymap.set("n", "<leader>temp", trigger_apply_template_dump, {})
@@ -413,7 +479,10 @@ function PredictionsFrontend.start_predictions()
         -- FYI been using this for a LONG time now and no issues (AFAICT)
         group = augroup,
         pattern = "*",
-        callback = predictions_frontend.cursor_moved_in_insert_mode,
+        callback = function(event)
+            ---@cast event vim.api.keyset.create_autocmd.callback_args
+            predictions_frontend.cursor_moved_in_insert_mode(event.buf)
+        end
     })
 
     are_predictions_running = true

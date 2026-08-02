@@ -27,7 +27,7 @@ _G.CompletionsEndpoints = {
 ---@field on_curl_exited_successfully OnCurlExitedSuccessfully
 ---@field explain_error ExplainError
 ---@field trace? CurlRequestForTrace
----@field get_flags fun(): table<string, any>
+---@field get_flags_wrapper fun(): table<string, any>
 
 ---@param request CurlRequest|CurlRequestForTrace
 ---@param frontend StreamingFrontend

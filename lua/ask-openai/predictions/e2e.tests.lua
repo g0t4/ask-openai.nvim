@@ -36,10 +36,10 @@ describe("E2E - FIM predictions", function()
         print("==============================================\n")
 
         -- * Action: trigger prediction manually (bypassing event system)
-        predictions_frontend.ask_for_prediction()
+        predictions_frontend.ask_for_prediction({ bufnr = bufnr })
 
         -- * Wait for the prediction to complete
-        local current_prediction = e2e.wait_for_prediction(predictions_frontend, 30000)
+        local current_prediction = e2e.wait_for_prediction(bufnr, predictions_frontend, 30000)
 
         -- * Verify: prediction was created and has content
         assert.is_not_nil(
@@ -108,7 +108,7 @@ describe("E2E - FIM predictions", function()
 
 
         -- * Cleanup: cancel the prediction to free resources
-        predictions_frontend.cancel_current_prediction()
+        predictions_frontend.cancel_current_prediction(bufnr)
 
         -- * Cleanup buffer
         e2e.delete_buffer(bufnr)

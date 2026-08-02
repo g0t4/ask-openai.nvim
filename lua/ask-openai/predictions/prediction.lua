@@ -5,7 +5,7 @@ local CursorController = require "ask-openai.predictions.cursor_controller"
 
 ---@class Prediction
 ---@field id integer
----@field buffer integer
+---@field bufnr integer
 ---@field prediction string
 ---@field all_sses SseFieldsResult[]
 ---@field cursor_prefix: string,
@@ -29,7 +29,7 @@ local Prediction = {}
 local instance_metatable = { __index = Prediction }
 local extmarks_ns_id = vim.api.nvim_create_namespace("ask-universal")
 
----@alias PredictionParameters { apply_template_only: boolean, }
+---@alias PredictionParameters { bufnr: integer, apply_template_only: boolean, }
 
 ---@param params? PredictionParameters
 ---@return Prediction
@@ -43,7 +43,10 @@ function Prediction.new(params)
     -- FYI AFAICT no timing benefits from using a StringBuffer vs string.__concat... just b/c of my requirement to have full string on every iteration
     -- see test code: lua/ask-openai/prediction/tests/benchmark/str_concat_vs_buffer.lua
 
-    self.buffer = 0 -- 0 == current buffer
+    if params.bufnr == nil or params.bufnr == 0 then
+        error("YOU MUST PASS BUFFER NUMBER (bufnr) when creating a prediction now")
+    end
+    self.bufnr = params.bufnr
     self.extmarks = {}
     self.abandoned = false
     self.disable_cursor_moved = false
@@ -98,7 +101,7 @@ function Prediction:fim_fixes()
     if self.cursor_prefix == nil then
         local controller = CursorController:new()
         local cursor = controller:get_cursor_position()
-        local cursor_line_text = vim.api.nvim_buf_get_lines(self.buffer, cursor.line_base0, cursor.line_base0 + 1, false)[1] or ""
+        local cursor_line_text = vim.api.nvim_buf_get_lines(self.bufnr, cursor.line_base0, cursor.line_base0 + 1, false)[1] or ""
         local prefix = cursor_line_text:sub(1, cursor.col_base0)
         self.cursor_prefix = prefix
     end
@@ -174,7 +177,7 @@ function Prediction:fix_fim_and_redraw_extmarks()
         end
 
         -- Set reasoning extmarks with different highlight
-        vim.api.nvim_buf_set_extmark(self.buffer, extmarks_ns_id, cursor.line_base0, cursor.col_base0, -- 0-indexed
+        vim.api.nvim_buf_set_extmark(self.bufnr, extmarks_ns_id, cursor.line_base0, cursor.col_base0, -- 0-indexed
             {
                 virt_text = { { self.first_line, HLGroups.PREDICTION_THINKING } },
                 virt_lines = reasoning_virt_lines,
@@ -186,7 +189,7 @@ function Prediction:fix_fim_and_redraw_extmarks()
     -- * highlight cursor line prefix overlap with red bg
     if self.has_duplicate_prefix then
         self.extmarks.dup_highlight = vim.api.nvim_buf_set_extmark(
-            self.buffer,
+            self.bufnr,
             extmarks_ns_id,
             cursor.line_base0,
             -- TODO if we only match part of prefix... we shouldn't highlight all of it! rare but still support this?
@@ -206,7 +209,7 @@ function Prediction:fix_fim_and_redraw_extmarks()
     end
 
     local first_line_virt_text = { { self.first_line, HLGroups.PREDICTION_TEXT } }
-    vim.api.nvim_buf_set_extmark(self.buffer, extmarks_ns_id, cursor.line_base0, cursor.col_base0, -- 0-indexed
+    vim.api.nvim_buf_set_extmark(self.bufnr, extmarks_ns_id, cursor.line_base0, cursor.col_base0, -- 0-indexed
         {
             virt_text = first_line_virt_text,
             virt_lines = virt_lines,
@@ -215,11 +218,11 @@ function Prediction:fix_fim_and_redraw_extmarks()
 end
 
 function Prediction:clear_extmarks()
-    vim.api.nvim_buf_clear_namespace(self.buffer, extmarks_ns_id, 0, -1)
+    vim.api.nvim_buf_clear_namespace(self.bufnr, extmarks_ns_id, 0, -1)
 
     -- Explicitly remove the duplicate prefix highlight if it exists
     if self.extmarks and self.extmarks.dup_highlight then
-        pcall(vim.api.nvim_buf_del_extmark, self.buffer, extmarks_ns_id, self.extmarks.dup_highlight)
+        pcall(vim.api.nvim_buf_del_extmark, self.bufnr, extmarks_ns_id, self.extmarks.dup_highlight)
         self.extmarks.dup_highlight = nil
     end
 end
@@ -235,7 +238,7 @@ function Prediction:insert_accepted(insert_lines)
 
     -- * insert accepted text
     -- INSERT b/c start == end == cursor position! (nothing to replace)
-    vim.api.nvim_buf_set_text(self.buffer, cursor.line_base0, cursor.col_base0, cursor.line_base0, cursor.col_base0, insert_lines)
+    vim.api.nvim_buf_set_text(self.bufnr, cursor.line_base0, cursor.col_base0, cursor.line_base0, cursor.col_base0, insert_lines)
 
     -- * move cursor
     local new_cursor = controller:calc_new_position(cursor, insert_lines)
@@ -352,7 +355,7 @@ function Prediction:accept_all()
     self:fix_fim_and_redraw_extmarks()
 
     -- TODO SIGNAL next prediction when accept all? (and then consider this for other accept types if they are accepting remainder of prediction too (finishing accepting current prediction)
-    --   frontend.ask_for_prediction()
+    --   frontend.ask_for_prediction({ bufnr = self.bufnr })
     --   FYI can also use Alt+Tab to do this, if I don't want it to be automatic... which is possible I won't like the aggressiveness of back to back predict=>acccept=>predict=>accept...
 end
 

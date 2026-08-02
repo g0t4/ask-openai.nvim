@@ -61,14 +61,14 @@ function M.delete_buffer(bufnr)
 end
 
 --- Wait for a FIM prediction to complete and return it.
---- @param predictions_frontend table The predictions frontend module
+--- @param predictions_frontend PredictionsFrontend The predictions frontend module
 --- @param timeout_ms number Maximum time to wait in milliseconds
 --- @return table|nil prediction The completed prediction object, or nil if timed out
-function M.wait_for_prediction(predictions_frontend, timeout_ms)
+function M.wait_for_prediction(bufnr, predictions_frontend, timeout_ms)
     timeout_ms = timeout_ms or 30000
 
     local success = M.wait_for(function()
-        local current = predictions_frontend.current_prediction
+        local current = predictions_frontend._get_current_prediction(bufnr)
         if not current then
             return false
         end
@@ -76,7 +76,7 @@ function M.wait_for_prediction(predictions_frontend, timeout_ms)
     end, timeout_ms, 200)
 
     if success then
-        return predictions_frontend.current_prediction
+        return predictions_frontend._get_current_prediction(bufnr)
     end
 
     return nil
