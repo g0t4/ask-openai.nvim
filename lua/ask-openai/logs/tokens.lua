@@ -65,10 +65,11 @@ local function display_probability(prob)
 
     if show_probabilities then
         -- FYI keep this nested condition for readability
+        local gray = 100
         if prob == nil then
-            return "(?)"
+            return ansi.rgb(ansi.italic("(?)"), gray, gray, gray)
         elseif prob < 1.0 then
-            return ansi.italic(string.format("(%.2f)", prob))
+            return ansi.rgb(ansi.italic(string.format("(%.2f)", prob)), gray, gray, gray)
         end
     end
 
