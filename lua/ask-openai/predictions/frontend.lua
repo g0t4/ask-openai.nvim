@@ -302,19 +302,19 @@ local ignore_buftypes = {
     "terminal",
 }
 local keys = require("ask-openai.predictions.keys")
-local keypresses, debounced = keys.create_keypresses_observables()
-local keypresses_subscription = keypresses:subscribe(function(event)
-    --- @cast event ObservableKeyPressEvent
+local input_events, debounced = keys.create_input_observables()
+local input_events_subscription = input_events:subscribe(function(event)
+    --- @cast event ObservableInputEvent
 
     -- immediately clear/hide prediction, else slides as you type
     -- TODO schedule or not?
     vim.schedule(function()
-        log:info("keypress", event.bufnr)
+        log:info("input_event", event.bufnr)
         PredictionsFrontend.cancel_current_prediction(event.bufnr)
     end)
 end)
 local debounced_subscription = debounced:subscribe(function(event)
-    --- @cast event ObservableKeyPressEvent
+    --- @cast event ObservableInputEvent
     log:info("debounced", event.bufnr)
     vim.schedule(function()
         -- log:trace("CursorMovedI debounced")
@@ -347,7 +347,7 @@ function PredictionsFrontend.request_new_prediction(bufnr)
         return
     end
 
-    keypresses:onNext({ bufnr = bufnr })
+    input_events:onNext({ bufnr = bufnr })
 end
 
 ---@param event vim.api.keyset.create_autocmd.callback_args

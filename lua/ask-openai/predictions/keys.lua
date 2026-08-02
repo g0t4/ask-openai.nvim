@@ -2,15 +2,15 @@ local rx = require("rx")
 local TimeoutScheduler = require("ask-openai.rx.scheduler")
 local M = {}
 
---- @alias ObservableKeyPressEvent { bufnr: integer }
+--- @alias ObservableInputEvent { bufnr: integer }
 
---- @return Subject keypresses
+--- @return Subject input_events
 --- @return Observable debounced
-function M.create_keypresses_observables()
+function M.create_input_observables()
     local scheduler = TimeoutScheduler.create()
-    local keypresses = rx.Subject.create()
-    local debounced = keypresses:debounce(250, scheduler)
-    return keypresses, debounced
+    local input_events = rx.Subject.create()
+    local debounced = input_events:debounce(250, scheduler)
+    return input_events, debounced
 end
 
 return M
