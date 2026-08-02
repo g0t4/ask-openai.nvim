@@ -315,7 +315,9 @@ local input_events_subscription = input_events:subscribe(function(event)
 end)
 local debounced_subscription = debounced_events:subscribe(function(event)
     --- @cast event ObservableInputEvent
-    log:info("debounced event", event.bufnr)
+    log:info("debounced prediction trigger", event.bufnr)
+    -- TODO per-buffer predictions => need debounced observable PER buffer, not one global observable!
+    --   TODO OR I need a group-by operator, that should exist, right?
     vim.schedule(function()
         -- log:trace("CursorMovedI debounced")
 
