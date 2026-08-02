@@ -59,8 +59,12 @@ end
 ---@param prob number|nil
 ---@return string probability display
 local function display_probability(prob)
-    if prob ~= nil and prob < 1.0 then
-        return ansi.italic(string.format("(%.2f)", prob))
+    local show_probabilities = true
+    if show_probabilities then
+        -- FYI keep this nested condition for readability
+        if prob ~= nil and prob < 1.0 then
+            return ansi.italic(string.format("(%.2f)", prob))
+        end
     end
     return ""
 end
@@ -71,14 +75,9 @@ end
 ---@return string Formatted string with probability indicator
 local function format_token_with_prob(token, prob)
     local colored_text = color_by_probability(token, prob)
-    local show_probabilities = true
-    if show_probabilities then
-        -- Show probability in parentheses for tokens that aren't 100% confident
-        -- FYI keep this nested condition for readability
-        return colored_text .. display_probability(prob)
-    end
-    return colored_text
+    return colored_text .. display_probability(prob)
 end
+
 
 ---@param sse_fields_list SseFieldsResult[]
 ---@return { reasoning: string, content: string }
