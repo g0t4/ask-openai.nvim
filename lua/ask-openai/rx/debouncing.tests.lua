@@ -7,7 +7,7 @@ local debouncing = require("ask-openai.rx.debouncing")
 describe("Observable:debounceByKey", function()
     describe("integration tests", function()
         it("multiple events per bufnr, returns last per bufnr", function()
-            local input_events, debounced_by_bufnr = debouncing.create_debounced_observable_by_bufnr()
+            local input_events, debounced_by_bufnr = debouncing.create_debounced_observable_by_bufnr(50)
 
             local received = {}
 
@@ -27,11 +27,13 @@ describe("Observable:debounceByKey", function()
 
 
             assert.same({}, received)
-            vim.wait(100)
+            vim.wait(10) -- keep in mind vim.wait is not precise
             assert.same({}, received)
-            vim.wait(100)
+            vim.wait(10)
             assert.same({}, received)
-            vim.wait(100) -- well past 250ms debounce period
+            vim.wait(10) -- I wouldn't try to be more precise than 30ms delay here and still empty, test ops are not zero duration
+            assert.same({}, received)
+            vim.wait(40) -- well past
             assert.same({
                 { bufnr = 1, value = 'i' },
                 { bufnr = 2, value = 'b' },
@@ -39,7 +41,7 @@ describe("Observable:debounceByKey", function()
         end)
 
         it("does not allow one bufnr to debounce another", function()
-            local input_events, debounced_by_bufnr = debouncing.create_debounced_observable_by_bufnr()
+            local input_events, debounced_by_bufnr = debouncing.create_debounced_observable_by_bufnr(50)
 
             local received = {}
 
@@ -51,20 +53,20 @@ describe("Observable:debounceByKey", function()
             input_events:onNext({ bufnr = 1, value = "a" })
 
             local IS_EMPTY = {}
-            vim.wait(150)
-            --- 150ms total for bufnr 1
+            vim.wait(30)
+            --- 30ms total for bufnr 1
             assert.same(IS_EMPTY, received)
 
             -- This should NOT reset bufnr 1's debounce timer.
             input_events:onNext({ bufnr = 2, value = "x" })
             assert.same(IS_EMPTY, received)
 
-            vim.wait(150)
-            -- 300ms total for bufnr 1, but only 150ms from bufnr 2.
+            vim.wait(30)
+            -- 60ms total for bufnr 1, but only 30ms from bufnr 2.
             assert.same({ { bufnr = 1, value = "a" }, }, received)
 
-            vim.wait(150)
-            -- 300ms total for bufnr 2
+            vim.wait(30)
+            -- 60ms total for bufnr 2
 
             assert.same({
                 { bufnr = 1, value = "a" },
