@@ -14,7 +14,7 @@ local TimeoutScheduler = require("ask-openai.rx.scheduler")
 
 tests.describe("timeout scheduler", function()
     -- FYI async.tests => https://github.com/nvim-lua/plenary.nvim/blob/master/lua/plenary/async/tests.lua
-    a.tests.it("should unsubscribe", function()
+    a.tests.it("should block until timer elapses", function()
         local s = TimeoutScheduler.create()
         local start_time
         local wait_until_100ms_scheduler_callsback = a.wrap(function(callback)
