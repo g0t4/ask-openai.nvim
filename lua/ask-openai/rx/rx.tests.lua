@@ -7,6 +7,7 @@ local rx = require "rx"
 local ask_rx = require("ask-openai.rx.rx")
 
 local function create_fake_scheduler()
+    -- FYI this fake scehduler may be useful but it makes it very hard to assert debounce which is inherently time based... maybe if you setup a simulated clock this would make more sense but yeah no on this fake scheduler for time based Rx verification
     local scheduled = {}
 
     local scheduler = {}
