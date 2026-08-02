@@ -321,6 +321,10 @@ local debounced_subscription = debounced_events:subscribe(function(event)
     start_predicting(event)
 end)
 function start_predicting(event)
+    -- TODO! why does `i` report "start predict" and then not actually predict?
+    --   TODO i does `start predict` => `canceling RAG` (then stops??)
+    --   TODO! is there a RAG cancel bug that is killing insert mode to predict?
+
     -- TODO I split out a seam here so I can call this directly for inputs that should not be debounced...
     -- remember we can call this back to back with little overhead backend wise and even frontend...
     -- real issue is if we start streaming in extmarks and then restart then it can slow down user typing (IIRC)
