@@ -24,7 +24,7 @@ local PredictionsFrontend = {}
 --- @param bufnr integer
 --- @return Prediction|nil
 function PredictionsFrontend._get_current_prediction(bufnr)
-    log:info("GET", bufnr)
+    -- log:info("GET prediction", bufnr)
     if bufnr == nil or bufnr == 0 then
         error("bufnr must be non-zero in _get_current_prediction" .. tostring(bufnr))
     end
@@ -34,7 +34,8 @@ end
 --- Set the current prediction for the active buffer.
 --- @param prediction Prediction|nil
 function PredictionsFrontend._set_current_prediction(bufnr, prediction)
-    log:info("SET", bufnr, prediction)
+    -- log:info("SET prediction", bufnr, prediction)
+    log:info("SET prediction", bufnr)
     buffer_state.buffer_state_for(bufnr).ask_openai_current_prediction = prediction
 end
 
@@ -303,13 +304,13 @@ local keypresses_subscription = keypresses:subscribe(function(event)
     -- immediately clear/hide prediction, else slides as you type
     -- TODO schedule or not?
     vim.schedule(function()
-        log:info("keypress", event)
+        log:info("keypress", event.bufnr)
         PredictionsFrontend.cancel_current_prediction(event.bufnr)
     end)
 end)
 local debounced_subscription = debounced:subscribe(function(event)
     --- @cast event ObservableKeyPressEvent
-    log:info("debounced", event)
+    log:info("debounced", event.bufnr)
     vim.schedule(function()
         -- log:trace("CursorMovedI debounced")
 
@@ -346,28 +347,12 @@ end
 
 ---@param event vim.api.keyset.create_autocmd.callback_args
 function PredictionsFrontend.leaving_insert_mode(event)
-    -- {
-    --   buf = 5,
-    --   event = "InsertLeavePre",
-    --   file = "/Users/wesdemos/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/predictions/frontend.lua",
-    --   group = 85,
-    --   id = 147,
-    --   match = "/Users/wesdemos/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/predictions/frontend.lua"
-    -- }
-    log:info("leaving_insert_mode", event)
+    log:info("leaving_insert_mode", event.buf)
     PredictionsFrontend.cancel_current_prediction(event.buf)
 end
 
 ---@param event vim.api.keyset.create_autocmd.callback_args
 function PredictionsFrontend.entering_insert_mode(event)
-    -- {
-    --   buf = 5,
-    --   event = "InsertEnter",
-    --   file = "/Users/wesdemos/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/predictions/frontend.lua",
-    --   group = 85,
-    --   id = 148,
-    --   match = "/Users/wesdemos/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/predictions/frontend.lua"
-    -- }
     log:info("entering_insert_mode", event)
     PredictionsFrontend.cursor_moved_in_insert_mode(event.buf)
 end
