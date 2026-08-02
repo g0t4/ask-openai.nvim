@@ -13,15 +13,18 @@ function M.global_create_debounced_observable()
     return input_events, debounced
 end
 
---- @return Subject input_events
---- @return Observable debounced
-function M.create_debounced_observable_by_bufnr()
+---@param delay_ms? integer
+---@return Subject input_events
+---@return Observable debounced
+function M.create_debounced_observable_by_bufnr(delay_ms)
+    local delay_ms = delay_ms or 250
+
     local input_events = rx.Subject.create()
     local debounced = input_events:debounceByKey(
         function(ev)
             return ev.bufnr
         end,
-        250,
+        delay_ms,
         TimeoutScheduler.create
     )
     return input_events, debounced
