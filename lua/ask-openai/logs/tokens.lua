@@ -62,9 +62,13 @@ end
 ---@return string Formatted string with probability indicator
 local function format_token_with_prob(token, prob)
     local colored_text = color_by_probability(token, prob)
-    -- Show probability in parentheses for tokens that aren't 100% confident
-    if prob ~= nil and prob < 1.0 then
-        return colored_text .. string.format(" (%.2f)", prob)
+    local show_probabilities = true
+    if show_probabilities then
+        -- Show probability in parentheses for tokens that aren't 100% confident
+        -- FYI keep this nested condition for readability
+        if prob ~= nil and prob < 1.0 then
+            return colored_text .. ansi.italic(string.format(" (%.2f)", prob))
+        end
     end
     return colored_text
 end
