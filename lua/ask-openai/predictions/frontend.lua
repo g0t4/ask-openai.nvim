@@ -419,7 +419,7 @@ function PredictionsFrontend.start_predictions()
         return
     end
 
-    local predictions_frontend = require("ask-openai.predictions.frontend")
+    local predictions_frontend = PredictionsFrontend
 
     -- hardcoded keymaps
     vim.api.nvim_set_keymap('i', keymap_accept_all, "",
