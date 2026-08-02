@@ -81,8 +81,7 @@ end
 ---@param prob number|nil Token probability (0-1)
 ---@return string Formatted string with probability indicator
 local function format_token_with_prob(token, prob)
-    local colored_text = color_by_probability(token, prob)
-    return colored_text .. display_probability(prob)
+    return color_by_probability(token, prob) .. display_probability(prob)
 end
 
 
