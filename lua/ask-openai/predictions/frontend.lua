@@ -302,7 +302,7 @@ local ignore_buftypes = {
     "terminal",
 }
 local keys = require("ask-openai.predictions.keys")
-local input_events, debounced = keys.create_input_observables()
+local input_events, debounced_events = keys.create_debounced_observable()
 local input_events_subscription = input_events:subscribe(function(event)
     --- @cast event ObservableInputEvent
 
@@ -313,9 +313,9 @@ local input_events_subscription = input_events:subscribe(function(event)
         PredictionsFrontend.cancel_current_prediction(event.bufnr)
     end)
 end)
-local debounced_subscription = debounced:subscribe(function(event)
+local debounced_subscription = debounced_events:subscribe(function(event)
     --- @cast event ObservableInputEvent
-    log:info("debounced", event.bufnr)
+    log:info("debounced event", event.bufnr)
     vim.schedule(function()
         -- log:trace("CursorMovedI debounced")
 

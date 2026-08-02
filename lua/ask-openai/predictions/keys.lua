@@ -6,7 +6,7 @@ local M = {}
 
 --- @return Subject input_events
 --- @return Observable debounced
-function M.create_input_observables()
+function M.create_debounced_observable()
     local scheduler = TimeoutScheduler.create()
     local input_events = rx.Subject.create()
     local debounced = input_events:debounce(250, scheduler)
