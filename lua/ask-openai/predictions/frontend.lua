@@ -302,7 +302,7 @@ local ignore_buftypes = {
     "terminal",
 }
 local debounced = require("ask-openai.predictions.debounced")
-local input_events, debounced_events = debounced.create_debounced_observable()
+local input_events, debounced_events = debounced.create_debounced_observable_by_bufnr()
 local input_events_subscription = input_events:subscribe(function(event)
     --- @cast event ObservableInputEvent
 
