@@ -1,6 +1,7 @@
 -- testing modules:
 require("ask-openai.helpers.test_setup").modify_package_path()
-local assert = require 'luassert'
+local assert = require('luassert')
+local should = require("devtools.tests.should")
 local rx = require "rx"
 
 local debounced = require("ask-openai.predictions.rx")
@@ -39,30 +40,66 @@ local function create_fake_scheduler()
 end
 
 describe("Observable:debounceByKey", function()
-    it("debounces independently for each key", function()
-        local scheduler, flush = create_fake_scheduler()
-        local source = rx.Subject.create()
-        local received = {}
+    describe("fake scheduler", function()
+        it("debounces independently for each key", function()
+            local scheduler, flush = create_fake_scheduler()
+            local source = rx.Subject.create()
+            local received = {}
 
-        source
-            :debounceByKey(function(event)
-                return event.bufnr
-            end, 250, function()
-                return scheduler
-            end)
-            :subscribe(function(event)
+            source
+                :debounceByKey(function(event)
+                    return event.bufnr
+                end, 250, function()
+                    return scheduler
+                end)
+                :subscribe(function(event)
+                    table.insert(received, event)
+                end)
+
+            source:onNext({ bufnr = 1, value = "buffer 1 first" })
+            source:onNext({ bufnr = 2, value = "buffer 2" })
+            source:onNext({ bufnr = 1, value = "buffer 1 latest" })
+
+            flush()
+
+            assert.same({
+                { bufnr = 2, value = "buffer 2" },
+                { bufnr = 1, value = "buffer 1 latest" },
+            }, received)
+        end)
+    end)
+
+    describe("integration tests", function()
+        it("multiple events per bufnr, returns last per bufnr", function()
+            local input_events, debounced_by_bufnr = debounced.create_debounced_observable_by_bufnr()
+
+            local received = {}
+
+            debounced_by_bufnr:subscribe(function(event)
                 table.insert(received, event)
             end)
 
-        source:onNext({ bufnr = 1, value = "buffer 1 first" })
-        source:onNext({ bufnr = 2, value = "buffer 2" })
-        source:onNext({ bufnr = 1, value = "buffer 1 latest" })
+            -- bufnr1
+            input_events:onNext({ bufnr = 1, value = 't' })
+            input_events:onNext({ bufnr = 1, value = 'y' })
+            input_events:onNext({ bufnr = 1, value = 'p' })
+            input_events:onNext({ bufnr = 1, value = 'i' })
 
-        flush()
+            -- bufnr2
+            input_events:onNext({ bufnr = 2, value = 'a' })
+            input_events:onNext({ bufnr = 2, value = 'b' })
 
-        assert.same({
-            { bufnr = 2, value = "buffer 2" },
-            { bufnr = 1, value = "buffer 1 latest" },
-        }, received)
+
+            assert.same({}, received)
+            vim.wait(100)
+            assert.same({}, received)
+            vim.wait(100)
+            assert.same({}, received)
+            vim.wait(100) -- well past 250ms debounce period
+            assert.same({
+                { bufnr = 1, value = 'i' },
+                { bufnr = 2, value = 'b' },
+            }, received)
+        end)
     end)
 end)
