@@ -17,7 +17,9 @@ end
 ---@return Subject input_events
 ---@return Observable debounced
 function M.create_debounced_observable_by_bufnr(delay_ms)
-    local delay_ms = delay_ms or 250
+    if delay_ms == nil then
+        error("delay_ms must be provided")
+    end
 
     local input_events = rx.Subject.create()
     local debounced = input_events:debounceByKey(

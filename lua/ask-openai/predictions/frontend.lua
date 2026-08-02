@@ -302,7 +302,8 @@ local ignore_buftypes = {
     "terminal",
 }
 local debouncing = require("ask-openai.rx.debouncing")
-local input_events, debounced_events = debouncing.create_debounced_observable_by_bufnr()
+local _250ms = 250 -- milliseconds
+local input_events, debounced_events = debouncing.create_debounced_observable_by_bufnr(_250ms)
 local input_events_subscription = input_events:subscribe(function(event)
     --- @cast event ObservableInputEvent
 
