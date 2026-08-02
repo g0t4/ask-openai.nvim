@@ -318,6 +318,12 @@ local debounced_subscription = debounced_events:subscribe(function(event)
     -- log:info("debounced prediction trigger", event.bufnr)
     -- TODO per-buffer predictions => need debounced observable PER buffer, not one global observable!
     --   TODO OR I need a group-by operator, that should exist, right?
+    start_predicting(event)
+end)
+function start_predicting(event)
+    -- TODO I split out a seam here so I can call this directly for inputs that should not be debounced...
+    -- remember we can call this back to back with little overhead backend wise and even frontend...
+    -- real issue is if we start streaming in extmarks and then restart then it can slow down user typing (IIRC)
     vim.schedule(function()
         if vim.fn.mode() ~= "i" then
             log:info("cannot predict outside insert mode")
@@ -327,7 +333,7 @@ local debounced_subscription = debounced_events:subscribe(function(event)
 
         PredictionsFrontend.ask_for_prediction({ bufnr = event.bufnr })
     end)
-end)
+end
 
 function PredictionsFrontend.request_new_prediction(bufnr)
     local current_prediction = PredictionsFrontend._get_current_prediction(bufnr)
