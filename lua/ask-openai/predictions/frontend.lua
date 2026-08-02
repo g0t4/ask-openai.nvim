@@ -176,17 +176,17 @@ function PredictionsFrontend.ask_for_prediction(params)
             return flags
         end
 
-
         ---@type StreamingFrontend
         local frontend = {
             on_parsed_data_sse = on_parsed_data_sse,
             on_curl_exited_successfully = on_curl_exited_successfully,
             explain_error = explain_error,
             on_sse_llama_server_timings = on_sse_llama_server_timings,
+            -- FYI for now leave _wrapper in name for now to differentiate from actual function get_flags
             get_flags_wrapper = get_flags,
         }
 
-        log:info("Curl.spawn(fim)")
+        -- log:info("Curl.spawn(fim)")
         Curl.spawn(fim_request, frontend)
     end
 
@@ -459,12 +459,7 @@ function PredictionsFrontend.start_predictions()
         pattern = "*",
         callback = predictions_frontend.entering_insert_mode
     })
-    -- vim.api.nvim_create_autocmd("CursorMovedI", {
-    --     -- TODO TextChangedI intead of cursor moved?
-    --     group = augroup,
-    --     pattern = "*", -- todo filter?
-    --     callback = predictions_frontend.cursor_moved_in_insert_mode
-    -- })
+    -- vim.api.nvim_create_autocmd("CursorMovedI", { -- FYI old event used to trigger prediction (replaced with TextChangedI below)
     vim.api.nvim_create_autocmd("TextChangedI", {
         -- FYI been using this for a LONG time now and no issues (AFAICT)
         group = augroup,
