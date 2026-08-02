@@ -4,7 +4,7 @@ local assert = require('luassert')
 local should = require("devtools.tests.should")
 local rx = require "rx"
 
-local ask_rx = require("ask-openai.rx.rx")
+local debouncing = require("ask-openai.rx.debouncing")
 
 local function create_fake_scheduler()
     -- FYI this fake scehduler may be useful but it makes it very hard to assert debounce which is inherently time based... maybe if you setup a simulated clock this would make more sense but yeah no on this fake scheduler for time based Rx verification
@@ -72,7 +72,7 @@ describe("Observable:debounceByKey", function()
 
     describe("integration tests", function()
         it("multiple events per bufnr, returns last per bufnr", function()
-            local input_events, debounced_by_bufnr = ask_rx.create_debounced_observable_by_bufnr()
+            local input_events, debounced_by_bufnr = debouncing.create_debounced_observable_by_bufnr()
 
             local received = {}
 
@@ -104,7 +104,7 @@ describe("Observable:debounceByKey", function()
         end)
 
         it("does not allow one bufnr to debounce another", function()
-            local input_events, debounced_by_bufnr = ask_rx.create_debounced_observable_by_bufnr()
+            local input_events, debounced_by_bufnr = debouncing.create_debounced_observable_by_bufnr()
 
             local received = {}
 
