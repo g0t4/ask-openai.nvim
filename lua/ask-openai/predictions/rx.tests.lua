@@ -3,8 +3,7 @@ require("ask-openai.helpers.test_setup").modify_package_path()
 local assert = require 'luassert'
 local rx = require "rx"
 
--- TODO relocate file?
-require "ask-openai.predictions.debounced"
+local debounced = require("ask-openai.predictions.rx")
 
 local function create_fake_scheduler()
     local scheduled = {}
