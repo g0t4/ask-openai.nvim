@@ -91,11 +91,7 @@ function M.probability_colored_outputs(sse_fields_list)
     local reasoning_parts = {}
     local content_parts = {}
 
-    local sse_count = #sse_fields_list
-
-    for sse_index_base0 = 0, sse_count - 1 do
-        local sse_fields = sse_fields_list[sse_index_base0 + 1]
-
+    for _, sse_fields in ipairs(sse_fields_list) do
         local is_reasoning = sse_fields.reasoning_content and sse_fields.reasoning_content ~= ""
         if is_reasoning then
             table.insert(reasoning_parts, format_token_with_prob(sse_fields.reasoning_content, sse_fields.prob))
