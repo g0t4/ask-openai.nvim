@@ -327,7 +327,7 @@ local debounced_subscription = debounced:subscribe(function(event)
     end)
 end)
 
-function PredictionsFrontend.cursor_moved_in_insert_mode(bufnr)
+function PredictionsFrontend.request_new_prediction(bufnr)
     local current_prediction = PredictionsFrontend._get_current_prediction(bufnr)
     if current_prediction and current_prediction.disable_cursor_moved == true then
         -- log:trace("Disabled CursorMovedI, skipping...")
@@ -359,7 +359,7 @@ end
 ---@param event vim.api.keyset.create_autocmd.callback_args
 function PredictionsFrontend.entering_insert_mode(event)
     log:info("entering_insert_mode", event)
-    PredictionsFrontend.cursor_moved_in_insert_mode(event.buf)
+    PredictionsFrontend.request_new_prediction(event.buf)
 end
 
 function PredictionsFrontend.accept_all_invoked()
@@ -395,7 +395,7 @@ end
 function PredictionsFrontend.new_prediction_invoked()
     local bufnr = vim.fn.bufnr()
     log:info("new_prediction_invoked", bufnr)
-    PredictionsFrontend.cursor_moved_in_insert_mode(bufnr)
+    PredictionsFrontend.request_new_prediction(bufnr)
 end
 
 function PredictionsFrontend.vim_is_quitting(event)
@@ -466,7 +466,7 @@ function PredictionsFrontend.start_predictions()
         pattern = "*",
         callback = function(event)
             ---@cast event vim.api.keyset.create_autocmd.callback_args
-            predictions_frontend.cursor_moved_in_insert_mode(event.buf)
+            predictions_frontend.request_new_prediction(event.buf)
         end
     })
 
