@@ -36,7 +36,7 @@ end
 --- @param prediction Prediction|nil
 function PredictionsFrontend._set_current_prediction(bufnr, prediction)
     -- log:info("SET prediction", bufnr, prediction)
-    log:info("SET prediction", bufnr)
+    -- log:info("SET prediction", bufnr)
     buffer_state.buffer_state_for(bufnr).ask_openai_current_prediction = prediction
 end
 
@@ -64,8 +64,8 @@ function PredictionsFrontend.ask_for_prediction(params)
         if this_prediction.apply_template_only then
             -- PRN? move this out into its own module, composed with new open_float
             -- log:luaify_trace("predictions.body", body) -- luaify logs later
-            log:info("predictions.base_url", FimBackend.base_url)
-            log:info("predictions.endpoint", FimBackend.endpoint)
+            -- log:info("predictions.base_url", FimBackend.base_url)
+            -- log:info("predictions.endpoint", FimBackend.endpoint)
 
             local response = llama_server_client.apply_template(FimBackend.base_url, body)
             local FloatWindow = require("ask-openai.helpers.float_window")
@@ -186,7 +186,7 @@ function PredictionsFrontend.ask_for_prediction(params)
             get_flags_wrapper = get_flags,
         }
 
-        -- log:info("Curl.spawn(fim)")
+        log:info("Curl.spawn(fim)")
         Curl.spawn(fim_request, frontend)
     end
 
@@ -309,21 +309,21 @@ local input_events_subscription = input_events:subscribe(function(event)
     -- immediately clear/hide prediction, else slides as you type
     -- TODO schedule or not?
     vim.schedule(function()
-        log:info("input_event", event.bufnr)
+        -- log:info("input_event", event.bufnr)
         PredictionsFrontend.cancel_current_prediction(event.bufnr)
     end)
 end)
 local debounced_subscription = debounced_events:subscribe(function(event)
     --- @cast event ObservableInputEvent
-    log:info("debounced prediction trigger", event.bufnr)
+    -- log:info("debounced prediction trigger", event.bufnr)
     -- TODO per-buffer predictions => need debounced observable PER buffer, not one global observable!
     --   TODO OR I need a group-by operator, that should exist, right?
     vim.schedule(function()
-        -- log:trace("CursorMovedI debounced")
-
         if vim.fn.mode() ~= "i" then
+            log:info("cannot predict outside insert mode")
             return
         end
+        log:info("start predict")
 
         PredictionsFrontend.ask_for_prediction({ bufnr = event.bufnr })
     end)
