@@ -168,16 +168,22 @@ function PredictionsFrontend.ask_for_prediction(params)
             stats.show_prediction_stats(sse, performance)
         end
 
+        local function get_flags()
+            local flags = {}
+            if this_prediction.has_duplicate_prefix then
+                flags["fim_duplicate_prefix"] = this_prediction._trace_only_duplicate_prefix
+            end
+            return flags
+        end
+
+
         ---@type StreamingFrontend
         local frontend = {
             on_parsed_data_sse = on_parsed_data_sse,
             on_curl_exited_successfully = on_curl_exited_successfully,
             explain_error = explain_error,
             on_sse_llama_server_timings = on_sse_llama_server_timings,
-            -- FYI use closure to capture current context so we don't have to jump through hoops later in saving the trace
-            --   I should be able to get current prediction via trace too but let's not deal with it right now
-            --   IOTW refactor this crap later when the buffer local predictions is solid and pays dividends
-            get_flags_wrapper = function() return PredictionsFrontend.get_flags(params.bufnr) end,
+            get_flags_wrapper = get_flags,
         }
 
         log:info("Curl.spawn(fim)")
@@ -262,15 +268,6 @@ function PredictionsFrontend.cancel_current_prediction(bufnr)
 
     -- FYI both this_prediction and request are new with each keystroke
     CurlRequest.terminate(this_prediction.fim_request)
-end
-
-function PredictionsFrontend.get_flags(bufnr)
-    local flags = {}
-    local current = PredictionsFrontend._get_current_prediction(bufnr)
-    if current and current.has_duplicate_prefix then
-        flags["fim_duplicate_prefix"] = current._trace_only_duplicate_prefix
-    end
-    return flags
 end
 
 local ignore_filetypes = {
