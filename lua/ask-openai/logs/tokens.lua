@@ -56,6 +56,13 @@ local function color_by_probability(text, prob)
     return ansi.rgb(text, r, g, b)
 end
 
+
+---@return string probability display
+local function display_prob(prob)
+    return ansi.italic(string.format("(%.2f)", prob))
+end
+
+
 --- Format a single token with its probability for logging.
 ---@param token string text
 ---@param prob number|nil Token probability (0-1)
@@ -67,7 +74,7 @@ local function format_token_with_prob(token, prob)
         -- Show probability in parentheses for tokens that aren't 100% confident
         -- FYI keep this nested condition for readability
         if prob ~= nil and prob < 1.0 then
-            return colored_text .. ansi.italic(string.format("(%.2f)", prob))
+            return colored_text .. display_prob(prob)
         end
     end
     return colored_text
