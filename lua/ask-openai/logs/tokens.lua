@@ -59,13 +59,19 @@ end
 ---@param prob number|nil
 ---@return string probability display
 local function display_probability(prob)
+    -- toggle on/off instead of comment out code
     local show_probabilities = true
+    -- local show_probabilities = false
+
     if show_probabilities then
         -- FYI keep this nested condition for readability
-        if prob ~= nil and prob < 1.0 then
+        if prob == nil then
+            return "(?)"
+        elseif prob < 1.0 then
             return ansi.italic(string.format("(%.2f)", prob))
         end
     end
+
     return ""
 end
 
