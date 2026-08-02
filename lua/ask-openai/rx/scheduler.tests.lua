@@ -16,17 +16,18 @@ tests.describe("timeout scheduler", function()
     -- FYI async.tests => https://github.com/nvim-lua/plenary.nvim/blob/master/lua/plenary/async/tests.lua
     a.tests.it("should unsubscribe", function()
         local s = TimeoutScheduler.create()
-        local block_until = a.wrap(function(callback)
+        local start_time
+        local wait_until_100ms_scheduler_callsback = a.wrap(function(callback)
             s:schedule(function()
-                callback("elapsed")
+                -- once scheduler fires (after 100ms) then the callback is executed with the "elapsed" result
+                local end_time = vim.uv.hrtime()
+                local elapsed_ms = (end_time - start_time) / 1e6
+                callback(elapsed_ms)
             end, 100)
         end, 1)
 
-        local start_time = vim.uv.hrtime()
-        local result = block_until()
-        local elapsed_ms = (vim.uv.hrtime() - start_time) / 1e6
-
-        assert.are.equal(result, "elapsed")
+        start_time = vim.uv.hrtime()
+        local elapsed_ms = wait_until_100ms_scheduler_callsback()
         assert(elapsed_ms > 90, "should block for approximately 100ms")
     end)
 end)
