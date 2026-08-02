@@ -4,7 +4,7 @@ local assert = require('luassert')
 local should = require("devtools.tests.should")
 local rx = require "rx"
 
-local predictions_rx = require("ask-openai.predictions.rx")
+local ask_rx = require("ask-openai.rx.rx")
 
 local function create_fake_scheduler()
     local scheduled = {}
@@ -71,7 +71,7 @@ describe("Observable:debounceByKey", function()
 
     describe("integration tests", function()
         it("multiple events per bufnr, returns last per bufnr", function()
-            local input_events, debounced_by_bufnr = predictions_rx.create_debounced_observable_by_bufnr()
+            local input_events, debounced_by_bufnr = ask_rx.create_debounced_observable_by_bufnr()
 
             local received = {}
 
@@ -103,7 +103,7 @@ describe("Observable:debounceByKey", function()
         end)
 
         it("does not allow one bufnr to debounce another", function()
-            local input_events, debounced_by_bufnr = predictions_rx.create_debounced_observable_by_bufnr()
+            local input_events, debounced_by_bufnr = ask_rx.create_debounced_observable_by_bufnr()
 
             local received = {}
 

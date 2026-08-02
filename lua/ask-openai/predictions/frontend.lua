@@ -301,8 +301,8 @@ local ignore_buftypes = {
     "nofile", -- rename refactor popup window uses this w/o a filetype, also Dressing rename in nvimtree uses nofile
     "terminal",
 }
-local predictions_rx = require("ask-openai.predictions.rx")
-local input_events, debounced_events = predictions_rx.create_debounced_observable_by_bufnr()
+local ask_rx = require("ask-openai.rx.rx")
+local input_events, debounced_events = ask_rx.create_debounced_observable_by_bufnr()
 local input_events_subscription = input_events:subscribe(function(event)
     --- @cast event ObservableInputEvent
 
