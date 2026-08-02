@@ -2,74 +2,9 @@
 require("ask-openai.helpers.test_setup").modify_package_path()
 local assert = require('luassert')
 local should = require("devtools.tests.should")
-local rx = require "rx"
-
 local debouncing = require("ask-openai.rx.debouncing")
 
-local function create_fake_scheduler()
-    -- FYI this fake scehduler may be useful but it makes it very hard to assert debounce which is inherently time based... maybe if you setup a simulated clock this would make more sense but yeah no on this fake scheduler for time based Rx verification
-    local scheduled = {}
-
-    local scheduler = {}
-
-    function scheduler:schedule(action, delay_ms)
-        local task = {
-            action = action,
-            delay_ms = delay_ms,
-            cancelled = false,
-        }
-
-        table.insert(scheduled, task)
-
-        return rx.Subscription.create(function()
-            task.cancelled = true
-        end)
-    end
-
-    local function flush()
-        local pending = scheduled
-        scheduled = {}
-
-        for _, task in ipairs(pending) do
-            if not task.cancelled then
-                task.action()
-            end
-        end
-    end
-
-    return scheduler, flush
-end
-
 describe("Observable:debounceByKey", function()
-    describe("fake scheduler", function()
-        it("debounces independently for each key", function()
-            local scheduler, flush = create_fake_scheduler()
-            local source = rx.Subject.create()
-            local received = {}
-
-            source
-                :debounceByKey(function(event)
-                    return event.bufnr
-                end, 250, function()
-                    return scheduler
-                end)
-                :subscribe(function(event)
-                    table.insert(received, event)
-                end)
-
-            source:onNext({ bufnr = 1, value = "buffer 1 first" })
-            source:onNext({ bufnr = 2, value = "buffer 2" })
-            source:onNext({ bufnr = 1, value = "buffer 1 latest" })
-
-            flush()
-
-            assert.same({
-                { bufnr = 2, value = "buffer 2" },
-                { bufnr = 1, value = "buffer 1 latest" },
-            }, received)
-        end)
-    end)
-
     describe("integration tests", function()
         it("multiple events per bufnr, returns last per bufnr", function()
             local input_events, debounced_by_bufnr = debouncing.create_debounced_observable_by_bufnr()
