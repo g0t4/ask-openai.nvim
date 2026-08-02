@@ -356,12 +356,14 @@ end
 function PredictionsFrontend.leaving_insert_mode(event)
     log:info("leaving_insert_mode", event.buf)
     PredictionsFrontend.cancel_current_prediction(event.buf)
+    -- TODO I would like this to reset the debounce period too? often I hit escape and then back to insert mode to make sure I am in insert mode before typing...
 end
 
 ---@param event vim.api.keyset.create_autocmd.callback_args
 function PredictionsFrontend.entering_insert_mode(event)
     log:info("entering_insert_mode", event)
     PredictionsFrontend.request_new_prediction(event.buf)
+    -- TODO this should bypass debounce, never a delay else I cannot go insert mode and type one char and get first FIM right away
 end
 
 function PredictionsFrontend.accept_all_invoked()
@@ -398,6 +400,8 @@ function PredictionsFrontend.new_prediction_invoked()
     local bufnr = vim.fn.bufnr()
     log:info("new_prediction_invoked", bufnr)
     PredictionsFrontend.request_new_prediction(bufnr)
+    -- TODO there is ZERO reason to delay here too... I expressly asked for a new completion, start immediately!
+    -- TODO do key combos from keymaps count as inputs that trigger a prediction (or push me into debounce delay?)
 end
 
 function PredictionsFrontend.vim_is_quitting(event)
