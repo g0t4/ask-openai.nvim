@@ -131,28 +131,28 @@ describe("Observable:typingDebounceByKey", function()
                 table.insert(emitted, event)
             end)
 
-            input_events:onNext({ bufnr = 1, value = "a" })
-            input_events:onNext({ bufnr = 1, value = "b" })
+            input_events:onNext({ bufnr = 1, value = "a" }) -- no delay
+            input_events:onNext({ bufnr = 1, value = "b" }) -- debounce
             vim.wait(30)
 
-            input_events:onNext({ bufnr = 2, value = "x" })
+            input_events:onNext({ bufnr = 2, value = "x" }) -- no delay
             assert.same({
-                { bufnr = 1, value = "a" },
-                { bufnr = 2, value = "x" },
+                { bufnr = 1, value = "a" }, -- no delay
+                { bufnr = 2, value = "x" }, -- no delay
             }, emitted)
 
             vim.wait(20) -- right at the delay_ms for bufnr = 1 (emits b)
             assert.same({
                 { bufnr = 1, value = "a" },
                 { bufnr = 2, value = "x" },
-                { bufnr = 1, value = "b" },
+                { bufnr = 1, value = "b" }, -- last in debounce
             }, emitted)
 
             -- Buffer 1 has reset, while buffer 2 is still in typing mode.
             vim.wait(50)
             input_events:onNext({ bufnr = 1, value = "c" }) -- no delay
-            input_events:onNext({ bufnr = 2, value = "y" }) -- debounced (never goes through)
-            input_events:onNext({ bufnr = 2, value = "z" }) -- last key during debounce delay_ms
+            input_events:onNext({ bufnr = 2, value = "y" }) -- debounce (never goes through)
+            input_events:onNext({ bufnr = 2, value = "z" }) -- debounce (last)
             assert.same({
                 { bufnr = 1, value = "a" },
                 { bufnr = 2, value = "x" },
@@ -165,8 +165,8 @@ describe("Observable:typingDebounceByKey", function()
                 -- FYI you could add a label to the emitted events, i.e. `no_delay` and `last_in_debounce` ... that said, tests work too!
                 { bufnr = 1, value = "a" }, -- no delay
                 { bufnr = 2, value = "x" }, -- no delay
-                { bufnr = 1, value = "b" },
-                { bufnr = 1, value = "c" }, -- no delay
+                { bufnr = 1, value = "b" }, -- last for bufnr = 1
+                { bufnr = 1, value = "c" }, -- no delay (after reset)
                 { bufnr = 2, value = "z" }, -- last for bufnr = 2
             }, emitted)
         end)
@@ -186,21 +186,31 @@ describe("Observable:typingDebounceByKey", function()
             input_events:onNext({ bufnr = 1, value = "c" })
 
             assert.same({
-                { bufnr = 1, value = "a" },
-                { bufnr = 1, value = "b" },
+                { bufnr = 1, value = "a" }, -- no delay
+                { bufnr = 1, value = "b" }, -- last in debounce
             }, emitted)
 
-            vim.wait(30)
+            vim.wait(30) -- at 90ms of reset for bufnr=1
             assert.same({
                 { bufnr = 1, value = "a" },
                 { bufnr = 1, value = "b" },
             }, emitted)
 
-            vim.wait(40)
+            vim.wait(20)
+            assert.same({
+                { bufnr = 1, value = "a" },
+                { bufnr = 1, value = "b" },
+                { bufnr = 1, value = "c" }, -- last in debounce
+            }, emitted)
+
+            vim.wait(55) -- 50+55 = 105 > 100ms reset
+            -- ? query status per bufnr (no delay / debounce / no delay) and include duration remaining until reset?
+            input_events:onNext({ bufnr = 1, value = "d" }) -- no delay, after reset
             assert.same({
                 { bufnr = 1, value = "a" },
                 { bufnr = 1, value = "b" },
                 { bufnr = 1, value = "c" },
+                { bufnr = 1, value = "d" }, -- no delay
             }, emitted)
         end)
 
@@ -209,12 +219,21 @@ describe("Observable:typingDebounceByKey", function()
                 debouncing.create_typing_debounced_observable_by_bufnr(50, 100)
             local emitted = {}
 
+            -- FYI this is arguably vestigial as it is covered in prior tests but leave it for now
+
             typing_debounced:subscribe(function(event)
                 table.insert(emitted, event)
             end)
 
             input_events:onNext({ bufnr = 1, value = "a" })
             input_events:onNext({ bufnr = 1, value = "b" })
+            -- might make sense to build event history (scenario setup) and then run different tests after that shared start history) to help suss out timings instead of recreate entire event history for every test case
+            -- i.e.
+            --   wait(75ms) => emit c => emits at 125ms
+            --   wait(100ms) => emit c => emits at 100ms (no delay)
+            --   wait(120ms) => emit c => emits at 100ms (no delay)
+            --
+            --   note we do not need to have shared assertion logic just shared setup to then branch multiple test cases on minor differences and that minor delta in timing shows intended behavior clearly (more so than starting a whole new test case)
             vim.wait(120)
             input_events:onNext({ bufnr = 1, value = "c" })
 
