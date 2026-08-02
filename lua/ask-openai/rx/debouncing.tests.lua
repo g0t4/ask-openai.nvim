@@ -75,3 +75,146 @@ describe("Observable:debounceByKey", function()
         end)
     end)
 end)
+
+describe("Observable:typingDebounceByKey", function()
+    describe("integration tests", function()
+        it("immediately returns the first event, then the last event per bufnr", function()
+            local input_events, typing_debounced =
+                debouncing.create_typing_debounced_observable_by_bufnr(50, 100)
+            local received = {}
+
+            typing_debounced:subscribe(function(event)
+                table.insert(received, event)
+            end)
+
+            input_events:onNext({ bufnr = 1, value = "t" })
+            assert.same({ { bufnr = 1, value = "t" } }, received)
+
+            input_events:onNext({ bufnr = 1, value = "y" })
+            input_events:onNext({ bufnr = 1, value = "p" })
+            input_events:onNext({ bufnr = 1, value = "i" })
+
+            input_events:onNext({ bufnr = 2, value = "a" })
+            assert.same({
+                { bufnr = 1, value = "t" },
+                { bufnr = 2, value = "a" },
+            }, received)
+            input_events:onNext({ bufnr = 2, value = "b" })
+
+            vim.wait(30)
+            assert.same({
+                { bufnr = 1, value = "t" },
+                { bufnr = 2, value = "a" },
+            }, received)
+
+            vim.wait(40)
+            assert.same({
+                { bufnr = 1, value = "t" },
+                { bufnr = 2, value = "a" },
+                { bufnr = 1, value = "i" },
+                { bufnr = 2, value = "b" },
+            }, received)
+        end)
+
+        it("does not allow one bufnr to debounce or reset another", function()
+            local input_events, typing_debounced =
+                debouncing.create_typing_debounced_observable_by_bufnr(50, 100)
+            local received = {}
+
+            typing_debounced:subscribe(function(event)
+                table.insert(received, event)
+            end)
+
+            input_events:onNext({ bufnr = 1, value = "a" })
+            input_events:onNext({ bufnr = 1, value = "b" })
+            vim.wait(30)
+
+            input_events:onNext({ bufnr = 2, value = "x" })
+            assert.same({
+                { bufnr = 1, value = "a" },
+                { bufnr = 2, value = "x" },
+            }, received)
+
+            vim.wait(30)
+            assert.same({
+                { bufnr = 1, value = "a" },
+                { bufnr = 2, value = "x" },
+                { bufnr = 1, value = "b" },
+            }, received)
+
+            -- Buffer 1 has reset, while buffer 2 is still in typing mode.
+            vim.wait(50)
+            input_events:onNext({ bufnr = 1, value = "c" })
+            input_events:onNext({ bufnr = 2, value = "y" })
+            assert.same({
+                { bufnr = 1, value = "a" },
+                { bufnr = 2, value = "x" },
+                { bufnr = 1, value = "b" },
+                { bufnr = 1, value = "c" },
+            }, received)
+
+            vim.wait(70)
+            assert.same({
+                { bufnr = 1, value = "a" },
+                { bufnr = 2, value = "x" },
+                { bufnr = 1, value = "b" },
+                { bufnr = 1, value = "c" },
+                { bufnr = 2, value = "y" },
+            }, received)
+        end)
+
+        it("stays in typing mode until the full reset period has elapsed without input", function()
+            local input_events, typing_debounced =
+                debouncing.create_typing_debounced_observable_by_bufnr(50, 100)
+            local received = {}
+
+            typing_debounced:subscribe(function(event)
+                table.insert(received, event)
+            end)
+
+            input_events:onNext({ bufnr = 1, value = "a" })
+            input_events:onNext({ bufnr = 1, value = "b" })
+            vim.wait(60) -- The debounced value has fired, but reset has not.
+            input_events:onNext({ bufnr = 1, value = "c" })
+
+            assert.same({
+                { bufnr = 1, value = "a" },
+                { bufnr = 1, value = "b" },
+            }, received)
+
+            vim.wait(30)
+            assert.same({
+                { bufnr = 1, value = "a" },
+                { bufnr = 1, value = "b" },
+            }, received)
+
+            vim.wait(40)
+            assert.same({
+                { bufnr = 1, value = "a" },
+                { bufnr = 1, value = "b" },
+                { bufnr = 1, value = "c" },
+            }, received)
+        end)
+
+        it("immediately returns the next event after reset", function()
+            local input_events, typing_debounced =
+                debouncing.create_typing_debounced_observable_by_bufnr(50, 100)
+            local received = {}
+
+            typing_debounced:subscribe(function(event)
+                table.insert(received, event)
+            end)
+
+            input_events:onNext({ bufnr = 1, value = "a" })
+            input_events:onNext({ bufnr = 1, value = "b" })
+            vim.wait(120)
+            input_events:onNext({ bufnr = 1, value = "c" })
+
+            assert.same({
+                { bufnr = 1, value = "a" },
+                { bufnr = 1, value = "b" },
+                { bufnr = 1, value = "c" },
+            }, received)
+        end)
+    end)
+end)
