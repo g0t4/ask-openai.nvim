@@ -67,11 +67,12 @@ local function format_token_with_prob(token, prob)
         -- Show probability in parentheses for tokens that aren't 100% confident
         -- FYI keep this nested condition for readability
         if prob ~= nil and prob < 1.0 then
-            return colored_text .. ansi.italic(string.format(" (%.2f)", prob))
+            return colored_text .. ansi.italic(string.format("(%.2f)", prob))
         end
     end
     return colored_text
 end
+
 
 ---@param sse_fields_list SseFieldsResult[]
 ---@return { reasoning: string, content: string }
@@ -96,6 +97,7 @@ function M.probability_colored_outputs(sse_fields_list)
     end
 
     return {
+        -- FYI do not join w/ a separator, the token has all the text
         reasoning = table.concat(reasoning_parts),
         content = table.concat(content_parts),
     }
