@@ -407,12 +407,12 @@ end
 
 local are_predictions_running = false
 
-local augroup = "ask-openai.prediction"
+local AUGROUP = "ask-openai.prediction"
 
-local keymap_accept_all = '<Tab>'
-local keymap_accept_line = '<C-right>'
-local keymap_accept_word = '<M-right>'
-local keymap_redo_prediction = '<M-Tab>'
+local KEYMAP_ACCEPT_ALL = '<Tab>'
+local KEYMAP_ACCEPT_LINE = '<C-right>'
+local KEYMAP_ACCEPT_WORD = '<M-right>'
+local KEYMAP_REDO_PREDICTION = '<M-Tab>'
 
 function PredictionsFrontend.start_predictions()
     if are_predictions_running then
@@ -420,16 +420,16 @@ function PredictionsFrontend.start_predictions()
     end
 
     -- hardcoded keymaps
-    vim.api.nvim_set_keymap('i', keymap_accept_all, "",
+    vim.api.nvim_set_keymap('i', KEYMAP_ACCEPT_ALL, "",
         { noremap = true, callback = PredictionsFrontend.accept_all_invoked })
 
-    vim.api.nvim_set_keymap('i', keymap_accept_line, "",
+    vim.api.nvim_set_keymap('i', KEYMAP_ACCEPT_LINE, "",
         { noremap = true, callback = PredictionsFrontend.accept_line_invoked })
 
-    vim.api.nvim_set_keymap('i', keymap_accept_word, "",
+    vim.api.nvim_set_keymap('i', KEYMAP_ACCEPT_WORD, "",
         { noremap = true, callback = PredictionsFrontend.accept_word_invoked })
 
-    vim.api.nvim_set_keymap('i', keymap_redo_prediction, "",
+    vim.api.nvim_set_keymap('i', KEYMAP_REDO_PREDICTION, "",
         { noremap = true, callback = PredictionsFrontend.new_prediction_invoked })
 
     -- vim.keymap.set("n", "<leader>~", "<cmd>AskDumpEdits<CR>", {})
@@ -446,21 +446,21 @@ function PredictionsFrontend.start_predictions()
     vim.keymap.set("n", "<leader>temp", trigger_apply_template_dump, {})
 
     -- event subscriptions
-    vim.api.nvim_create_augroup(augroup, { clear = true })
+    vim.api.nvim_create_augroup(AUGROUP, { clear = true })
     vim.api.nvim_create_autocmd("InsertLeavePre", {
-        group = augroup,
+        group = AUGROUP,
         pattern = "*",
         callback = PredictionsFrontend.leaving_insert_mode
     })
     vim.api.nvim_create_autocmd("InsertEnter", {
-        group = augroup,
+        group = AUGROUP,
         pattern = "*",
         callback = PredictionsFrontend.entering_insert_mode
     })
     -- vim.api.nvim_create_autocmd("CursorMovedI", { -- FYI old event used to trigger prediction (replaced with TextChangedI below)
     vim.api.nvim_create_autocmd("TextChangedI", {
         -- FYI been using this for a LONG time now and no issues (AFAICT)
-        group = augroup,
+        group = AUGROUP,
         pattern = "*",
         callback = function(event)
             ---@cast event vim.api.keyset.create_autocmd.callback_args
@@ -478,13 +478,13 @@ function PredictionsFrontend.stop_predictions()
 
     -- FYI pcall blocks error propagation (returns status code, though in this case I don't care about that)
     -- remove event triggers
-    pcall(vim.api.nvim_del_augroup_by_name, augroup) -- most del methods will throw if doesn't exist... so just ignore that
+    pcall(vim.api.nvim_del_augroup_by_name, AUGROUP) -- most del methods will throw if doesn't exist... so just ignore that
 
     -- remove keymaps (using same hardcoded values)
-    pcall(vim.api.nvim_del_keymap, 'i', keymap_accept_all)
-    pcall(vim.api.nvim_del_keymap, 'i', keymap_accept_line)
-    pcall(vim.api.nvim_del_keymap, 'i', keymap_accept_word)
-    pcall(vim.api.nvim_del_keymap, 'i', keymap_redo_prediction)
+    pcall(vim.api.nvim_del_keymap, 'i', KEYMAP_ACCEPT_ALL)
+    pcall(vim.api.nvim_del_keymap, 'i', KEYMAP_ACCEPT_LINE)
+    pcall(vim.api.nvim_del_keymap, 'i', KEYMAP_ACCEPT_WORD)
+    pcall(vim.api.nvim_del_keymap, 'i', KEYMAP_REDO_PREDICTION)
 
     are_predictions_running = false
 end
