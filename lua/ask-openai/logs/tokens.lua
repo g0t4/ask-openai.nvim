@@ -85,21 +85,21 @@ local function format_token_with_prob(token, prob)
 end
 
 
----@param sse_fields_list SseFieldsResult[]
+---@param all_sses SseFieldsResult[]
 ---@return { reasoning: string, content: string }
-function M.probability_colored_outputs(sse_fields_list)
+function M.probability_colored_outputs(all_sses)
     local reasoning_parts = {}
     local content_parts = {}
 
-    for _, sse_fields in ipairs(sse_fields_list) do
-        local is_reasoning = sse_fields.reasoning_content and sse_fields.reasoning_content ~= ""
+    for _, sse in ipairs(all_sses) do
+        local is_reasoning = sse.reasoning_content and sse.reasoning_content ~= ""
         if is_reasoning then
-            table.insert(reasoning_parts, format_token_with_prob(sse_fields.reasoning_content, sse_fields.prob))
+            table.insert(reasoning_parts, format_token_with_prob(sse.reasoning_content, sse.prob))
         end
 
-        local is_content = sse_fields.content and sse_fields.content ~= ""
+        local is_content = sse.content and sse.content ~= ""
         if is_content then
-            table.insert(content_parts, format_token_with_prob(sse_fields.content, sse_fields.prob))
+            table.insert(content_parts, format_token_with_prob(sse.content, sse.prob))
         end
     end
 
