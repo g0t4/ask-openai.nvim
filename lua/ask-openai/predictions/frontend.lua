@@ -419,27 +419,25 @@ function PredictionsFrontend.start_predictions()
         return
     end
 
-    local predictions_frontend = PredictionsFrontend
-
     -- hardcoded keymaps
     vim.api.nvim_set_keymap('i', keymap_accept_all, "",
-        { noremap = true, callback = predictions_frontend.accept_all_invoked })
+        { noremap = true, callback = PredictionsFrontend.accept_all_invoked })
 
     vim.api.nvim_set_keymap('i', keymap_accept_line, "",
-        { noremap = true, callback = predictions_frontend.accept_line_invoked })
+        { noremap = true, callback = PredictionsFrontend.accept_line_invoked })
 
     vim.api.nvim_set_keymap('i', keymap_accept_word, "",
-        { noremap = true, callback = predictions_frontend.accept_word_invoked })
+        { noremap = true, callback = PredictionsFrontend.accept_word_invoked })
 
     vim.api.nvim_set_keymap('i', keymap_redo_prediction, "",
-        { noremap = true, callback = predictions_frontend.new_prediction_invoked })
+        { noremap = true, callback = PredictionsFrontend.new_prediction_invoked })
 
     -- vim.keymap.set("n", "<leader>~", "<cmd>AskDumpEdits<CR>", {})
 
     function trigger_apply_template_dump()
         local bufnr = vim.fn.bufnr()
         log:info("trigger_apply_template_dump", bufnr)
-        predictions_frontend.ask_for_prediction({
+        PredictionsFrontend.ask_for_prediction({
             bufnr = bufnr,
             apply_template_only = true,
         })
@@ -452,12 +450,12 @@ function PredictionsFrontend.start_predictions()
     vim.api.nvim_create_autocmd("InsertLeavePre", {
         group = augroup,
         pattern = "*",
-        callback = predictions_frontend.leaving_insert_mode
+        callback = PredictionsFrontend.leaving_insert_mode
     })
     vim.api.nvim_create_autocmd("InsertEnter", {
         group = augroup,
         pattern = "*",
-        callback = predictions_frontend.entering_insert_mode
+        callback = PredictionsFrontend.entering_insert_mode
     })
     -- vim.api.nvim_create_autocmd("CursorMovedI", { -- FYI old event used to trigger prediction (replaced with TextChangedI below)
     vim.api.nvim_create_autocmd("TextChangedI", {
@@ -466,7 +464,7 @@ function PredictionsFrontend.start_predictions()
         pattern = "*",
         callback = function(event)
             ---@cast event vim.api.keyset.create_autocmd.callback_args
-            predictions_frontend.request_new_prediction(event.buf)
+            PredictionsFrontend.request_new_prediction(event.buf)
         end
     })
 
