@@ -211,40 +211,40 @@ function PredictionsFrontend.ask_for_prediction(params)
             performance:rag_done()
 
             -- * make sure prior (canceled) rag request doesn't still respond
-            if PredictionsFrontend.rag_request_ids ~= this_request_ids then
+            if this_prediction.rag_request_ids ~= this_request_ids then
                 -- I bet this is why sometimes I get completions that still fire even after cancel b/c the RAG results aren't actually stopped in time on server and so they come back
                 --  and they arrive after next request started... the mismatch in request_ids will prevent that issue
                 log:trace("possibly stale rag results, skipping: " .. vim.inspect({
-                    global_rag_request_ids = PredictionsFrontend.rag_request_ids,
+                    prediction_rag_request_ids = this_prediction.rag_request_ids,
                     this_request_ids = this_request_ids,
                 }))
                 return
             end
 
-            if PredictionsFrontend.rag_cancel == nil then
+            if this_prediction.rag_cancel == nil then
                 log:error("rag appears canceled, skipping on_rag_response...")
                 return
             end
 
             -- clear cancel so not getting cancel message after retrieval (on next keystroke)
-            PredictionsFrontend.rag_cancel = nil
-            PredictionsFrontend.rag_request_ids = nil
+            this_prediction.rag_cancel = nil
+            this_prediction.rag_request_ids = nil
 
             then_send_fim(rag_matches)
         end
 
-        PredictionsFrontend.rag_cancel = function()
+        this_prediction.rag_cancel = function()
             log:warn("canceling RAG")
-            PredictionsFrontend.rag_cancel = nil
+            this_prediction.rag_cancel = nil
             cancel()
-            PredictionsFrontend.rag_request_ids = nil
+            this_prediction.rag_request_ids = nil
         end
         this_request_ids, cancel = rag_client.context_query_fim(ps_chunk, on_rag_response)
         -- log:info("after context_query_fim started")
-        PredictionsFrontend.rag_request_ids = this_request_ids
+        this_prediction.rag_request_ids = this_request_ids
     else
-        PredictionsFrontend.rag_cancel = nil
-        PredictionsFrontend.rag_request_ids = nil
+        this_prediction.rag_cancel = nil
+        this_prediction.rag_request_ids = nil
         then_send_fim({})
     end
 end
@@ -252,12 +252,12 @@ end
 --- @param bufnr integer
 function PredictionsFrontend.cancel_current_prediction(bufnr)
     -- PRN stdout/stderr:read_stop() to halt on_stdout/stderr callbacks from firing again (before handle:close())?!
-    if PredictionsFrontend.rag_cancel then
-        PredictionsFrontend.rag_cancel()
-    end
     local this_prediction = PredictionsFrontend._get_current_prediction(bufnr)
     if not this_prediction then
         return
+    end
+    if this_prediction.rag_cancel then
+        this_prediction.rag_cancel()
     end
     PredictionsFrontend._set_current_prediction(bufnr, nil)
     this_prediction:mark_as_abandoned()
