@@ -3,7 +3,6 @@ local Prediction = require("ask-openai.predictions.prediction")
 local ansi = require("devtools.ansi")
 local rag_client = require("ask-openai.rag.client")
 local api = require("ask-openai.api")
-local FIMPerformance = require("ask-openai.predictions.fim_performance")
 local perf = require("ask-openai.perf")
 local log = require("devtools.logs.logger").universal()
 require("ask-openai.predictions.prefix_suffix")
@@ -50,9 +49,8 @@ function PredictionsFrontend.ask_for_prediction(params)
     local enable_rag = api.is_rag_enabled()
     local ps_chunk = ps.get_prefix_suffix_chunk()
 
-    local performance = FIMPerformance:new()
     -- Register with performance registry for lualine display
-    perf.register("fim", performance)
+    perf.register("fim", this_prediction.performance)
 
     ---@param rag_matches LSPRankedMatch[]
     function then_send_fim(rag_matches)
@@ -101,7 +99,7 @@ function PredictionsFrontend.ask_for_prediction(params)
 
         ---@type OnParsedSSE
         local function on_parsed_data_sse(sse_parsed)
-            performance:token_arrived()
+            this_prediction.performance:token_arrived()
             -- log:info("sse_parsed", sse_parsed)
 
             -- use defer_fn w/ 500ms to reproduce "stuck" predictions
@@ -164,8 +162,8 @@ function PredictionsFrontend.ask_for_prediction(params)
 
         ---@type OnParsedSSE
         local function on_sse_llama_server_timings(sse)
-            performance:overall_done()
-            stats.show_prediction_stats(sse, performance)
+            this_prediction.performance:overall_done()
+            stats.show_prediction_stats(sse, this_prediction.performance)
         end
 
         local function get_flags()
@@ -201,14 +199,14 @@ function PredictionsFrontend.ask_for_prediction(params)
         -- FYI vim.lsp.get_clients is taking ~3us for case when the LSP is operational, imperceptible overhead
 
         local this_request_ids, cancel -- declare in advance so closure can access
-        performance:rag_started()
+        this_prediction.performance:rag_started()
 
         ---@param rag_matches LSPRankedMatch[]
         function on_rag_response(rag_matches)
             -- log:info("on_rag_response", vim.inspect(rag_matches))
 
             -- FYI unroll all rag specific safeguards here so that logic doesn't live inside send_fim
-            performance:rag_done()
+            this_prediction.performance:rag_done()
 
             -- * make sure prior (canceled) rag request doesn't still respond
             -- if this prediction is no longer the current one for its buffer, a newer keystroke replaced it

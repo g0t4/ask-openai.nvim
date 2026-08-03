@@ -2,6 +2,7 @@ local dots = require("ask-openai.frontends.thinking.dots")
 local HLGroups = require("ask-openai.hlgroups")
 local log = require("devtools.logs.logger").universal()
 local CursorController = require "ask-openai.predictions.cursor_controller"
+local FIMPerformance = require("ask-openai.predictions.fim_performance")
 
 ---@class Prediction
 ---@field id integer
@@ -21,6 +22,7 @@ local CursorController = require "ask-openai.predictions.cursor_controller"
 ---@field private reasoning_chunks string[]
 ---
 ---@field start_time number
+---@field performance FIMPerformance   # timing/lifecycle state for this prediction
 ---@field fim_request? CurlRequest
 ---
 ---@field rag_request_ids? integer   # client request ids for the in-flight RAG query (used to discard stale results)
@@ -56,6 +58,7 @@ function Prediction.new(params)
     self.has_reasoning = false
     self.reasoning_chunks = {}
     self.start_time = os.time()
+    self.performance = FIMPerformance:new()
     self.prediction = ""
     self.all_sses = {}
     self.rag_request_ids = nil
