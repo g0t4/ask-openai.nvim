@@ -26,7 +26,7 @@ local PredictionsFrontend = {}
 function PredictionsFrontend._get_current_prediction(bufnr)
     -- log:info("GET prediction", bufnr)
     if bufnr == nil or bufnr == 0 then
-        error("bufnr must be non-zero in _get_current_prediction" .. tostring(bufnr))
+        error("bufnr must be non-zero in _get_current_prediction: " .. tostring(bufnr))
     end
     return buffer_state.buffer_state_for(bufnr).ask_openai_current_prediction
 end
@@ -250,6 +250,7 @@ function PredictionsFrontend.cancel_current_prediction(bufnr)
     -- PRN stdout/stderr:read_stop() to halt on_stdout/stderr callbacks from firing again (before handle:close())?!
     local this_prediction = PredictionsFrontend._get_current_prediction(bufnr)
     if not this_prediction then
+        log:info("no prediction to cancel")
         return
     end
     if this_prediction.rag_cancel then
