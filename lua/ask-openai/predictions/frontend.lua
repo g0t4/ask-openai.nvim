@@ -302,35 +302,17 @@ local debouncing = require("ask-openai.rx.debouncing")
 local input_events, debounced_events = debouncing.create_typing_debounced_observable_by_bufnr()
 local input_events_subscription = input_events:subscribe(function(event)
     --- @cast event ObservableInputEvent
+    log:info("input_event", event.bufnr)
 
     -- immediately clear/hide prediction, else slides as you type
-    -- TODO schedule or not?
-    vim.schedule(function()
-        -- log:info("input_event", event.bufnr)
-        PredictionsFrontend.cancel_current_prediction(event.bufnr)
-    end)
+    PredictionsFrontend.cancel_current_prediction(event.bufnr)
 end)
 local debounced_subscription = debounced_events:subscribe(function(event)
     --- @cast event ObservableInputEvent
     -- log:info("debounced prediction trigger", event.bufnr)
-    -- TODO per-buffer predictions => need debounced observable PER buffer, not one global observable!
-    --   TODO OR I need a group-by operator, that should exist, right?
     start_predicting(event)
 end)
 function start_predicting(event)
-    -- TODO! why does `i` report "start predict" and then not actually predict?
-    --   TODO i does `start predict` => `canceling RAG` (then stops??)
-    --   TODO! is there a RAG cancel bug that is killing insert mode to predict?
-    --   TODO crap after `i` no typing ever gets prediction going?
-    --     I have to use `O`/`o` to get a prediction (marks as double `start predict`)
-    --         btw o => triggers the two predicts but second one does the Curl.spaw(fim) log and not cancel RAG
-    --      yup typing (fast typing can trigger a completion eventually after just going into insert mode)
-    --      but most stop on canceling RAG
-    --      TODO FIX RAG CANCEL logic
-
-    -- TODO I split out a seam here so I can call this directly for inputs that should not be debounced...
-    -- remember we can call this back to back with little overhead backend wise and even frontend...
-    -- real issue is if we start streaming in extmarks and then restart then it can slow down user typing (IIRC)
     vim.schedule(function()
         if vim.fn.mode() ~= "i" then
             log:info("cannot predict outside insert mode")
@@ -370,7 +352,6 @@ function PredictionsFrontend.leaving_insert_mode(event)
     log:info("leaving_insert_mode", event.buf)
     PredictionsFrontend.cancel_current_prediction(event.buf)
     -- PRN I could trigger a clear of the debounced signal? that said leaving insert mode means it won't run anyways
-
 end
 
 ---@param event vim.api.keyset.create_autocmd.callback_args
