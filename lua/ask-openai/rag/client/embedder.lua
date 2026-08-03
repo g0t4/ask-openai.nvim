@@ -9,7 +9,7 @@ local M = {}
 --- Default connection options – can be overridden via `setup`.
 ---@type table
 local opts = {
-    host = "ask.lan",
+    host = "rag.lan",
     port = 8015,
     timeout = 5, -- seconds for connect/read/write
 }
