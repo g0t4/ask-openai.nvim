@@ -211,28 +211,22 @@ function PredictionsFrontend.ask_for_prediction(params)
             performance:rag_done()
 
             -- * make sure prior (canceled) rag request doesn't still respond
-            -- the CURRENT prediction for this buffer is what matters: if a newer keystroke started a new
-            --  prediction, its request ids will differ from ours and these results are stale.
-            --  (this_prediction.rag_request_ids would always equal this_request_ids here since they're set together)
-            local current_prediction = PredictionsFrontend._get_current_prediction(this_prediction.bufnr)
-            if current_prediction == nil or current_prediction.rag_request_ids ~= this_request_ids then
-                -- I bet this is why sometimes I get completions that still fire even after cancel b/c the RAG results aren't actually stopped in time on server and so they come back
-                --  and they arrive after next request started... the mismatch in request_ids will prevent that issue
-                log:trace("possibly stale rag results, skipping: " .. vim.inspect({
-                    current_rag_request_ids = current_prediction and current_prediction.rag_request_ids,
-                    this_request_ids = this_request_ids,
-                }))
+            -- if this prediction is no longer the current one for its buffer, a newer keystroke replaced it
+            --  (or it was canceled), so these results are stale and must be skipped.
+            --  object identity is sufficient here since each keystroke creates a fresh Prediction instance
+            if PredictionsFrontend._get_current_prediction(this_prediction.bufnr) ~= this_prediction then
+                log:trace("possibly stale rag results, skipping...")
                 return
             end
 
-            if current_prediction.rag_cancel == nil then
+            if this_prediction.rag_cancel == nil then
                 log:error("rag appears canceled, skipping on_rag_response...")
                 return
             end
 
             -- clear cancel so not getting cancel message after retrieval (on next keystroke)
-            current_prediction.rag_cancel = nil
-            current_prediction.rag_request_ids = nil
+            this_prediction.rag_cancel = nil
+            this_prediction.rag_request_ids = nil
 
             then_send_fim(rag_matches)
         end
