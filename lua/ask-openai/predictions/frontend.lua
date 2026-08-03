@@ -211,24 +211,28 @@ function PredictionsFrontend.ask_for_prediction(params)
             performance:rag_done()
 
             -- * make sure prior (canceled) rag request doesn't still respond
-            if this_prediction.rag_request_ids ~= this_request_ids then
+            -- the CURRENT prediction for this buffer is what matters: if a newer keystroke started a new
+            --  prediction, its request ids will differ from ours and these results are stale.
+            --  (this_prediction.rag_request_ids would always equal this_request_ids here since they're set together)
+            local current_prediction = PredictionsFrontend._get_current_prediction(this_prediction.bufnr)
+            if current_prediction == nil or current_prediction.rag_request_ids ~= this_request_ids then
                 -- I bet this is why sometimes I get completions that still fire even after cancel b/c the RAG results aren't actually stopped in time on server and so they come back
                 --  and they arrive after next request started... the mismatch in request_ids will prevent that issue
                 log:trace("possibly stale rag results, skipping: " .. vim.inspect({
-                    prediction_rag_request_ids = this_prediction.rag_request_ids,
+                    current_rag_request_ids = current_prediction and current_prediction.rag_request_ids,
                     this_request_ids = this_request_ids,
                 }))
                 return
             end
 
-            if this_prediction.rag_cancel == nil then
+            if current_prediction.rag_cancel == nil then
                 log:error("rag appears canceled, skipping on_rag_response...")
                 return
             end
 
             -- clear cancel so not getting cancel message after retrieval (on next keystroke)
-            this_prediction.rag_cancel = nil
-            this_prediction.rag_request_ids = nil
+            current_prediction.rag_cancel = nil
+            current_prediction.rag_request_ids = nil
 
             then_send_fim(rag_matches)
         end
