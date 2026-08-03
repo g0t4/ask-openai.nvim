@@ -310,18 +310,21 @@ end)
 local debounced_subscription = debounced_events:subscribe(function(event)
     --- @cast event ObservableInputEvent
     -- log:info("debounced prediction trigger", event.bufnr)
-    start_predicting(event)
+
+    -- use vim.schedule to ensure I can perform editor operations when debounced signal fires
+    --  OR check if `vim.in_fast_event()` returns `false`?
+    vim.schedule(function()
+        start_predicting(event)
+    end)
 end)
 function start_predicting(event)
-    vim.schedule(function()
-        if vim.fn.mode() ~= "i" then
-            log:info("cannot predict outside insert mode")
-            return
-        end
-        log:info("start predict")
+    if vim.fn.mode() ~= "i" then
+        log:info("cannot predict outside insert mode")
+        return
+    end
+    log:info("start predict")
 
-        PredictionsFrontend.ask_for_prediction({ bufnr = event.bufnr })
-    end)
+    PredictionsFrontend.ask_for_prediction({ bufnr = event.bufnr })
 end
 
 function PredictionsFrontend.request_new_prediction(bufnr)
