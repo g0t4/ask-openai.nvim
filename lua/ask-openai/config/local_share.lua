@@ -225,12 +225,7 @@ end
 
 local function _cycle_reasoning_level(current, model)
     if model == models.GPTOSS then
-        local levels = {
-            models.GptOssReasoningLevel.OFF,
-            models.GptOssReasoningLevel.LOW,
-            models.GptOssReasoningLevel.MEDIUM,
-            models.GptOssReasoningLevel.HIGH,
-        }
+        local levels = models.GPTOSS_REASONING_EFFORT_CYCLE
         for index, level in ipairs(levels) do
             if level == current then
                 return levels[index % #levels + 1]

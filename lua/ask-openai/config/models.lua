@@ -29,5 +29,12 @@ M.GptOssReasoningLevel = {
     MEDIUM = "medium",
     HIGH = "high"
 }
+M.GPTOSS_REASONING_EFFORT_CYCLE = {
+    -- first is default
+    M.GptOssReasoningLevel.OFF,
+    M.GptOssReasoningLevel.LOW,
+    M.GptOssReasoningLevel.MEDIUM,
+    M.GptOssReasoningLevel.HIGH,
+}
 
 return M
