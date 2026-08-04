@@ -225,15 +225,22 @@ end
 
 local function _cycle_reasoning_level(current, model)
     if model == models.GPTOSS then
-        if current == models.GptOssReasoningLevel.OFF then
-            return models.GptOssReasoningLevel.LOW
-        elseif current == models.GptOssReasoningLevel.LOW then
-            return models.GptOssReasoningLevel.MEDIUM
-        elseif current == models.GptOssReasoningLevel.MEDIUM then
-            return models.GptOssReasoningLevel.HIGH
-        else
-            return models.GptOssReasoningLevel.OFF
+        local levels = {
+            models.GptOssReasoningLevel.OFF,
+            models.GptOssReasoningLevel.LOW,
+            models.GptOssReasoningLevel.MEDIUM,
+            models.GptOssReasoningLevel.HIGH,
+        }
+        for index, level in ipairs(levels) do
+            if level == current then
+                return levels[index % #levels + 1]
+            end
         end
+        -- fallback: if current not found, return the first level (OFF)
+        return levels[1]
+
+        -- elseif model == models.DEEPSEEK then
+        --     if current == models.DeekSeekReasoningLevel.OFF then
     else
         return current == models.THINKING_OFF and models.THINKING_ON or models.THINKING_OFF
     end
