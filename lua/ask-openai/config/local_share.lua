@@ -215,7 +215,7 @@ function M.set_fim_reasoning_level(level)
     save()
 end
 
----@return string GptOssReasoningLevel
+---@return string GPTOSS_REASONING_EFFORT
 function M.get_fim_reasoning_level()
     local cfg = get()
     local model = M.get_fim_model()
@@ -291,7 +291,7 @@ function M.get_rewrite_reasoning_level()
     local cfg = get()
     local model = M.get_rewrite_model()
     cfg[model] = cfg[model] or {}
-    return cfg[model].rewrite_reasoning_level or models.GptOssReasoningLevel.LOW
+    return cfg[model].rewrite_reasoning_level or models.GPTOSS_REASONING_EFFORT.LOW
 end
 
 function M.cycle_rewrite_reasoning_level()

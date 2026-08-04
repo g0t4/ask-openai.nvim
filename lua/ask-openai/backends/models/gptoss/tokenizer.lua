@@ -9,13 +9,13 @@ function M.get_gptoss_max_tokens_for_level(level)
     --   consider passing the type here so it is all in one spot still.. the levels are?
     --   or just duplicate this function below and keep it all together
 
-    if level == models.GptOssReasoningLevel.HIGH then
+    if level == models.GPTOSS_REASONING_EFFORT.HIGH then
         return 16384
-    elseif level == models.GptOssReasoningLevel.MEDIUM then
+    elseif level == models.GPTOSS_REASONING_EFFORT.MEDIUM then
         return 8192
-    elseif level == models.GptOssReasoningLevel.LOW then
+    elseif level == models.GPTOSS_REASONING_EFFORT.LOW then
         return 4096
-    elseif level == models.GptOssReasoningLevel.OFF then
+    elseif level == models.GPTOSS_REASONING_EFFORT.OFF then
         return 2048
     else
         return 2048

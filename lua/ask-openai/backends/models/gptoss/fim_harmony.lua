@@ -294,7 +294,7 @@ function HarmonyFimPromptBuilder.gptoss.RETIRED_get_fim_raw_prompt_no_thinking(r
 end
 
 ---@param request FimBackend
----@param level GptOssReasoningLevel
+---@param level GPTOSS_REASONING_EFFORT
 function HarmonyFimPromptBuilder.gptoss.get_fim_chat_messages(request, level, model)
     local messages = {
         -- FYI developer or system message must be first, and ONLY ONE

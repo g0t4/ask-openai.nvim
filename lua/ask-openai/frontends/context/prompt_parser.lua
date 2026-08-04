@@ -61,13 +61,13 @@ end
 function Includes.get_reasoning_level(self)
     -- TODO as needed, map this to other model reasoning effort/level values... if they differ from low/medium/high/off
     if self.reasoning_low then
-        return models.GptOssReasoningLevel.LOW
+        return models.GPTOSS_REASONING_EFFORT.LOW
     elseif self.reasoning_medium then
-        return models.GptOssReasoningLevel.MEDIUM
+        return models.GPTOSS_REASONING_EFFORT.MEDIUM
     elseif self.reasoning_high then
-        return models.GptOssReasoningLevel.HIGH
+        return models.GPTOSS_REASONING_EFFORT.HIGH
     elseif self.reasoning_off then
-        return models.GptOssReasoningLevel.OFF
+        return models.GPTOSS_REASONING_EFFORT.OFF
     else
         return nil
     end

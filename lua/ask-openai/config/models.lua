@@ -27,18 +27,18 @@ M.CYCLE_REASONING_ON_OFF = {
     M.THINKING_ON,
 }
 
---- @enum GptOssReasoningLevel
-M.GptOssReasoningLevel = {
+--- @enum GPTOSS_REASONING_EFFORT
+M.GPTOSS_REASONING_EFFORT = {
     OFF = "off",
     LOW = "low",
     MEDIUM = "medium",
     HIGH = "high"
 }
 M.CYCLE_GPTOSS_REASONING_EFFORT = {
-    M.GptOssReasoningLevel.OFF,
-    M.GptOssReasoningLevel.LOW,
-    M.GptOssReasoningLevel.MEDIUM,
-    M.GptOssReasoningLevel.HIGH,
+    M.GPTOSS_REASONING_EFFORT.OFF,
+    M.GPTOSS_REASONING_EFFORT.LOW,
+    M.GPTOSS_REASONING_EFFORT.MEDIUM,
+    M.GPTOSS_REASONING_EFFORT.HIGH,
 }
 
 M.DEEPSEEK_REASONING_EFFORT = {
