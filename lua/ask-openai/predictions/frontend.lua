@@ -314,10 +314,10 @@ local debounced_subscription = debounced_events:subscribe(function(event)
     -- use vim.schedule to ensure I can perform editor operations when debounced signal fires
     --  OR check if `vim.in_fast_event()` returns `false`?
     vim.schedule(function()
-        start_predicting(event)
+        PredictionsFrontend.start_predicting(event)
     end)
 end)
-function start_predicting(event)
+function PredictionsFrontend.start_predicting(event)
     if vim.fn.mode() ~= "i" then
         log:info("cannot predict outside insert mode")
         return
@@ -359,6 +359,10 @@ end
 
 ---@param event vim.api.keyset.create_autocmd.callback_args
 function PredictionsFrontend.entering_insert_mode(event)
+    -- PRN can I detect if o/O was just used and that resulted in entering insert mode? b/c then if that's the case then the new line that comes next will immediately invalidate and cancel this first FIM
+    --   of course I only care about this if I can show that the first FIM materially slows down the second one... if not then this is NBD
+    --   FIMs are tokenwise cheapto cancel, so it really is just about UX when using o/O
+    -- TODO what other keymaps do I regularly use that would cause a similar FIM=>cancel=>FIM and would any even matter user experience wise?
     log:info("entering_insert_mode", event)
     PredictionsFrontend.ask_for_prediction({ bufnr = event.buf })
 end
@@ -396,9 +400,7 @@ end
 function PredictionsFrontend.new_prediction_invoked()
     local bufnr = vim.fn.bufnr()
     log:info("new_prediction_invoked", bufnr)
-    PredictionsFrontend.request_new_prediction(bufnr)
-    -- TODO there is ZERO reason to delay here too... I expressly asked for a new completion, start immediately!
-    -- TODO do key combos from keymaps count as inputs that trigger a prediction (or push me into debounce delay?)
+    PredictionsFrontend.start_predicting()
 end
 
 function PredictionsFrontend.vim_is_quitting(event)
