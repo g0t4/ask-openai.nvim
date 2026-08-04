@@ -49,6 +49,7 @@ function M.new_gptoss_chat_body_llama_server(request_body, context, reasoning_le
         top_p = 1.0,
 
         chat_template_kwargs = {
+            -- TODO don't add if off?
             reasoning_effort = reasoning_level,
         },
         max_tokens = max_tokens,
@@ -61,7 +62,7 @@ end
 ---@param request_body table
 ---@param context CurrentContext
 ---@return table
-function M.new_deepseek4flash_chat_body_llama_server(request_body, context, reasoning_level)
+function M.new_deepseek4flash_chat_body_llama_server(request_body, context, effort)
     throw_if_no_messages(request_body)
 
     local recommended = {
@@ -73,11 +74,6 @@ function M.new_deepseek4flash_chat_body_llama_server(request_body, context, reas
         temperature = 1.0,
         top_p = 0.95, -- flash-0731 recommends 0.95 for agent use ase, otherwise 1.0
         -- top_p = 1.0,
-
-        chat_template_kwargs = {
-            reasoning_effort = reasoning_level, -- high, max and s/b 'low' (IIAC low would just be the default w/o either high or max "mods")
-            -- enable_thinking = true/false
-        },
 
         max_tokens = 393216, -- 384K suggested context size so yeah that works for tokens per turn :) ... I hope
 
@@ -96,8 +92,20 @@ function M.new_deepseek4flash_chat_body_llama_server(request_body, context, reas
         -- preview => https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash#instruct-model
         --   levels: non-think, high, max
 
-        -- verbose = true, -- add __verbose
+        verbose = true, -- add __verbose
+
+        chat_template_kwargs = {}
     }
+
+    local efforts = models.DEEPSEEK_REASONING_EFFORT
+    if effort == efforts.OFF then
+        recommended.chat_template_kwargs.enable_thinking = false
+    elseif effort == efforts.HIGH
+        or effort == efforts.MAX then
+        recommended.chat_template_kwargs.reasoning_effort = effort
+        -- else "low" => default w/o high/max system prompt mods
+    end
+
     return default_to_recommended(request_body, recommended)
 end
 
