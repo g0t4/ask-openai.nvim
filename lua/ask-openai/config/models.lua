@@ -29,7 +29,7 @@ M.CYCLE_REASONING_ON_OFF = {
 
 --- @enum GPTOSS_REASONING_EFFORT
 M.GPTOSS_REASONING_EFFORT = {
-    OFF = "off",
+    OFF = M.THINKING_OFF,
     LOW = "low",
     MEDIUM = "medium",
     HIGH = "high"
