@@ -185,7 +185,7 @@ end
 ---@return string modified_prompt
 local function apply_replacement_slash_commands(prompt)
     local modified_prompt = prompt
-    
+
     for command, replacer in pairs(M._replacement_slash_commands) do
         -- Only compute replacement if command is actually in the prompt
         if modified_prompt:find(vim.pesc(command)) then
@@ -194,31 +194,31 @@ local function apply_replacement_slash_commands(prompt)
             local iteration = 0
             while iteration < max_iterations do
                 local changed = false
-                
+
                 -- Start of prompt
                 local new_prompt, count = modified_prompt:gsub("^%s*" .. vim.pesc(command) .. "(%s+)", function(match_after)
                     return replacement .. match_after
                 end)
                 if count > 0 then modified_prompt = new_prompt; changed = true end
-                
+
                 -- End of prompt
                 new_prompt, count = modified_prompt:gsub("(%s+)" .. vim.pesc(command) .. "%s*$", function(match_before)
                     return match_before .. replacement
                 end)
                 if count > 0 then modified_prompt = new_prompt; changed = true end
-                
+
                 -- Middle of prompt
                 new_prompt, count = modified_prompt:gsub("(%s+)" .. vim.pesc(command) .. "(%s+)", function(match_before, match_after)
                     return match_before .. replacement .. match_after
                 end)
                 if count > 0 then modified_prompt = new_prompt; changed = true end
-                
+
                 if not changed then break end
                 iteration = iteration + 1
             end
         end
     end
-    
+
     return modified_prompt
 end
 
