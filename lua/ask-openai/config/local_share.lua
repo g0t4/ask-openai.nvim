@@ -223,21 +223,23 @@ function M.get_fim_reasoning_level()
     return cfg[model].fim_reasoning_level or models.THINKING_OFF -- off can be default since that is universal in my experience (chat template prefill forces no thinking)
 end
 
+function cycle(levels, current)
+    for index, level in ipairs(levels) do
+        if level == current then
+            return levels[index % #levels + 1]
+        end
+    end
+    -- fallback: if current not found, return the first level listed (usually OFF)
+    return levels[1]
+end
+
 local function _cycle_reasoning_level(current, model)
     if model == models.GPTOSS then
-        local levels = models.GPTOSS_REASONING_EFFORT_CYCLE
-        for index, level in ipairs(levels) do
-            if level == current then
-                return levels[index % #levels + 1]
-            end
-        end
-        -- fallback: if current not found, return the first level (OFF)
-        return levels[1]
-
-        -- elseif model == models.DEEPSEEK then
-        --     if current == models.DeekSeekReasoningLevel.OFF then
+        return cycle(models.CYCLE_GPTOSS_REASONING_EFFORT, current)
+    elseif model == models.DEEPSEEK then
+        return cycle(models.CYCLE_DEEPSEEK_REASONING_EFFORT, current)
     else
-        return current == models.THINKING_OFF and models.THINKING_ON or models.THINKING_OFF
+        return cycle(models.CYCLE_REASONING_ON_OFF, current)
     end
 end
 

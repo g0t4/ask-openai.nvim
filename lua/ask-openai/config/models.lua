@@ -21,6 +21,11 @@ M.DEFAULT_MODEL = M.GPTOSS
 --- @type string
 M.THINKING_ON = "on"
 M.THINKING_OFF = "off"
+--- @enum REASONING_ON_OFF
+M.CYCLE_REASONING_ON_OFF = {
+    M.THINKING_OFF,
+    M.THINKING_ON,
+}
 
 --- @enum GptOssReasoningLevel
 M.GptOssReasoningLevel = {
@@ -29,12 +34,23 @@ M.GptOssReasoningLevel = {
     MEDIUM = "medium",
     HIGH = "high"
 }
-M.GPTOSS_REASONING_EFFORT_CYCLE = {
-    -- first is default
+M.CYCLE_GPTOSS_REASONING_EFFORT = {
     M.GptOssReasoningLevel.OFF,
     M.GptOssReasoningLevel.LOW,
     M.GptOssReasoningLevel.MEDIUM,
     M.GptOssReasoningLevel.HIGH,
 }
 
+M.DEEPSEEK_REASONING_EFFORT = {
+    OFF = M.THINKING_OFF,
+    LOW = "low", -- AFAICT this is the level used by default in jinja template packaged with llama.cpp
+    HIGH = "high",
+    MAX = "max",
+}
+M.CYCLE_DEEPSEEK_REASONING_EFFORT = {
+    M.DEEPSEEK_REASONING_EFFORT.OFF,
+    M.DEEPSEEK_REASONING_EFFORT.LOW,
+    M.DEEPSEEK_REASONING_EFFORT.HIGH,
+    M.DEEPSEEK_REASONING_EFFORT.MAX,
+}
 return M
