@@ -33,6 +33,7 @@ local function load_config()
         [models.QWEN] = {},
         [models.GLM] = {},
         [models.GEMMA4] = {},
+        [models.DEEPSEEK] = {},
     }
 
     if file_exists(config_path) then
@@ -132,14 +133,13 @@ function M.set_agents_model(model)
     save()
 end
 
-local _model_cycle = { models.GPTOSS, models.QWEN, models.GEMMA4, models.GLM }
 local function _next_model(current)
-    for i, m in ipairs(_model_cycle) do
+    for i, m in ipairs(models.CYCLE) do
         if m == current then
-            return _model_cycle[i % #_model_cycle + 1]
+            return models.CYCLE[i % #models.CYCLE + 1]
         end
     end
-    return _model_cycle[1]
+    return models.CYCLE[1]
 end
 
 function M.toggle_agents_model()
@@ -214,7 +214,6 @@ function M.set_fim_reasoning_level(level)
     cfg[model].fim_reasoning_level = level
     save()
 end
-
 
 ---@return string GptOssReasoningLevel
 function M.get_fim_reasoning_level()

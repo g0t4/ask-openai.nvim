@@ -83,6 +83,8 @@ function M.lualine_components()
                 fim_status = "qwen" .. level
             elseif fim_status == models.GEMMA4 then
                 fim_status = "gemma4" .. level
+            elseif fim_status == models.DEEPSEEK then
+                fim_status = "deepseek" .. level
             elseif fim_status == models.GLM then
                 fim_status = "GLM" .. level
                 --  TODO preserved thinking mode (or always on) per the repo it says to use this in multi turn agents (IIAC keep reasoning traces for tool calls too - interleaved reasoning before final response from model on each turn)

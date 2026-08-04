@@ -22,17 +22,19 @@ local MODEL_PATTERNS = {
     -- ALSO, order matters: more specific patterns first
     --
     -- ggml-org/Qwen3.6-35B-A3B-MTP-GGUF:Q8_0
-    { pattern = "/Qwen3%.6.*%-MTP",  abbrev = "qwen3mtp" },
+    { pattern = "/Qwen3%.6.*%-MTP",      abbrev = "qwen3mtp" },
     -- ggml-org/Qwen3.6-35B-A3B-GGUF:Q8_0
-    { pattern = "/Qwen3%.6",         abbrev = "qwen3" },
+    { pattern = "/Qwen3%.6",             abbrev = "qwen3" },
     -- g0t4/Qwen-AgentWorld-35B-A3B-GGUF:Q8_0
-    { pattern = "/Qwen%-AgentWorld", abbrev = "agentworld" },
+    { pattern = "/Qwen%-AgentWorld",     abbrev = "agentworld" },
     -- ggml-org/gpt-oss-120b-GGUF
-    { pattern = "/gpt%-oss",         abbrev = "gptoss" },
+    { pattern = "/gpt%-oss",             abbrev = "gptoss" },
     -- google/gemma-4-26B-A4B-it-qat-q4_0-gguf
-    { pattern = "/gemma%-4",         abbrev = "gemma4" },
+    { pattern = "/gemma%-4",             abbrev = "gemma4" },
     -- ggml-org/GLM-4.7-Flash-GGUF:Q8_0
-    { pattern = "/GLM%-4.7%-Flash",  abbrev = "glm" },
+    { pattern = "/GLM%-4.7%-Flash",      abbrev = "glm" },
+    -- ggml-org/DeepSeek-V4-Flash-0731-GGUF
+    { pattern = "/DeepSeek%-V4%-Flash", abbrev = "deepseek" },
 }
 
 --- Abbreviate a raw model name using pattern matching, or return the original name.
@@ -126,6 +128,7 @@ function M.get_endpoints()
     local qwen3_url = "http://ask.lan:8012"
     local gemma4_url = "http://ask.lan:8011"
     local glm_url = "http://ask.lan:8010"
+    local deepseek_url = "http://ask.lan:8014"
 
     -- FYI fine by me to collapse Endpoint into a string
     -- I used to handle name here too but that became a hot mess due to async vs sync
@@ -137,6 +140,9 @@ function M.get_endpoints()
         },
         qwen = {
             base_url = qwen3_url,
+        },
+        deepseek = {
+            base_url = deepseek_url,
         },
         gptoss = {
             base_url = gptoss_url,

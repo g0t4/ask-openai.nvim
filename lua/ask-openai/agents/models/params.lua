@@ -53,8 +53,50 @@ function M.new_gptoss_chat_body_llama_server(request_body, context, reasoning_le
         },
         max_tokens = max_tokens,
 
-        -- verbose = true, -- * my build of llama-server will one-off add __verbose if verbose is set on body of request!
+        -- verbose = true, -- add __verbose
+    }
+    return default_to_recommended(request_body, recommended)
+end
 
+---@param request_body table
+---@param context CurrentContext
+---@return table
+function M.new_deepseek4flash_chat_body_llama_server(request_body, context, reasoning_level)
+    throw_if_no_messages(request_body)
+
+    local recommended = {
+
+        -- https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash#how-to-run-locally
+        -- For local deployment, we recommend setting the sampling parameters to temperature = 1.0, top_p = 1.0.
+        -- For the Think Max reasoning mode, we recommend setting the context window to at least 384K tokens.       --
+
+        temperature = 1.0,
+        top_p = 0.95, -- flash-0731 recommends 0.95 for agent use ase, otherwise 1.0
+        -- top_p = 1.0,
+
+        chat_template_kwargs = {
+            reasoning_effort = reasoning_level, -- high, max and s/b 'low' (IIAC low would just be the default w/o either high or max "mods")
+            -- enable_thinking = true/false
+        },
+
+        max_tokens = 393216, -- 384K suggested context size so yeah that works for tokens per turn :) ... I hope
+
+        -- llama.cpp's jinja featuers to try:
+        -- - supports system prompt addition (concatenates into one system prompt for you, can have multiple too)
+        -- - TODO try response_format_template?
+
+        -- jinja template not included in the model:
+        -- reasoning levels
+        --
+        -- 0731 => https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash-0731#chat-template
+        --   * levels: non-think, low, high, max
+        --   sounds like there is a special system prompt for max too?
+        --   and no official jinja?
+        --
+        -- preview => https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash#instruct-model
+        --   levels: non-think, high, max
+
+        -- verbose = true, -- add __verbose
     }
     return default_to_recommended(request_body, recommended)
 end

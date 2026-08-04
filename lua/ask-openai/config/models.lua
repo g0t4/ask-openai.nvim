@@ -1,10 +1,19 @@
 local M = {}
 
---- @enum ModelName
+--- @alias ModelName "gptoss" | "qwen" | "glm" | "gemma4" | "deepseek"
 M.GPTOSS = "gptoss"
 M.QWEN = "qwen"
 M.GLM = "glm"
 M.GEMMA4 = "gemma4"
+M.DEEPSEEK = "deepseek"
+
+M.CYCLE = {
+    M.GPTOSS,
+    M.QWEN,
+    M.GEMMA4,
+    M.GLM,
+    M.DEEPSEEK,
+}
 
 --- @type ModelName
 M.DEFAULT_MODEL = M.GPTOSS
