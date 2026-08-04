@@ -79,12 +79,19 @@ function M.new_deepseek4flash_chat_body_llama_server(request_body, context, effo
 
         -- llama.cpp's jinja featuers to try:
         -- - supports system prompt addition (concatenates into one system prompt for you, can have multiple too)
-        -- - TODO try response_format_template?
+        -- - TODO try response_format_template? is this how people provide a template to follow i.e. reasoning but for final response?
 
         -- jinja template not included in the model:
-        -- reasoning levels
+        --  BTW currently llama-sever does not start w/ the template it bundles for deepseek-v4-flash-0731
+        --   probably because there is no template bundled in the upstream model itself?
+        --   uses some v3.2/v4 template?
         --
-        -- 0731 => https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash-0731#chat-template
+        --  /home/wes/repos/github/ggml-org/llama.cpp/build/bin/llama-server \
+        --     -hf ggml-org/DeepSeek-V4-Flash-0731-GGUF \
+        --     --chat-template-file ~/repos/github/ggml-org/llama.cpp/models/templates/deepseek-ai-DeepSeek-V4-Flash-0731.jinja
+        --
+        -- reasoning levels
+        --   0731 => https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash-0731#chat-template
         --   * levels: non-think, low, high, max
         --   sounds like there is a special system prompt for max too?
         --   and no official jinja?
