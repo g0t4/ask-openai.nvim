@@ -6,6 +6,9 @@ local gptoss_tokenizer = require("ask-openai.backends.models.gptoss.tokenizer")
 
 local M = {}
 
+---@param request_body table
+---@param recommended table - use as defaults, IOTW start with this table and overlay changes from request_body table
+---@return table merged body
 function default_to_recommended(request_body, recommended)
     -- rightmost wins
     local merged = vim.tbl_deep_extend("force", recommended, request_body or {})
@@ -13,19 +16,20 @@ function default_to_recommended(request_body, recommended)
     return merged
 end
 
+---@param request_body table
 local function throw_if_no_messages(request_body)
     if request_body.messages == nil then
         error("messages are required for gpt-oss chat")
     end
 end
 
----@param body table
+---@param request_body table
 ---@param reasoning_level string
 ---@return table
-local function set_enable_thinking(body, reasoning_level)
-    body.chat_template_kwargs = body.chat_template_kwargs or {}
-    body.chat_template_kwargs.enable_thinking = reasoning_level ~= models.THINKING_OFF
-    return body
+local function set_enable_thinking(request_body, reasoning_level)
+    request_body.chat_template_kwargs = request_body.chat_template_kwargs or {}
+    request_body.chat_template_kwargs.enable_thinking = reasoning_level ~= models.THINKING_OFF
+    return request_body
 end
 
 ---@param request_body table
@@ -55,6 +59,9 @@ function M.new_gptoss_chat_body_llama_server(request_body, context, reasoning_le
     return default_to_recommended(request_body, recommended)
 end
 
+---@param request_body table
+---@param context CurrentContext
+---@return table
 function M.new_glm47flash_chat_body_llama_server(request_body, context, reasoning_level)
     throw_if_no_messages(request_body)
     -- FYI RECOMMMENDS: https://huggingface.co/zai-org/GLM-4.7-Flash#evaluation-parameters
@@ -77,6 +84,9 @@ function M.new_glm47flash_chat_body_llama_server(request_body, context, reasonin
     return set_enable_thinking(body, reasoning_level)
 end
 
+---@param request_body table
+---@param context CurrentContext
+---@return table
 function M.new_gemma4_chat_body_llama_server(request_body, context, reasoning_level)
     throw_if_no_messages(request_body)
     --  Thinking config: https://huggingface.co/google/gemma-4-26B-A4B#2-thinking-mode-configuration
@@ -100,6 +110,9 @@ function M.new_gemma4_chat_body_llama_server(request_body, context, reasoning_le
     return set_enable_thinking(body, reasoning_level)
 end
 
+---@param request_body table
+---@param context CurrentContext
+---@return table
 function M.new_qwen3coder_llama_server_chat_body(request_body, context, reasoning_level) -- this is a duplicate
     throw_if_no_messages(request_body)
 
