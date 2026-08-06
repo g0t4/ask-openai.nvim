@@ -234,7 +234,7 @@ _G.LSPRankedMatch = {}
 ---@param code_context? string
 ---@param top_k? integer
 ---@param callback fun(matches: LSPRankedMatch[])
----@return integer _client_request_ids, fun() _cancel_all_requests
+---@return integer[] _client_request_ids, fun() _cancel_all_requests
 function M.context_query_for_agents(same_file_bufnr, user_prompt, code_context, top_k, callback)
     top_k = top_k or 5
     local file = vim.api.nvim_buf_get_name(same_file_bufnr)
@@ -261,7 +261,7 @@ end
 ---@param code_context string
 ---@param top_k? integer
 ---@param callback fun(matches: LSPRankedMatch[])
----@return integer _client_request_ids, fun() _cancel_all_requests
+---@return integer[] _client_request_ids, fun() _cancel_all_requests
 function M.context_query_rewrites(user_prompt, code_context, top_k, callback)
     top_k = top_k or 5
     ---@type LSPSemanticGrepRequest
@@ -284,7 +284,7 @@ end
 
 ---@param ps_chunk PrefixSuffixChunk
 ---@param callback fun(matches: LSPRankedMatch[])
----@return integer _client_request_ids, fun() _cancel_all_requests
+---@return integer[] _client_request_ids, fun() _cancel_all_requests
 function M.context_query_fim(ps_chunk, callback)
     -- FYI IIRC I put the query building here to consolidate query/instruct logic across frontends
     --   it would be fine to push this out into PredictionsFrontend too...
