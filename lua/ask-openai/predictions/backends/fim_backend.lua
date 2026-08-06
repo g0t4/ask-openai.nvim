@@ -201,10 +201,10 @@ function FimBackend:body_for()
         end
     elseif model == models.DEEPSEEK then
         -- TODO testing out FIM w/ deepseek-v4-flash-0731
-        --  TODO try deepseek coder's FIM format
         --  TODO try general format I use for chat completions based FIM
         --  TODO try varying thinking off/low(defualt)/high/max
         builder = function()
+            -- FYI WORKING WELL for FILE LEVEL:
             return fim.deepseek_coder_v2.get_fim_prompt(self)
         end
 
