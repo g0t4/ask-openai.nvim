@@ -319,7 +319,7 @@ function M._context_query(request, callback)
         ---@param obj SemanticGrepWithTimeoutResponseObj -- for lack of better name, stick with it
         function(obj)
             if obj.result.isError then
-                log:error(string.format("RAG _context_query error: %s", obj.result.error))
+                log:error("_context_query failed", obj)
             end
             -- TODO review all callers, errors are now going to be forwarded (or I have to squelch calling them?)
             local matches = obj.result.matches or {}
