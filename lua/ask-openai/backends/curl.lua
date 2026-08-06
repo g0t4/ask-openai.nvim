@@ -61,7 +61,9 @@ function Curl.spawn(request, frontend)
 
         -- request stops ASAP, but not immediately
         CurlRequest.terminate(request)
-        frontend.explain_error("Abort... unhandled exception in curl: " .. vim.inspect(error_message))
+        local message = "Curl.spawn.on_data_sse error_message=" .. vim.inspect(error_message)
+        log:error(message)
+        frontend.explain_error(message)
     end
 
     local stdout = vim.uv.new_pipe(false)
@@ -86,7 +88,9 @@ function Curl.spawn(request, frontend)
         -- - which may depend on, for example, a tool_call in dregs
         local error_text = parser:flush_dregs()
         if error_text then
-            frontend.explain_error(error_text)
+            local message = "Curl.spawn.on_exit -> flush_dregs -> error_text=" .. vim.inspect(error_text)
+            log:error(message)
+            frontend.explain_error(message)
         end
 
         if code == 0 then
@@ -136,7 +140,9 @@ function Curl.spawn(request, frontend)
         assert(data ~= nil)
 
         -- keep in mind... curl errors will show as text in STDERR
-        frontend.explain_error(data)
+        local message = "Curl.spawn.on_stderr data=" .. vim.inspect(data)
+        log:error(message)
+        frontend.explain_error(message)
     end
     stderr:read_start(on_stderr)
 end
@@ -162,8 +168,9 @@ function Curl.on_one_data_value(data_value, frontend, request)
         if sse_parsed.error then
             -- only confirmed this on llama_server
             -- {"error":{"code":500,"message":"tools param requires --jinja flag","type":"server_error"}}
-            -- DO NOT LOG HERE TOO
-            frontend.explain_error("found error on what looks like an SSE:" .. vim.inspect(sse_parsed))
+            local message = "Curl.on_one_data_value sse_parsed.error:" .. vim.inspect(sse_parsed)
+            log:error(message)
+            frontend.explain_error(message)
         end
 
         if sse_parsed.timings then

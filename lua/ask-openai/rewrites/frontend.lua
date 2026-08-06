@@ -630,7 +630,8 @@ end
 ---@type ExplainError
 function RewriteFrontend.explain_error(text)
     if not RewriteFrontend.displayer then
-        vim.notify("ERROR, and no displayer, so here goes: " .. text, vim.log.levels.ERROR)
+        log:warn("no displayer in RewriteFrontend", text)
+        vim.notify("explain_error (no displayer): " .. text, vim.log.levels.ERROR)
         return
     end
     vim.schedule(function()

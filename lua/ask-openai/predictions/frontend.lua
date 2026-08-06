@@ -156,7 +156,7 @@ function PredictionsFrontend.ask_for_prediction(params)
             vim.schedule(function()
                 -- cannot call nvim_echo in a fast context (which vim.notify uses), happens if not using nvim-notify
                 -- note: nvim-notify worked fine in a fast context
-                vim.notify("ERROR in new PREDICTIONS FRONTEND PoC: " .. text, vim.log.levels.ERROR)
+                vim.notify(text, vim.log.levels.ERROR)
             end)
         end
 
@@ -192,7 +192,7 @@ function PredictionsFrontend.ask_for_prediction(params)
         if not vim.lsp.get_clients({ name = "ask_language_server", bufnr = 0 })[1] then
             -- FYI this check of client ready, must have immaterial overhead for working clients
             --  would be better to do no checks than slow down normal use
-            log:error("RAG not available in current LSP, when it should be, so, sending FIM w/o RAG")
+            log:error("ask_language_server not available, sending FIM w/o RAG")
             then_send_fim({})
             return
         end
