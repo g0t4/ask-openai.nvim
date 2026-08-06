@@ -46,6 +46,7 @@ function _semantic_grep(semantic_grep_request, lsp_buffer_number, process_result
 
             if obj.result and obj.result.isError then
                 log:error("semantic_grep failed: " .. (obj.result.error or "unknown"))
+                vim.notify("semantic_grep failed: " .. (obj.result.error or "unknown"))
                 return {}
             end
 
