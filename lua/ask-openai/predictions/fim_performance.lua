@@ -56,7 +56,7 @@ function FIMPerformance:rag_done()
     if self.rag_duration_ms ~= nil then
         local message = "rag_done might have been called twice b/c " .. vim.inspect(self.rag_duration_ms) .. " is NOT NIL when it should be, timings might be wrong, aborting..."
         log:error(message)
-        error(message)
+        error(message) -- this is good to leave on to catch hidden issues!
     end
     if self._rag_start_time_ns == nil then
         error("rag_done called before rag_started, aborting...")
