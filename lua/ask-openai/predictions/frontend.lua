@@ -39,9 +39,50 @@ function PredictionsFrontend._set_current_prediction(bufnr, prediction)
     buffer_state.buffer_state_for(bufnr).ask_openai_current_prediction = prediction
 end
 
+local function is_rename_window()
+    -- TODO make sure only check this on enter buffer first time? not on every event (cursormoved,etc)
+    if vim.bo.buftype ~= "nofile"
+        or vim.bo.filetype ~= "DressingInput" then
+        return false
+    end
+    local win_id = vim.api.nvim_get_current_win()
+    local win_config = vim.api.nvim_win_get_config(win_id)
+    -- messages.append(win_config)
+    if not win_config then
+        -- shouldn't happen AFAICT
+        return false
+    end
+
+    -- win_config.title => { { " Rename to " } }
+    is_rename = win_config.title[1][1] == " Rename to "
+    -- TODO tell model about the window that is open (in some cases)...
+    -- i.e. rename window (gather diff context too, i.e. what would help with renames?)
+    return is_rename
+end
+local ignore_buftypes = {
+    "nofile", -- rename refactor popup window uses this w/o a filetype, also Dressing rename in nvimtree uses nofile
+    "terminal",
+}
+local ignore_filetypes = {
+    "TelescopePrompt",
+    "TelescopeResults",
+    "NvimTree",
+    "DressingInput", -- pickers from nui (IIRC) => in nvim tree add a file => the file name box is one of these
+}
 ---@param params? PredictionParameters
 function PredictionsFrontend.ask_for_prediction(params)
     PredictionsFrontend.cancel_current_prediction(params.bufnr)
+
+    -- * disable predictions in some windows
+    --  TODO do I need this anymore? I swear I setup predictions to attach on BufEnter... and that already ignores specific filetypes (and other factors)?
+    if vim.tbl_contains(ignore_buftypes, vim.bo.buftype)
+        or vim.tbl_contains(ignore_filetypes, vim.bo.filetype) then
+        -- -- but, allow renames:
+        -- if not is_rename_window() then
+        --     return
+        -- end
+        return
+    end
 
     local this_prediction = Prediction.new(params)
     PredictionsFrontend._set_current_prediction(params.bufnr, this_prediction)
@@ -321,37 +362,6 @@ function PredictionsFrontend.cancel_current_prediction(bufnr)
     CurlRequest.terminate(this_prediction.fim_request)
 end
 
-local ignore_filetypes = {
-    "TelescopePrompt",
-    "TelescopeResults",
-    "NvimTree",
-    "DressingInput", -- pickers from nui (IIRC) => in nvim tree add a file => the file name box is one of these
-}
-local function is_rename_window()
-    -- TODO make sure only check this on enter buffer first time? not on every event (cursormoved,etc)
-    if vim.bo.buftype ~= "nofile"
-        or vim.bo.filetype ~= "DressingInput" then
-        return false
-    end
-    local win_id = vim.api.nvim_get_current_win()
-    local win_config = vim.api.nvim_win_get_config(win_id)
-    -- messages.append(win_config)
-    if not win_config then
-        -- shouldn't happen AFAICT
-        return false
-    end
-
-    -- win_config.title => { { " Rename to " } }
-    is_rename = win_config.title[1][1] == " Rename to "
-    -- TODO tell model about the window that is open (in some cases)...
-    -- i.e. rename window (gather diff context too, i.e. what would help with renames?)
-    return is_rename
-end
-
-local ignore_buftypes = {
-    "nofile", -- rename refactor popup window uses this w/o a filetype, also Dressing rename in nvimtree uses nofile
-    "terminal",
-}
 local debouncing = require("ask-openai.rx.debouncing")
 local input_events, debounced_events = debouncing.create_typing_debounced_observable_by_bufnr()
 local rx = require('rx')
@@ -391,17 +401,6 @@ function PredictionsFrontend.request_new_prediction(bufnr)
         -- log:trace("Disabled CursorMovedI, skipping...")
         current_prediction.disable_cursor_moved = false -- skip once
         -- called after accepting/inserting text (AFAICT only once per accept)
-        return
-    end
-
-    -- * disable predictions in some windows
-    --  TODO do I need this anymore? I swear I setup predictions to attach on BufEnter... and that already ignores specific filetypes (and other factors)?
-    if vim.tbl_contains(ignore_buftypes, vim.bo.buftype)
-        or vim.tbl_contains(ignore_filetypes, vim.bo.filetype) then
-        -- -- but, allow renames:
-        -- if not is_rename_window() then
-        --     return
-        -- end
         return
     end
 
