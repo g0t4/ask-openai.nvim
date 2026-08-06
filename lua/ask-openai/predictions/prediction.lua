@@ -44,7 +44,7 @@ function Prediction.new(params)
     -- id was originaly intended to track current prediction and not let past predictions write to extmarks (for example)
     self.id = vim.uv.hrtime() -- might not need id if I can use object reference instead, we will see (id is helpful if I need to roundtrip identity outside lua process)
     -- (nanosecond) time based s/b sufficient, esp b/c there should only ever be one prediction at a time.. even if multiple in short time (b/c of keystrokes, there is gonna be 1ms or so between them at most)
-    log:info("new PREDICTION id " .. self.id .. " " .. vim.inspect(params))
+    log:info("new PREDICTION id=" .. self.id .. " bufnr=" .. params.bufnr)
 
     -- FYI AFAICT no timing benefits from using a StringBuffer vs string.__concat... just b/c of my requirement to have full string on every iteration
     -- see test code: lua/ask-openai/prediction/tests/benchmark/str_concat_vs_buffer.lua

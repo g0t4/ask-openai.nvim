@@ -22,7 +22,6 @@ local FIMPerformance = {}
 function FIMPerformance:new()
     local self = {}
     setmetatable(self, { __index = FIMPerformance })
-    log:info("SELF", self)
 
     self._prediction_start_time_ns = perf.get_time_in_ns()
 

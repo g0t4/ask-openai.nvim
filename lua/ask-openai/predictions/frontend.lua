@@ -416,7 +416,7 @@ function PredictionsFrontend.entering_insert_mode(event)
     --   of course I only care about this if I can show that the first FIM materially slows down the second one... if not then this is NBD
     --   FIMs are tokenwise cheapto cancel, so it really is just about UX when using o/O
     -- TODO what other keymaps do I regularly use that would cause a similar FIM=>cancel=>FIM and would any even matter user experience wise?
-    log:info("entering_insert_mode", event)
+    log:info("entering_insert_mode, bufnr: ", event.buf)
     PredictionsFrontend.ask_for_prediction({ bufnr = event.buf })
 end
 
