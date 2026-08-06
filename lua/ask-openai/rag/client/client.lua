@@ -128,17 +128,20 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
         })
     end
 
-    ---@param lsp_result LSPSemanticGrepResult
-    local function on_language_server_response(err, lsp_result)
+    ---@param lsp_error? lsp.ResponseError
+    ---@param lsp_result any
+    ---@param context lsp.HandlerContext
+    ---@param config? table
+    local function on_language_server_response(lsp_error, lsp_result, context, config)
         -- walk_for_vim_NIL(lsp_result) -- FYI uncomment for testing known vim.NIL values before replacing with nil_means_nil
         if lsp_result and lsp_result.matches then
             lsp_result.matches = nil_means_nil(lsp_result.matches)
         end
         walk_for_vim_NIL(lsp_result)
-        if err then
+        if lsp_error then
             -- IIGC this is a client side error in making the request?
-            log:luaify_trace("Semantic Grep tool_call query failed (callback err): " .. vim.inspect(err), lsp_result)
-            error_response(err.message or "unknown error")
+            log:warn("Semantic Grep tool_call query failed (callback err): " .. vim.inspect(lsp_error), lsp_result)
+            error_response(lsp_error.message or "unknown error")
             return
         end
 
@@ -154,7 +157,14 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
             end
 
             log:luaify_trace("Semantic Grep tool_call lsp_result error, still calling back: ", lsp_result)
-            error_response(lsp_result.error, lsp_result.matches)
+            if lsp_result.matches then
+                -- not sure this would happen so I am leaving a message to investigate...
+                -- I was just blinding forwarding and then I wired up clients to ignore other errors!
+                -- yikes so yeah while I am at it, squelch these!
+                log:warn("matches present despite error... these will be ignored for now (no use case so far)",
+                    vim.inspect(lsp_result.matches))
+            end
+            error_response(lsp_result.error)
             return
         end
 
@@ -204,12 +214,17 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
         _cancel_all_requests = nil -- avoid double canceling (raises error) i.e. if user cancels after a timeout
     end
 
-    _client_request_ids, _cancel_all_requests = vim.lsp.buf_request(lsp_buffer_number, "workspace/executeCommand", params, function(err, result, ctx, config)
-        if _request_timeout_timer then
-            _request_timeout_timer:stop()
-        end
-        on_language_server_response(err, result, ctx, config)
-    end)
+    _client_request_ids, _cancel_all_requests = vim.lsp.buf_request(lsp_buffer_number, "workspace/executeCommand", params,
+        ---@param lsp_error? lsp.ResponseError
+        ---@param lsp_result any
+        ---@param context lsp.HandlerContext
+        ---@param config? table
+        function(lsp_error, lsp_result, context, config)
+            if _request_timeout_timer then
+                _request_timeout_timer:stop()
+            end
+            on_language_server_response(lsp_error, lsp_result, context, config)
+        end)
 
     local timeout_ms = 5000
     _request_timeout_timer = vim.defer_fn(function()
