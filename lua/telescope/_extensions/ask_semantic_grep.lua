@@ -35,6 +35,7 @@ function _semantic_grep(semantic_grep_request, lsp_buffer_number, process_result
     local my_msg_id, cancel_my_request -- "my" as in this closure's request
     my_msg_id, cancel_my_request = client.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number,
 
+        ---@param obj SemanticGrepWithTimeoutResponseObj -- FYI I call this obj in several spots, stick with it or rename all of them
         function(obj)
             -- Ensure this is the most recent request before processing results.
             if last_msg_id ~= my_msg_id then

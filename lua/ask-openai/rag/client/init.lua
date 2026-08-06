@@ -317,6 +317,7 @@ end
 function M._context_query(request, callback)
     return client.semantic_grep_with_timeout(request, nil,
 
+        ---@param obj SemanticGrepWithTimeoutResponseObj -- for lack of better name, stick with it
         function(obj)
             if obj.result.isError then
                 log:error(string.format("RAG _context_query error: %s", obj.result.error))

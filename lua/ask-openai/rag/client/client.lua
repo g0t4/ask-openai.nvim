@@ -93,14 +93,23 @@ function walk_for_vim_NIL(what)
     -- log:warn("found vim.NIL on top-level object:", what)
 end
 
+--- semantic grep results in an MCP like shape so they readily work with MCP client and models can understand the results
+---@class SemanticGrepWithTimeoutResponseObj : MCP_CallToolResponse
+---@field result SemanticGrepWithTimeoutResult
+
+---@class SemanticGrepWithTimeoutResult
+---@field isError? boolean
+---@field error? string
+---@field matches? LSPRankedMatch[]
+
 --- Executes a semantic grep request with:
 --- - check server is available
 --- - supports timeout
 ---@param semantic_grep_request LSPSemanticGrepRequest
 --- @param lsp_buffer_number? integer
----@param callback fun(result: table) -- called with the result or error
+---@param callback_like_mcp_tool fun(response_obj: SemanticGrepWithTimeoutResponseObj) -- called with the result or error
 ---@return table _client_request_ids, fun() _cancel_all_requests
-function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, callback)
+function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, callback_like_mcp_tool)
     lsp_buffer_number = lsp_buffer_number or 0
     -- log:info("semantic_grep_request", vim.inspect(semantic_grep_request))
     -- TODO! add logging of semantic_grep request and response (matches) like I do with tracing agents
@@ -119,7 +128,7 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
     -- Invokes the provided callback with a standardized error payload.
     -- The function name is chosen to better convey its purpose.
     local function error_response(message)
-        callback({
+        callback_like_mcp_tool({
             result = {
                 isError = true,
                 error = message,
@@ -184,7 +193,7 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
 
         -- log_semantic_grep_matches(lsp_result)
 
-        callback({
+        callback_like_mcp_tool({
             result = {
                 -- do not mark isError = false here... that is assumed, might also cause issues if mis-interpreted as an error!
                 matches = lsp_result.matches

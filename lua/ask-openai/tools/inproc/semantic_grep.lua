@@ -41,7 +41,7 @@ local M = {
 }
 
 ---@param parsed_args table
----@param callback ToolCallDoneCallback
+---@param callback ToolCallDoneCallback -- alternatively fun(obj: SemanticGrepWithTimeoutResponseObj)
 function M.call(parsed_args, callback)
     local domains = ""
     -- log:info("parsed_args", vim.inspect(parsed_args))
@@ -66,6 +66,7 @@ function M.call(parsed_args, callback)
         embedTopK = parsed_args.embed_top_k or 18,
     }
 
+    -- PRN I could transform the response object here if I didn't want all tools to use this rediculous MCP tool response object...
     client.semantic_grep_with_timeout(semantic_grep_request, nil, callback)
 end
 
