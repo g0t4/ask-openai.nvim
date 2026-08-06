@@ -70,12 +70,19 @@ function Curl.spawn(request, frontend)
     local stderr = vim.uv.new_pipe(false)
 
     local parser = SSEDataOnlyParser.new(on_data_sse)
+    local _stderr_data_parts = {}
 
     ---@param code integer
     ---@param signal integer
     local function on_exit(code, signal)
         log:trace_on_exit_always(code, signal)
         -- log:trace_on_exit_errors(code, signal) -- less verbose
+        local cumulative_stderr = table.concat(_stderr_data_parts, "")
+        if cumulative_stderr then
+            log:error("Curl.spawn.on_exit cumulative_stderr=", cumulative_stderr)
+            -- FYI stderr output has "curl (7)" with exit code == 7 in this case, so don't duplicate those in the message:
+            frontend.explain_error(cumulative_stderr)
+        end
 
         -- close before check dregs (b/c might still be data unflushed in STDOUT/ERR)
         stdout:close()
@@ -132,6 +139,9 @@ function Curl.spawn(request, frontend)
     local function on_stderr(read_error, data)
         log:log_if_stdio_read_error("on_stderr", read_error, data)
         -- log:trace_stdio_read_always("on_stderr", read_error, data)
+        if data then
+            table.insert(_stderr_data_parts, data)
+        end
 
         local no_data = data == nil or data == ""
         if read_error or no_data then
@@ -140,9 +150,11 @@ function Curl.spawn(request, frontend)
         assert(data ~= nil)
 
         -- keep in mind... curl errors will show as text in STDERR
-        local message = "Curl.spawn.on_stderr data=" .. vim.inspect(data)
-        log:error(message)
-        frontend.explain_error(message)
+        -- FYI just show individual parts here since the full error message is needed to print one final message, accumulate that for on_exit to print
+        local message = "Curl.spawn.on_stderr data=" .. vim.inspect(data) -- info level log for parts
+        log:info(message)
+        -- TODO see if any errors, if it is useful to see explain_error on each chunk instead of just at end in on_exit... I suspect cumulative_stderr is sufficient for most errors
+        -- frontend.explain_error(message)
     end
     stderr:read_start(on_stderr)
 end
