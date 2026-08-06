@@ -314,17 +314,19 @@ local debounced_subscription = debounced_events:subscribe(function(event)
     -- use vim.schedule to ensure I can perform editor operations when debounced signal fires
     --  OR check if `vim.in_fast_event()` returns `false`?
     vim.schedule(function()
-        PredictionsFrontend.start_predicting(event)
+        PredictionsFrontend.start_predicting({ bufnr = event.bufnr })
     end)
 end)
-function PredictionsFrontend.start_predicting(event)
+
+---@param params PredictionParameters
+function PredictionsFrontend.start_predicting(params)
     if vim.fn.mode() ~= "i" then
         log:info("cannot predict outside insert mode")
         return
     end
     log:info("start predict")
 
-    PredictionsFrontend.ask_for_prediction({ bufnr = event.bufnr })
+    PredictionsFrontend.ask_for_prediction({ bufnr = params.bufnr })
 end
 
 function PredictionsFrontend.request_new_prediction(bufnr)
@@ -400,7 +402,7 @@ end
 function PredictionsFrontend.new_prediction_invoked()
     local bufnr = vim.fn.bufnr()
     log:info("new_prediction_invoked", bufnr)
-    PredictionsFrontend.start_predicting()
+    PredictionsFrontend.start_predicting({ bufnr = bufnr })
 end
 
 function PredictionsFrontend.vim_is_quitting(event)
