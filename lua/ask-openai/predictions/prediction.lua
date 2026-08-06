@@ -17,6 +17,7 @@ local FIMPerformance = require("ask-openai.predictions.fim_performance")
 ---@field extmarks table
 ---@field abandoned boolean         # user aborted prediction
 ---@field disable_cursor_moved boolean
+---@field failures string[]
 ---
 ---@field has_reasoning boolean
 ---@field private reasoning_chunks string[]
@@ -64,6 +65,7 @@ function Prediction.new(params)
     self.all_sses = {}
     self.rag_request_ids = nil
     self.rag_cancel = nil
+    self.failures = {}
 
     params = params or {}
     self.apply_template_only = params.apply_template_only
@@ -155,6 +157,31 @@ function Prediction:fix_fim_and_redraw_extmarks()
         return
     end
 
+    -- * show failures above the cursorline
+    if self.failures then
+        -- currently only one failure message but I designed this to handle more than one
+        local virt_lines = {}
+        for _, failure in ipairs(self.failures) do
+            local lines = split_lines(failure)
+            for _, line in ipairs(lines) do
+                table.insert(virt_lines, { { line, HLGroups.EXPLAIN_ERROR } })
+            end
+        end
+        self.extmarks.failures = vim.api.nvim_buf_set_extmark(
+            self.bufnr,
+            extmarks_ns_id,
+            cursor.line_base0,
+            -- TODO if we only match part of prefix... we shouldn't highlight all of it! rare but still support this?
+            0, -- start from beginning of line
+            {
+                virt_lines_above = true,
+                virt_lines = virt_lines,
+                -- hl_eol = false,
+            }
+        )
+        -- allow to continue showing prediction even if a failure is present
+    end
+
     -- FYI must call before building extmarks (if needed strips duplicate prefix)
     self:fim_fixes()
     if not self.has_prediction then
@@ -230,9 +257,18 @@ function Prediction:clear_extmarks()
     vim.api.nvim_buf_clear_namespace(self.bufnr, extmarks_ns_id, 0, -1)
 
     -- Explicitly remove the duplicate prefix highlight if it exists
-    if self.extmarks and self.extmarks.dup_highlight then
+    if not self.extmarks then
+        return
+    end
+
+    if self.extmarks.dup_highlight then
         pcall(vim.api.nvim_buf_del_extmark, self.bufnr, extmarks_ns_id, self.extmarks.dup_highlight)
         self.extmarks.dup_highlight = nil
+    end
+
+    if self.extmarks.failures then
+        pcall(vim.api.nvim_buf_del_extmark, self.bufnr, extmarks_ns_id, self.extmarks.failures)
+        self.extmarks.failures = nil
     end
 end
 

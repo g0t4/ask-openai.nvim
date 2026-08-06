@@ -152,11 +152,14 @@ function PredictionsFrontend.ask_for_prediction(params)
         end
 
         ---@type ExplainError
-        local function explain_error(text)
+        local function explain_error(message)
+            table.insert(this_prediction.failures, message)
+
             vim.schedule(function()
+                this_prediction:fix_fim_and_redraw_extmarks()
                 -- cannot call nvim_echo in a fast context (which vim.notify uses), happens if not using nvim-notify
                 -- note: nvim-notify worked fine in a fast context
-                vim.notify(text, vim.log.levels.ERROR)
+                -- vim.notify(message, vim.log.levels.ERROR)
             end)
         end
 
