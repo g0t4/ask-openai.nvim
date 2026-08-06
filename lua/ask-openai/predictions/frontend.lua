@@ -412,10 +412,11 @@ end
 
 ---@param event vim.api.keyset.create_autocmd.callback_args
 function PredictionsFrontend.entering_insert_mode(event)
-    -- PRN can I detect if o/O was just used and that resulted in entering insert mode? b/c then if that's the case then the new line that comes next will immediately invalidate and cancel this first FIM
-    --   of course I only care about this if I can show that the first FIM materially slows down the second one... if not then this is NBD
-    --   FIMs are tokenwise cheapto cancel, so it really is just about UX when using o/O
-    -- TODO what other keymaps do I regularly use that would cause a similar FIM=>cancel=>FIM and would any even matter user experience wise?
+    -- FYI do NOT push an event into your debounce stream... else you will just wait then when you use o/O => results in a new line (TextChangedI) and triggers a prediction too
+    --   so just go right to a prediction here
+    --   -  if you use "i" then it will be the prediction that runs
+    --   - if you use "o"/"O" then this one will be canceled (cheap) and a new one started
+--     PRN would be maybe nice to withhold a new prediction if there are subsquent commands pending or running so I don't waste any time (i.e. no pred until that new line added which becomes part of prediction)
     log:info("entering_insert_mode, bufnr: ", event.buf)
     PredictionsFrontend.ask_for_prediction({ bufnr = event.buf })
 end
