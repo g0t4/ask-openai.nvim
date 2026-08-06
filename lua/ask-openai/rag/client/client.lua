@@ -133,6 +133,7 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
     ---@param context lsp.HandlerContext
     ---@param config? table
     local function on_language_server_response(lsp_error, lsp_result, context, config)
+        log:info("OLSR", lsp_error)
         -- walk_for_vim_NIL(lsp_result) -- FYI uncomment for testing known vim.NIL values before replacing with nil_means_nil
         if lsp_result and lsp_result.matches then
             lsp_result.matches = nil_means_nil(lsp_result.matches)
@@ -214,6 +215,7 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
         _cancel_all_requests = nil -- avoid double canceling (raises error) i.e. if user cancels after a timeout
     end
 
+    log:info("  BUF_REQUEST")
     _client_request_ids, _cancel_all_requests = vim.lsp.buf_request(lsp_buffer_number, "workspace/executeCommand", params,
         ---@param lsp_error? lsp.ResponseError
         ---@param lsp_result any
@@ -225,6 +227,7 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
             end
             on_language_server_response(lsp_error, lsp_result, context, config)
         end)
+    log:info("    REQUEST IDs:", _client_request_ids)
 
     local timeout_ms = 5000
     _request_timeout_timer = vim.defer_fn(function()

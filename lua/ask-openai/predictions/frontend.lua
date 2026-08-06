@@ -203,7 +203,8 @@ function PredictionsFrontend.ask_for_prediction(params)
 
         ---@param rag_matches LSPRankedMatch[]
         function on_rag_response(rag_matches)
-            -- log:info("on_rag_response", vim.inspect(rag_matches))
+            local num_matches = #rag_matches
+            log:info(string.format("  on_rag_response => callback with %d matches", num_matches))
 
             -- FYI unroll all rag specific safeguards here so that logic doesn't live inside send_fim
             this_prediction.performance:rag_done()
