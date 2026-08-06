@@ -53,7 +53,7 @@ function PredictionsFrontend.ask_for_prediction(params)
     perf.register("fim", this_prediction.performance)
 
     ---@param rag_matches LSPRankedMatch[]
-    function then_send_fim(rag_matches)
+    local function then_send_fim(rag_matches)
         -- TODO rename to FimBodyBuilder? or FimRequestBuilder? or FimPromptBuilder?
         local backend = FimBackend:new(ps_chunk, rag_matches)
         local body = backend:body_for()
@@ -202,7 +202,7 @@ function PredictionsFrontend.ask_for_prediction(params)
         this_prediction.performance:rag_started()
 
         ---@param obj SemanticGrepWithTimeoutResponseObj
-        function on_rag_response(obj)
+        local function on_rag_response(obj)
             -- * make sure prior (canceled) rag request doesn't still respond
             -- if this prediction is no longer the current one for its buffer, a newer keystroke replaced it
             --  (or it was canceled), so these results are stale and must be skipped.
@@ -246,7 +246,7 @@ function PredictionsFrontend.ask_for_prediction(params)
 
         ---@param str string
         ---@return string
-        function trim(str)
+        local function trim(str)
             return (str:gsub("^%s*(.-)%s*$", "%1"))
         end
 
@@ -286,8 +286,9 @@ function PredictionsFrontend.ask_for_prediction(params)
             return
         end
 
+        log:info("before RAG", this_prediction.id)
         this_request_ids, cancel = rag_client.context_query_fim(query, on_rag_response)
-        -- log:info("after context_query_fim started")
+        log:info("after RAG", this_prediction.id)
         this_prediction.rag_request_ids = this_request_ids
     else
         this_prediction.rag_cancel = nil
