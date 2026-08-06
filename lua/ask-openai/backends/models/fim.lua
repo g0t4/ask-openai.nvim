@@ -549,6 +549,8 @@ M.deepseek_coder_v2 = {
 }
 
 function M.deepseek_coder_v2.get_fim_prompt(request)
+    -- log:info("request", request)
+
     local tokens = M.deepseek_coder_v2.sentinel_tokens
 
     -- PSM format:
@@ -558,12 +560,11 @@ function M.deepseek_coder_v2.get_fim_prompt(request)
         .. request.ps_chunk.suffix
         .. tokens.FIM_END
 
-    return fim_file_contents
+    -- TODO repo level (other files, context, etc)
+    -- local fim_file_contents = tokens.FILE_SEP
+    --     .. current_file_relative_path
 
-    -- ** paper also says at "document level" ...
-    -- * can I include filename? (if so => yanks/edits/etc)
-    -- * multiple files?
-    -- return prompt .. tokens.file_sep .. fim_file_contents
+    return fim_file_contents
 end
 
 return M
