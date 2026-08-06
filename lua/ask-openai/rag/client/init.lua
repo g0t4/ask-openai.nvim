@@ -315,20 +315,22 @@ end
 ---@param callback fun(matches: LSPRankedMatch[])
 ---@return integer _client_request_ids, fun() _cancel_all_requests
 function M._context_query(request, callback)
-    return client.semantic_grep_with_timeout(request, nil, function(obj)
-        if obj.result.isError then
-            log:error(string.format("RAG _context_query error: %s", obj.result.error))
-        end
-        -- TODO review all callers, errors are now going to be forwarded (or I have to squelch calling them?)
-        local matches = obj.result.matches or {}
-        -- TODO do I wanna return a differnt shape from shared client function? right now it uses tool call result shape
-        --  response.result.{matches|error|isError}
-        if matches then
-            local num_matches = #matches
-            log:info(string.format("  _context_query => callback with %d matches", num_matches))
-        end
-        callback(matches)
-    end)
+    return client.semantic_grep_with_timeout(request, nil,
+
+        function(obj)
+            if obj.result.isError then
+                log:error(string.format("RAG _context_query error: %s", obj.result.error))
+            end
+            -- TODO review all callers, errors are now going to be forwarded (or I have to squelch calling them?)
+            local matches = obj.result.matches or {}
+            -- TODO do I wanna return a differnt shape from shared client function? right now it uses tool call result shape
+            --  response.result.{matches|error|isError}
+            if matches then
+                local num_matches = #matches
+                log:info(string.format("  _context_query => callback with %d matches", num_matches))
+            end
+            callback(matches)
+        end)
 end
 
 -- require("ask-openai.rag.client.known").run_verification()
