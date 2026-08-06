@@ -212,9 +212,10 @@ function PredictionsFrontend.ask_for_prediction(params)
                 return
             end
             -- ** DO NOT LOOK AT A RESPONSE (neither isError nor matches) IF IT IS NOT FOR THE LATEST REQUEST!
+            -- FYI DO NOT TOUCH this_prediction before checking that it is still most recent
 
             if obj.result.isError then
-                log:error("RAG failed in PredictionsFrontend")
+                log:error("RAG failed in PredictionsFrontend on most recent request")
                 vim.notify("RAG failed in PredictionsFrontend, skipping RAG " .. vim.inspect(obj))
             end
 
