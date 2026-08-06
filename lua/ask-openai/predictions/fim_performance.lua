@@ -18,9 +18,12 @@ local perf = require("ask-openai.perf")
 ---@field rag_duration_ms? number
 ---@field total_duration_ms? number
 local FIMPerformance = {}
-FIMPerformance.__index = FIMPerformance
 
 function FIMPerformance:new()
+    local self = {}
+    setmetatable(self, { __index = FIMPerformance })
+    log:info("SELF", self)
+
     self._prediction_start_time_ns = perf.get_time_in_ns()
 
     self._rag_start_time_ns = nil
