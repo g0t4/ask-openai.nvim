@@ -398,7 +398,11 @@ end
 function PredictionsFrontend.request_new_prediction(bufnr)
     local current_prediction = PredictionsFrontend._get_current_prediction(bufnr)
     if current_prediction and current_prediction.disable_cursor_moved == true then
-        -- log:trace("Disabled CursorMovedI, skipping...")
+        -- TODO revisit disable_cursor_moved... can't I get rid of this? OR, rename skip_next_text_change (from accept action)
+        --   TODO and do I need this in front of other triggers too (now that I bypass request_new_prediction for all but input_events (TextChangedI)?
+        --   FYI when I commented out this check here... I got `thinking` after accepting first prediction and it was stuck on thinking and alt+tab didn't even work
+        --     weird part is the thinking was on deepseek w/ FIM format that doesn't use thinking!
+        -- log:trace("disable_cursor_moved == true, skipping this request_new_prediction...")
         current_prediction.disable_cursor_moved = false -- skip once
         -- called after accepting/inserting text (AFAICT only once per accept)
         return
