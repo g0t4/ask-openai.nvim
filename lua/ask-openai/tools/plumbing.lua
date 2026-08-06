@@ -3,7 +3,7 @@ local log = require("devtools.logs.logger").universal()
 local M = {}
 
 ---@param description string
----@return MCP_CallToolSuccessResponse
+---@return MCP_CallToolResponse
 function M.create_tool_call_output_for_error_message(description)
     local caller = debug.getinfo(2)
     log:error("tool_call plumbing failure: " .. description, "caller: ", vim.inspect(caller))
@@ -25,7 +25,7 @@ function M.create_tool_call_output_for_error_message(description)
 end
 
 ---@param content MCP_ContentBlock[]
----@return MCP_CallToolSuccessResponse
+---@return MCP_CallToolResponse
 function M.create_tool_call_output_for_error(content)
     return {
         isError = true,
@@ -36,7 +36,7 @@ function M.create_tool_call_output_for_error(content)
 end
 
 ---@param content MCP_ContentBlock[]
----@return MCP_CallToolSuccessResponse
+---@return MCP_CallToolResponse
 function M.create_tool_call_output_for_success(content)
     return {
         result = {

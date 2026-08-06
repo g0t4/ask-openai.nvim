@@ -62,7 +62,7 @@ function M.openai_tools(coordinator_only)
     return tools, system_instructs
 end
 
----@alias ToolCallDoneCallback fun(call_output: MCP_CallToolSuccessResponse|MCP_JSONRPCErrorResponse)
+---@alias ToolCallDoneCallback fun(call_output: MCP_CallToolResponse|MCP_JSONRPCErrorResponse)
 ---@alias ToolCallOnProgress fun(progress: MCP_ProgressNotificationParams)
 
 ---@param tool_call table

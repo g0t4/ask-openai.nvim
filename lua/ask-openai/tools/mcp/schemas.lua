@@ -46,8 +46,8 @@
 ---@field [string] unknown
 
 -- * Tool Execution
----@class MCP_CallToolSuccessResponse
----@field result MCP_CallToolResult
+---@class MCP_CallToolResponse
+---@field result MCP_CallToolResult -- tool success/failure is independent of the shape that returns either result
 
 ---@class MCP_CallToolRequest
 ---@field jsonrpc "2.0"
