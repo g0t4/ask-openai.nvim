@@ -33,28 +33,29 @@ function _semantic_grep(semantic_grep_request, lsp_buffer_number, process_result
 
     -- log:info("requesting semantic_grep, last_msg_id: " .. vim.inspect(last_msg_id))
     local my_msg_id, cancel_my_request -- "my" as in this closure's request
-    my_msg_id, cancel_my_request = client.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, function(obj)
+    my_msg_id, cancel_my_request = client.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number,
 
-        -- Ensure this is the most recent request before processing results.
-        if last_msg_id ~= my_msg_id then
-            return
-        end
+        function(obj)
+            -- Ensure this is the most recent request before processing results.
+            if last_msg_id ~= my_msg_id then
+                return
+            end
 
-        -- No longer need a cancel handler after the response.
-        last_cancel_requests = nil
+            -- No longer need a cancel handler after the response.
+            last_cancel_requests = nil
 
-        if obj.result and obj.result.isError then
-            log:error("semantic_grep failed: " .. (obj.result.error or "unknown"))
-            return {}
-        end
+            if obj.result and obj.result.isError then
+                log:error("semantic_grep failed: " .. (obj.result.error or "unknown"))
+                return {}
+            end
 
-        local matches = (obj.result and obj.result.matches) or {}
-        for i, match in ipairs(matches) do
-            local entry = entry_maker(match)
-            process_result(entry)
-        end
-        process_complete()
-    end)
+            local matches = (obj.result and obj.result.matches) or {}
+            for i, match in ipairs(matches) do
+                local entry = entry_maker(match)
+                process_result(entry)
+            end
+            process_complete()
+        end)
     last_cancel_requests = cancel_my_request
     last_msg_id = my_msg_id -- this is a number
 
