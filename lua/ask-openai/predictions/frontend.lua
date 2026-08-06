@@ -351,14 +351,16 @@ local ignore_buftypes = {
 }
 local debouncing = require("ask-openai.rx.debouncing")
 local input_events, debounced_events = debouncing.create_typing_debounced_observable_by_bufnr()
+local rx = require('rx')
+local input_events = rx.Subject.create()
 local input_events_subscription = input_events:subscribe(function(event)
     --- @cast event ObservableInputEvent
     log:info("input_event", event.bufnr)
 
     -- immediately clear/hide prediction, else slides as you type
     PredictionsFrontend.cancel_current_prediction(event.bufnr)
-end)
-local debounced_subscription = debounced_events:subscribe(function(event)
+    -- end)
+    -- local debounced_subscription = debounced_events:subscribe(function(event)
     --- @cast event ObservableInputEvent
     -- log:info("debounced prediction trigger", event.bufnr)
 
@@ -416,7 +418,7 @@ function PredictionsFrontend.entering_insert_mode(event)
     --   so just go right to a prediction here
     --   -  if you use "i" then it will be the prediction that runs
     --   - if you use "o"/"O" then this one will be canceled (cheap) and a new one started
---     PRN would be maybe nice to withhold a new prediction if there are subsquent commands pending or running so I don't waste any time (i.e. no pred until that new line added which becomes part of prediction)
+    --     PRN would be maybe nice to withhold a new prediction if there are subsquent commands pending or running so I don't waste any time (i.e. no pred until that new line added which becomes part of prediction)
     log:info("entering_insert_mode, bufnr: ", event.buf)
     PredictionsFrontend.ask_for_prediction({ bufnr = event.buf })
 end
