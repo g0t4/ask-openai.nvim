@@ -207,10 +207,10 @@ function PredictionsFrontend.ask_for_prediction(params)
             -- if this prediction is no longer the current one for its buffer, a newer keystroke replaced it
             --  (or it was canceled), so these results are stale and must be skipped.
             --  object identity is sufficient here since each keystroke creates a fresh Prediction instance
-            -- if PredictionsFrontend._get_current_prediction(this_prediction.bufnr) ~= this_prediction then
-            --     log:warn("possibly stale rag results, skipping...")
-            --     return
-            -- end
+            if PredictionsFrontend._get_current_prediction(this_prediction.bufnr) ~= this_prediction then
+                log:warn("possibly stale rag results, skipping...")
+                return
+            end
             -- ** DO NOT LOOK AT A RESPONSE (neither isError nor matches) IF IT IS NOT FOR THE LATEST REQUEST!
             -- FYI DO NOT TOUCH this_prediction before checking that it is still most recent
 
