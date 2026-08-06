@@ -67,7 +67,8 @@ function M.call(parsed_args, callback)
     }
 
     -- PRN I could transform the response object here if I didn't want all tools to use this rediculous MCP tool response object...
-    client.semantic_grep_with_timeout(semantic_grep_request, nil, callback)
+    local client_request_ids, cancel = client.semantic_grep_with_timeout(semantic_grep_request, nil, callback)
+    -- PRN pass back cancel function if I want to support cooperative cancelation (i.e. on hitting escape key!)
 end
 
 return M

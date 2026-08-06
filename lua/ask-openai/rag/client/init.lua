@@ -313,7 +313,7 @@ end
 
 ---@param request LSPSemanticGrepRequest
 ---@param callback fun(matches: LSPRankedMatch[])
----@return integer _client_request_ids, fun() _cancel_all_requests
+---@return integer[]  _client_request_ids, fun() _cancel_all_requests
 function M._context_query(request, callback)
     return client.semantic_grep_with_timeout(request, nil,
 

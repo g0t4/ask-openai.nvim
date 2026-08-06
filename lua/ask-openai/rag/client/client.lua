@@ -108,7 +108,7 @@ end
 ---@param semantic_grep_request LSPSemanticGrepRequest
 --- @param lsp_buffer_number? integer
 ---@param callback_like_mcp_tool fun(response_obj: SemanticGrepWithTimeoutResponseObj) -- called with the result or error
----@return table _client_request_ids, fun() _cancel_all_requests
+---@return integer[] _client_request_ids, fun() _cancel_all_requests
 function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, callback_like_mcp_tool)
     lsp_buffer_number = lsp_buffer_number or 0
     -- log:info("semantic_grep_request", vim.inspect(semantic_grep_request))
