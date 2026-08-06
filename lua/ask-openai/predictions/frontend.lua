@@ -397,13 +397,14 @@ end
 
 function PredictionsFrontend.text_changed(bufnr)
     local current_prediction = PredictionsFrontend._get_current_prediction(bufnr)
-    if current_prediction and current_prediction.disable_cursor_moved == true then
-        -- TODO revisit disable_cursor_moved... can't I get rid of this? OR, rename skip_next_text_change (from accept action)
+    if current_prediction and current_prediction.skip_text_changed_from_accept_suggestion == true then
+        -- TODO revisit skip_text_changed_from_accept_suggestion... can't I get rid of this?
         --   TODO and do I need this in front of other triggers too (now that I bypass text_changed for all but input_events (TextChangedI)?
         --   FYI when I commented out this check here... I got `thinking` after accepting first prediction and it was stuck on thinking and alt+tab didn't even work
         --     weird part is the thinking was on deepseek w/ FIM format that doesn't use thinking!
-        -- log:trace("disable_cursor_moved == true, skipping this text_changed...")
-        current_prediction.disable_cursor_moved = false -- skip once
+        --
+        -- log:trace("skip_text_changed_from_accept_suggestion == true, skipping this text_changed...")
+        current_prediction.skip_text_changed_from_accept_suggestion = false -- skip once
         -- called after accepting/inserting text (AFAICT only once per accept)
         return
     end

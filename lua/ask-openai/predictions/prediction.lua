@@ -16,7 +16,7 @@ local FIMPerformance = require("ask-openai.predictions.fim_performance")
 ---@field has_prediction: boolean
 ---@field extmarks table
 ---@field abandoned boolean         # user aborted prediction
----@field disable_cursor_moved boolean
+---@field skip_text_changed_from_accept_suggestion boolean
 ---@field failures string[]
 ---
 ---@field has_reasoning boolean
@@ -56,7 +56,7 @@ function Prediction.new(params)
     self.bufnr = params.bufnr
     self.extmarks = {}
     self.abandoned = false
-    self.disable_cursor_moved = false
+    self.skip_text_changed_from_accept_suggestion = false
     self.has_reasoning = false
     self.reasoning_chunks = {}
     self.start_time = os.time()
@@ -277,7 +277,7 @@ function Prediction:mark_as_abandoned()
 end
 
 function Prediction:insert_accepted(insert_lines)
-    self.disable_cursor_moved = true
+    self.skip_text_changed_from_accept_suggestion = true
     local controller = CursorController:new()
     local cursor = controller:get_cursor_position()
 
