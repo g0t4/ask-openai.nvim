@@ -199,6 +199,17 @@ function FimBackend:body_for()
         builder = function()
             return fim.codestral.get_fim_prompt(self)
         end
+    elseif model == models.DEEPSEEK then
+        -- TODO testing out FIM w/ deepseek-v4-flash-0731
+        --  TODO try deepseek coder's FIM format
+        --  TODO try general format I use for chat completions based FIM
+        --  TODO try varying thinking off/low(defualt)/high/max
+        builder = function()
+            return fim.deepseek_coder_v2.get_fim_prompt(self)
+        end
+
+        body.options.stop = fim.deepseek_coder_v2.sentinel_tokens.fim_stop_tokens
+
     elseif string.find(model, "deepseek-coder-v2", nil, true) then
         builder = function()
             return fim.deepseek_coder_v2.get_fim_prompt(self)
