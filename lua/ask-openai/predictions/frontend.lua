@@ -201,22 +201,28 @@ function PredictionsFrontend.ask_for_prediction(params)
         local this_request_ids, cancel -- declare in advance so closure can access
         this_prediction.performance:rag_started()
 
-        ---@param rag_matches LSPRankedMatch[]
-        function on_rag_response(rag_matches)
-            local num_matches = #rag_matches
-            log:info(string.format("  on_rag_response => callback with %d matches", num_matches))
-
-            -- FYI unroll all rag specific safeguards here so that logic doesn't live inside send_fim
-            this_prediction.performance:rag_done()
-
+        ---@param obj SemanticGrepWithTimeoutResponseObj
+        function on_rag_response(obj)
             -- * make sure prior (canceled) rag request doesn't still respond
             -- if this prediction is no longer the current one for its buffer, a newer keystroke replaced it
             --  (or it was canceled), so these results are stale and must be skipped.
             --  object identity is sufficient here since each keystroke creates a fresh Prediction instance
             if PredictionsFrontend._get_current_prediction(this_prediction.bufnr) ~= this_prediction then
-                log:trace("possibly stale rag results, skipping...")
+                log:warn("possibly stale rag results, skipping...")
                 return
             end
+            -- ** DO NOT LOOK AT A RESPONSE (neither isError nor matches) IF IT IS NOT FOR THE LATEST REQUEST!
+
+            if obj.result.isError then
+                log:error("RAG failed in PredictionsFrontend")
+                vim.notify("RAG failed in PredictionsFrontend, skipping RAG " .. vim.inspect(obj))
+            end
+
+            -- TODO check this_request_ids before mark perf done! that's why we have double error!
+            --  TODO in fact before check isError, like RewriteFrontend, skip if not last request for bufnr
+
+            -- FYI unroll all rag specific safeguards here so that logic doesn't live inside send_fim
+            this_prediction.performance:rag_done()
 
             if this_prediction.rag_cancel == nil then
                 log:error("rag appears canceled, skipping on_rag_response...")
@@ -227,7 +233,7 @@ function PredictionsFrontend.ask_for_prediction(params)
             this_prediction.rag_cancel = nil
             this_prediction.rag_request_ids = nil
 
-            then_send_fim(rag_matches)
+            then_send_fim(obj.result.matches or {})
         end
 
         this_prediction.rag_cancel = function()
@@ -236,7 +242,50 @@ function PredictionsFrontend.ask_for_prediction(params)
             cancel()
             this_prediction.rag_request_ids = nil
         end
-        this_request_ids, cancel = rag_client.context_query_fim(ps_chunk, on_rag_response)
+
+        ---@param str string
+        ---@return string
+        function trim(str)
+            return (str:gsub("^%s*(.-)%s*$", "%1"))
+        end
+
+        ---@param ps_chunk PrefixSuffixChunk
+        ---@returns string? -- FIM query string, or nil to disable FIM Semantic Grep
+        local function fim_concat(ps_chunk)
+            -- FYI see fim_query_notes.md for past and future ideas for Semantic Grep selection w.r.t. RAG+FIM
+
+            -- * TESTING FIM+RAG with cursor line ONLY for query
+            local query = ps_chunk.cursor_line.before_cursor
+
+            -- TODO add last user message custom instructions based on cursor_line situation for FIM...
+            --     in middle of line => suggest intra line completion, rarely multiline
+            --     at end of line => suggest finish current line and/or multiline
+            --     blank line => suggest multiline
+
+            if trim(query) == "" then
+                local few_before_text = table.concat(ps_chunk.cursor_line.few_lines_before or {}, "\n") or ""
+                if vim.trim(few_before_text) ~= "" then
+                    query = few_before_text
+                else
+                    log:trace(ansi.white_bold(ansi.red_bg("SKIPPING RAG in FIM b/c cursor line is empty (before cursor) and nothing in a few lines above either")))
+                    -- PRN allow suffix if empty prefix line? OR take a few lines around it?
+                    -- PRN previous line? with a non-empty value? if so, pass all lines or a subset from ps_chunk builder (on ps_chunk)
+                    return nil
+                end
+            end
+
+            -- log:trace(string.format("fim_concat: query=%q", query))
+            return query
+        end
+
+        local query = fim_concat(ps_chunk)
+        if query == nil then
+            -- no query == SKIP RAG (NOT A FAILURE)
+            then_send_fim({})
+            return
+        end
+
+        this_request_ids, cancel = rag_client.context_query_fim(query, on_rag_response)
         -- log:info("after context_query_fim started")
         this_prediction.rag_request_ids = this_request_ids
     else

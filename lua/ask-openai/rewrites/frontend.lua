@@ -482,11 +482,8 @@ local function ask_rewrite_command(opts)
     if api.is_rag_enabled() and rag_client.is_rag_supported_in_current_file() then
         local this_request_ids, cancel -- declare in advance for closure
 
-        ---@param rag_matches LSPRankedMatch[]
-        function on_rag_response(rag_matches)
-            -- log:info("on_rag_response")
-            -- PRN I think this could be shared with all frontends... if they pass themself for access to ID/cancel refs
-
+        ---@param obj SemanticGrepWithTimeoutResponseObj
+        function on_rag_response(obj)
             -- * make sure prior (canceled) rag request doesn't still respond
             if RewriteFrontend.rag_request_ids ~= this_request_ids then
                 log:trace("possibly stale rag results, skipping: " .. vim.inspect({
@@ -495,6 +492,12 @@ local function ask_rewrite_command(opts)
                 }))
                 return
             end
+            -- ** DO NOT LOOK AT A RESPONSE (neither isError nor matches) IF IT IS NOT FOR THE LATEST REQUEST!
+
+            if obj.result.isError then
+                log:error("RAG failed in RewriteFrontend")
+                vim.notify("RAG failed in RewriteFrontend, skipping RAG " .. vim.inspect(obj))
+            end
 
             if RewriteFrontend.rag_cancel == nil then
                 log:error("rag appears canceled, skipping on_rag_response...")
@@ -502,7 +505,7 @@ local function ask_rewrite_command(opts)
             end
 
             RewriteFrontend.response.performance:rag_done()
-            then_send_rewrite(rag_matches)
+            then_send_rewrite(obj.result.matches or {})
         end
 
         RewriteFrontend.response.performance:rag_started()

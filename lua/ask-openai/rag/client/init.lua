@@ -155,41 +155,6 @@ function M.is_rag_supported_in_current_file(bufnr)
     return vim.tbl_contains(M.rag_indexed_file_extensions, extension)
 end
 
----@param str string
----@return string
-function trim(str)
-    return (str:gsub("^%s*(.-)%s*$", "%1"))
-end
-
----@param ps_chunk PrefixSuffixChunk
----@returns string? -- FIM query string, or nil to disable FIM Semantic Grep
-local function fim_concat(ps_chunk)
-    -- FYI see fim_query_notes.md for past and future ideas for Semantic Grep selection w.r.t. RAG+FIM
-
-    -- * TESTING FIM+RAG with cursor line ONLY for query
-    local query = ps_chunk.cursor_line.before_cursor
-
-    -- TODO add last user message custom instructions based on cursor_line situation for FIM...
-    --     in middle of line => suggest intra line completion, rarely multiline
-    --     at end of line => suggest finish current line and/or multiline
-    --     blank line => suggest multiline
-
-    if trim(query) == "" then
-        local few_before_text = table.concat(ps_chunk.cursor_line.few_lines_before or {}, "\n") or ""
-        if vim.trim(few_before_text) ~= "" then
-            query = few_before_text
-        else
-            log:trace(ansi.white_bold(ansi.red_bg("SKIPPING RAG in FIM b/c cursor line is empty (before cursor) and nothing in a few lines above either")))
-            -- PRN allow suffix if empty prefix line? OR take a few lines around it?
-            -- PRN previous line? with a non-empty value? if so, pass all lines or a subset from ps_chunk builder (on ps_chunk)
-            return nil
-        end
-    end
-
-    -- log:trace(string.format("fim_concat: query=%q", query))
-    return query
-end
-
 ---@enum ChunkType
 local ChunkType = {
     LINES = "lines",
@@ -254,7 +219,9 @@ function M.context_query_for_agents(same_file_bufnr, user_prompt, code_context, 
         topK = top_k,
         embedTopK = top_k * 4,
     }
-    return M._context_query(request, callback)
+    -- TODO review caller for error handling and update to get full object back (not just matches now)
+    --   TODO obj not matches in caller!
+    return client.semantic_grep_with_timeout(request, nil, callback)
 end
 
 ---@param user_prompt string
@@ -279,22 +246,19 @@ function M.context_query_rewrites(user_prompt, code_context, top_k, callback)
         embedTopK = top_k * 4,
         -- very happy w/ AskRewrite rag_matches w/ top_k=5 + embed_top_k=18
     }
-    return M._context_query(request, callback)
+    -- TODO review caller for error handling and update to get full object back (not just matches now)
+    --   TODO obj not matches in caller!
+    return client.semantic_grep_with_timeout(request, nil, callback)
 end
 
----@param ps_chunk PrefixSuffixChunk
+---@param query string
 ---@param callback fun(matches: LSPRankedMatch[])
 ---@return integer[] _client_request_ids, fun() _cancel_all_requests
-function M.context_query_fim(ps_chunk, callback)
+function M.context_query_fim(query, callback)
     -- FYI IIRC I put the query building here to consolidate query/instruct logic across frontends
     --   it would be fine to push this out into PredictionsFrontend too...
 
     local fim_specific_instruct = "Complete the missing portion of code (FIM) based on the surrounding context (Fill-in-the-middle)"
-    local query = fim_concat(ps_chunk)
-    if query == nil then
-        callback({}) -- no results if no query (not a failure)
-        return
-    end
 
     -- PRN pass fim.semantic_grep.all_files settings (create an options object and pass that instead of a dozen args)
     -- TODO! pass ps_chunk start/end (line range) to limit same file skips
@@ -308,32 +272,10 @@ function M.context_query_fim(ps_chunk, callback)
         topK = 5,
         embedTopK = 18,
     }
-    return M._context_query(request, callback)
-end
-
----@param request LSPSemanticGrepRequest
----@param callback fun(matches: LSPRankedMatch[])
-function M._context_query(request, callback)
-    return client.semantic_grep_with_timeout(request, nil,
-
-        ---@param obj SemanticGrepWithTimeoutResponseObj -- for lack of better name, stick with it
-        function(obj)
-            if obj.result.isError then
-                log:error("_context_query failed", obj)
-            end
-            -- TODO review all callers, errors are now going to be forwarded (or I have to squelch calling them?)
-            local matches = obj.result.matches or {}
-            -- TODO do I wanna return a differnt shape from shared client function? right now it uses tool call result shape
-            --  response.result.{matches|error|isError}
-            if matches then
-                local num_matches = #matches
-                log:info(string.format("  _context_query => callback with %d matches", num_matches))
-            end
-            callback(matches)
-        end)
+    -- TODO pass bufnr for 2nd param?
+    return client.semantic_grep_with_timeout(request, nil, callback)
 end
 
 -- require("ask-openai.rag.client.known").run_verification()
-
 
 return M

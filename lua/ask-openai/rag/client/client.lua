@@ -142,6 +142,10 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
     ---@param config? table
     local function on_language_server_response(lsp_error, lsp_result, context, config)
         log:info("OLSR", lsp_error)
+        -- FYI connection failure will arive with message:
+        -- TODO any special connection failure logic?
+        --   "ConnectionRefusedError: [Errno 61] Connect call failed ('IP', PORT)"
+
         -- walk_for_vim_NIL(lsp_result) -- FYI uncomment for testing known vim.NIL values before replacing with nil_means_nil
         if lsp_result and lsp_result.matches then
             lsp_result.matches = nil_means_nil(lsp_result.matches)
