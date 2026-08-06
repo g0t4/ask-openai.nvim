@@ -148,7 +148,10 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
             -- Language Server errors (returned successfully) hit this pathway
 
             if lsp_result.error == "Client cancelled query" then
-                -- no caller would need to get a callback
+                log:info("client canceled query")
+                -- ok to ignore cancel (b/c client requested it)
+                --  otherwise if I don't ignore it here, then I have to ignore it downstream!
+                --  why detect this twice?!
                 return
             end
 
