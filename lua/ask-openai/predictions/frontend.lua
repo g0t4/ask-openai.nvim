@@ -215,9 +215,9 @@ function PredictionsFrontend.ask_for_prediction(params)
             -- FYI DO NOT TOUCH this_prediction before checking that it is still most recent
 
             if obj.result.isError then
-                local message = "RAG failed in PredictionsFrontend, skipping RAG " .. vim.inspect(obj)
-                table.insert(this_prediction.failures, message)
-                log:error(message)
+                local msg = "skipping RAG " .. vim.inspect(obj.result.error)
+                table.insert(this_prediction.failures, msg)
+                log:error("RAG failed in PredictionsFrontend, skipping RAG " .. vim.inspect(obj))
                 this_prediction:fix_fim_and_redraw_extmarks()
                 -- vim.notify(message)
             end
