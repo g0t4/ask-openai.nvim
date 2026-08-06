@@ -553,9 +553,9 @@ function M.deepseek_coder_v2.get_fim_prompt(request)
 
     -- PSM format:
     local fim_file_contents = tokens.FIM_BEGIN
-        .. request.prefix
+        .. request.ps_chunk.prefix
         .. tokens.FIM_HOLD
-        .. request.suffix
+        .. request.ps_chunk.suffix
         .. tokens.FIM_END
 
     return fim_file_contents
