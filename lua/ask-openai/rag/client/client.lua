@@ -116,7 +116,6 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
     local _client_request_ids, _cancel_all_requests, _request_timeout_timer
 
     ---@param message string
-    ---@param matches? table optional list of matches to include in the error payload
     -- Invokes the provided callback with a standardized error payload.
     -- The function name is chosen to better convey its purpose.
     local function error_response(message)
