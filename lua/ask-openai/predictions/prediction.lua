@@ -25,7 +25,7 @@ local FIMPerformance = require("ask-openai.predictions.fim_performance")
 ---@field performance FIMPerformance   # timing/lifecycle state for this prediction
 ---@field fim_request? CurlRequest
 ---
----@field rag_request_ids? integer   # client request ids for the in-flight RAG query (used to discard stale results)
+---@field rag_request_ids? integer[]   # client request ids for the in-flight RAG query (used to discard stale results)
 ---@field rag_cancel? fun()          # cancels the in-flight RAG query
 ---
 ---@field apply_template_only boolean -- true means send FIM to /apply-template endpoint (not real FIM) and just log the prompt (saves me from running --verbose-prompt with llama-server which is heavy for all requests and not easily toggled)
