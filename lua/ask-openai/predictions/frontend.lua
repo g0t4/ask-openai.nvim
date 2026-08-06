@@ -287,9 +287,7 @@ function PredictionsFrontend.ask_for_prediction(params)
             return
         end
 
-        log:info("before RAG", this_prediction.id)
         this_request_ids, cancel = rag_client.context_query_fim(query, on_rag_response)
-        log:info("after RAG", this_prediction.id)
         this_prediction.rag_request_ids = this_request_ids
     else
         this_prediction.rag_cancel = nil

@@ -141,10 +141,6 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
     ---@param context lsp.HandlerContext
     ---@param config? table
     local function on_language_server_response(lsp_error, lsp_result, context, config)
-        -- if lsp_error then
-        --     log:error("OLSR", lsp_error, lsp_result)
-        -- end
-
         -- FYI connection failure will arive with message:
         --   "ConnectionRefusedError: [Errno 61] Connect call failed ('IP', PORT)"
         -- ? any special connection failure logic? or warn me logic? like update a dot in the status lualine?
@@ -155,8 +151,6 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
         end
         walk_for_vim_NIL(lsp_result)
         if lsp_error then
-            -- IIGC this is a client side error in making the request?
-            log:warn("Semantic Grep tool_call query failed (callback err): " .. vim.inspect(lsp_error), lsp_result)
             error_response(lsp_error.message or "unknown error")
             return
         end
