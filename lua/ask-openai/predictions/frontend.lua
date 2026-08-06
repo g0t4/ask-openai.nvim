@@ -218,8 +218,11 @@ function PredictionsFrontend.ask_for_prediction(params)
             -- FYI DO NOT TOUCH this_prediction before checking that it is still most recent
 
             if obj.result.isError then
-                log:error("RAG failed in PredictionsFrontend on most recent request")
-                vim.notify("RAG failed in PredictionsFrontend, skipping RAG " .. vim.inspect(obj))
+                local message = "RAG failed in PredictionsFrontend, skipping RAG " .. vim.inspect(obj)
+                table.insert(this_prediction.failures, message)
+                log:error(message)
+                this_prediction:fix_fim_and_redraw_extmarks()
+                -- vim.notify(message)
             end
 
             -- TODO check this_request_ids before mark perf done! that's why we have double error!
