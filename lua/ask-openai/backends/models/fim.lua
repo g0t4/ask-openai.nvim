@@ -629,18 +629,82 @@ function M.deepseek_v4_flash.get_fim_prompt(request)
     -- log:info("request", request)
     local tokens = M.deepseek_v4_flash.sentinel_tokens
 
-    -- PSM format:
-    local fim_file_contents = tokens.FIM_BEGIN
+    -- repo-level FIM: files serve as context (mirrors qwen25coder's FILE_SEP style)
+    --   DeepSeek V4 Flash has its own file/repo sentinel tokens for this purpose
+    local prompt = tokens.BEGIN_REPO_NAME
+        .. request:get_repo_name()
+        .. tokens.END_REPO_NAME
+
+    ---@param context_item ContextItem
+    local function append_file_non_fim(context_item)
+        local non_fim_file = tokens.BEGIN_OF_FILE
+            .. tokens.BEGIN_FILE_NAME
+            .. context_item.filename
+            .. tokens.END_FILE_NAME
+            .. "\n"
+            .. context_item.content
+            .. tokens.END_OF_FILE
+        prompt = prompt .. non_fim_file
+    end
+
+    local instructions = ContextItem:new("instructions.txt", [[
+General project code rules:
+- Never add comments to the end of a line.
+- NEVER add TODO comments for me.
+- Always pay close attention to indentation when suggesting code, pay close attention to whitespace on the line where the code will be inserted. Do not repeat existing indentation!
+]])
+    append_file_non_fim(instructions)
+
+    if request.context.includes.yanks and request.context.yanks then
+        append_file_non_fim(request.context.yanks)
+    end
+
+    if request.context.includes.matching_ctags and request.context.matching_ctags then
+        append_file_non_fim(request.context.matching_ctags)
+    end
+
+    if request.context.includes.project and request.context.project then
+        vim.iter(request.context.project)
+            :each(append_file_non_fim)
+    end
+
+    if request.rag_matches then
+        -- TODO! dedupe matches that overlap/touch dedupe.merge_contiguous_rag_chunks()
+        vim.iter(request.rag_matches)
+            :each(function(chunk)
+                ---@cast chunk LSPRankedMatch
+                local file_name = chunk.file .. ":" .. chunk.start_line_base0 .. "-" .. chunk.end_line_base0
+                local non_fim_file = tokens.BEGIN_OF_FILE
+                    .. tokens.BEGIN_FILE_NAME
+                    .. file_name
+                    .. tokens.END_FILE_NAME
+                    .. "\n"
+                    .. chunk.text
+                    .. tokens.END_OF_FILE
+                prompt = prompt .. non_fim_file
+            end)
+    end
+
+    -- * FIM file (PSM format)
+    local current_file_relative_path = request.inject_file_path_test_seam()
+    if current_file_relative_path == nil then
+        -- i.e. if :new and before first :w (save)
+        current_file_relative_path = ""
+    end
+
+    local fim_file_contents = tokens.BEGIN_OF_FILE
+        .. tokens.BEGIN_FILE_NAME
+        .. current_file_relative_path
+        .. tokens.END_FILE_NAME
+        .. "\n"
+        .. tokens.FIM_BEGIN
         .. request.ps_chunk.prefix
         .. tokens.FIM_HOLE
         .. request.ps_chunk.suffix
         .. tokens.FIM_END
+        .. tokens.END_OF_FILE
 
-    -- TODO repo level (other files, context, etc)
-    -- local fim_file_contents = tokens.FILE_SEP
-    --     .. current_file_relative_path
-
-    return fim_file_contents
+    return prompt .. fim_file_contents
 end
 
 -- * chat completions style FIM (no native deepseek FIM tokens)
