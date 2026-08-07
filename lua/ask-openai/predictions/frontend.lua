@@ -95,9 +95,7 @@ function PredictionsFrontend.ask_for_prediction(params)
 
     ---@param rag_matches LSPRankedMatch[]
     local function then_send_fim(rag_matches)
-        -- TODO rename to FimBodyBuilder? or FimRequestBuilder? or FimPromptBuilder?
-        local backend = FimBackend:new(ps_chunk, rag_matches)
-        local fim_request = backend:fim_request()
+        local fim_request = FimBackend:new(ps_chunk, rag_matches):fim_request()
         assert(fim_request.body ~= nil)
 
         if this_prediction.apply_template_only then
