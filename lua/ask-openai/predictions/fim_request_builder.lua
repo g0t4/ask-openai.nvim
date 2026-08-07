@@ -9,6 +9,7 @@ local meta = require("ask-openai.backends.models.meta")
 local files = require("ask-openai.helpers.files")
 local ansi = require("devtools.ansi")
 local api = require("ask-openai.api")
+local params = require("ask-openai.agents.models.params")
 local gptoss_tokenizer = require("ask-openai.backends.models.gptoss.tokenizer")
 local CurlRequest = require("ask-openai.backends.curl_request")
 local config = require("ask-openai.config")
@@ -214,15 +215,9 @@ function FimRequestBuilder:fim_request()
         else
             body.messages = fim.deepseek_v4_flash.get_fim_chat_messages(self, level)
             curl_params:set_chat_completions()
-            body.chat_template_kwargs = {
-                -- TODO deep seek level/enable?
-                reasoning_effort = level,
-                enable_thinking = level ~= "off",
-            }
-
-            -- ? set max_tokens (what is default, if any?)
-            -- body.max_tokens = gptoss_tokenizer.get_gptoss_max_tokens_for_level(level)
-            error("TODO not yet implemented, deepseek thinking / chat completions based FIM")
+            -- apply deepseek recommended sampling + reasoning kwargs (mirrors agents/rewrite frontend)
+            --   handles: temperature/top_p/max_tokens + chat_template_kwargs for enable_thinking & reasoning_effort
+            params.new_deepseek4flash_chat_body_llama_server(body, level)
         end
     else
         error("MODEL NOT SUPPORTED '" .. tostring(model) .. "'")

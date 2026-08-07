@@ -3,6 +3,7 @@ local files = require("ask-openai.helpers.files")
 local ansi = require("devtools.ansi")
 local TxChatMessage = require("ask-openai.agents.messages.tx")
 local ContextItem = require("ask-openai.frontends.context.item")
+local rag_instructions = require("ask-openai.frontends.prompts.rag_instructions")
 
 local M = {}
 
@@ -642,10 +643,120 @@ function M.deepseek_v4_flash.get_fim_prompt(request)
     return fim_file_contents
 end
 
+-- * chat completions style FIM (no native deepseek FIM tokens)
+--   i.e. we describe the cursor with a marker and let deepseek think then answer (like gptoss chat-style FIM)
+
+local DEEPSEEK_FIM_CURSOR_MARKER = "<|CURSOR_IS_HERE|>"
+
+-- FYI reusing the same FIM dev prompt gptoss uses (it's model agnostic)
+--   gptoss/fim_harmony reads the same file, just w/ a different cursor marker
+local deepseek_fim_dev_path = vim.fn.expand("<sfile>:p:h") .. "/gptoss/prompts/fim_dev.md"
+local deepseek_fim_dev_raw = files.read_text(deepseek_fim_dev_path)
+if deepseek_fim_dev_raw == nil then
+    error("could not read deepseek FIM dev prompt: " .. deepseek_fim_dev_path)
+end
+local deepseek_fim_dev_message = deepseek_fim_dev_raw:gsub("<<FIM_CURSOR_MARKER>>", DEEPSEEK_FIM_CURSOR_MARKER)
+
+---@param request FimRequestBuilder
+---@return string
+local function deepseek_fim_context_user_msg(request)
+    local context_lines = {
+        "Here is context that's automatically provided, that MAY be relevant.",
+        "repo: " .. request:get_repo_name(),
+        "",
+        vim.trim([[
+## General project code rules:
+- Never add comments to the end of a line.
+- NEVER add TODO comments for me.
+]]),
+    }
+    local function add_blank_line()
+        table.insert(context_lines, "")
+    end
+
+    local context = request.context
+    if context.includes.project and context.project then
+        vim.iter(context.project)
+            :each(function(value)
+                add_blank_line()
+                table.insert(context_lines, value.content)
+            end)
+    end
+
+    if context.includes.yanks and context.yanks then
+        add_blank_line()
+        table.insert(context_lines, context.yanks.content)
+    end
+
+    return table.concat(context_lines, "\n")
+end
+
+---@param request FimRequestBuilder
+---@return string
+local function deepseek_fim_reminder_nudges(request)
+    local ps_chunk = request.ps_chunk
+    local cursor_line = ps_chunk and ps_chunk.cursor_line
+    if not cursor_line then
+        error("missing request.ps_chunk.cursor_line, shouldn't happen")
+    end
+
+    local reminders = {}
+    local before_cursor = cursor_line.before_cursor
+    if before_cursor ~= "" then
+        table.insert(reminders, "Text before cursor: `" .. before_cursor .. "`")
+    end
+    local after_cursor = cursor_line.after_cursor
+    if after_cursor ~= "" then
+        table.insert(reminders, "Text after cursor: `" .. after_cursor .. "`")
+    end
+
+    if #reminders == 0 then
+        return ""
+    end
+    return "\n\n## Reminders about the cursor line:\n" .. table.concat(reminders, "\n")
+end
+
+---@param request FimRequestBuilder
+---@return string
+local function deepseek_fim_user_message(request)
+    local current_file_relative_path = request.inject_file_path_test_seam()
+    if current_file_relative_path == nil then
+        log:warn("current_file_name is nil")
+    end
+
+    return "Please suggest text to replace "
+        .. DEEPSEEK_FIM_CURSOR_MARKER
+        .. ":\n\n```"
+        .. (current_file_relative_path or "")
+        .. "\n"
+        .. request.ps_chunk.prefix
+        .. DEEPSEEK_FIM_CURSOR_MARKER
+        .. request.ps_chunk.suffix
+        .. "\n```"
+        .. deepseek_fim_reminder_nudges(request)
+end
+
 ---@param request FimRequestBuilder
 ---@param level DEEPSEEK_REASONING_EFFORT
-function M.deepseek_v4_flash.get_fim_chat_messages(request, level, model)
-    error("NOT YET READY DEEPSEEK CHAT FIM")
+---@return TxChatMessage[]
+function M.deepseek_v4_flash.get_fim_chat_messages(request, level)
+    -- FYI thinking is handled by the caller via body.chat_template_kwargs
+    --   deepseek's jinja: enable_thinking=false => skips ` thinking` and answers directly
+    --     while high/max reasoning_effort prepends a special system prompt
+    local messages = {
+        -- deepseek's jinja collects all system messages into one system_prompt
+        TxChatMessage:system(deepseek_fim_dev_message),
+        TxChatMessage:user_context(deepseek_fim_context_user_msg(request)),
+    }
+
+    local rag_message = rag_instructions.semantic_grep_user_message(request.rag_matches)
+    if rag_message then
+        table.insert(messages, rag_message)
+    end
+
+    table.insert(messages, TxChatMessage:user(deepseek_fim_user_message(request)))
+
+    return messages
 end
 
 return M
