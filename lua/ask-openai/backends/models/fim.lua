@@ -547,14 +547,15 @@ M.deepseek_coder_v2 = {
     -- model = "deepseek-coder-v2:16b-lite-base-q8_0", # **** 217 TPS!
 
     sentinel_tokens = {
-        FIM_BEGIN = deepseek_tag("fim", "begin"),
-        FIM_HOLD = deepseek_tag("fim", "hole"),
-        FIM_END = deepseek_tag("fim", "end"),
+        FIM_BEGIN       = deepseek_tag("fim", "begin"), -- 128801
+        FIM_HOLD        = deepseek_tag("fim", "hole"), -- 128800
+        FIM_END         = deepseek_tag("fim", "end"), -- 128802
 
         -- tokens of interest from the llama-server --verbose startup logs:
-        IMAGE = deepseek_tag("image"), -- 129279
-        REF_BEGIN = deepseek_tag("ref"), -- 129278
-        REF_END = deepseek_tag("/ref"), -- 129277
+        IMAGE           = deepseek_tag("image"), -- 129279
+        REF_BEGIN       = deepseek_tag("ref"), -- 129278
+        REF_END         = deepseek_tag("/ref"), -- 129277
+
         -- 129276 '<｜box｜>'
         -- 129274 '<｜point｜>'
         -- 129273 '<｜/point｜>'
@@ -593,7 +594,6 @@ M.deepseek_coder_v2 = {
         -- 128830 '<｜query｜>'
         -- 128817 '<｜begin▁of▁file▁name｜>'
         -- 128820 '<｜end▁of▁file｜>'
-        -- 128802 '<｜fim▁end｜>'
         -- 128827 '<｜end▁sys｜>'
         -- 128836 '<｜title｜>'
         -- 128807 '<｜tool▁calls▁end｜>'
@@ -603,18 +603,17 @@ M.deepseek_coder_v2 = {
         -- 128831 '<｜authority｜>'
         --      2 '<｜▁pad▁｜>'
         -- 128842 '<｜search▁begin｜>'
-        -- 128800 '<｜fim▁hole｜>'
         -- 128844 '<｜extracted_url｜>'
         -- 129264 '<｜image2｜>'
         -- 129270 '<｜tr｜>'
         -- 129275 '<｜/box｜>'
         --      0 '<｜begin▁of▁sentence｜>'
-        -- 128801 '<｜fim▁begin｜>'
         -- 128814 '<｜tool▁sep｜>'
         -- 128809 '<｜tool▁call▁end｜>'
 
         fim_stop_tokens = { qwen_tag("eos_token") }, -- TODO is it a fancy underscore here too? ==>    ▁
     }
+
 }
 log:info(M.deepseek_coder_v2.sentinel_tokens)
 
