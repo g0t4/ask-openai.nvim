@@ -15,19 +15,19 @@ local config = require("ask-openai.config")
 
 require("ask-openai.backends.sse.parsers")
 
----@class FimBackend
+---@class FimRequestBuilder
 ---@field ps_chunk PrefixSuffixChunk
 ---@field rag_matches LSPRankedMatch[]
 ---@field context CurrentContext
-local FimBackend = {}
-FimBackend.__index = FimBackend
+local FimRequestBuilder = {}
+FimRequestBuilder.__index = FimRequestBuilder
 
 local USE_GPTOSS_RAW = false
 
 ---@param ps_chunk PrefixSuffixChunk
 ---@param rag_matches LSPRankedMatch[]
----@return FimBackend
-function FimBackend:new(ps_chunk, rag_matches)
+---@return FimRequestBuilder
+function FimRequestBuilder:new(ps_chunk, rag_matches)
     local always_include = {
         yanks = true,
         matching_ctags = true, -- TODO should RAG replace this by default? and just have more RAG matches (FYI RAG can index the ctags file too)
@@ -43,7 +43,7 @@ function FimBackend:new(ps_chunk, rag_matches)
     return instance
 end
 
-function FimBackend:fim_request()
+function FimRequestBuilder:fim_request()
     local max_tokens = 200
     local body = {
         -- FYI keep model notes in MODELS.notes.md
@@ -223,13 +223,13 @@ function FimBackend:fim_request()
     })
 end
 
-function FimBackend.inject_file_path_test_seam()
+function FimRequestBuilder.inject_file_path_test_seam()
     return files.get_current_file_relative_path()
 end
 
-function FimBackend:get_repo_name()
+function FimRequestBuilder:get_repo_name()
     -- TODO confirm repo naming? is it just basename of repo root? or GH link? or org/repo?
     return vim.fn.getcwd():match("([^/]+)$")
 end
 
-return FimBackend
+return FimRequestBuilder

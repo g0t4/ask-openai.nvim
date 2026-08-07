@@ -79,7 +79,7 @@ function HarmonyFimPromptBuilder:developer()
     return self
 end
 
----@param request FimBackend
+---@param request FimRequestBuilder
 function HarmonyFimPromptBuilder.context_user_msg(request)
     local context_lines = {
         "Here is context that's automatically provided, that MAY be relevant.",
@@ -117,7 +117,7 @@ function HarmonyFimPromptBuilder.context_user_msg(request)
     return table.concat(context_lines, "\n")
 end
 
----@param request FimBackend
+---@param request FimRequestBuilder
 local function get_reminder_nudges(request)
     local ps_chunk = request.ps_chunk
     local cursor_line = request and request.ps_chunk and request.ps_chunk.cursor_line -- stops at first nil, else has value of last
@@ -156,7 +156,7 @@ local function get_reminder_nudges(request)
         .. table.concat(reminders, "\n")
 end
 
----@param request FimBackend
+---@param request FimRequestBuilder
 function HarmonyFimPromptBuilder.fim_prompt(request)
     -- * user message
     local current_file_relative_path = request.inject_file_path_test_seam()
@@ -258,7 +258,7 @@ HarmonyFimPromptBuilder.gptoss = {
     sentinel_tokens = {}
 }
 
----@param request FimBackend
+---@param request FimRequestBuilder
 function HarmonyFimPromptBuilder.gptoss.RETIRED_get_fim_raw_prompt_no_thinking(request)
     -- FYI this builder might be useful if I want to work with raw prompts for another use case...
     --  but I found prefill in llama-cpp (llama-server) so I don't need raw anymore for FIM w/o thinking purposes
@@ -293,7 +293,7 @@ function HarmonyFimPromptBuilder.gptoss.RETIRED_get_fim_raw_prompt_no_thinking(r
     return builder:build_raw_prompt()
 end
 
----@param request FimBackend
+---@param request FimRequestBuilder
 ---@param level GPTOSS_REASONING_EFFORT
 function HarmonyFimPromptBuilder.gptoss.get_fim_chat_messages(request, level, model)
     local messages = {

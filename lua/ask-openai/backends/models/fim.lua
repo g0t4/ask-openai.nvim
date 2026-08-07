@@ -29,7 +29,7 @@ M.qwen25coder = {
     },
 }
 
----@param request FimBackend
+---@param request FimRequestBuilder
 function M.qwen25coder.get_fim_prompt(request)
     -- FYI! see fim.md for extensive FIM notes
     local tokens = M.qwen25coder.sentinel_tokens
@@ -155,7 +155,7 @@ M.bytedance_seed_coder = {
     },
 }
 
----@param request FimBackend
+---@param request FimRequestBuilder
 function M.bytedance_seed_coder.get_fim_prompt_file_level_only(request)
     -- FYI file level works well for Seed-Coder
 
@@ -176,7 +176,7 @@ function M.bytedance_seed_coder.get_fim_prompt_file_level_only(request)
     return file_level_prompt_only
 end
 
----@param request FimBackend
+---@param request FimRequestBuilder
 function M.bytedance_seed_coder.get_fim_prompt_repo_level(request)
     -- FYI this is NOT working well! not yet anyways!
     --    gotta find the format they trained with, for multiple files (repo level training data)

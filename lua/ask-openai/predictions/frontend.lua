@@ -11,7 +11,7 @@ local lualine = require('ask-openai.status.lualine')
 local stats = require("ask-openai.predictions.stats")
 local Curl = require("ask-openai.backends.curl")
 local CurlRequest = require("ask-openai.backends.curl_request")
-local FimBackend = require("ask-openai.predictions.backends.fim_backend")
+local FimRequestBuilder = require("ask-openai.predictions.backends.fim_request_builder")
 local llama_server_client = require("ask-openai.backends.llama_cpp.llama_server_client")
 local config = require("ask-openai.config")
 local buffer_state = require("ask-openai.predictions.buffer_state")
@@ -95,7 +95,7 @@ function PredictionsFrontend.ask_for_prediction(params)
 
     ---@param rag_matches LSPRankedMatch[]
     local function then_send_fim(rag_matches)
-        local fim_request = FimBackend:new(ps_chunk, rag_matches):fim_request()
+        local fim_request = FimRequestBuilder:new(ps_chunk, rag_matches):fim_request()
         assert(fim_request.body ~= nil)
 
         if this_prediction.apply_template_only then
