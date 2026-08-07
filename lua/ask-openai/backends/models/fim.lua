@@ -531,7 +531,7 @@ local DEEPSEEK_UNDERSCORE = "▁"
 ---@param parts string[]
 local function deepseek_tag(...)
     local parts = { ... }
-    -- build this so we don't have the actual values in code to mess up FIM and other prompts!
+    -- build this SO WE DON'T HAVE THE ACTUAL VALUES IN CODE TO MESS PROMPTING DEEPSEEK!
     -- FYI it's not spaces around the pipe char:
     local name = table.concat(parts, DEEPSEEK_UNDERSCORE)
     return LESS_THAN .. DEEPSEEK_PIPE .. name .. DEEPSEEK_PIPE .. GREATER_THAN
@@ -547,7 +547,7 @@ M.deepseek_coder_v2 = {
     -- model = "deepseek-coder-v2:16b-lite-base-q8_0", # **** 217 TPS!
 
     sentinel_tokens = {
-        -- 128843 '<｜search▁end｜>    FIM_HOLE        = deepseek_tag("fim", "hole"), -- 128800
+        FIM_HOLE           = deepseek_tag("fim", "hole"), -- 128800
         FIM_BEGIN          = deepseek_tag("fim", "begin"), -- 128801
         FIM_END            = deepseek_tag("fim", "end"), -- 128802
 
@@ -611,12 +611,12 @@ M.deepseek_coder_v2 = {
 
         ASSISTANT          = deepseek_tag("Assistant"), -- 128804
         USER               = deepseek_tag("User"), -- 128803
-        EOT                = "<|EOT|>", -- 128805 -- FYI normal pipe char
+        EOT                = LESS_THAN .. "|EOT|" .. GREATER_THAN, -- 128805 -- FYI normal pipe char not special deepseek one
         BOS                = deepseek_tag("begin", "of", "sentence"), -- 0
         PAD                = deepseek_tag("", "pad", ""), -- 2' -- YES has empty segment on each side
         --      2 '<｜▁pad▁｜>' -- TODO test this
 
-        FIM_STOP_TOKENS    = { deepseek_tag("eos_token") }, -- TODO what is the token for deepseek?
+        -- FIM_STOP_TOKENS    = { deepseek_tag("??") }, -- TODO what is the token for deepseek?
     }
 
 }
