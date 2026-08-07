@@ -188,17 +188,17 @@ function FimBackend:body_for()
     elseif model == models.DEEPSEEK then
         local level = api.get_fim_reasoning_level()
         if level == models.DEEPSEEK_REASONING_EFFORT.PSM then
+            FimBackend.endpoint = CompletionsEndpoints.llamacpp_completions
             builder = function()
                 -- FYI WORKING WELL for FILE LEVEL with deepseek_v4_flash_0731
                 return fim.deepseek_v4_flash.get_fim_prompt(self)
             end
-            -- TODO set endpoint?
             body.raw = true
             -- TODO set max_tokens? deepseek-coder-v2 IIRC had 4k limit on output tokens for FIM prompt... is there a limit on v4 flash too, that would be wise to set to cut off rambling?
             -- only add back stop tokens if needed and then you'll need to look up what they are
             -- body.options.stop = fim.deepseek_v4_flash.sentinel_tokens.FIM_STOP_TOKENS
         else
-            -- TODO set endpoint?
+            FimBackend.endpoint = CompletionsEndpoints.v1_chat_completions
             body.messages = fim.deepseek_v4_flash.get_fim_chat_messages(self, level)
             body.raw = false -- set here even though was set above
             body.chat_template_kwargs = {
