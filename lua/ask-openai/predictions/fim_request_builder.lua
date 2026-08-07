@@ -176,7 +176,7 @@ function FimRequestBuilder:fim_request()
             -- ? get rid of raw approach entirely now that prefix is working
             body.prompt = fim_harmony.gptoss.RETIRED_get_fim_raw_prompt_no_thinking(self)
             body.raw = true
-            body.max_tokens = 200 -- FYI if I cut off all thinking
+            body.max_tokens = 2000 -- FYI if I cut off all thinking
         else
             curl_params:set_chat_completions()
             local level = api.get_fim_reasoning_level()
@@ -204,6 +204,7 @@ function FimRequestBuilder:fim_request()
         curl_params:set_raw_completions()
         body.prompt = fim.codestral.get_fim_prompt(self)
     elseif model == models.DEEPSEEK then
+        curl_params.body.max_tokens = nil -- clear default 200 max tokens
         local level = api.get_fim_reasoning_level()
         if level == models.DEEPSEEK_REASONING_EFFORT.PSM then
             -- FYI WORKING WELL for FILE LEVEL with deepseek_v4_flash_0731
@@ -213,6 +214,7 @@ function FimRequestBuilder:fim_request()
             -- only add back stop tokens if needed and then you'll need to look up what they are
             -- body.options.stop = fim.deepseek_v4_flash.sentinel_tokens.FIM_STOP_TOKENS
         else
+            -- TODO set explicit max tokens?
             body.messages = fim.deepseek_v4_flash.get_fim_chat_messages(self, level)
             curl_params:set_chat_completions()
             -- apply deepseek recommended sampling + reasoning kwargs (mirrors agents/rewrite frontend)
