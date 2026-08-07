@@ -10,6 +10,7 @@ local files = require("ask-openai.helpers.files")
 local ansi = require("devtools.ansi")
 local api = require("ask-openai.api")
 local gptoss_tokenizer = require("ask-openai.backends.models.gptoss.tokenizer")
+local CurlRequest = require("ask-openai.backends.curl_request")
 local config = require("ask-openai.config")
 
 require("ask-openai.backends.sse.parsers")
@@ -42,8 +43,7 @@ function FimBackend:new(ps_chunk, rag_matches)
     return instance
 end
 
----@return { body: table, endpoint: string, base_url: string }
-function FimBackend:request_details()
+function FimBackend:fim_request()
     local max_tokens = 200
     local body = {
         -- FYI keep model notes in MODELS.notes.md
@@ -204,7 +204,6 @@ function FimBackend:request_details()
         end
     else
         error("MODEL NOT SUPPORTED '" .. tostring(model) .. "'")
-        return
     end
 
     if builder then
@@ -216,7 +215,12 @@ function FimBackend:request_details()
         error("you must define either the prompt builder OR messages for chat like FIM for: " .. model)
     end
 
-    return { body = body, endpoint = endpoint, base_url = base_url }
+    return CurlRequest:new({
+        body = body,
+        base_url = base_url,
+        endpoint = endpoint,
+        type = "fim",
+    })
 end
 
 function FimBackend.inject_file_path_test_seam()
