@@ -547,8 +547,8 @@ M.deepseek_coder_v2 = {
     -- model = "deepseek-coder-v2:16b-lite-base-q8_0", # **** 217 TPS!
 
     sentinel_tokens = {
+        FIM_HOLE        = deepseek_tag("fim", "hole"), -- 128800
         FIM_BEGIN       = deepseek_tag("fim", "begin"), -- 128801
-        FIM_HOLD        = deepseek_tag("fim", "hole"), -- 128800
         FIM_END         = deepseek_tag("fim", "end"), -- 128802
 
         -- tokens of interest from the llama-server --verbose startup logs:
@@ -624,7 +624,7 @@ function M.deepseek_coder_v2.get_fim_prompt(request)
     -- PSM format:
     local fim_file_contents = tokens.FIM_BEGIN
         .. request.ps_chunk.prefix
-        .. tokens.FIM_HOLD
+        .. tokens.FIM_HOLE
         .. request.ps_chunk.suffix
         .. tokens.FIM_END
 
