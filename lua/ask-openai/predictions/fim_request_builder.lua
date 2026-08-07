@@ -15,6 +15,50 @@ local config = require("ask-openai.config")
 
 require("ask-openai.backends.sse.parsers")
 
+---@class CurlParamsBuilder
+---@field body table<string, any>
+---@field base_url string
+---@field endpoint CompletionsEndpoints
+---@field type string
+local CurlParamsBuilder = {}
+CurlParamsBuilder.__index = CurlParamsBuilder
+
+---@param base_url string
+---@param body table<string, any>
+---@return CurlParamsBuilder
+function CurlParamsBuilder:new(base_url, body)
+    local instance = {
+        body = body,
+        base_url = base_url,
+        endpoint = CompletionsEndpoints.llamacpp_completions,
+        type = "fim",
+    }
+    setmetatable(instance, self)
+    return instance
+end
+
+---@return nil
+function CurlParamsBuilder:set_raw_completions()
+    self.body.raw = true
+    self.endpoint = CompletionsEndpoints.llamacpp_completions
+end
+
+---@return nil
+function CurlParamsBuilder:set_chat_completions()
+    self.body.raw = false
+    self.endpoint = CompletionsEndpoints.v1_chat_completions
+end
+
+---@return CurlRequestParams
+function CurlParamsBuilder:build()
+    return {
+        body = self.body,
+        base_url = self.base_url,
+        endpoint = self.endpoint,
+        type = self.type,
+    }
+end
+
 ---@class FimRequestBuilder
 ---@field ps_chunk PrefixSuffixChunk
 ---@field rag_matches LSPRankedMatch[]
@@ -77,25 +121,10 @@ function FimRequestBuilder:fim_request()
     }
 
     local model = api.get_fim_model()
-    local params = {
-        body = body,
-        base_url = config.get_endpoints()[model].base_url,
-        endpoint = CompletionsEndpoints.llamacpp_completions, -- * usually for raw prompt completions
-        type = "fim",
-    }
-
-    function set_raw_completions()
-        params.body.raw = true
-        params.endpoint = CompletionsEndpoints.llamacpp_completions
-    end
-
-    function set_chat_completions()
-        params.body.raw = false
-        params.endpoint = CompletionsEndpoints.v1_chat_completions
-    end
+    local curl_params = CurlParamsBuilder:new(config.get_endpoints()[model].base_url, body)
 
     if string.find(model, "codellama") then
-        set_raw_completions()
+        curl_params:set_raw_completions()
 
         builder = function()
             return meta.codellama.get_fim_prompt(self)
@@ -108,7 +137,7 @@ function FimRequestBuilder:fim_request()
 
         error("review FIM requirements for codellama, make sure you are using expected template, it used to work with qwen like FIM but I changed that to repo level now and would need to test it")
     elseif string.find(model, "Mellum") then
-        set_raw_completions()
+        curl_params:set_raw_completions()
         -- body.options.stop = {
         --     fim.mellum.sentinel_tokens.EOS_TOKEN,
         --     fim.mellum.sentinel_tokens.FILE_SEP
@@ -117,12 +146,12 @@ function FimRequestBuilder:fim_request()
             return fim.mellum.get_fim_prompt(self)
         end
     elseif string.find(model, "starcoder2") then
-        set_raw_completions()
+        curl_params:set_raw_completions()
         builder = function()
             return fim.starcoder2.get_fim_prompt(self)
         end
     elseif string.find(model, "qwen3coder", nil, true) then
-        set_raw_completions()
+        curl_params:set_raw_completions()
         builder = function()
             return fim.qwen25coder.get_fim_prompt(self)
         end
@@ -133,7 +162,7 @@ function FimRequestBuilder:fim_request()
         body.top_k = 20
         -- PRN new_qwen3coder_llama_server_legacy_body (or w/e to call it, the old endpoint to do raw FIM prompts)
     elseif string.find(model, "qwen", nil, true) then
-        set_raw_completions()
+        curl_params:set_raw_completions()
         builder = function()
             return fim.qwen25coder.get_fim_prompt(self)
         end
@@ -142,7 +171,7 @@ function FimRequestBuilder:fim_request()
             log:warn("qwen FIM style does not support thinking, OFF is only logical value.. if you setup chat completions style with qwen3 then you can have thinking")
         end
     elseif string.find(model, "bytedance-seed-coder-8b", nil, true) then
-        set_raw_completions()
+        curl_params:set_raw_completions()
         builder = function()
             return fim.qwen25coder.get_fim_prompt(self) -- WORKS FOR repo level using qwen's format entirely! (plus set qwen's stop_tokens to avoid rambles / trailing stop tokens)
             -- return fim.bytedance_seed_coder.get_fim_prompt_file_level_only(self) -- WORKS well for file level using its own SPM format
@@ -156,7 +185,7 @@ function FimRequestBuilder:fim_request()
         or model == models.GLM
     then
         if USE_GPTOSS_RAW and model == models.GPTOSS then
-            set_raw_completions()
+            curl_params:set_raw_completions()
             builder = function()
                 -- ? get rid of raw approach entirely now that prefix is working
                 return fim_harmony.gptoss.RETIRED_get_fim_raw_prompt_no_thinking(self)
@@ -164,7 +193,7 @@ function FimRequestBuilder:fim_request()
             body.raw = true
             body.max_tokens = 200 -- FYI if I cut off all thinking
         else
-            set_chat_completions()
+            curl_params:set_chat_completions()
             local level = api.get_fim_reasoning_level()
             body.messages = fim_harmony.gptoss.get_fim_chat_messages(self, level, model)
             body.raw = false
@@ -187,7 +216,7 @@ function FimRequestBuilder:fim_request()
         body.temperature = 1.0
         body.top_p = 1.0
     elseif string.find(model, "codestral", nil, true) then
-        set_raw_completions()
+        curl_params:set_raw_completions()
         builder = function()
             return fim.codestral.get_fim_prompt(self)
         end
@@ -198,13 +227,13 @@ function FimRequestBuilder:fim_request()
                 -- FYI WORKING WELL for FILE LEVEL with deepseek_v4_flash_0731
                 return fim.deepseek_v4_flash.get_fim_prompt(self)
             end
-            set_raw_completions()
+            curl_params:set_raw_completions()
             -- TODO set max_tokens? deepseek-coder-v2 IIRC had 4k limit on output tokens for FIM prompt... is there a limit on v4 flash too, that would be wise to set to cut off rambling?
             -- only add back stop tokens if needed and then you'll need to look up what they are
             -- body.options.stop = fim.deepseek_v4_flash.sentinel_tokens.FIM_STOP_TOKENS
         else
             body.messages = fim.deepseek_v4_flash.get_fim_chat_messages(self, level)
-            set_chat_completions()
+            curl_params:set_chat_completions()
             body.chat_template_kwargs = {
                 -- TODO deep seek level/enable?
                 reasoning_effort = level,
@@ -228,7 +257,7 @@ function FimRequestBuilder:fim_request()
         error("you must define either the prompt builder OR messages for chat like FIM for: " .. model)
     end
 
-    return CurlRequest:new(params)
+    return CurlRequest:new(curl_params:build())
 end
 
 function FimRequestBuilder.inject_file_path_test_seam()
