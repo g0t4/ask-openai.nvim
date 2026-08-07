@@ -26,26 +26,6 @@ FimBackend.base_url = ""
 FimBackend.endpoint = nil
 
 local USE_GPTOSS_RAW = false
-function FimBackend.set_fim_model(model)
-    -- FYI right now, given I am using llama-server exclusively, toggling is just about changing between the two instances I run at the same time
-    --   so, toggling the port/endpoint :)
-    FimBackend.base_url = config.get_endpoints()[model].base_url
-    if model == models.GPTOSS then
-        -- Base URL now derived from configuration (agents subsystem)
-        if USE_GPTOSS_RAW then
-            -- manually formatted prompt to disable thinking
-            -- FYI can also do this with prefill on v1/chat/completions endpoint so this is not necessary to disable thinking
-            FimBackend.endpoint = CompletionsEndpoints.llamacpp_completions
-        else
-            FimBackend.endpoint = CompletionsEndpoints.v1_chat_completions
-        end
-    elseif model == models.GEMMA4 or model == models.GLM then
-        FimBackend.endpoint = CompletionsEndpoints.v1_chat_completions
-    else
-        FimBackend.endpoint = CompletionsEndpoints.llamacpp_completions -- * preferred for qwen2.5-coder
-        -- /completions - raw prompt # https://github.com/ggml-org/llama.cpp/blob/master/tools/server/README.md#post-completion-given-a-prompt-it-returns-the-predicted-completion
-    end
-end
 
 ---@param ps_chunk PrefixSuffixChunk
 ---@param rag_matches LSPRankedMatch[]
@@ -103,7 +83,10 @@ function FimBackend:body_for()
     }
 
     local model = api.get_fim_model()
-    FimBackend.set_fim_model(model) -- TODO can we nuke set_fim_model here... and just get the values we need when we need them?
+    local base_url = config.get_endpoints()[model].base_url
+    FimBackend.base_url = base_url -- TODO NUKE FimBackend.base_url (most usages are here in this giant FIM builder)
+    FimBackend.endpoint = CompletionsEndpoints.llamacpp_completions -- * usually for raw prompt completions
+
     if string.find(model, "codellama") then
         builder = function()
             return meta.codellama.get_fim_prompt(self)
@@ -162,7 +145,9 @@ function FimBackend:body_for()
         --  TODO! strip out glm/gemma4 reuse of gptoss template into own block? would this be less messy?
         --    TODO I should probably rewrite this to not be so hacky given I have special "off" logic for gptoss raw and even in not-raw
         -- FYI I am using my gptoss FIM chat completions FIM style for other chat model FIM setups (not specific to any one of them)
+
         if USE_GPTOSS_RAW and model == models.GPTOSS then
+            FimBackend.endpoint = CompletionsEndpoints.llamacpp_completions
             -- RAW is gptoss specific
             -- * /completions legacy endpoint:
             builder = function()
@@ -173,6 +158,7 @@ function FimBackend:body_for()
             body.raw = true
             body.max_tokens = 200 -- FYI if I cut off all thinking
         else
+            FimBackend.endpoint = CompletionsEndpoints.v1_chat_completions
             -- * /v1/chat/completions endpoint (use to have llama-server parse the response, i.e. analsys/thoughts => reasoning_content)
             local level = api.get_fim_reasoning_level()
             body.messages = fim_harmony.gptoss.get_fim_chat_messages(self, level, model)
