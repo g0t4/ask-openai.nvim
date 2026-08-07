@@ -43,7 +43,7 @@ function FimBackend:new(ps_chunk, rag_matches)
 end
 
 ---@return { body: table, endpoint: string, base_url: string } request_hack
-function FimBackend:body_for()
+function FimBackend:request_details()
     local max_tokens = 200
     local body = {
         -- FYI keep model notes in MODELS.notes.md

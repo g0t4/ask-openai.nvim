@@ -97,7 +97,7 @@ function PredictionsFrontend.ask_for_prediction(params)
     local function then_send_fim(rag_matches)
         -- TODO rename to FimBodyBuilder? or FimRequestBuilder? or FimPromptBuilder?
         local backend = FimBackend:new(ps_chunk, rag_matches)
-        local request_hack = backend:body_for() -- fix hack of return multiple fields after cleanup started on base_url + endpoint (used to be static globally)
+        local request_hack = backend:request_details() -- fix hack of return multiple fields after cleanup started on base_url + endpoint (used to be static globally)
         assert(request_hack.body ~= nil)
 
         if this_prediction.apply_template_only then
