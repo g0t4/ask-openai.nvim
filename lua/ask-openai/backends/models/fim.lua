@@ -537,14 +537,6 @@ local function deepseek_tag(...)
     return LESS_THAN .. DEEPSEEK_PIPE .. name .. DEEPSEEK_PIPE .. GREATER_THAN
 end
 M.deepseek_v4_flash = {
-    -- https://github.com/deepseek-ai/DeepSeek-Coder-V2
-    -- https://github.com/deepseek-ai/DeepSeek-Coder-V2?tab=readme-ov-file#code-insertion
-    --  "lite" == 16B size
-    --    * AFAICT only lite has FIM
-    --  base = FIM  /  instruct = chat
-    -- ** FAST MoE
-    -- 217 TPS! first load OMFG
-    -- model = "deepseek-coder-v2:16b-lite-base-q8_0", # **** 217 TPS!
 
     sentinel_tokens = {
         FIM_HOLE           = deepseek_tag("fim", "hole"), -- 128800
@@ -618,6 +610,16 @@ M.deepseek_v4_flash = {
 
         -- FIM_STOP_TOKENS    = { deepseek_tag("??") }, -- TODO what is the token for deepseek?
     }
+
+    -- coder v2 notes:
+    --   https://github.com/deepseek-ai/DeepSeek-Coder-V2
+    --   https://github.com/deepseek-ai/DeepSeek-Coder-V2?tab=readme-ov-file#code-insertion
+    --   "lite" == 16B size
+    --   * AFAICT only lite has FIM?
+    --   base = FIM  /  instruct = chat
+    --   ** FAST MoE
+    --   217 TPS! first load OMFG
+    --   model = "deepseek-coder-v2:16b-lite-base-q8_0", # **** 217 TPS!
 
 }
 log:info(M.deepseek_v4_flash.sentinel_tokens)
