@@ -9,19 +9,72 @@ interface Props {
 
 let { userMessage, assistantResponse }: Props = $props()
 
-// Parse the user message to extract the code with <|fim_middle|> marker
+// qwen native FIM markers
+const QWEN_PREFIX = '<|fim_prefix|>'
+const QWEN_SUFFIX = '<|fim_suffix|>'
+const QWEN_MIDDLE = '<|fim_middle|>'
+// deepseek native FIM markers (fullwidth pipe ｜ + ▁ between words)
+const DS_BEGIN = '\uff5cfim\u2581begin\uff5c>'
+const DS_HOLE = '\uff5cfim\u2581hole\uff5c>'
+const DS_END = '\uff5cfim\u2581end\uff5c>'
+
+// Regex matching either FIM hole marker (used to split prefix/suffix)
+const HOLE_REGEX = /<\|fim_middle\|>|\uff5cfim\u2581hole\uff5c>/
+
+// deepseek native FIM prompts include repo/file context before the FIM file.
+// Extract just the FIM file's code and normalize it to `prefix + hole + suffix`
+// so the rest of the logic is shared with qwen.
+function normalizeDeepseek(rawPrompt: string): string | null {
+  const beginIdx = rawPrompt.lastIndexOf(DS_BEGIN)
+  const holeIdx = rawPrompt.lastIndexOf(DS_HOLE)
+  if (beginIdx === -1 || holeIdx === -1) return null
+
+  const prefix = rawPrompt.substring(beginIdx + DS_BEGIN.length, holeIdx)
+  const endIdx = rawPrompt.lastIndexOf(DS_END)
+  const suffix = endIdx > holeIdx
+    ? rawPrompt.substring(holeIdx + DS_HOLE.length, endIdx)
+    : rawPrompt.substring(holeIdx + DS_HOLE.length)
+
+  return prefix + DS_HOLE + suffix
+}
+
+// qwen native FIM prompts also include repo/file context before the FIM file.
+// Extract just the FIM file's code and normalize it to `prefix + hole + suffix`.
+function normalizeQwen(rawPrompt: string): string | null {
+  const prefixIdx = rawPrompt.lastIndexOf(QWEN_PREFIX)
+  const suffixIdx = rawPrompt.lastIndexOf(QWEN_SUFFIX)
+  if (prefixIdx === -1 || suffixIdx === -1) return null
+
+  const prefix = rawPrompt.substring(prefixIdx + QWEN_PREFIX.length, suffixIdx)
+  const middleIdx = rawPrompt.lastIndexOf(QWEN_MIDDLE)
+  const suffix = middleIdx > suffixIdx
+    ? rawPrompt.substring(suffixIdx + QWEN_SUFFIX.length, middleIdx)
+    : rawPrompt.substring(suffixIdx + QWEN_SUFFIX.length)
+
+  return prefix + QWEN_MIDDLE + suffix
+}
+
+// Parse the user message to extract the code with the FIM hole marker
 const parsedCode = $derived.by(() => {
-  // Look for markdown code block first (handles ```filename.foo format)
+  // deepseek native FIM: raw prompt with ｜fim▁hole｜>
+  const deepseekCode = normalizeDeepseek(userMessage)
+  if (deepseekCode) return deepseekCode
+
+  // qwen native FIM: raw prompt with <|fim_prefix|>...<|fim_suffix|>...<|fim_middle|>
+  const qwenCode = normalizeQwen(userMessage)
+  if (qwenCode) return qwenCode
+
+  // qwen chat completion: look for markdown code block first (handles ```filename.foo format)
   const markdownMatch = userMessage.match(/```[^\n]*\n([\s\S]+?)```/)
   if (markdownMatch) {
     return markdownMatch[1]
   }
 
-  // Fall back to text after trigger phrases
+  // qwen chat completion: fall back to text after trigger phrases
   const lines = userMessage.split('\n')
   const startIdx = lines.findIndex(line =>
-    (line.includes('Please complete') && line.includes('<|fim_middle|>')) ||
-    (line.includes('Please suggest text to replace') && line.includes('<|fim_middle|>'))
+    (line.includes('Please complete') && line.includes(QWEN_MIDDLE)) ||
+    (line.includes('Please suggest text to replace') && line.includes(QWEN_MIDDLE))
   )
 
   if (startIdx === -1) return null
@@ -34,13 +87,15 @@ const parsedCode = $derived.by(() => {
 const diffData = $derived.by(() => {
   if (!parsedCode) return null
 
-  const markerIdx = parsedCode.indexOf('<|fim_middle|>')
-  if (markerIdx === -1) return null
+  const markerMatch = parsedCode.match(HOLE_REGEX)
+  if (!markerMatch) return null
+  const marker = markerMatch[0]
+  const markerIdx = markerMatch.index
 
   const CONTEXT_LINES = 10
 
   const beforeFull = parsedCode.substring(0, markerIdx)
-  const afterFull = parsedCode.substring(markerIdx + '<|fim_middle|>'.length)
+  const afterFull = parsedCode.substring(markerIdx + marker.length)
 
   // Limit before context to last N lines
   const beforeLines = beforeFull.split('\n')
@@ -65,7 +120,8 @@ const diffData = $derived.by(() => {
   return {
     wordDiff: computeWordDiff(oldText, newText),
     beforeOmitted,
-    afterOmitted
+    afterOmitted,
+    marker
   }
 })
 </script>
@@ -75,7 +131,7 @@ const diffData = $derived.by(() => {
     <div class="px-4 py-2 bg-cyan-500/10 border-b border-cyan-500/30">
       <h3 class="text-sm font-semibold text-cyan-400">TLDR</h3>
       <p class="text-xs text-gray-400 mt-1">
-        Green shows the assistant's completion inserted at <code class="text-cyan-300">&lt;|fim_middle|&gt;</code>
+        Green shows the assistant's completion inserted at <code class="text-cyan-300">{diffData.marker}</code>
         {#if diffData.beforeOmitted > 0 || diffData.afterOmitted > 0}
           <span class="text-gray-500"> • Showing 10 lines of context before/after</span>
         {/if}

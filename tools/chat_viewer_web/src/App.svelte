@@ -79,7 +79,9 @@
 
     // Check if it contains the FIM prompt
     const content = typeof lastUserMessage.content === 'string' ? lastUserMessage.content : ''
-    if (!content.includes('<|fim_middle|>')) return null
+    // qwen native FIM uses <|fim_middle|>, deepseek native FIM uses ｜fim▁hole｜>
+    const isFimPrompt = content.includes('<|fim_middle|>') || content.includes('\uff5cfim\u2581hole\uff5c>')
+    if (!isFimPrompt) return null
 
     // Find the assistant's response
     const assistantMessage = messages.find(msg => msg.role === 'assistant')
@@ -180,6 +182,18 @@
       // Agent trace format: { request_body: { messages: [...] }, response_message?: {...}, last_sse?: {...} }
       const data = rawData as TraceJson
       messages = data.request_body?.messages ?? []
+
+      // Native FIM trace (raw /completions endpoint): { request_body: { prompt }, content, last_sse }
+      //   there are no chat messages — synthesize a user/assistant pair so the FIM preview + message
+      //   list work just like a chat completion trace (same as qwen native FIM handling).
+      const rawPrompt = (data.request_body as any)?.prompt
+      const rawContent = (data as any)?.content
+      if (rawPrompt) {
+        messages = [
+          { role: 'user', content: rawPrompt },
+          { role: 'assistant', content: typeof rawContent === 'string' ? rawContent : '' }
+        ]
+      }
 
       if (data.last_sse) {
         const lastSse = data.last_sse
