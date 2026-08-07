@@ -48,9 +48,6 @@ function FimRequestBuilder:fim_request()
     local body = {
         -- FYI keep model notes in MODELS.notes.md
         -- model = "", -- not needed in llama-server
-
-        raw = true, -- bypass templates (only /api/generate, not /v1/completions)
-
         stream = true,
 
         -- * MAX tokens (very important)
@@ -87,7 +84,19 @@ function FimRequestBuilder:fim_request()
         type = "fim",
     }
 
+    function set_raw_completions()
+        params.body.raw = true
+        params.endpoint = CompletionsEndpoints.llamacpp_completions
+    end
+
+    function set_chat_completions()
+        params.body.raw = false
+        params.endpoint = CompletionsEndpoints.v1_chat_completions
+    end
+
     if string.find(model, "codellama") then
+        set_raw_completions()
+
         builder = function()
             return meta.codellama.get_fim_prompt(self)
             -- have it use meta.codellama.sentinel_tokens
@@ -99,6 +108,7 @@ function FimRequestBuilder:fim_request()
 
         error("review FIM requirements for codellama, make sure you are using expected template, it used to work with qwen like FIM but I changed that to repo level now and would need to test it")
     elseif string.find(model, "Mellum") then
+        set_raw_completions()
         -- body.options.stop = {
         --     fim.mellum.sentinel_tokens.EOS_TOKEN,
         --     fim.mellum.sentinel_tokens.FILE_SEP
@@ -107,10 +117,12 @@ function FimRequestBuilder:fim_request()
             return fim.mellum.get_fim_prompt(self)
         end
     elseif string.find(model, "starcoder2") then
+        set_raw_completions()
         builder = function()
             return fim.starcoder2.get_fim_prompt(self)
         end
     elseif string.find(model, "qwen3coder", nil, true) then
+        set_raw_completions()
         builder = function()
             return fim.qwen25coder.get_fim_prompt(self)
         end
@@ -121,6 +133,7 @@ function FimRequestBuilder:fim_request()
         body.top_k = 20
         -- PRN new_qwen3coder_llama_server_legacy_body (or w/e to call it, the old endpoint to do raw FIM prompts)
     elseif string.find(model, "qwen", nil, true) then
+        set_raw_completions()
         builder = function()
             return fim.qwen25coder.get_fim_prompt(self)
         end
@@ -129,6 +142,7 @@ function FimRequestBuilder:fim_request()
             log:warn("qwen FIM style does not support thinking, OFF is only logical value.. if you setup chat completions style with qwen3 then you can have thinking")
         end
     elseif string.find(model, "bytedance-seed-coder-8b", nil, true) then
+        set_raw_completions()
         builder = function()
             return fim.qwen25coder.get_fim_prompt(self) -- WORKS FOR repo level using qwen's format entirely! (plus set qwen's stop_tokens to avoid rambles / trailing stop tokens)
             -- return fim.bytedance_seed_coder.get_fim_prompt_file_level_only(self) -- WORKS well for file level using its own SPM format
@@ -142,19 +156,15 @@ function FimRequestBuilder:fim_request()
         or model == models.GLM
     then
         if USE_GPTOSS_RAW and model == models.GPTOSS then
-            params.endpoint = CompletionsEndpoints.llamacpp_completions
-            -- RAW is gptoss specific
-            -- * /completions legacy endpoint:
+            set_raw_completions()
             builder = function()
-                -- * raw prompt /completions, no thinking (I could have model think too, just need to parse that then)
-                -- TODO? get rid of raw approach entirely now that prefix is working
+                -- ? get rid of raw approach entirely now that prefix is working
                 return fim_harmony.gptoss.RETIRED_get_fim_raw_prompt_no_thinking(self)
             end
             body.raw = true
             body.max_tokens = 200 -- FYI if I cut off all thinking
         else
-            params.endpoint = CompletionsEndpoints.v1_chat_completions
-            -- * /v1/chat/completions endpoint (use to have llama-server parse the response, i.e. analsys/thoughts => reasoning_content)
+            set_chat_completions()
             local level = api.get_fim_reasoning_level()
             body.messages = fim_harmony.gptoss.get_fim_chat_messages(self, level, model)
             body.raw = false
@@ -177,25 +187,24 @@ function FimRequestBuilder:fim_request()
         body.temperature = 1.0
         body.top_p = 1.0
     elseif string.find(model, "codestral", nil, true) then
+        set_raw_completions()
         builder = function()
             return fim.codestral.get_fim_prompt(self)
         end
     elseif model == models.DEEPSEEK then
         local level = api.get_fim_reasoning_level()
         if level == models.DEEPSEEK_REASONING_EFFORT.PSM then
-            params.endpoint = CompletionsEndpoints.llamacpp_completions
             builder = function()
                 -- FYI WORKING WELL for FILE LEVEL with deepseek_v4_flash_0731
                 return fim.deepseek_v4_flash.get_fim_prompt(self)
             end
-            body.raw = true
+            set_raw_completions()
             -- TODO set max_tokens? deepseek-coder-v2 IIRC had 4k limit on output tokens for FIM prompt... is there a limit on v4 flash too, that would be wise to set to cut off rambling?
             -- only add back stop tokens if needed and then you'll need to look up what they are
             -- body.options.stop = fim.deepseek_v4_flash.sentinel_tokens.FIM_STOP_TOKENS
         else
-            params.endpoint = CompletionsEndpoints.v1_chat_completions
             body.messages = fim.deepseek_v4_flash.get_fim_chat_messages(self, level)
-            body.raw = false
+            set_chat_completions()
             body.chat_template_kwargs = {
                 -- TODO deep seek level/enable?
                 reasoning_effort = level,
