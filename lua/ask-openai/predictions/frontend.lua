@@ -118,6 +118,7 @@ function PredictionsFrontend.ask_for_prediction(params)
         ---@return table sse_result The parsed SSE result.
         local function _extract_sse_fields(sse_parsed)
             if fim_request.endpoint == CompletionsEndpoints.llamacpp_completions then
+                -- FYI so far all these requests are for raw completions (otherwise I'd use chat completions)
                 return parse_sse_llamacpp_completions(sse_parsed)
             end
             if fim_request.endpoint == CompletionsEndpoints.v1_chat_completions then

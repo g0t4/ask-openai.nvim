@@ -153,7 +153,7 @@ function FimRequestBuilder:fim_request()
             -- * /v1/chat/completions endpoint (use to have llama-server parse the response, i.e. analsys/thoughts => reasoning_content)
             local level = api.get_fim_reasoning_level()
             body.messages = fim_harmony.gptoss.get_fim_chat_messages(self, level, model)
-            body.raw = false -- set here even though was set above
+            body.raw = false
             if model == models.GPTOSS then
                 body.chat_template_kwargs = {
                     reasoning_effort = level
@@ -191,7 +191,7 @@ function FimRequestBuilder:fim_request()
         else
             endpoint = CompletionsEndpoints.v1_chat_completions
             body.messages = fim.deepseek_v4_flash.get_fim_chat_messages(self, level)
-            body.raw = false -- set here even though was set above
+            body.raw = false
             body.chat_template_kwargs = {
                 -- TODO deep seek level/enable?
                 reasoning_effort = level,
