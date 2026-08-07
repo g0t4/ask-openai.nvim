@@ -616,7 +616,7 @@ M.deepseek_coder_v2 = {
         PAD                = deepseek_tag("", "pad", ""), -- 2' -- YES has empty segment on each side
         --      2 '<｜▁pad▁｜>' -- TODO test this
 
-        fim_stop_tokens    = { qwen_tag("eos_token") }, -- TODO is it a fancy underscore here too? ==>    ▁
+        FIM_STOP_TOKENS    = { deepseek_tag("eos_token") }, -- TODO what is the token for deepseek?
     }
 
 }
