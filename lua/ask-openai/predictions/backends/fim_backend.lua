@@ -87,7 +87,7 @@ function FimBackend:body_for()
         logprobs = true,
         post_sampling_probs = true, -- map to 0 to 1.0 (appears to truncate anything that ~0 for probability
         --  whereas if you turn off post_sampling_probs=false => will include very low probability tokens too and not normalize values
-        top_logprobs =  5,
+        top_logprobs = 5,
         n_cmpl = 1, -- OMFG yes I want a toggle to show them too and let me alt+1 to take first, 2 for second etc!
         -- PRN
         -- TODO! setup n_cmpl -- are these in parallel if fits context size?
@@ -208,14 +208,7 @@ function FimBackend:body_for()
             return fim.deepseek_v4_flash.get_fim_prompt(self)
         end
 
-        body.options.stop = fim.deepseek_v4_flash.sentinel_tokens.FIM_STOP_TOKENS
-
-    elseif string.find(model, "deepseek-coder-v2", nil, true) then
-        builder = function()
-            return fim.deepseek_v4_flash.get_fim_prompt(self)
-        end
-
-        body.options.stop = fim.deepseek_v4_flash.sentinel_tokens.FIM_STOP_TOKENS
+        -- body.options.stop = fim.deepseek_v4_flash.sentinel_tokens.FIM_STOP_TOKENS
     else
         error("MODEL NOT SUPPORTED '" .. tostring(model) .. "'")
         return
