@@ -205,17 +205,17 @@ function FimBackend:body_for()
         --  TODO try varying thinking off/low(defualt)/high/max
         builder = function()
             -- FYI WORKING WELL for FILE LEVEL:
-            return fim.deepseek_coder_v2.get_fim_prompt(self)
+            return fim.deepseek_v4_flash.get_fim_prompt(self)
         end
 
-        body.options.stop = fim.deepseek_coder_v2.sentinel_tokens.FIM_STOP_TOKENS
+        body.options.stop = fim.deepseek_v4_flash.sentinel_tokens.FIM_STOP_TOKENS
 
     elseif string.find(model, "deepseek-coder-v2", nil, true) then
         builder = function()
-            return fim.deepseek_coder_v2.get_fim_prompt(self)
+            return fim.deepseek_v4_flash.get_fim_prompt(self)
         end
 
-        body.options.stop = fim.deepseek_coder_v2.sentinel_tokens.FIM_STOP_TOKENS
+        body.options.stop = fim.deepseek_v4_flash.sentinel_tokens.FIM_STOP_TOKENS
     else
         error("MODEL NOT SUPPORTED '" .. tostring(model) .. "'")
         return

@@ -536,7 +536,7 @@ local function deepseek_tag(...)
     local name = table.concat(parts, DEEPSEEK_UNDERSCORE)
     return LESS_THAN .. DEEPSEEK_PIPE .. name .. DEEPSEEK_PIPE .. GREATER_THAN
 end
-M.deepseek_coder_v2 = {
+M.deepseek_v4_flash = {
     -- https://github.com/deepseek-ai/DeepSeek-Coder-V2
     -- https://github.com/deepseek-ai/DeepSeek-Coder-V2?tab=readme-ov-file#code-insertion
     --  "lite" == 16B size
@@ -620,11 +620,11 @@ M.deepseek_coder_v2 = {
     }
 
 }
-log:info(M.deepseek_coder_v2.sentinel_tokens)
+log:info(M.deepseek_v4_flash.sentinel_tokens)
 
-function M.deepseek_coder_v2.get_fim_prompt(request)
+function M.deepseek_v4_flash.get_fim_prompt(request)
     -- log:info("request", request)
-    local tokens = M.deepseek_coder_v2.sentinel_tokens
+    local tokens = M.deepseek_v4_flash.sentinel_tokens
 
     -- PSM format:
     local fim_file_contents = tokens.FIM_BEGIN
