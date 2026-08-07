@@ -25,14 +25,14 @@ FimBackend.base_url = ""
 ---@type CompletionsEndpoints
 FimBackend.endpoint = nil
 
-local use_gptoss_raw = false
+local USE_GPTOSS_RAW = false
 function FimBackend.set_fim_model(model)
     -- FYI right now, given I am using llama-server exclusively, toggling is just about changing between the two instances I run at the same time
     --   so, toggling the port/endpoint :)
     FimBackend.base_url = config.get_endpoints()[model].base_url
     if model == models.GPTOSS then
         -- Base URL now derived from configuration (agents subsystem)
-        if use_gptoss_raw then
+        if USE_GPTOSS_RAW then
             -- manually formatted prompt to disable thinking
             -- FYI can also do this with prefill on v1/chat/completions endpoint so this is not necessary to disable thinking
             FimBackend.endpoint = CompletionsEndpoints.llamacpp_completions
@@ -162,7 +162,7 @@ function FimBackend:body_for()
         --  TODO! strip out glm/gemma4 reuse of gptoss template into own block? would this be less messy?
         --    TODO I should probably rewrite this to not be so hacky given I have special "off" logic for gptoss raw and even in not-raw
         -- FYI I am using my gptoss FIM chat completions FIM style for other chat model FIM setups (not specific to any one of them)
-        if use_gptoss_raw and model == models.GPTOSS then
+        if USE_GPTOSS_RAW and model == models.GPTOSS then
             -- RAW is gptoss specific
             -- * /completions legacy endpoint:
             builder = function()
