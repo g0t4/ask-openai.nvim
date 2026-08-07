@@ -456,15 +456,15 @@ local function ask_rewrite_command(opts)
         local model = api.get_rewrite_model()
         local reasoning_level = context.includes:get_reasoning_level() or api.get_rewrite_reasoning_level()
         if model == models.GPTOSS then
-            body_overrides = model_params.new_gptoss_chat_body_llama_server(_body, context, reasoning_level)
+            body_overrides = model_params.new_gptoss_chat_body_llama_server(_body, reasoning_level)
         elseif model == models.GEMMA4 then
-            body_overrides = model_params.new_gemma4_chat_body_llama_server(_body, context, reasoning_level)
+            body_overrides = model_params.new_gemma4_chat_body_llama_server(_body, reasoning_level)
         elseif model == models.QWEN then
-            body_overrides = model_params.new_qwen3coder_llama_server_chat_body(_body, context, reasoning_level)
+            body_overrides = model_params.new_qwen3coder_llama_server_chat_body(_body, reasoning_level)
         elseif model == models.DEEPSEEK then
-            body_overrides = model_params.new_deepseek4flash_chat_body_llama_server(_body, context, reasoning_level)
+            body_overrides = model_params.new_deepseek4flash_chat_body_llama_server(_body, reasoning_level)
         elseif model == models.GLM then
-            body_overrides = model_params.new_glm47flash_chat_body_llama_server(_body, context, reasoning_level)
+            body_overrides = model_params.new_glm47flash_chat_body_llama_server(_body, reasoning_level)
         else
             error("model not supported" .. tostring(model))
         end

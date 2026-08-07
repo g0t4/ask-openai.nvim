@@ -33,9 +33,8 @@ local function set_enable_thinking(request_body, reasoning_level)
 end
 
 ---@param request_body table
----@param context CurrentContext
 ---@return table
-function M.new_gptoss_chat_body_llama_server(request_body, context, reasoning_level)
+function M.new_gptoss_chat_body_llama_server(request_body, reasoning_level)
     throw_if_no_messages(request_body)
 
 
@@ -60,9 +59,8 @@ function M.new_gptoss_chat_body_llama_server(request_body, context, reasoning_le
 end
 
 ---@param request_body table
----@param context CurrentContext
 ---@return table
-function M.new_deepseek4flash_chat_body_llama_server(request_body, context, effort)
+function M.new_deepseek4flash_chat_body_llama_server(request_body, effort)
     throw_if_no_messages(request_body)
 
     local recommended = {
@@ -120,9 +118,8 @@ function M.new_deepseek4flash_chat_body_llama_server(request_body, context, effo
 end
 
 ---@param request_body table
----@param context CurrentContext
 ---@return table
-function M.new_glm47flash_chat_body_llama_server(request_body, context, reasoning_level)
+function M.new_glm47flash_chat_body_llama_server(request_body, reasoning_level)
     throw_if_no_messages(request_body)
     -- FYI RECOMMMENDS: https://huggingface.co/zai-org/GLM-4.7-Flash#evaluation-parameters
     --   TODO! recommends preserved thinking mode for terminal bench (similar to what my intent here is)
@@ -145,9 +142,8 @@ function M.new_glm47flash_chat_body_llama_server(request_body, context, reasonin
 end
 
 ---@param request_body table
----@param context CurrentContext
 ---@return table
-function M.new_gemma4_chat_body_llama_server(request_body, context, reasoning_level)
+function M.new_gemma4_chat_body_llama_server(request_body, reasoning_level)
     throw_if_no_messages(request_body)
     --  Thinking config: https://huggingface.co/google/gemma-4-26B-A4B#2-thinking-mode-configuration
     --    Thinking is enabled by including the <|think|> token at the start of the system prompt. To disable thinking, remove the token.
@@ -171,9 +167,8 @@ function M.new_gemma4_chat_body_llama_server(request_body, context, reasoning_le
 end
 
 ---@param request_body table
----@param context CurrentContext
 ---@return table
-function M.new_qwen3coder_llama_server_chat_body(request_body, context, reasoning_level) -- this is a duplicate
+function M.new_qwen3coder_llama_server_chat_body(request_body, reasoning_level) -- this is a duplicate
     throw_if_no_messages(request_body)
 
     local recommended = {
