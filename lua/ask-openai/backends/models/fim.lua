@@ -692,6 +692,8 @@ General project code rules:
         current_file_relative_path = ""
     end
 
+    -- TODO! investigate the format to use here
+    --  can I find any training docs or prompt format docs to understand how these repo/file tokens are supposed to be used?
     local fim_file_contents = tokens.BEGIN_OF_FILE
         .. tokens.BEGIN_FILE_NAME
         .. current_file_relative_path
@@ -702,7 +704,8 @@ General project code rules:
         .. tokens.FIM_HOLE
         .. request.ps_chunk.suffix
         .. tokens.FIM_END
-        .. tokens.END_OF_FILE
+    -- FYI if you add tokens.END_OF_FILE then nothing completes
+    --   BUT just stop at FIM_END and it works!
 
     return prompt .. fim_file_contents
 end
