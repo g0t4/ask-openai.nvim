@@ -200,14 +200,14 @@ function FimBackend:body_for()
             return fim.codestral.get_fim_prompt(self)
         end
     elseif model == models.DEEPSEEK then
-        -- TODO testing out FIM w/ deepseek-v4-flash-0731
         --  TODO try general format I use for chat completions based FIM
         --  TODO try varying thinking off/low(defualt)/high/max
         builder = function()
-            -- FYI WORKING WELL for FILE LEVEL:
+            -- FYI WORKING WELL for FILE LEVEL with deepseek_v4_flash_0731
             return fim.deepseek_v4_flash.get_fim_prompt(self)
         end
 
+        -- only add back stop tokens if needed and then you'll need to look up what they are
         -- body.options.stop = fim.deepseek_v4_flash.sentinel_tokens.FIM_STOP_TOKENS
     else
         error("MODEL NOT SUPPORTED '" .. tostring(model) .. "'")
