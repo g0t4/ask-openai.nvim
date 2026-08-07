@@ -547,71 +547,76 @@ M.deepseek_coder_v2 = {
     -- model = "deepseek-coder-v2:16b-lite-base-q8_0", # **** 217 TPS!
 
     sentinel_tokens = {
-        FIM_HOLE        = deepseek_tag("fim", "hole"), -- 128800
-        FIM_BEGIN       = deepseek_tag("fim", "begin"), -- 128801
-        FIM_END         = deepseek_tag("fim", "end"), -- 128802
+        -- 128843 '<｜search▁end｜>    FIM_HOLE        = deepseek_tag("fim", "hole"), -- 128800
+        FIM_BEGIN          = deepseek_tag("fim", "begin"), -- 128801
+        FIM_END            = deepseek_tag("fim", "end"), -- 128802
 
         -- tokens of interest from the llama-server --verbose startup logs:
-        IMAGE           = deepseek_tag("image"), -- 129279
-        REF_BEGIN       = deepseek_tag("ref"), -- 129278
-        REF_END         = deepseek_tag("/ref"), -- 129277
+        IMAGE              = deepseek_tag("image"), -- 129279
+        REF_BEGIN          = deepseek_tag("ref"), -- 129278
+        REF_END            = deepseek_tag("/ref"), -- 129277
 
-        -- 129276 '<｜box｜>'
-        -- 129274 '<｜point｜>'
-        -- 129273 '<｜/point｜>'
-        -- 129272 '<｜polygon｜>'
-        -- 129271 '<｜/polygon｜>'
-        -- 129269 '<｜/tr｜>'
-        -- 129268 '<｜td｜>'
-        -- 129267 '<｜/td｜>'
-        -- 129266 '<｜table｜>'
-        -- 129263 '<｜rl_image_start｜>'
-        -- 128846 '<｜end_of_query｜>'
-        -- 128845 '<｜read_url｜>'
-        -- 128843 '<｜search▁end｜>'
-        -- 128839 '<｜search｜>'
-        -- 128838 '<｜answer｜>'
-        -- 128837 '<｜safety｜>'
-        -- 128835 '<｜entity｜>'
-        -- 128834 '<｜political｜>'
-        -- 128833 '<｜task｜>'
-        -- 128832 '<｜domain｜>'
-        -- 128819 '<｜begin▁of▁file｜>'
-        -- 128818 '<｜end▁of▁file▁name｜>'
-        -- 128815 '<｜begin▁of▁repo▁name｜>'
-        -- 128813 '<｜tool▁output▁end｜>'
-        -- 128812 '<｜tool▁output▁begin｜>'
-        -- 128811 '<｜tool▁outputs▁end｜>'
-        -- 128810 '<｜tool▁outputs▁begin｜>'
-        -- 128808 '<｜tool▁call▁begin｜>'
-        -- 128804 '<｜Assistant｜>'
-        -- 128803 '<｜User｜>'
-        --
-        -- 128816 '<｜end▁of▁repo▁name｜>'
-        -- 128806 '<｜tool▁calls▁begin｜>'
-        -- 129262 '<｜rl_image_pad｜>'
-        -- 128829 '<｜action｜>'
-        -- 128830 '<｜query｜>'
-        -- 128817 '<｜begin▁of▁file▁name｜>'
-        -- 128820 '<｜end▁of▁file｜>'
-        -- 128827 '<｜end▁sys｜>'
-        -- 128836 '<｜title｜>'
-        -- 128807 '<｜tool▁calls▁end｜>'
-        -- 128805 '<|EOT|>'
-        -- 128826 '<｜begin▁sys｜>'
-        -- 128828 '<｜latest_reminder｜>'
-        -- 128831 '<｜authority｜>'
-        --      2 '<｜▁pad▁｜>'
-        -- 128842 '<｜search▁begin｜>'
-        -- 128844 '<｜extracted_url｜>'
-        -- 129264 '<｜image2｜>'
-        -- 129270 '<｜tr｜>'
-        -- 129275 '<｜/box｜>'
-        --      0 '<｜begin▁of▁sentence｜>'
-        -- 128814 '<｜tool▁sep｜>'
-        -- 128809 '<｜tool▁call▁end｜>'
+        BOX_BEGIN          = deepseek_tag("box"), -- 129276
+        BOX_END            = deepseek_tag("/box"), -- 129275
+        POINT_BEGIN        = deepseek_tag("point"), -- 129274
+        POINT_END          = deepseek_tag("/point"), -- 129273
+        POLYGON_BEGIN      = deepseek_tag("polygon"), -- 129272
+        POLYGON_END        = deepseek_tag("/polygon"), -- 129271
+        TR_BEGIN           = deepseek_tag("tr"), -- 129270
+        TR_END             = deepseek_tag("/tr"), -- 129269
+        TD_BEGIN           = deepseek_tag("td"), -- 129268
+        TD_END             = deepseek_tag("/td"), -- 129267
+        TABLE              = deepseek_tag("table"), -- 129266
+        IMAGE2             = deepseek_tag("image2"), -- 129264
+        RL_IMAGE_START     = deepseek_tag("rl_image_start"), -- 129263
+        RL_IMAGE_PAD       = deepseek_tag("rl_image_pad"), -- 129262 -- FYI yes normal underscore
 
-        fim_stop_tokens = { qwen_tag("eos_token") }, -- TODO is it a fancy underscore here too? ==>    ▁
+        END_OF_QUERY       = deepseek_tag("end_of_query"), -- 128846
+        READ_URL           = deepseek_tag("read_url"), -- 128845
+        EXTRACTED_URL      = deepseek_tag("extracted_url"), -- 128844 -- FYI yes normal underscore
+        SEARCH_END         = deepseek_tag("search", "end"), -- 128843
+        SEARCH_BEGIN       = deepseek_tag("search", "begin"), -- 128842
+        SEARCH             = deepseek_tag("search"), -- 128839
+        ANSWER             = deepseek_tag("answer"), -- 128838
+        SAFETY             = deepseek_tag("safety"), -- 128837
+        TITLE              = deepseek_tag("title"), -- 128836
+        ENTITY             = deepseek_tag("entity"), -- 128835
+        POLITICAL          = deepseek_tag("political"), -- 128834
+        TASK               = deepseek_tag("task"), -- 128833
+        DOMAIN             = deepseek_tag("domain"), -- 128832
+        AUTHORITY          = deepseek_tag("authority"), -- 128831
+        QUERY              = deepseek_tag("query"), -- 128830
+        ACTION             = deepseek_tag("action"), -- 128829
+        LATEST_REMINDER    = deepseek_tag("latest_reminder"), -- 128828 -- FYI yes normal underscore
+
+        END_SYS            = deepseek_tag("end", "sys"), -- 128827
+        BEGIN_SYS          = deepseek_tag("begin", "sys"), -- 128826
+
+        BEGIN_OF_FILE      = deepseek_tag("begin", "of", "file"), -- 128819
+        END_OF_FILE        = deepseek_tag("end", "of", "file"), -- 128820
+        BEGIN_FILE_NAME    = deepseek_tag("begin", "of", "file", "name"), -- 128817
+        END_FILE_NAME      = deepseek_tag("end", "of", "file", "name"), -- 128818
+        BEGIN_REPO_NAME    = deepseek_tag("begin", "of", "repo", "name"), -- 128815
+        END_REPO_NAME      = deepseek_tag("end", "of", "repo", "name"), -- 128816
+
+        TOOL_OUTPUT_BEGIN  = deepseek_tag("tool", "output", "begin"), -- 128812
+        TOOL_OUTPUT_END    = deepseek_tag("tool", "output", "end"), -- 128813
+        TOOL_OUTPUTS_BEGIN = deepseek_tag("tool", "outputs", "begin"), -- 128810
+        TOOL_OUTPUTS_END   = deepseek_tag("tool", "outputs", "end"), -- 128811
+        TOOL_SEP           = deepseek_tag("tool", "sep"), -- 128814
+        TOOL_CALL_BEGIN    = deepseek_tag("tool", "call", "begin"), -- 128808
+        TOOL_CALL_END      = deepseek_tag("tool", "call", "end"), -- 128809
+        TOOL_CALLS_BEGIN   = deepseek_tag("tool", "calls", "begin"), -- 128806
+        TOOL_CALLS_END     = deepseek_tag("tool", "calls", "end"), -- 128807
+
+        ASSISTANT          = deepseek_tag("Assistant"), -- 128804
+        USER               = deepseek_tag("User"), -- 128803
+        EOT                = "<|EOT|>", -- 128805 -- FYI normal pipe char
+        BOS                = deepseek_tag("begin", "of", "sentence"), -- 0
+        PAD                = deepseek_tag("", "pad", ""), -- 2' -- YES has empty segment on each side
+        --      2 '<｜▁pad▁｜>' -- TODO test this
+
+        fim_stop_tokens    = { qwen_tag("eos_token") }, -- TODO is it a fancy underscore here too? ==>    ▁
     }
 
 }
