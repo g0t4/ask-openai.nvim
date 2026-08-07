@@ -200,15 +200,19 @@ function FimBackend:body_for()
             return fim.codestral.get_fim_prompt(self)
         end
     elseif model == models.DEEPSEEK then
-        --  TODO try general format I use for chat completions based FIM
-        --  TODO try varying thinking off/low(defualt)/high/max
-        builder = function()
-            -- FYI WORKING WELL for FILE LEVEL with deepseek_v4_flash_0731
-            return fim.deepseek_v4_flash.get_fim_prompt(self)
+        local level = api.get_fim_reasoning_level()
+        if level == models.DEEPSEEK_REASONING_EFFORT.PSM then
+            builder = function()
+                -- FYI WORKING WELL for FILE LEVEL with deepseek_v4_flash_0731
+                return fim.deepseek_v4_flash.get_fim_prompt(self)
+            end
+            -- only add back stop tokens if needed and then you'll need to look up what they are
+            -- body.options.stop = fim.deepseek_v4_flash.sentinel_tokens.FIM_STOP_TOKENS
+        else
+            --  TODO try general format I use for chat completions based FIM
+            --  TODO try varying thinking off/low(defualt)/high/max
+            error("TODO not yet implemented, deepseek thinking / chat completions based FIM")
         end
-
-        -- only add back stop tokens if needed and then you'll need to look up what they are
-        -- body.options.stop = fim.deepseek_v4_flash.sentinel_tokens.FIM_STOP_TOKENS
     else
         error("MODEL NOT SUPPORTED '" .. tostring(model) .. "'")
         return

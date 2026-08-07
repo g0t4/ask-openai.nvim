@@ -46,11 +46,14 @@ M.DEEPSEEK_REASONING_EFFORT = {
     LOW = "low", -- AFAICT this is the level used by default in jinja template packaged with llama.cpp
     HIGH = "high",
     MAX = "max",
+    PSM = "PSM", -- native fim tokens, only applies to FIM (predictions)
+    -- PRN add File vs Repo FIM?
 }
 M.CYCLE_DEEPSEEK_REASONING_EFFORT = {
     M.DEEPSEEK_REASONING_EFFORT.OFF,
     M.DEEPSEEK_REASONING_EFFORT.LOW,
     M.DEEPSEEK_REASONING_EFFORT.HIGH,
     M.DEEPSEEK_REASONING_EFFORT.MAX,
+    M.DEEPSEEK_REASONING_EFFORT.PSM,
 }
 return M

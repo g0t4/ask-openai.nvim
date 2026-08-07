@@ -111,6 +111,9 @@ function M.new_deepseek4flash_chat_body_llama_server(request_body, context, effo
         or effort == efforts.MAX then
         recommended.chat_template_kwargs.reasoning_effort = effort
         -- else "low" => default w/o high/max system prompt mods
+    elseif effort == efforts.PSM then
+        local message = "PSM is for FIM only, aborting deepseek agent"
+        error(message)
     end
 
     return default_to_recommended(request_body, recommended)
