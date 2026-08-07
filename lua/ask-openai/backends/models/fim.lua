@@ -650,7 +650,7 @@ local DEEPSEEK_FIM_CURSOR_MARKER = "<|CURSOR_IS_HERE|>"
 
 -- FYI reusing the same FIM dev prompt gptoss uses (it's model agnostic)
 --   gptoss/fim_harmony reads the same file, just w/ a different cursor marker
-local deepseek_fim_dev_path = vim.fn.expand("<sfile>:p:h") .. "/gptoss/prompts/fim_dev.md"
+local deepseek_fim_dev_path = "~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/backends/models/gptoss/prompts/fim_dev.md"
 local deepseek_fim_dev_raw = files.read_text(deepseek_fim_dev_path)
 if deepseek_fim_dev_raw == nil then
     error("could not read deepseek FIM dev prompt: " .. deepseek_fim_dev_path)
