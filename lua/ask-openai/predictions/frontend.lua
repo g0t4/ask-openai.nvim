@@ -97,12 +97,12 @@ function PredictionsFrontend.ask_for_prediction(params)
     local function then_send_fim(rag_matches)
         -- TODO rename to FimBodyBuilder? or FimRequestBuilder? or FimPromptBuilder?
         local backend = FimBackend:new(ps_chunk, rag_matches)
-        local request_hack = backend:request_details() -- fix hack of return multiple fields after cleanup started on base_url + endpoint (used to be static globally)
-        assert(request_hack.body ~= nil)
+        local request_details = backend:request_details()
+        assert(request_details.body ~= nil)
 
         if this_prediction.apply_template_only then
             -- PRN? move this out into its own module, composed with new open_float
-            local response = llama_server_client.apply_template(request_hack.base_url, request_hack.body)
+            local response = llama_server_client.apply_template(request_details.base_url, request_details.body)
             local FloatWindow = require("ask-openai.helpers.float_window")
             local lines = vim.split(response.body.prompt, '\n')
             ---@type FloatWindowOptions
@@ -114,9 +114,9 @@ function PredictionsFrontend.ask_for_prediction(params)
         end
 
         local fim_request = CurlRequest:new({
-            body = request_hack.body,
-            base_url = request_hack.base_url,
-            endpoint = request_hack.endpoint,
+            body = request_details.body,
+            base_url = request_details.base_url,
+            endpoint = request_details.endpoint,
             type = "fim",
         })
         this_prediction.fim_request = fim_request
@@ -125,13 +125,13 @@ function PredictionsFrontend.ask_for_prediction(params)
         ---@param sse_parsed table The raw SSE data to be parsed.
         ---@return table sse_result The parsed SSE result.
         local function _extract_sse_fields(sse_parsed)
-            if request_hack.endpoint == CompletionsEndpoints.llamacpp_completions then
+            if request_details.endpoint == CompletionsEndpoints.llamacpp_completions then
                 return parse_sse_llamacpp_completions(sse_parsed)
             end
-            if request_hack.endpoint == CompletionsEndpoints.v1_chat_completions then
+            if request_details.endpoint == CompletionsEndpoints.v1_chat_completions then
                 return parse_sse_v1_chat_completions(sse_parsed)
             end
-            error("Unsupported FIM endpoint: " .. tostring(request_hack.endpoint))
+            error("Unsupported FIM endpoint: " .. tostring(request_details.endpoint))
         end
 
         ---@type OnParsedSSE

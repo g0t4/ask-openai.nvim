@@ -42,7 +42,7 @@ function FimBackend:new(ps_chunk, rag_matches)
     return instance
 end
 
----@return { body: table, endpoint: string, base_url: string } request_hack
+---@return { body: table, endpoint: string, base_url: string }
 function FimBackend:request_details()
     local max_tokens = 200
     local body = {
