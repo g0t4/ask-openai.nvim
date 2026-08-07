@@ -126,14 +126,10 @@ function FimRequestBuilder:fim_request()
     if string.find(model, "codellama") then
         curl_params:set_raw_completions()
 
-        raw_prompt_builder = function()
-            return meta.codellama.get_fim_prompt(self)
-            -- have it use meta.codellama.sentinel_tokens
-        end
-
         -- codellama uses (codellama.EOT) that seems to not be set as param in modelfile (at least for FIM?)
         --   without this change you will see (codellama.EOT) in code at end of completions
         body.options.stop = { meta.codellama.sentinel_tokens.EOT }
+        body.prompt = meta.codellama.get_fim_prompt(self)
 
         error("review FIM requirements for codellama, make sure you are using expected template, it used to work with qwen like FIM but I changed that to repo level now and would need to test it")
     elseif string.find(model, "Mellum") then
@@ -142,19 +138,13 @@ function FimRequestBuilder:fim_request()
         --     fim.mellum.sentinel_tokens.EOS_TOKEN,
         --     fim.mellum.sentinel_tokens.FILE_SEP
         -- }
-        raw_prompt_builder = function()
-            return fim.mellum.get_fim_prompt(self)
-        end
+        body.prompt = fim.mellum.get_fim_prompt(self)
     elseif string.find(model, "starcoder2") then
         curl_params:set_raw_completions()
-        raw_prompt_builder = function()
-            return fim.starcoder2.get_fim_prompt(self)
-        end
+        body.prompt = fim.starcoder2.get_fim_prompt(self)
     elseif string.find(model, "qwen3coder", nil, true) then
         curl_params:set_raw_completions()
-        raw_prompt_builder = function()
-            return fim.qwen25coder.get_fim_prompt(self)
-        end
+        body.prompt = fim.qwen25coder.get_fim_prompt(self)
 
         body.temperature = 0.7
         body.repeat_penalty = 1.05
@@ -163,20 +153,16 @@ function FimRequestBuilder:fim_request()
         -- PRN new_qwen3coder_llama_server_legacy_body (or w/e to call it, the old endpoint to do raw FIM prompts)
     elseif string.find(model, "qwen", nil, true) then
         curl_params:set_raw_completions()
-        raw_prompt_builder = function()
-            return fim.qwen25coder.get_fim_prompt(self)
-        end
+        body.prompt = fim.qwen25coder.get_fim_prompt(self)
         local level = api.get_fim_reasoning_level()
         if level ~= "off" then
             log:warn("qwen FIM style does not support thinking, OFF is only logical value.. if you setup chat completions style with qwen3 then you can have thinking")
         end
     elseif string.find(model, "bytedance-seed-coder-8b", nil, true) then
         curl_params:set_raw_completions()
-        raw_prompt_builder = function()
-            return fim.qwen25coder.get_fim_prompt(self) -- WORKS FOR repo level using qwen's format entirely! (plus set qwen's stop_tokens to avoid rambles / trailing stop tokens)
-            -- return fim.bytedance_seed_coder.get_fim_prompt_file_level_only(self) -- WORKS well for file level using its own SPM format
-            -- return fim.bytedance_seed_coder.get_fim_prompt_repo_level(self)
-        end
+        body.prompt = fim.qwen25coder.get_fim_prompt(self) -- WORKS FOR repo level using qwen's format entirely! (plus set qwen's stop_tokens to avoid rambles / trailing stop tokens)
+        -- body.prompt = fim.bytedance_seed_coder.get_fim_prompt_file_level_only(self) -- WORKS well for file level using its own SPM format
+        -- body.prompt = fim.bytedance_seed_coder.get_fim_prompt_repo_level(self)
         -- MUST set qwent's tokens as stop tokens too (when using Qwen's repo level fim format)
         body.stop = fim.bytedance_seed_coder.qwen_sentinels.fim_stop_tokens_from_qwen25_coder -- llama-server /completions endpoint uses top-level stop
         body.options.stop = fim.bytedance_seed_coder.qwen_sentinels.fim_stop_tokens_from_qwen25_coder
@@ -186,10 +172,8 @@ function FimRequestBuilder:fim_request()
     then
         if USE_GPTOSS_RAW and model == models.GPTOSS then
             curl_params:set_raw_completions()
-            raw_prompt_builder = function()
-                -- ? get rid of raw approach entirely now that prefix is working
-                return fim_harmony.gptoss.RETIRED_get_fim_raw_prompt_no_thinking(self)
-            end
+            -- ? get rid of raw approach entirely now that prefix is working
+            body.prompt = fim_harmony.gptoss.RETIRED_get_fim_raw_prompt_no_thinking(self)
             body.raw = true
             body.max_tokens = 200 -- FYI if I cut off all thinking
         else
@@ -217,16 +201,12 @@ function FimRequestBuilder:fim_request()
         body.top_p = 1.0
     elseif string.find(model, "codestral", nil, true) then
         curl_params:set_raw_completions()
-        raw_prompt_builder = function()
-            return fim.codestral.get_fim_prompt(self)
-        end
+        body.prompt = fim.codestral.get_fim_prompt(self)
     elseif model == models.DEEPSEEK then
         local level = api.get_fim_reasoning_level()
         if level == models.DEEPSEEK_REASONING_EFFORT.PSM then
-            raw_prompt_builder = function()
-                -- FYI WORKING WELL for FILE LEVEL with deepseek_v4_flash_0731
-                return fim.deepseek_v4_flash.get_fim_prompt(self)
-            end
+            -- FYI WORKING WELL for FILE LEVEL with deepseek_v4_flash_0731
+            body.prompt = fim.deepseek_v4_flash.get_fim_prompt(self)
             curl_params:set_raw_completions()
             -- TODO set max_tokens? deepseek-coder-v2 IIRC had 4k limit on output tokens for FIM prompt... is there a limit on v4 flash too, that would be wise to set to cut off rambling?
             -- only add back stop tokens if needed and then you'll need to look up what they are
@@ -248,13 +228,8 @@ function FimRequestBuilder:fim_request()
         error("MODEL NOT SUPPORTED '" .. tostring(model) .. "'")
     end
 
-    if raw_prompt_builder then
-        body.prompt = raw_prompt_builder()
-        -- log:info(ansi.green_bold('body.prompt:\n'), ansi.green(body.prompt))
-    elseif body.messages then
-        -- log:info('body.messages', vim.inspect(body.messages))
-    else
-        error("you must define either the prompt builder OR messages for chat like FIM for: " .. model)
+    if not body.prompt and not body.messages then
+        error("you must define either the prompt OR messages for chat like FIM for: " .. model)
     end
 
     return CurlRequest:new(curl_params:build())
