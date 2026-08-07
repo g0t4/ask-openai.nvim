@@ -21,10 +21,6 @@ require("ask-openai.backends.sse.parsers")
 local FimBackend = {}
 FimBackend.__index = FimBackend
 
-FimBackend.base_url = ""
----@type CompletionsEndpoints
-FimBackend.endpoint = nil
-
 local USE_GPTOSS_RAW = false
 
 ---@param ps_chunk PrefixSuffixChunk
@@ -46,6 +42,7 @@ function FimBackend:new(ps_chunk, rag_matches)
     return instance
 end
 
+---@return { body: table, endpoint: string, base_url: string } request_hack
 function FimBackend:body_for()
     local max_tokens = 200
     local body = {
@@ -84,8 +81,7 @@ function FimBackend:body_for()
 
     local model = api.get_fim_model()
     local base_url = config.get_endpoints()[model].base_url
-    FimBackend.base_url = base_url -- TODO NUKE FimBackend.base_url (most usages are here in this giant FIM builder)
-    FimBackend.endpoint = CompletionsEndpoints.llamacpp_completions -- * usually for raw prompt completions
+    local endpoint = CompletionsEndpoints.llamacpp_completions -- * usually for raw prompt completions
 
     if string.find(model, "codellama") then
         builder = function()
@@ -141,13 +137,8 @@ function FimBackend:body_for()
         or model == models.GEMMA4
         or model == models.GLM
     then
-        -- FYI extra logic here is to reuse one template across models when it is the FIM chat completion style I use for gptoss
-        --  TODO! strip out glm/gemma4 reuse of gptoss template into own block? would this be less messy?
-        --    TODO I should probably rewrite this to not be so hacky given I have special "off" logic for gptoss raw and even in not-raw
-        -- FYI I am using my gptoss FIM chat completions FIM style for other chat model FIM setups (not specific to any one of them)
-
         if USE_GPTOSS_RAW and model == models.GPTOSS then
-            FimBackend.endpoint = CompletionsEndpoints.llamacpp_completions
+            endpoint = CompletionsEndpoints.llamacpp_completions
             -- RAW is gptoss specific
             -- * /completions legacy endpoint:
             builder = function()
@@ -158,7 +149,7 @@ function FimBackend:body_for()
             body.raw = true
             body.max_tokens = 200 -- FYI if I cut off all thinking
         else
-            FimBackend.endpoint = CompletionsEndpoints.v1_chat_completions
+            endpoint = CompletionsEndpoints.v1_chat_completions
             -- * /v1/chat/completions endpoint (use to have llama-server parse the response, i.e. analsys/thoughts => reasoning_content)
             local level = api.get_fim_reasoning_level()
             body.messages = fim_harmony.gptoss.get_fim_chat_messages(self, level, model)
@@ -188,7 +179,7 @@ function FimBackend:body_for()
     elseif model == models.DEEPSEEK then
         local level = api.get_fim_reasoning_level()
         if level == models.DEEPSEEK_REASONING_EFFORT.PSM then
-            FimBackend.endpoint = CompletionsEndpoints.llamacpp_completions
+            endpoint = CompletionsEndpoints.llamacpp_completions
             builder = function()
                 -- FYI WORKING WELL for FILE LEVEL with deepseek_v4_flash_0731
                 return fim.deepseek_v4_flash.get_fim_prompt(self)
@@ -198,7 +189,7 @@ function FimBackend:body_for()
             -- only add back stop tokens if needed and then you'll need to look up what they are
             -- body.options.stop = fim.deepseek_v4_flash.sentinel_tokens.FIM_STOP_TOKENS
         else
-            FimBackend.endpoint = CompletionsEndpoints.v1_chat_completions
+            endpoint = CompletionsEndpoints.v1_chat_completions
             body.messages = fim.deepseek_v4_flash.get_fim_chat_messages(self, level)
             body.raw = false -- set here even though was set above
             body.chat_template_kwargs = {
@@ -225,7 +216,7 @@ function FimBackend:body_for()
         error("you must define either the prompt builder OR messages for chat like FIM for: " .. model)
     end
 
-    return body
+    return { body = body, endpoint = endpoint, base_url = base_url }
 end
 
 function FimBackend.inject_file_path_test_seam()
