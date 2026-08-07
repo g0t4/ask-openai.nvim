@@ -80,8 +80,12 @@ function FimRequestBuilder:fim_request()
     }
 
     local model = api.get_fim_model()
-    local base_url = config.get_endpoints()[model].base_url
-    local endpoint = CompletionsEndpoints.llamacpp_completions -- * usually for raw prompt completions
+    local params = {
+        body = body,
+        base_url = config.get_endpoints()[model].base_url,
+        endpoint = CompletionsEndpoints.llamacpp_completions, -- * usually for raw prompt completions
+        type = "fim",
+    }
 
     if string.find(model, "codellama") then
         builder = function()
@@ -138,7 +142,7 @@ function FimRequestBuilder:fim_request()
         or model == models.GLM
     then
         if USE_GPTOSS_RAW and model == models.GPTOSS then
-            endpoint = CompletionsEndpoints.llamacpp_completions
+            params.endpoint = CompletionsEndpoints.llamacpp_completions
             -- RAW is gptoss specific
             -- * /completions legacy endpoint:
             builder = function()
@@ -149,7 +153,7 @@ function FimRequestBuilder:fim_request()
             body.raw = true
             body.max_tokens = 200 -- FYI if I cut off all thinking
         else
-            endpoint = CompletionsEndpoints.v1_chat_completions
+            params.endpoint = CompletionsEndpoints.v1_chat_completions
             -- * /v1/chat/completions endpoint (use to have llama-server parse the response, i.e. analsys/thoughts => reasoning_content)
             local level = api.get_fim_reasoning_level()
             body.messages = fim_harmony.gptoss.get_fim_chat_messages(self, level, model)
@@ -179,7 +183,7 @@ function FimRequestBuilder:fim_request()
     elseif model == models.DEEPSEEK then
         local level = api.get_fim_reasoning_level()
         if level == models.DEEPSEEK_REASONING_EFFORT.PSM then
-            endpoint = CompletionsEndpoints.llamacpp_completions
+            params.endpoint = CompletionsEndpoints.llamacpp_completions
             builder = function()
                 -- FYI WORKING WELL for FILE LEVEL with deepseek_v4_flash_0731
                 return fim.deepseek_v4_flash.get_fim_prompt(self)
@@ -189,7 +193,7 @@ function FimRequestBuilder:fim_request()
             -- only add back stop tokens if needed and then you'll need to look up what they are
             -- body.options.stop = fim.deepseek_v4_flash.sentinel_tokens.FIM_STOP_TOKENS
         else
-            endpoint = CompletionsEndpoints.v1_chat_completions
+            params.endpoint = CompletionsEndpoints.v1_chat_completions
             body.messages = fim.deepseek_v4_flash.get_fim_chat_messages(self, level)
             body.raw = false
             body.chat_template_kwargs = {
@@ -215,12 +219,7 @@ function FimRequestBuilder:fim_request()
         error("you must define either the prompt builder OR messages for chat like FIM for: " .. model)
     end
 
-    return CurlRequest:new({
-        body = body,
-        base_url = base_url,
-        endpoint = endpoint,
-        type = "fim",
-    })
+    return CurlRequest:new(params)
 end
 
 function FimRequestBuilder.inject_file_path_test_seam()
