@@ -126,7 +126,7 @@ function FimRequestBuilder:fim_request()
     if string.find(model, "codellama") then
         curl_params:set_raw_completions()
 
-        builder = function()
+        raw_prompt_builder = function()
             return meta.codellama.get_fim_prompt(self)
             -- have it use meta.codellama.sentinel_tokens
         end
@@ -142,17 +142,17 @@ function FimRequestBuilder:fim_request()
         --     fim.mellum.sentinel_tokens.EOS_TOKEN,
         --     fim.mellum.sentinel_tokens.FILE_SEP
         -- }
-        builder = function()
+        raw_prompt_builder = function()
             return fim.mellum.get_fim_prompt(self)
         end
     elseif string.find(model, "starcoder2") then
         curl_params:set_raw_completions()
-        builder = function()
+        raw_prompt_builder = function()
             return fim.starcoder2.get_fim_prompt(self)
         end
     elseif string.find(model, "qwen3coder", nil, true) then
         curl_params:set_raw_completions()
-        builder = function()
+        raw_prompt_builder = function()
             return fim.qwen25coder.get_fim_prompt(self)
         end
 
@@ -163,7 +163,7 @@ function FimRequestBuilder:fim_request()
         -- PRN new_qwen3coder_llama_server_legacy_body (or w/e to call it, the old endpoint to do raw FIM prompts)
     elseif string.find(model, "qwen", nil, true) then
         curl_params:set_raw_completions()
-        builder = function()
+        raw_prompt_builder = function()
             return fim.qwen25coder.get_fim_prompt(self)
         end
         local level = api.get_fim_reasoning_level()
@@ -172,7 +172,7 @@ function FimRequestBuilder:fim_request()
         end
     elseif string.find(model, "bytedance-seed-coder-8b", nil, true) then
         curl_params:set_raw_completions()
-        builder = function()
+        raw_prompt_builder = function()
             return fim.qwen25coder.get_fim_prompt(self) -- WORKS FOR repo level using qwen's format entirely! (plus set qwen's stop_tokens to avoid rambles / trailing stop tokens)
             -- return fim.bytedance_seed_coder.get_fim_prompt_file_level_only(self) -- WORKS well for file level using its own SPM format
             -- return fim.bytedance_seed_coder.get_fim_prompt_repo_level(self)
@@ -186,7 +186,7 @@ function FimRequestBuilder:fim_request()
     then
         if USE_GPTOSS_RAW and model == models.GPTOSS then
             curl_params:set_raw_completions()
-            builder = function()
+            raw_prompt_builder = function()
                 -- ? get rid of raw approach entirely now that prefix is working
                 return fim_harmony.gptoss.RETIRED_get_fim_raw_prompt_no_thinking(self)
             end
@@ -217,13 +217,13 @@ function FimRequestBuilder:fim_request()
         body.top_p = 1.0
     elseif string.find(model, "codestral", nil, true) then
         curl_params:set_raw_completions()
-        builder = function()
+        raw_prompt_builder = function()
             return fim.codestral.get_fim_prompt(self)
         end
     elseif model == models.DEEPSEEK then
         local level = api.get_fim_reasoning_level()
         if level == models.DEEPSEEK_REASONING_EFFORT.PSM then
-            builder = function()
+            raw_prompt_builder = function()
                 -- FYI WORKING WELL for FILE LEVEL with deepseek_v4_flash_0731
                 return fim.deepseek_v4_flash.get_fim_prompt(self)
             end
@@ -248,8 +248,8 @@ function FimRequestBuilder:fim_request()
         error("MODEL NOT SUPPORTED '" .. tostring(model) .. "'")
     end
 
-    if builder then
-        body.prompt = builder()
+    if raw_prompt_builder then
+        body.prompt = raw_prompt_builder()
         -- log:info(ansi.green_bold('body.prompt:\n'), ansi.green(body.prompt))
     elseif body.messages then
         -- log:info('body.messages', vim.inspect(body.messages))
