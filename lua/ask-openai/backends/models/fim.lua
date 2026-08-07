@@ -622,7 +622,7 @@ M.deepseek_v4_flash = {
     --   model = "deepseek-coder-v2:16b-lite-base-q8_0", # **** 217 TPS!
 
 }
-log:info(M.deepseek_v4_flash.sentinel_tokens)
+-- log:info(M.deepseek_v4_flash.sentinel_tokens)
 
 function M.deepseek_v4_flash.get_fim_prompt(request)
     -- log:info("request", request)
