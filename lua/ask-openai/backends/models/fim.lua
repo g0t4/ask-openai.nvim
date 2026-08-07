@@ -642,4 +642,10 @@ function M.deepseek_v4_flash.get_fim_prompt(request)
     return fim_file_contents
 end
 
+---@param request FimRequestBuilder
+---@param level DEEPSEEK_REASONING_EFFORT
+function M.deepseek_v4_flash.get_fim_chat_messages(request, level, model)
+    error("NOT YET READY DEEPSEEK CHAT FIM")
+end
+
 return M

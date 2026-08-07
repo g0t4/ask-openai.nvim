@@ -49,6 +49,7 @@ M.DEEPSEEK_REASONING_EFFORT = {
     PSM = "PSM", -- native fim tokens, only applies to FIM (predictions)
     -- PRN add File vs Repo FIM?
 }
+---@enum DEEPSEEK_REASONING_EFFORT
 M.CYCLE_DEEPSEEK_REASONING_EFFORT = {
     M.DEEPSEEK_REASONING_EFFORT.OFF,
     M.DEEPSEEK_REASONING_EFFORT.LOW,
