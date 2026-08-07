@@ -524,9 +524,17 @@ function M.codestral.get_fim_prompt(request)
     return fim_file_contents
 end
 
-local function deepseek_tag(type)
+local LESS_THAN = "<"
+local GREATER_THAN = ">"
+local DEEPSEEK_PIPE = "｜"
+local DEEPSEEK_UNDERSCORE = "▁"
+---@param parts string[]
+local function deepseek_tag(...)
+    local parts = { ... }
+    -- build this so we don't have the actual values in code to mess up FIM and other prompts!
     -- FYI it's not spaces around the pipe char:
-    return "<｜" .. type .. "｜>"
+    local name = table.concat(parts, DEEPSEEK_UNDERSCORE)
+    return LESS_THAN .. DEEPSEEK_PIPE .. name .. DEEPSEEK_PIPE .. GREATER_THAN
 end
 M.deepseek_coder_v2 = {
     -- https://github.com/deepseek-ai/DeepSeek-Coder-V2
@@ -539,18 +547,80 @@ M.deepseek_coder_v2 = {
     -- model = "deepseek-coder-v2:16b-lite-base-q8_0", # **** 217 TPS!
 
     sentinel_tokens = {
-        FIM_BEGIN = deepseek_tag("fim▁begin"),
-        FIM_HOLD = deepseek_tag("fim▁hole"),
-        FIM_END = deepseek_tag("fim▁end"),
+        FIM_BEGIN = deepseek_tag("fim", "begin"),
+        FIM_HOLD = deepseek_tag("fim", "hole"),
+        FIM_END = deepseek_tag("fim", "end"),
 
         fim_stop_tokens = { qwen_tag("eos_token") } -- TODO is it a fancy underscore here too? ==>    ▁
-    }
 
+        -- tokens of interest from the llama-server --verbose startup logs:
+        -- 129279 '<｜image｜>'
+        -- 129278 '<｜ref｜>'
+        -- 129277 '<｜/ref｜>'
+        -- 129276 '<｜box｜>'
+        -- 129274 '<｜point｜>'
+        -- 129273 '<｜/point｜>'
+        -- 129272 '<｜polygon｜>'
+        -- 129271 '<｜/polygon｜>'
+        -- 129269 '<｜/tr｜>'
+        -- 129268 '<｜td｜>'
+        -- 129267 '<｜/td｜>'
+        -- 129266 '<｜table｜>'
+        -- 129263 '<｜rl_image_start｜>'
+        -- 128846 '<｜end_of_query｜>'
+        -- 128845 '<｜read_url｜>'
+        -- 128843 '<｜search▁end｜>'
+        -- 128839 '<｜search｜>'
+        -- 128838 '<｜answer｜>'
+        -- 128837 '<｜safety｜>'
+        -- 128835 '<｜entity｜>'
+        -- 128834 '<｜political｜>'
+        -- 128833 '<｜task｜>'
+        -- 128832 '<｜domain｜>'
+        -- 128819 '<｜begin▁of▁file｜>'
+        -- 128818 '<｜end▁of▁file▁name｜>'
+        -- 128815 '<｜begin▁of▁repo▁name｜>'
+        -- 128813 '<｜tool▁output▁end｜>'
+        -- 128812 '<｜tool▁output▁begin｜>'
+        -- 128811 '<｜tool▁outputs▁end｜>'
+        -- 128810 '<｜tool▁outputs▁begin｜>'
+        -- 128808 '<｜tool▁call▁begin｜>'
+        -- 128804 '<｜Assistant｜>'
+        -- 128803 '<｜User｜>'
+        --
+        -- 128816 '<｜end▁of▁repo▁name｜>'
+        -- 128806 '<｜tool▁calls▁begin｜>'
+        -- 129262 '<｜rl_image_pad｜>'
+        -- 128829 '<｜action｜>'
+        -- 128830 '<｜query｜>'
+        -- 128817 '<｜begin▁of▁file▁name｜>'
+        -- 128820 '<｜end▁of▁file｜>'
+        -- 128802 '<｜fim▁end｜>'
+        -- 128827 '<｜end▁sys｜>'
+        -- 128836 '<｜title｜>'
+        -- 128807 '<｜tool▁calls▁end｜>'
+        -- 128805 '<|EOT|>'
+        -- 128826 '<｜begin▁sys｜>'
+        -- 128828 '<｜latest_reminder｜>'
+        -- 128831 '<｜authority｜>'
+        --      2 '<｜▁pad▁｜>'
+        -- 128842 '<｜search▁begin｜>'
+        -- 128800 '<｜fim▁hole｜>'
+        -- 128844 '<｜extracted_url｜>'
+        -- 129264 '<｜image2｜>'
+        -- 129270 '<｜tr｜>'
+        -- 129275 '<｜/box｜>'
+        --      0 '<｜begin▁of▁sentence｜>'
+        -- 128801 '<｜fim▁begin｜>'
+        -- 128814 '<｜tool▁sep｜>'
+        -- 128809 '<｜tool▁call▁end｜>'
+
+    }
 }
+log:info(M.deepseek_coder_v2.sentinel_tokens)
 
 function M.deepseek_coder_v2.get_fim_prompt(request)
     -- log:info("request", request)
-
     local tokens = M.deepseek_coder_v2.sentinel_tokens
 
     -- PSM format:
