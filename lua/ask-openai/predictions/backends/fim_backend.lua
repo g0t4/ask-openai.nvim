@@ -203,8 +203,8 @@ function FimBackend:body_for()
             body.raw = false -- set here even though was set above
             body.chat_template_kwargs = {
                 -- TODO deep seek level/enable?
-                reasoning_effort = level
-                enable_thinking = level ~= "off"
+                reasoning_effort = level,
+                enable_thinking = level ~= "off",
             }
 
             -- ? set max_tokens (what is default, if any?)
