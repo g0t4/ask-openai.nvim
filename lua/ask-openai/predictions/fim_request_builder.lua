@@ -151,7 +151,6 @@ function FimRequestBuilder:fim_request()
         body.repeat_penalty = 1.05
         body.top_p = 0.8
         body.top_k = 20
-        -- PRN new_qwen3coder_llama_server_legacy_body (or w/e to call it, the old endpoint to do raw FIM prompts)
     elseif string.find(model, "qwen", nil, true) then
         curl_params:set_raw_completions()
         body.prompt = fim.qwen25coder.get_fim_prompt(self)
