@@ -16,6 +16,23 @@ end
 --foo the bar
 -- baz boo doo
 
+describe("get_visual_selection(win_id)", function()
+    vim.print(vim.api.nvim_list_wins())
+    local buf1, win1 = nil, nil
+    local buf2, win2 = nil, nil
+    before_each(function()
+        vim.print(vim.api.nvim_list_wins())
+        buf1, win1 = buffers.new_buffer_in_new_window_with_lines({ "first window line" })
+        buf2, win2 = buffers.new_buffer_in_new_window_with_lines({ "second window line" })
+        vim.print(vim.api.nvim_list_wins())
+    end)
+    it("TODO", function()
+        -- TODO
+    end)
+end)
+
+-- do return end
+
 describe("get_visual_selection()", function()
     describe("not in visual mode", function()
         ---@diagnostic disable-next-line: unused-function
