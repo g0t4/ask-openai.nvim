@@ -539,6 +539,12 @@ local function setup_trace_for_followup(tx_messages)
     -- Show user role hint for follow-up
     AgentsFrontend.show_user_role_as_follow_up_hint()
 
+    -- * Set the follow-up start offset AFTER rendering.
+    --   If left stale/nil (e.g. from a prior session), follow_up_command falls back
+    --   to `or 0` and re-ingests the ENTIRE restored buffer as the user's next
+    --   message, duplicating the whole conversation into one request (context blowup).
+    AgentsFrontend.chat_window.followup_starts_at_line_0indexed = AgentsFrontend.chat_window.buffer:get_line_count() - 1
+
     -- Set the offset for where streaming messages will be drawn
     AgentsFrontend.this_turn_chat_start_line_base0 = AgentsFrontend.chat_window.buffer:get_line_count() - 1
 
