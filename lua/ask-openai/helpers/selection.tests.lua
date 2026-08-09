@@ -17,17 +17,29 @@ end
 -- baz boo doo
 
 describe("get_visual_selection(win_id)", function()
-    vim.print(vim.api.nvim_list_wins())
     local buf1, win1 = nil, nil
     local buf2, win2 = nil, nil
     before_each(function()
-        vim.print(vim.api.nvim_list_wins())
-        buf1, win1 = buffers.new_buffer_in_new_window_with_lines({ "first window line" })
-        buf2, win2 = buffers.new_buffer_in_new_window_with_lines({ "second window line" })
-        vim.print(vim.api.nvim_list_wins())
+        buf1, win1 = buffers.new_buffer_in_new_window_with_lines({ "first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth", "tenth" })
+        buf2, win2 = buffers.new_buffer_in_new_window_with_lines({ "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten" })
     end)
-    it("TODO", function()
-        -- TODO
+    it("get selection for the last window, not current", function()
+        assert.are.same(vim.api.nvim_get_current_buf(), buf2)
+        -- switch to window 1
+        vim.api.nvim_set_current_win(win1)
+        assert.are.same(vim.api.nvim_get_current_buf(), buf1)
+        -- select line 3 in buffer 1
+        vim.cmd('3')
+        vim.cmd('normal! VV') -- second V exits
+        -- switch back to window 2
+        vim.api.nvim_set_current_win(win2)
+        assert.are.same(vim.api.nvim_get_current_buf(), buf2)
+
+        -- TODO assert the selection is correct
+        -- local selection = Selection._get_visual_selection_for_window_id(win1)
+        -- vim.print(selection)
+        --  FYI none of this is remotely even supported and wow a hot mess if you wanted to do this so...
+        --  until you need this for real real then NO do not add this support
     end)
 end)
 
