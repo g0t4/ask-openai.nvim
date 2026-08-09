@@ -61,13 +61,13 @@ function M.qwen25coder.get_fim_prompt(request)
         prompt = prompt .. non_fim_file
     end
 
-    local instructions = ContextItem:new("instructions.txt", [[
-General project code rules:
-- Never add comments to the end of a line.
-- NEVER add TODO comments for me.
-- Always pay close attention to indentation when suggesting code, pay close attention to whitespace on the line where the code will be inserted. Do not repeat existing indentation!
-]])
-    append_file_non_fim(instructions)
+    --     local instructions = ContextItem:new("instructions.txt", [[
+    -- General project code rules:
+    -- - Never add comments to the end of a line.
+    -- - NEVER add TODO comments for me.
+    -- - Always pay close attention to indentation when suggesting code, pay close attention to whitespace on the line where the code will be inserted. Do not repeat existing indentation!
+    -- ]])
+    --     append_file_non_fim(instructions)
 
     if request.context.includes.yanks and request.context.yanks then
         append_file_non_fim(request.context.yanks)
@@ -647,13 +647,13 @@ function M.deepseek_v4_flash.get_fim_prompt(request)
         prompt = prompt .. non_fim_file
     end
 
-    local instructions = ContextItem:new("instructions.txt", [[
-General project code rules:
-- Never add comments to the end of a line.
-- NEVER add TODO comments for me.
-- Always pay close attention to indentation when suggesting code, pay close attention to whitespace on the line where the code will be inserted. Do not repeat existing indentation!
-]])
-    append_file_non_fim(instructions)
+    --     local instructions = ContextItem:new("instructions.txt", [[
+    -- General project code rules:
+    -- - Never add comments to the end of a line.
+    -- - NEVER add TODO comments for me.
+    -- - Always pay close attention to indentation when suggesting code, pay close attention to whitespace on the line where the code will be inserted. Do not repeat existing indentation!
+    -- ]])
+    --     append_file_non_fim(instructions)
 
     if request.context.includes.yanks and request.context.yanks then
         append_file_non_fim(request.context.yanks)
@@ -731,11 +731,11 @@ local function deepseek_fim_context_user_msg(request)
         "Here is context that's automatically provided, that MAY be relevant.",
         "repo: " .. request:get_repo_name(),
         "",
-        vim.trim([[
-## General project code rules:
-- Never add comments to the end of a line.
-- NEVER add TODO comments for me.
-]]),
+        --         vim.trim([[
+        -- ## General project code rules:
+        -- - Never add comments to the end of a line.
+        -- - NEVER add TODO comments for me.
+        -- ]]),
     }
     local function add_blank_line()
         table.insert(context_lines, "")
