@@ -900,11 +900,11 @@ function AgentsFrontend.setup()
     vim.api.nvim_create_user_command("AskDumpAgentTrace", ask_dump_agent_trace_command, {})
 
     -- * AgentSessionRestore
-    vim.api.nvim_create_user_command("AgentRestoreSessionID", restore_session_command, {
+    vim.api.nvim_create_user_command("AskAgentRestoreSessionID", restore_session_command, {
         nargs = "?",
         desc = "Restore a past agent session/trace into the chat viewer (session_id is unix timestamp or *-trace.json filename; omit for most recent)"
     })
-    vim.api.nvim_create_user_command("AgentRestoreTrace", restore_trace_command, {
+    vim.api.nvim_create_user_command("AskAgentRestoreTrace", restore_trace_command, {
         nargs = "?",
         desc = "Restore a past agent trace file into the chat viewer"
     })
