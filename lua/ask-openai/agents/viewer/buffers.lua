@@ -114,12 +114,6 @@ function BufferController:replace_with_styled_lines_after(start_line_inclusive_b
                     end_col  = mark.end_col_base0,
                 }
             )
-
-            -- TODO   vim.opt.foldtext = "v:lua.MyFoldText()"
-            --      summary text for the fold
-            --      OR use extmarks to summarize
-            --  TODO show "reasoning"
-            --  PRN show thinking dots when it's WIP!
         end
 
         -- -- -- * add extmarks for <br> to virtually split line
