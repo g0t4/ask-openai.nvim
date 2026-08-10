@@ -274,7 +274,10 @@ function PredictionsFrontend.ask_for_prediction(params)
         this_prediction.rag_cancel = function()
             log:warn("canceling RAG")
             this_prediction.rag_cancel = nil
-            cancel()
+            if cancel ~= nil then
+                -- test this w/ empty buffer => go into insert mode (get prediction) => Escape to exit insert mode (kaboom)
+                cancel()
+            end
             this_prediction.rag_request_ids = nil
         end
 
