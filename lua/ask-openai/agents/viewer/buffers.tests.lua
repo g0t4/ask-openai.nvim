@@ -80,9 +80,19 @@ describe("BufferController:get_lines_from", function()
 end)
 
 describe("BufferController:get_line_count", function()
-    it("fresh buffer always has the phantom empty first line", function()
-        local controller = new_buffer_controller_with_lines({})
-        should.be_equal(1, controller:get_line_count())
+    describe("fresh buffer always has the phantom empty first line", function()
+        it("nvim_create_buf", function()
+            -- make sure the phantom line is not due to new_buffer_controller_with_lines
+            local bufnr = vim.api.nvim_create_buf(false, true)
+            local controller = BufferController:new(bufnr)
+            should.be_equal(1, controller:get_line_count())
+        end)
+
+        it("new_buffer_controller_with_lines", function()
+            -- show that phantom line happens from this way too
+            local controller = new_buffer_controller_with_lines({})
+            should.be_equal(1, controller:get_line_count())
+        end)
     end)
 
     it("counts appended lines", function()
