@@ -762,7 +762,7 @@ function AgentsFrontend.follow_up_command()
     --  so, just copy it out into a new message from user
     AgentsFrontend.ensure_chat_window_is_open()
     local start_line_base0 = AgentsFrontend.chat_window.followup_starts_at_line_0indexed or 0
-    local user_message = AgentsFrontend.chat_window.buffer:get_lines_after(start_line_base0)
+    local user_message = AgentsFrontend.chat_window.buffer:get_lines_from(start_line_base0)
     AgentsFrontend.chat_window.buffer:scroll_cursor_to_end_of_buffer()
     vim.cmd("normal! o") -- move to end of buffer, add new line below to separate subsequent follow up response message
     -- log:trace("follow up content:", user_message)

@@ -37,7 +37,7 @@ end
 function BufferController0Indexed:get_all_lines()
     -- FYI add/reshape the line access method to new scenarios that you actually use
     -- i.e. maybe add
-    --    get_lines_after()
+    --    get_lines_from()
     --    get_lines_before()
     --    get_lines_in_range()
 
