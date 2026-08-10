@@ -169,6 +169,7 @@ function FimRequestBuilder:fim_request()
     elseif model == models.GPTOSS
         or model == models.GEMMA4
         or model == models.GLM
+        or model == models.MUSE
     then
         if USE_GPTOSS_RAW and model == models.GPTOSS then
             curl_params:set_raw_completions()
@@ -188,6 +189,10 @@ function FimRequestBuilder:fim_request()
             elseif model == models.GLM or model == models.GEMMA4 then
                 body.chat_template_kwargs = {
                     -- confirmed works with glm
+                    enable_thinking = level ~= "off"
+                }
+            elseif model == models.MUSE then
+                body.chat_template_kwargs = {
                     enable_thinking = level ~= "off"
                 }
             end

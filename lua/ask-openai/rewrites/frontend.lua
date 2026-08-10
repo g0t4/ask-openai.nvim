@@ -465,6 +465,8 @@ local function ask_rewrite_command(opts)
             body_overrides = model_params.new_deepseek4flash_chat_body_llama_server(_body, reasoning_level)
         elseif model == models.GLM then
             body_overrides = model_params.new_glm47flash_chat_body_llama_server(_body, reasoning_level)
+        elseif model == models.MUSE then
+            body_overrides = model_params.new_muse_glimmer_30b_chat_body_llama_server(_body, reasoning_level)
         else
             error("model not supported" .. tostring(model))
         end

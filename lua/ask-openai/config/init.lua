@@ -35,6 +35,7 @@ local MODEL_PATTERNS = {
     { pattern = "/GLM%-4.7%-Flash",      abbrev = "glm" },
     -- ggml-org/DeepSeek-V4-Flash-0731-GGUF
     { pattern = "/DeepSeek%-V4%-Flash", abbrev = "deepseek" },
+    { pattern = "/Muse%-Glimmer", abbrev = "muse" },
 }
 
 --- Abbreviate a raw model name using pattern matching, or return the original name.
@@ -129,6 +130,7 @@ function M.get_endpoints()
     local gemma4_url = "http://ask.lan:8011"
     local glm_url = "http://ask.lan:8010"
     local deepseek_url = "http://ask.lan:8014"
+    local muse_url = "http://ask.lan:8016"
 
     -- FYI fine by me to collapse Endpoint into a string
     -- I used to handle name here too but that became a hot mess due to async vs sync
@@ -152,6 +154,9 @@ function M.get_endpoints()
         },
         glm = {
             base_url = glm_url,
+        },
+        muse = {
+            base_url = muse_url,
         },
     }
 end

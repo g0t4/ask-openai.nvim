@@ -113,6 +113,7 @@ function M.new_deepseek4flash_chat_body_llama_server(request_body, effort)
         local message = "PSM is for FIM only, aborting deepseek agent"
         error(message)
     end
+    log:info("recommended", recommended)
 
     return default_to_recommended(request_body, recommended)
 end
@@ -183,6 +184,27 @@ function M.new_qwen3coder_llama_server_chat_body(request_body, reasoning_level) 
         top_p = 0.8,
         top_k = 20,
         --  FYI I inlined these values into predictions handler, it's not using chat completions endpoint so not gonna conflate the two here
+    }
+    local body = default_to_recommended(request_body, recommended)
+    return set_enable_thinking(body, reasoning_level)
+end
+
+---@param request_body table
+---@param reasoning_level string
+---@return table
+function M.new_muse_glimmer_30b_chat_body_llama_server(request_body, reasoning_level)
+    throw_if_no_messages(request_body)
+    -- Best practices: https://huggingface.co/meta-models/Muse-Glimmer-30B-GGUF
+    -- Sampling Parameters:
+    --   temperature = 1.0
+    --   top_p = 0.95
+    --   top_k = 64
+    -- Reasoning strength can be defined as part of system prompt as `Reasoning strength: <value>`
+    -- Supported levels: low / medium / high / xhigh
+    local recommended = {
+        temperature = 1.0,
+        top_p = 0.95,
+        top_k = 64,
     }
     local body = default_to_recommended(request_body, recommended)
     return set_enable_thinking(body, reasoning_level)

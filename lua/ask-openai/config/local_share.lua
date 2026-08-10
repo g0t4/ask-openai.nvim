@@ -34,6 +34,7 @@ local function load_config()
         [models.GLM] = {},
         [models.GEMMA4] = {},
         [models.DEEPSEEK] = {},
+        [models.MUSE] = {},
     }
 
     if file_exists(config_path) then
@@ -238,6 +239,8 @@ local function _cycle_reasoning_level(current, model)
         return cycle(models.CYCLE_GPTOSS_REASONING_EFFORT, current)
     elseif model == models.DEEPSEEK then
         return cycle(models.CYCLE_DEEPSEEK_REASONING_EFFORT, current)
+    elseif model == models.MUSE then
+        return cycle(models.CYCLE_MUSE_REASONING_EFFORT, current)
     else
         return cycle(models.CYCLE_REASONING_ON_OFF, current)
     end

@@ -1,11 +1,12 @@
 local M = {}
 
---- @alias ModelName "gptoss" | "qwen" | "glm" | "gemma4" | "deepseek"
+--- @alias ModelName "gptoss" | "qwen" | "glm" | "gemma4" | "deepseek" | "muse"
 M.GPTOSS = "gptoss"
 M.QWEN = "qwen"
 M.GLM = "glm"
 M.GEMMA4 = "gemma4"
 M.DEEPSEEK = "deepseek"
+M.MUSE = "muse"
 
 M.CYCLE = {
     M.GPTOSS,
@@ -13,6 +14,7 @@ M.CYCLE = {
     M.GEMMA4,
     M.GLM,
     M.DEEPSEEK,
+    M.MUSE,
 }
 
 --- @type ModelName
@@ -57,4 +59,21 @@ M.CYCLE_DEEPSEEK_REASONING_EFFORT = {
     M.DEEPSEEK_REASONING_EFFORT.MAX,
     M.DEEPSEEK_REASONING_EFFORT.PSM,
 }
+
+--- @enum MUSE_REASONING_EFFORT
+M.MUSE_REASONING_EFFORT = {
+    OFF = M.THINKING_OFF,
+    LOW = "low",
+    MEDIUM = "medium",
+    HIGH = "high",
+    XHIGH = "xhigh",
+}
+M.CYCLE_MUSE_REASONING_EFFORT = {
+    M.MUSE_REASONING_EFFORT.OFF,
+    M.MUSE_REASONING_EFFORT.LOW,
+    M.MUSE_REASONING_EFFORT.MEDIUM,
+    M.MUSE_REASONING_EFFORT.HIGH,
+    M.MUSE_REASONING_EFFORT.XHIGH,
+}
+
 return M
