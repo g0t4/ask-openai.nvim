@@ -167,8 +167,8 @@ function BufferController:replace_with_styled_lines_after(start_line_inclusive_b
     self:scroll_cursor_to_end_of_buffer()
 end
 
-function BufferController:get_lines_after(line_number_0indexed)
-    -- I can extend this to a line range later... for now I just want all lines after a line #
+function BufferController:get_lines_from(line_number_0indexed)
+    -- I can extend this to a line range later... for now I just want all lines from a line # (inclusive) to the end
     local lines = vim.api.nvim_buf_get_lines(self.buffer_number, line_number_0indexed, -1, false)
     return table.concat(lines, "\n")
 end
