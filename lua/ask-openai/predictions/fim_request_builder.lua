@@ -218,7 +218,8 @@ function FimRequestBuilder:fim_request()
             curl_params:set_chat_completions()
             -- apply deepseek recommended sampling + reasoning kwargs (mirrors agents/rewrite frontend)
             --   handles: temperature/top_p/max_tokens + chat_template_kwargs for enable_thinking & reasoning_effort
-            params.new_deepseek4flash_chat_body_llama_server(body, level)
+            body = params.new_deepseek4flash_chat_body_llama_server(body, level)
+            curl_params.body = body
         end
     else
         error("MODEL NOT SUPPORTED '" .. tostring(model) .. "'")
