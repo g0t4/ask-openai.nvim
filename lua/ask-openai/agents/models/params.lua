@@ -190,9 +190,9 @@ function M.new_qwen3coder_llama_server_chat_body(request_body, reasoning_level) 
 end
 
 ---@param request_body table
----@param reasoning_level string
+---@param effort string
 ---@return table
-function M.new_muse_glimmer_30b_chat_body_llama_server(request_body, reasoning_level)
+function M.new_muse_glimmer_30b_chat_body_llama_server(request_body, effort)
     throw_if_no_messages(request_body)
     -- Best practices: https://huggingface.co/meta-models/Muse-Glimmer-30B-GGUF
     -- Sampling Parameters:
@@ -206,8 +206,23 @@ function M.new_muse_glimmer_30b_chat_body_llama_server(request_body, reasoning_l
         top_p = 0.95,
         top_k = 64,
     }
-    local body = default_to_recommended(request_body, recommended)
-    return set_enable_thinking(body, reasoning_level)
+
+    -- TODO verify these work with the chat template for muse glimmer in llama-server
+    local efforts = models.MUSE_REASONING_EFFORT
+    if effort == efforts.OFF then
+        -- FYI stock muse template does not have a toggle to turn off thinking, I had to modify the jinja to do this
+        recommended.chat_template_kwargs.enable_thinking = false
+    elseif effort == efforts.HIGH
+        or effort == efforts.MAX then
+        recommended.chat_template_kwargs.reasoning_strength = effort
+        -- else "low" => default w/o high/max system prompt mods
+    elseif effort == efforts.PSM then
+        local message = "PSM is for FIM only, aborting deepseek agent"
+        error(message)
+    end
+    log:info("recommended", recommended)
+
+    return default_to_recommended(request_body, recommended)
 end
 
 return M
