@@ -35,8 +35,13 @@ end
 function BufferController:append_styled_lines(lines)
     local start_line_base0 = self:get_line_count()
     if start_line_base0 == 1 then
-        -- edge case, first line is not actually used in a new buffer (it's legit empty)
-        start_line_base0 = 0
+        -- edge case: a fresh buffer's single line is a phantom empty line
+        -- that should be replaced (start at 0). But a single *real* line
+        -- should have new lines appended after it (start at 1).
+        local buffer_is_empty = self:get_lines_from(0) == ""
+        if buffer_is_empty then
+            start_line_base0 = 0
+        end
     end
     self:replace_with_styled_lines_after(start_line_base0, lines)
 end

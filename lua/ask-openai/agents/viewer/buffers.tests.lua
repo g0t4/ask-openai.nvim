@@ -146,14 +146,13 @@ describe("BufferController:append_styled_lines", function()
         should.be_equal(1, controller:get_line_count())
     end)
 
-    -- GNARLY: a fresh buffer has count == 1 (phantom line), but so does a buffer
-    -- with exactly one *real* line. The == 1 check can't tell them apart, so a
-    -- single-line buffer's only line gets replaced rather than appended after.
-    it("buffer with a single real line gets that line replaced (== 1 edge case)", function()
-        -- TODO! resolve this issue
+    -- A fresh buffer has count == 1 (phantom empty line) AND a buffer with one
+    -- *real* line has count == 1. Distinguish by content: empty gets replaced
+    -- (start at 0), non-empty appends after (start at 1).
+    it("buffer with a single real line appends after it, keeping the line", function()
         local controller = new_buffer_controller_with_lines({ "real" })
         controller:append_styled_lines(new_lines_builder({ "one", "two" }))
-        should.be_equal("one\ntwo", controller:get_lines_from(0))
+        should.be_equal("real\none\ntwo", controller:get_lines_from(0))
     end)
 
     it("moves the cursor to the last line of the buffer", function()
