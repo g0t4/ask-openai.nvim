@@ -133,6 +133,7 @@ describe("BufferController:append_styled_lines", function()
     end)
 
     it("append to a pre-populated buffer goes after existing content", function()
+        -- this feels duplicative (leave it for now) in that it is in part testing the behavior of new_buffer_with_lines
         local controller = new_buffer_controller_with_lines({ "alpha", "beta" })
         controller:append_styled_lines(new_lines_builder({ "one", "two" }))
         should.be_equal("alpha\nbeta\none\ntwo", controller:get_lines_from(0))
@@ -149,6 +150,7 @@ describe("BufferController:append_styled_lines", function()
     -- with exactly one *real* line. The == 1 check can't tell them apart, so a
     -- single-line buffer's only line gets replaced rather than appended after.
     it("buffer with a single real line gets that line replaced (== 1 edge case)", function()
+        -- TODO! resolve this issue
         local controller = new_buffer_controller_with_lines({ "real" })
         controller:append_styled_lines(new_lines_builder({ "one", "two" }))
         should.be_equal("one\ntwo", controller:get_lines_from(0))
