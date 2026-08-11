@@ -27,6 +27,13 @@ describe("E2E - FIM predictions", function()
 
         -- * Setup: configure FIM model
         local api = require("ask-openai.api")
+        -- Guard: FIM predictions must be enabled (the request path short-circuits when disabled,
+        --   which would otherwise show up as a confusing 30s timeout instead of the real cause).
+        assert.are_equal(
+            true,
+            api.are_predictions_enabled(),
+            "FIM/predictions are DISABLED. Enable them (e.g. :AskEnablePredictions or :AskTogglePredictions) before running this e2e FIM test."
+        )
         local fim_model = api.get_fim_model() or "qwen"
         api.set_fim_model(fim_model)
 
