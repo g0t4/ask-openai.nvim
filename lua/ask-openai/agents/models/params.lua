@@ -207,18 +207,13 @@ function M.new_muse_glimmer_30b_chat_body_llama_server(request_body, effort)
         top_k = 64,
     }
 
-    -- TODO verify these work with the chat template for muse glimmer in llama-server
     local efforts = models.MUSE_REASONING_EFFORT
     if effort == efforts.OFF then
         -- FYI stock muse template does not have a toggle to turn off thinking, I had to modify the jinja to do this
-        recommended.chat_template_kwargs.enable_thinking = false
-    elseif effort == efforts.HIGH
-        or effort == efforts.MAX then
+        error("think off is not supported and don't add it unless upstream modifies the template")
+    else
+        error("TODO verify reasoning_strength works")
         recommended.chat_template_kwargs.reasoning_strength = effort
-        -- else "low" => default w/o high/max system prompt mods
-    elseif effort == efforts.PSM then
-        local message = "PSM is for FIM only, aborting deepseek agent"
-        error(message)
     end
     log:info("recommended", recommended)
 
