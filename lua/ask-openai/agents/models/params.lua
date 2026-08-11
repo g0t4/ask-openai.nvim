@@ -231,10 +231,23 @@ function M.body_for_muse_glimmer(request_body, effort)
 
     local efforts = models.MUSE_REASONING_EFFORT
     if effort == efforts.OFF then
-        -- FYI stock muse template does not have a toggle to turn off thinking, I had to modify the jinja to do this
-        log:white_on_red("think off is not supported and don't add it unless upstream modifies the template")
-        -- TODO need to add a final assistant message with prefill like my fish test script in muse dir
-        error("TODO off messages")
+        -- FYI stock muse template does not have a toggle to turn off thinking... so I found a way to mash this into the prefill of final assistant message
+        log:white_on_red("TEST THINKING OFF SUPPORT")
+        -- TODO! wire this into FIM completions too
+        local prefill_msg = {
+            role = "assistant",
+            content = "",
+
+            -- see ~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/backends/llama_cpp/jinja/muse/completion_tests/muse-no-reason.fish
+            -- { "role": "assistant", "reasoning_content": "<|eom|><|start|>assistant to=user<|message|>", "content": "" }
+            reasoning_content = "<|eom|><|start|>assistant to=user<|message|>", -- EOM stop sthinking and then goes right into final response to user here! this gets mashed in after the default start prefill for a final assistant turn
+            -- TODO add tests of this in lua plenary tests to make sure no thinking comes back and __verbose.generation_prompt is as I expect (this is an extract copy of this last prefill message that inadvertently is good for testing)
+        }
+        if not request_body.messages or not #request_body.messages > 0 then
+            error("cannot setup prefill if no messages are provided")
+        end
+        table.insert(request_body.messages, prefill_msg) -- at end of list
+        error("YOU NEED TO TEST THIS for no thinking")
     else
         log:white_on_red("TODO verify reasoning_strength works")
         recommended.chat_template_kwargs.reasoning_strength = effort
