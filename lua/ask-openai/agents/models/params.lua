@@ -212,7 +212,7 @@ function M.new_muse_glimmer_30b_chat_body_llama_server(request_body, effort)
         -- FYI stock muse template does not have a toggle to turn off thinking, I had to modify the jinja to do this
         error("think off is not supported and don't add it unless upstream modifies the template")
     else
-        error("TODO verify reasoning_strength works")
+        -- error("TODO verify reasoning_strength works")
         recommended.chat_template_kwargs.reasoning_strength = effort
     end
     log:info("recommended", recommended)
