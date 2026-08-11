@@ -49,6 +49,8 @@ function M.body_for(model, generic_body, reasoning_level)
         return M.body_for_glm47flash(generic_body, reasoning_level)
     elseif model == models.MUSE then
         return M.body_for_muse_glimmer(generic_body, reasoning_level)
+    elseif model == models.NEMO then
+        return M.body_for_nemo_lightning(generic_body, reasoning_level)
     end
     error("model not supported" .. tostring(model))
 end
@@ -255,6 +257,25 @@ function M.body_for_muse_glimmer(request_body, effort)
     log:info("recommended", recommended)
 
     return default_to_recommended(request_body, recommended)
+end
+
+---@param request_body table
+---@param reasoning_level string
+---@return table
+function M.body_for_nemo_lightning(request_body, reasoning_level)
+    throw_if_no_messages(request_body)
+    -- Model card: https://huggingface.co/nvidia/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-BF16
+    --   Recommended Sampling: temperature = 1.0, top_p = 0.95
+    --   Reasoning Mode: Configurable on/off via chat template (enable_thinking True/False)
+    --   FYI checked the bundled chat_template.jinja: it only exposes enable_thinking
+    --     (and truncate_history_thinking) -- NO reasoning_effort/strength/level kwarg exists,
+    --     so nemo-lightning is a plain on/off thinking model like GLM/GEMMA4.
+    local recommended = {
+        temperature = 1.0,
+        top_p = 0.95,
+    }
+    local body = default_to_recommended(request_body, recommended)
+    return set_enable_thinking(body, reasoning_level)
 end
 
 return M

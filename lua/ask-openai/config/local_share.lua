@@ -35,6 +35,7 @@ local function load_config()
         [models.GEMMA4] = {},
         [models.DEEPSEEK] = {},
         [models.MUSE] = {},
+        [models.NEMO] = {},
     }
 
     if file_exists(config_path) then

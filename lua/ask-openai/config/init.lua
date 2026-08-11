@@ -36,6 +36,8 @@ local MODEL_PATTERNS = {
     -- ggml-org/DeepSeek-V4-Flash-0731-GGUF
     { pattern = "/DeepSeek%-V4%-Flash", abbrev = "deepseek" },
     { pattern = "/Muse%-Glimmer", abbrev = "muse" },
+    -- ggml-org/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-GGUF:Q4_K_M
+    { pattern = "/NVIDIA%-Nemotron", abbrev = "nemo-lightning" },
 }
 
 --- Abbreviate a raw model name using pattern matching, or return the original name.
@@ -131,6 +133,7 @@ function M.get_endpoints()
     local glm_url = "http://ask.lan:8010"
     local deepseek_url = "http://ask.lan:8014"
     local muse_url = "http://ask.lan:8016"
+    local nemo_lightning_url = "http://build21.lan:8017"
 
     -- FYI fine by me to collapse Endpoint into a string
     -- I used to handle name here too but that became a hot mess due to async vs sync
@@ -157,6 +160,9 @@ function M.get_endpoints()
         },
         muse = {
             base_url = muse_url,
+        },
+        ["nemo-lightning"] = {
+            base_url = nemo_lightning_url,
         },
     }
 end

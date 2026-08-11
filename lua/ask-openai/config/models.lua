@@ -1,12 +1,13 @@
 local M = {}
 
---- @alias ModelName "gptoss" | "qwen" | "glm" | "gemma4" | "deepseek" | "muse"
+--- @alias ModelName "gptoss" | "qwen" | "glm" | "gemma4" | "deepseek" | "muse" | "nemo-lightning"
 M.GPTOSS = "gptoss"
 M.QWEN = "qwen"
 M.GLM = "glm"
 M.GEMMA4 = "gemma4"
 M.DEEPSEEK = "deepseek"
 M.MUSE = "muse"
+M.NEMO = "nemo-lightning"
 
 M.CYCLE = {
     M.GPTOSS,
@@ -15,6 +16,7 @@ M.CYCLE = {
     M.GLM,
     M.DEEPSEEK,
     M.MUSE,
+    M.NEMO,
 }
 
 --- @type ModelName
