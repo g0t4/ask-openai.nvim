@@ -456,25 +456,10 @@ local function ask_rewrite_command(opts)
 
         local model = api.get_rewrite_model()
         local reasoning_level = context.includes:get_reasoning_level() or api.get_rewrite_reasoning_level()
-        if model == models.GPTOSS then
-            body = model_params.body_for_gptoss(generic_body, reasoning_level)
-        elseif model == models.GEMMA4 then
-            body = model_params.body_for_gemma4(generic_body, reasoning_level)
-        elseif model == models.QWEN then
-            body = model_params.body_for_qwen3coder(generic_body, reasoning_level)
-        elseif model == models.DEEPSEEK then
-            body = model_params.body_for_deepseek4flash(generic_body, reasoning_level)
-        elseif model == models.GLM then
-            body = model_params.body_for_glm47flash(generic_body, reasoning_level)
-        elseif model == models.MUSE then
-            body = model_params.body_for_muse_glimmer(generic_body, reasoning_level)
-        else
-            error("model not supported" .. tostring(model))
-        end
 
         local base_url = config.get_base_url(model)
         RewriteFrontend.last_request = CurlRequest:new({
-            body = body,
+            body = model_params.body_for(model, generic_body, reasoning_level),
             base_url = base_url,
             endpoint = CompletionsEndpoints.v1_chat_completions,
             type = "rewrite",

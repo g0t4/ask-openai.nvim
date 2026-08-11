@@ -32,6 +32,27 @@ local function set_enable_thinking(request_body, reasoning_level)
     return request_body
 end
 
+---@param model string
+---@param generic_body table
+---@param reasoning_level string
+---@return table
+function M.body_for(model, generic_body, reasoning_level)
+    if model == models.GPTOSS then
+        return M.body_for_gptoss(generic_body, reasoning_level)
+    elseif model == models.GEMMA4 then
+        return M.body_for_gemma4(generic_body, reasoning_level)
+    elseif model == models.QWEN then
+        return M.body_for_qwen3coder(generic_body, reasoning_level)
+    elseif model == models.DEEPSEEK then
+        return M.body_for_deepseek4flash(generic_body, reasoning_level)
+    elseif model == models.GLM then
+        return M.body_for_glm47flash(generic_body, reasoning_level)
+    elseif model == models.MUSE then
+        return M.body_for_muse_glimmer(generic_body, reasoning_level)
+    end
+    error("model not supported" .. tostring(model))
+end
+
 ---@param request_body table
 ---@return table
 function M.body_for_gptoss(request_body, reasoning_level)
@@ -205,14 +226,17 @@ function M.body_for_muse_glimmer(request_body, effort)
         temperature = 1.0,
         top_p = 0.95,
         top_k = 64,
+        chat_template_kwargs = {},
     }
 
     local efforts = models.MUSE_REASONING_EFFORT
     if effort == efforts.OFF then
         -- FYI stock muse template does not have a toggle to turn off thinking, I had to modify the jinja to do this
-        error("think off is not supported and don't add it unless upstream modifies the template")
+        log:white_on_red("think off is not supported and don't add it unless upstream modifies the template")
+        -- TODO need to add a final assistant message with prefill like my fish test script in muse dir
+        error("TODO off messages")
     else
-        -- error("TODO verify reasoning_strength works")
+        log:white_on_red("TODO verify reasoning_strength works")
         recommended.chat_template_kwargs.reasoning_strength = effort
     end
     log:info("recommended", recommended)

@@ -26,6 +26,7 @@ local RxAccumulatedMessage = require("ask-openai.agents.messages.rx")
 local ToolCall = require("ask-openai.agents.tools.tool_call")
 local rag_instructions = require("ask-openai.frontends.prompts.rag_instructions")
 local inspect = require("devtools.inspect")
+local config = require("ask-openai.config")
 
 require("ask-openai.helpers.buffers")
 
@@ -249,25 +250,9 @@ local function ask_agent_command(opts)
 
         local model = api.get_agents_model()
         local reasoning_level = context.includes:get_reasoning_level() or api.get_agents_reasoning_level()
-        if model == models.GPTOSS then
-            body = model_params.body_for_gptoss(generic_body, reasoning_level)
-        elseif model == models.GEMMA4 then
-            body = model_params.body_for_gemma4(generic_body, reasoning_level)
-        elseif model == models.QWEN then
-            body = model_params.body_for_qwen3coder(generic_body, reasoning_level)
-        elseif model == models.DEEPSEEK then
-            body = model_params.body_for_deepseek4flash(generic_body, reasoning_level)
-        elseif model == models.GLM then
-            body = model_params.body_for_glm47flash(generic_body, reasoning_level)
-        elseif model == models.MUSE then
-            body = model_params.body_for_muse_glimmer(generic_body, reasoning_level)
-        else
-            error("model not supported" .. tostring(model))
-        end
 
-        local config = require("ask-openai.config")
         local base_url = config.get_base_url(model)
-        local new_trace = AgentTrace:new(body, base_url)
+        local new_trace = AgentTrace:new(model_params.body_for(model, generic_body, reasoning_level), base_url)
         AgentsFrontend.trace = new_trace -- FYI `.trace` is intended for rare circumstances only, i.e. cancel action which has no context to pass a trace
         -- log:info("sending", vim.inspect(AgentsFrontend.trace))
         AgentsFrontend.then_get_assistant_response(new_trace)
