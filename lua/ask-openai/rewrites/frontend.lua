@@ -446,34 +446,35 @@ local function ask_rewrite_command(opts)
         local user_message = explainer .. "\n" .. user_prompt .. "\n\n" .. code_context .. code_caveat
         table.insert(messages, TxChatMessage:user(user_message))
 
-        local _body = {
+        -- TODO look into a request builder like with CurlParamsBuilder in FimRequestBuilder
+        local body = {
+            -- set messages here so that we can modify messages in the model specific request customization (i.e. prefill assistant message as last msg)
             messages = messages,
             model = "", -- irrelevant for llama-server
             verbose = true, -- my llama-server flag to include __verbose one-off (instead of needing --verbose on server start)
         }
 
-        local body_overrides
         local model = api.get_rewrite_model()
         local reasoning_level = context.includes:get_reasoning_level() or api.get_rewrite_reasoning_level()
         if model == models.GPTOSS then
-            body_overrides = model_params.new_gptoss_chat_body_llama_server(_body, reasoning_level)
+            body = model_params.new_gptoss_chat_body_llama_server(body, reasoning_level)
         elseif model == models.GEMMA4 then
-            body_overrides = model_params.new_gemma4_chat_body_llama_server(_body, reasoning_level)
+            body = model_params.new_gemma4_chat_body_llama_server(body, reasoning_level)
         elseif model == models.QWEN then
-            body_overrides = model_params.new_qwen3coder_llama_server_chat_body(_body, reasoning_level)
+            body = model_params.new_qwen3coder_llama_server_chat_body(body, reasoning_level)
         elseif model == models.DEEPSEEK then
-            body_overrides = model_params.new_deepseek4flash_chat_body_llama_server(_body, reasoning_level)
+            body = model_params.new_deepseek4flash_chat_body_llama_server(body, reasoning_level)
         elseif model == models.GLM then
-            body_overrides = model_params.new_glm47flash_chat_body_llama_server(_body, reasoning_level)
+            body = model_params.new_glm47flash_chat_body_llama_server(body, reasoning_level)
         elseif model == models.MUSE then
-            body_overrides = model_params.new_muse_glimmer_30b_chat_body_llama_server(_body, reasoning_level)
+            body = model_params.new_muse_glimmer_30b_chat_body_llama_server(body, reasoning_level)
         else
             error("model not supported" .. tostring(model))
         end
 
         local base_url = config.get_base_url(model)
         RewriteFrontend.last_request = CurlRequest:new({
-            body = body_overrides,
+            body = body,
             base_url = base_url,
             endpoint = CompletionsEndpoints.v1_chat_completions,
             type = "rewrite",
