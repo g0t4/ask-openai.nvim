@@ -89,6 +89,7 @@ class TraceBrowser:
         table.add_row("d", "delete current trace (trash)")
         table.add_row("Enter", "open current trace in chat_viewer")
         table.add_row("a", "open current trace in chat_viewer with --all flag")
+        table.add_row("j", "dump current trace JSON pretty-printed via jq")
         table.add_row("←/→", "older / newer")
         table.add_row("h", "help")
 
@@ -211,6 +212,16 @@ class TraceBrowser:
         except Exception as e:
             print(f"Error deleting trace: {e}")
 
+    def dump_trace_pretty(self) -> None:
+        trace = self.current_trace()
+        if not trace:
+            rich.print("[dim]No trace to dump.[/]")
+            return
+        try:
+            subprocess.run(["jq", ".", str(trace)], check=False)
+        except FileNotFoundError:
+            print("jq command not found in PATH")
+
     def on_char(self, char):
         if char == b'h':
             self.print_help()
@@ -220,6 +231,8 @@ class TraceBrowser:
             self.copy_take_command()
         elif char == b'd':
             self.delete_current_trace()
+        elif char == b'j':
+            self.dump_trace_pretty()
         elif char == b'a':
             self.show_chat_all()
         elif char == b'\n':
