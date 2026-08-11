@@ -192,9 +192,9 @@ function FimRequestBuilder:fim_request()
                     enable_thinking = level ~= "off"
                 }
             elseif model == models.MUSE then
-                -- TODO need to use reasoning_strength (not effort, not level, because every goddamn model needs its own motherfucking name)
-                -- TODO there is no thinking off
-                error("THIS IS FUCKING WRONG... fix reasoning_strength")
+                -- TODO there is no thinking off but I have a fix
+                -- TODO wire in body mods used by rewrite and agent frontends (and use here too I think I can do it all in one spot actually)
+                log:white_on_red("REVISIT and FIX reasoning_strength for muse glimmer 30b")
                 body.chat_template_kwargs = {
                     enable_thinking = level ~= "off"
                 }
