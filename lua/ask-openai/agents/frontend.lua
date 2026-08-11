@@ -240,7 +240,7 @@ local function ask_agent_command(opts)
         -- FYI user request works well regardless if it is first or last user message
         table.insert(messages, TxChatMessage:user(user_message))
 
-        local body = {
+        local generic_body = {
             messages = messages,
             model = "", -- irrelevant for llama-server
             tools = tool_definitions,
@@ -250,17 +250,17 @@ local function ask_agent_command(opts)
         local model = api.get_agents_model()
         local reasoning_level = context.includes:get_reasoning_level() or api.get_agents_reasoning_level()
         if model == models.GPTOSS then
-            body = model_params.body_for_gptoss(body, reasoning_level)
+            body = model_params.body_for_gptoss(generic_body, reasoning_level)
         elseif model == models.GEMMA4 then
-            body = model_params.body_for_gemma4(body, reasoning_level)
+            body = model_params.body_for_gemma4(generic_body, reasoning_level)
         elseif model == models.QWEN then
-            body = model_params.body_for_qwen3coder(body, reasoning_level)
+            body = model_params.body_for_qwen3coder(generic_body, reasoning_level)
         elseif model == models.DEEPSEEK then
-            body = model_params.body_for_deepseek4flash(body, reasoning_level)
+            body = model_params.body_for_deepseek4flash(generic_body, reasoning_level)
         elseif model == models.GLM then
-            body = model_params.body_for_glm47flash(body, reasoning_level)
+            body = model_params.body_for_glm47flash(generic_body, reasoning_level)
         elseif model == models.MUSE then
-            body = model_params.body_for_muse_glimmer(body, reasoning_level)
+            body = model_params.body_for_muse_glimmer(generic_body, reasoning_level)
         else
             error("model not supported" .. tostring(model))
         end
