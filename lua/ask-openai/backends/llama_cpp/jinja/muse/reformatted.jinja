@@ -1,13 +1,13 @@
 {%- macro render_content(content) -%}
   {%- if content is string -%}
     {{- content -}}
-    {%- elif content is not none -%}
+  {%- elif content is not none -%}
     {%- for part in content -%}
       {%- if part['type'] == 'image' -%}
         {{- '<|patch|>' -}}
-        {%- elif part['type'] == 'video' -%}
+      {%- elif part['type'] == 'video' -%}
         {{- '<|video|>' -}}
-        {%- elif part['type'] == 'text' -%}
+      {%- elif part['type'] == 'text' -%}
         {{- part['text'] -}}
       {%- endif -%}
     {%- endfor -%}
@@ -24,14 +24,14 @@
     {%- if v is boolean -%}
       {%- if v -%}
         true
-        {%- else -%}
+      {%- else -%}
         false
       {%- endif -%}
-      {%- elif v is none -%}
+    {%- elif v is none -%}
       null
-      {%- elif v is mapping or(v is iterable and v is not string) -%}
+    {%- elif v is mapping or(v is iterable and v is not string) -%}
       {{- v | tojson -}}
-      {%- else -%}
+    {%- else -%}
       {{- v -}}
     {%- endif -%}
     {{- '</atem:parameter>\n' -}}
@@ -104,7 +104,7 @@
   {{- '\nKnowledge cutoff: ' + kc + '.' -}}
   {%- if current_date is defined and current_date -%}
     {{- '\nCurrent date: ' + current_date + '.' -}}
-    {%- elif strftime_now is defined -%}
+  {%- elif strftime_now is defined -%}
     {{- '\nCurrent date: ' + strftime_now('%Y-%m-%d') + '.' -}}
   {%- endif -%}
   {{- '\n\n' -}}
@@ -132,11 +132,11 @@
     {{- '\n\n' -}}
     {{- render_system_meta(tools) -}}
     {{- '<|eot|>' -}}
-    {%- elif role == 'user' -%}
+  {%- elif role == 'user' -%}
     {{- '<|start|>user<|message|>' -}}
     {{- render_content(message['content']) -}}
     {{- '<|eot|>' -}}
-    {%- elif role == 'tool' -%}
+  {%- elif role == 'tool' -%}
     {%- set tname = message.get('name') -%}
     {%- if not tname -%}
       {%- set tcid = message.get('tool_call_id') -%}
@@ -155,7 +155,7 @@
     {{- '<|start|>tool ' + tname + '<|message|><tool_output name="' + tname + '">\n' -}}
     {{- render_content(message['content']) -}}
     {{- '\n</tool_output><|eot|>' -}}
-    {%- elif role == 'assistant' -%}
+  {%- elif role == 'assistant' -%}
     {%- if message.get('reasoning_content') -%}
       {{- '<|start|>assistant to=self<|message|>' + message['reasoning_content'] + '<|eom|>' -}}
     {%- endif -%}
@@ -165,11 +165,11 @@
         {{- render_atem(tc) -}}
         {%- if loop.last -%}
           {{- end_token -}}
-          {%- else -%}
+        {%- else -%}
           {{- '<|eom|>' -}}
         {%- endif -%}
       {%- endfor -%}
-      {%- else -%}
+    {%- else -%}
       {%- set recipient = message.get('recipient') or 'user' -%}
       {%- set end_turn = message.get('end_turn') -%}
       {%- if end_turn is none -%}

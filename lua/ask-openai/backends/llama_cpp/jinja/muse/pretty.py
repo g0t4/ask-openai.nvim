@@ -126,7 +126,11 @@ def build_pretty(src: str) -> str:
                 (prev[0] == "tag" and is_right_trim(prev[1]) and is_left_trim(text))
                 or (prev[0] == "data" and is_left_trim(text))
             )
-            content = ("  " * depth) + text
+            # `elif`/`else` continue an `if`/`for` chain: indent them to match
+            # their opener. The opener already bumped `depth` (its body sits one
+            # level deeper), and its `endif`/`endfor` hasn't fired yet.
+            indent = depth - 1 if keyword in ("elif", "else") else depth
+            content = ("  " * max(0, indent)) + text
             if can_break or not segments:
                 segments.append(content)
             else:
