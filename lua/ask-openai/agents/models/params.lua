@@ -34,7 +34,7 @@ end
 
 ---@param request_body table
 ---@return table
-function M.new_gptoss_chat_body_llama_server(request_body, reasoning_level)
+function M.body_for_gptoss(request_body, reasoning_level)
     throw_if_no_messages(request_body)
 
 
@@ -60,7 +60,7 @@ end
 
 ---@param request_body table
 ---@return table
-function M.new_deepseek4flash_chat_body_llama_server(request_body, effort)
+function M.body_for_deepseek4flash(request_body, effort)
     throw_if_no_messages(request_body)
 
     local recommended = {
@@ -120,7 +120,7 @@ end
 
 ---@param request_body table
 ---@return table
-function M.new_glm47flash_chat_body_llama_server(request_body, reasoning_level)
+function M.body_for_glm47flash(request_body, reasoning_level)
     throw_if_no_messages(request_body)
     -- FYI RECOMMMENDS: https://huggingface.co/zai-org/GLM-4.7-Flash#evaluation-parameters
     --   TODO! recommends preserved thinking mode for terminal bench (similar to what my intent here is)
@@ -144,7 +144,7 @@ end
 
 ---@param request_body table
 ---@return table
-function M.new_gemma4_chat_body_llama_server(request_body, reasoning_level)
+function M.body_for_gemma4(request_body, reasoning_level)
     throw_if_no_messages(request_body)
     --  Thinking config: https://huggingface.co/google/gemma-4-26B-A4B#2-thinking-mode-configuration
     --    Thinking is enabled by including the <|think|> token at the start of the system prompt. To disable thinking, remove the token.
@@ -169,7 +169,7 @@ end
 
 ---@param request_body table
 ---@return table
-function M.new_qwen3coder_llama_server_chat_body(request_body, reasoning_level) -- this is a duplicate
+function M.body_for_qwen3coder(request_body, reasoning_level) -- this is a duplicate
     throw_if_no_messages(request_body)
 
     local recommended = {
@@ -192,7 +192,7 @@ end
 ---@param request_body table
 ---@param effort string
 ---@return table
-function M.new_muse_glimmer_30b_chat_body_llama_server(request_body, effort)
+function M.body_for_muse_glimmer(request_body, effort)
     throw_if_no_messages(request_body)
     -- Best practices: https://huggingface.co/meta-models/Muse-Glimmer-30B-GGUF
     -- Sampling Parameters:
