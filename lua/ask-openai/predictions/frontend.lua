@@ -83,6 +83,8 @@ function PredictionsFrontend.ask_for_prediction(params)
     PredictionsFrontend.cancel_current_prediction(params.bufnr)
 
     if disable_predictions_for_buffer() then
+        -- FYI I would prefer if this function was never called to begin with, IOTW only register event handlers when the buffer allows predictions
+        --  that way other prediction related event handlers also are never called and we have one spot (BufEnter) to wire up events (or not)
         return
     end
 
