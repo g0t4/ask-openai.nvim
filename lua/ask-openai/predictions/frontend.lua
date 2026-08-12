@@ -538,6 +538,9 @@ function PredictionsFrontend.stop_predictions()
         return
     end
 
+    -- cancel any in-flight prediction (else will keep running and/or extmarks don't get cleared for completed predictions)
+    PredictionsFrontend.cancel_current_prediction(vim.fn.bufnr())
+
     -- FYI pcall blocks error propagation (returns status code, though in this case I don't care about that)
     -- remove event triggers
     pcall(vim.api.nvim_del_augroup_by_name, PREDICTIONS_AUGROUP) -- most del methods will throw if doesn't exist... so just ignore that
