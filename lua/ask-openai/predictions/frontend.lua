@@ -78,6 +78,7 @@ local function no_predictions()
         or vim.tbl_contains(IGNORE_FILE_TYPES, vim.bo.filetype)
 end
 
+---@param fim_request CurlRequest
 local function dump_rendered_prompt_only(fim_request)
     -- PRN? move this out into its own module, composed with new open_float
     local response = llama_server_client.apply_template(fim_request.base_url, fim_request.body)
