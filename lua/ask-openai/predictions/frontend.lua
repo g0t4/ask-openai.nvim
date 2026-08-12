@@ -71,7 +71,7 @@ local IGNORE_FILE_TYPES = {
 }
 
 ---@return boolean
-local function disable_predictions_for_buffer()
+local function no_predictions()
     -- Skip predictions in special buffer types and filetypes that are not code buffers.
     -- (Rename windows are currently not allowed; if needed, add an exception here.)
     return vim.tbl_contains(IGNORE_BUFFER_TYPES, vim.bo.buftype)
@@ -82,7 +82,7 @@ end
 function PredictionsFrontend.ask_for_prediction(params)
     PredictionsFrontend.cancel_current_prediction(params.bufnr)
 
-    if disable_predictions_for_buffer() then
+    if no_predictions() then
         -- FYI I would prefer if this function was never called to begin with, IOTW only register event handlers when the buffer allows predictions
         --  that way other prediction related event handlers also are never called and we have one spot (BufEnter) to wire up events (or not)
         return
