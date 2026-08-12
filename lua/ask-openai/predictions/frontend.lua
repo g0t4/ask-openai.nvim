@@ -59,27 +59,30 @@ local function is_rename_window()
     -- i.e. rename window (gather diff context too, i.e. what would help with renames?)
     return is_rename
 end
-local ignore_buftypes = {
+local IGNORE_BUFFER_TYPES = {
     "nofile", -- rename refactor popup window uses this w/o a filetype, also Dressing rename in nvimtree uses nofile
     "terminal",
 }
-local ignore_filetypes = {
+local IGNORE_FILE_TYPES = {
     "TelescopePrompt",
     "TelescopeResults",
     "NvimTree",
     "DressingInput", -- pickers from nui (IIRC) => in nvim tree add a file => the file name box is one of these
 }
+
+---@return boolean
+local function disable_predictions_for_buffer()
+    -- Skip predictions in special buffer types and filetypes that are not code buffers.
+    -- (Rename windows are currently not allowed; if needed, add an exception here.)
+    return vim.tbl_contains(IGNORE_BUFFER_TYPES, vim.bo.buftype)
+        or vim.tbl_contains(IGNORE_FILE_TYPES, vim.bo.filetype)
+end
+
 ---@param params? PredictionParameters
 function PredictionsFrontend.ask_for_prediction(params)
     PredictionsFrontend.cancel_current_prediction(params.bufnr)
 
-    -- * disable predictions in some windows
-    if vim.tbl_contains(ignore_buftypes, vim.bo.buftype)
-        or vim.tbl_contains(ignore_filetypes, vim.bo.filetype) then
-        -- -- but, allow renames:
-        -- if not is_rename_window() then
-        --     return
-        -- end
+    if disable_predictions_for_buffer() then
         return
     end
 
