@@ -89,14 +89,13 @@ function FimRequestBuilder:new(ps_chunk, rag_matches)
 end
 
 function FimRequestBuilder:fim_request()
-    local max_tokens = 200
     local body = {
         -- FYI keep model notes in MODELS.notes.md
         -- model = "", -- not needed in llama-server
         stream = true,
 
         -- * MAX tokens (very important)
-        max_tokens = max_tokens, -- works for: llama-server /completions, OpenAI's compat endpoints
+        -- max_tokens = 200, -- works for: llama-server /completions, OpenAI's compat endpoints
         -- n_predict = max_tokens, -- llama-server specific (avoid for consistency)
 
 
