@@ -88,27 +88,29 @@ function FimRequestBuilder:new(ps_chunk, rag_matches)
     return instance
 end
 
+FimRequestBuilder.SHOW_PROBABILITIES = true
 function FimRequestBuilder:fim_request()
     local body = {
         stream = true,
 
-        logprobs = true,
-        post_sampling_probs = true, -- map to 0 to 1.0 (appears to truncate anything that ~0 for probability
-        --  whereas if you turn off post_sampling_probs=false => will include very low probability tokens too and not normalize values
-        top_logprobs = 5,
-        n_cmpl = 1, -- OMFG yes I want a toggle to show them too and let me alt+1 to take first, 2 for second etc!
-        -- PRN
-        -- TODO! setup n_cmpl -- are these in parallel if fits context size?
-
-        -- PRN
+        -- things to try:
+        --
+        --  n_cmpl = 1, -- PRN add multi completion support and have a mechanism to show multiple completions when single line and then cycle otherwise?
+        --
         --  response_fields = ["field1", "field2", ... ] -- limit what is sent back, IIGC this helps with transmission overall and processing on client but it adds overhead to processing on server? or no?
         --  id_slot
         --  samplers (try dry w/ Qwen thinking loops?)
         --    mirostat, xtc - alternative samplers
         --    dry_* dry sampler params (if/when using)
         --  seed
-        --
     }
+    if FimRequestBuilder.SHOW_PROBABILITIES then
+        -- how much overhead does this add?
+        body.logprobs = true
+        body.post_sampling_probs = true -- map to 0 to 1.0 (appears to truncate anything that ~0 for probability
+        --  whereas if you turn off post_sampling_probs=false => will include very low probability tokens too and not normalize values
+        body.top_logprobs = 5
+    end
 
     local model = api.get_fim_model()
     local curl_params = CurlParamsBuilder:new(config.get_endpoints()[model].base_url, body)

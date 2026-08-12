@@ -147,26 +147,27 @@ function PredictionsFrontend.ask_for_prediction(params)
                 end
 
                 if sse_fields.done then
-                    local logging_tokens = require("ask-openai.logs.tokens")
+                    if FimRequestBuilder.SHOW_PROBABILITIES then
+                        local logging_tokens = require("ask-openai.logs.tokens")
+                        local outputs = logging_tokens.probability_colored_outputs(this_prediction.all_sses)
 
-                    -- Build both reasoning and content outputs in a single pass
-                    local outputs = logging_tokens.probability_colored_outputs(this_prediction.all_sses)
+                        -- Log reasoning with probability coloring if available
+                        if this_prediction.has_reasoning and outputs.reasoning ~= "" then
+                            log:info(ansi.yellow_bold("REASONING:\n"), outputs.reasoning)
+                        end
 
-                    -- Log reasoning with probability coloring if available
-                    if this_prediction.has_reasoning and outputs.reasoning ~= "" then
-                        log:info(ansi.yellow_bold("REASONING:\n"), outputs.reasoning)
-                    end
-                    -- Log prediction with probability coloring if available
-                    if outputs.content ~= "" then
-                        log:info(ansi.cyan_bold("PREDICTION:\n"), outputs.content)
-                    else
-                        -- FYI great way to test this, go to a line that is done (i.e. a return) and go into insert mode before the returned variable and it almost always suggests that is EOS (at least with qwen2.5-coder)
-                        log:trace(ansi.yellow_bold("DONE, empty prediction") .. ", done reason: '" .. (sse_fields.finish_reason or "") .. "'")
+                        -- Log prediction with probability coloring if available
+                        if outputs.content ~= "" then
+                            log:info(ansi.cyan_bold("PREDICTION:\n"), outputs.content)
+                        else
+                            -- FYI great way to test this, go to a line that is done (i.e. a return) and go into insert mode before the returned variable and it almost always suggests that is EOS (at least with qwen2.5-coder)
+                            log:trace(ansi.yellow_bold("DONE, empty prediction") .. ", done reason: '" .. (sse_fields.finish_reason or "") .. "'")
 
-                        -- TODO real fix for empty response to remove thinking tokens:
-                        -- good test case is to go b/w ends (below) and insert new line (empty) will likely result in a blank eventually (check reasoning too to confirm)
-                        -- FYI might have a similar issue in other spots... maybe parlay this into a final cleanup step?
-                        this_prediction:clear_extmarks()
+                            -- TODO real fix for empty response to remove thinking tokens:
+                            -- good test case is to go b/w ends (below) and insert new line (empty) will likely result in a blank eventually (check reasoning too to confirm)
+                            -- FYI might have a similar issue in other spots... maybe parlay this into a final cleanup step?
+                            this_prediction:clear_extmarks()
+                        end
                     end
                 end
             end)
