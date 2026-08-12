@@ -245,7 +245,7 @@ function M.body_for_muse_glimmer(request_body, effort)
             reasoning_content = "<|eom|><|start|>assistant to=user<|message|>", -- EOM stop sthinking and then goes right into final response to user here! this gets mashed in after the default start prefill for a final assistant turn
             -- TODO add tests of this in lua plenary tests to make sure no thinking comes back and __verbose.generation_prompt is as I expect (this is an extract copy of this last prefill message that inadvertently is good for testing)
         }
-        if not request_body.messages or not #request_body.messages > 0 then
+        if (not request_body.messages) or (#request_body.messages == 0) then
             error("cannot setup prefill if no messages are provided")
         end
         table.insert(request_body.messages, prefill_msg) -- at end of list
