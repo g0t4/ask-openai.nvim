@@ -195,13 +195,9 @@ function FimRequestBuilder:fim_request()
                 body.chat_template_kwargs = {
                     enable_thinking = level ~= "off"
                 }
+                -- TODO other models use their overrides in params.
             elseif model == models.MUSE then
-                -- TODO there is no thinking off but I have a fix
-                -- TODO wire in body mods used by rewrite and agent frontends (and use here too I think I can do it all in one spot actually)
-                log:white_on_red("REVISIT and FIX reasoning_strength for muse glimmer 30b")
-                body.chat_template_kwargs = {
-                    enable_thinking = level ~= "off"
-                }
+                body = params.body_for_muse_glimmer(body, level)
             end
 
             body.max_tokens = gptoss_tokenizer.get_gptoss_max_tokens_for_level(level)
