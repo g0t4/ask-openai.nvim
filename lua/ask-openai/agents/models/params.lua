@@ -251,7 +251,7 @@ function M.body_for_muse_glimmer(request_body, effort)
         end
         table.insert(request_body.messages, prefill_msg) -- at end of list
     else
-        log:white_on_red("TODO verify reasoning_strength works")
+        log:white_on_red("TODO verify reasoning_strength works: " .. effort)
         recommended.chat_template_kwargs.reasoning_strength = effort
     end
     log:info("recommended", recommended)
