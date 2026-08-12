@@ -61,17 +61,17 @@ M.SHOW_PROBABILITIES = true
 ---@param prob number|nil
 ---@return string probability display
 local function display_probability(prob)
-    if not M.SHOW_PROBABILITIES then
-        return ""
+    if M.SHOW_PROBABILITIES then
+        -- FYI keep this nested condition for readability
+        local gray = 100
+        if prob == nil then
+            return ansi.rgb(ansi.italic("(?)"), gray, gray, gray)
+        elseif prob < 1.0 then
+            return ansi.rgb(ansi.italic(string.format("(%.2f)", prob)), gray, gray, gray)
+        end
     end
 
-    -- FYI keep this nested condition for readability
-    local gray = 100
-    if prob == nil then
-        return ansi.rgb(ansi.italic("(?)"), gray, gray, gray)
-    elseif prob < 1.0 then
-        return ansi.rgb(ansi.italic(string.format("(%.2f)", prob)), gray, gray, gray)
-    end
+    return ""
 end
 
 --- Format a single token with its probability for logging.
