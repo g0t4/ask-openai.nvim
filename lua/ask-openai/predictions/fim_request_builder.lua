@@ -189,6 +189,7 @@ function FimRequestBuilder:fim_request()
                 -- TODO other models use their overrides in params.
             elseif model == models.MUSE then
                 body = params.body_for_muse_glimmer(body, level)
+                curl_params.body = body
             end
 
             body.max_tokens = gptoss_tokenizer.get_gptoss_max_tokens_for_level(level)
