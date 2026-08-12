@@ -90,17 +90,7 @@ end
 
 function FimRequestBuilder:fim_request()
     local body = {
-        -- FYI keep model notes in MODELS.notes.md
-        -- model = "", -- not needed in llama-server
         stream = true,
-
-        -- * MAX tokens (very important)
-        -- max_tokens = 200, -- works for: llama-server /completions, OpenAI's compat endpoints
-        -- n_predict = max_tokens, -- llama-server specific (avoid for consistency)
-
-
-        options = {}, -- empty so I can set stop_tokens below
-
 
         logprobs = true,
         post_sampling_probs = true, -- map to 0 to 1.0 (appears to truncate anything that ~0 for probability
