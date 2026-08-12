@@ -249,7 +249,6 @@ function M.body_for_muse_glimmer(request_body, effort)
             error("cannot setup prefill if no messages are provided")
         end
         table.insert(request_body.messages, prefill_msg) -- at end of list
-        error("YOU NEED TO TEST THIS for no thinking")
     else
         log:white_on_red("TODO verify reasoning_strength works")
         recommended.chat_template_kwargs.reasoning_strength = effort
