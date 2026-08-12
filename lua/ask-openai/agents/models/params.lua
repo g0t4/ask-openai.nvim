@@ -233,7 +233,8 @@ function M.body_for_muse_glimmer(request_body, effort)
 
     local efforts = models.MUSE_REASONING_EFFORT
     if effort == efforts.OFF then
-        -- FYI stock muse template does not have a toggle to turn off thinking... so I found a way to mash this into the prefill of final assistant message
+        -- FYI stock muse template does not have a toggle to turn off thinking...
+        -- so I hacked prefill of final assistant message to disable it
         log:white_on_red("TEST THINKING OFF SUPPORT")
         -- TODO! wire this into FIM completions too
         local prefill_msg = {
