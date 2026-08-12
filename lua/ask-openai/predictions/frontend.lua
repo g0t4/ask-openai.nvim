@@ -78,6 +78,36 @@ local function no_predictions()
         or vim.tbl_contains(IGNORE_FILE_TYPES, vim.bo.filetype)
 end
 
+local function dump_rendered_prompt_only(fim_request)
+    -- PRN? move this out into its own module, composed with new open_float
+    local response = llama_server_client.apply_template(fim_request.base_url, fim_request.body)
+    local FloatWindow = require("ask-openai.helpers.float_window")
+    local lines = vim.split(response.body.prompt, '\n')
+
+    -- * hack to diff vs last prompt to point out changes easier
+    -- show diff vs last prompt (i.e. toggle FIM reasoning level, or more cursor to new spot to FIM)
+    if PredictionsFrontend.__last_prompt then
+        -- deps:
+        local combined = require("devtools.diff.combined")
+        local should = require("devtools.tests.should")
+        local messages = require("devtools.messages")
+        -- diff:
+        local diff = combined.combined_word_diff(response.body.prompt, PredictionsFrontend.__last_prompt)
+        local inspected = should.inspect_diff(diff)
+        -- show it:
+        messages.append(inspected)
+        messages.ensure_open()
+    end
+
+    ---@type FloatWindowOptions
+    local opts = { width_ratio = 0.8, height_ratio = 0.8, filetype = "harmony" }
+    local buf, win = FloatWindow:new(opts, lines)
+    -- PRN? setup harmony grammar for filetype + coloring with treesitter?
+    -- PRN? or use LinesBuilder for lines w/ extmarks using LinesBuilder (not hard to do either, and would get me to setup a simple parser!)
+
+    PredictionsFrontend.__last_prompt = response.body.prompt -- track so I can diff two versions
+end
+
 ---@param params? PredictionParameters
 function PredictionsFrontend.ask_for_prediction(params)
     PredictionsFrontend.cancel_current_prediction(params.bufnr)
@@ -103,33 +133,7 @@ function PredictionsFrontend.ask_for_prediction(params)
         assert(fim_request.body ~= nil)
 
         if this_prediction.apply_template_only then
-            -- PRN? move this out into its own module, composed with new open_float
-            local response = llama_server_client.apply_template(fim_request.base_url, fim_request.body)
-            local FloatWindow = require("ask-openai.helpers.float_window")
-            local lines = vim.split(response.body.prompt, '\n')
-
-            -- * hack to diff vs last prompt to point out changes easier
-            -- show diff vs last prompt (i.e. toggle FIM reasoning level, or more cursor to new spot to FIM)
-            if PredictionsFrontend.__last_prompt then
-                -- deps:
-                local combined = require("devtools.diff.combined")
-                local should = require("devtools.tests.should")
-                local messages = require("devtools.messages")
-                -- diff:
-                local diff = combined.combined_word_diff(response.body.prompt, PredictionsFrontend.__last_prompt)
-                local inspected = should.inspect_diff(diff)
-                -- show it:
-                messages.append(inspected)
-                messages.ensure_open()
-            end
-
-            ---@type FloatWindowOptions
-            local opts = { width_ratio = 0.8, height_ratio = 0.8, filetype = "harmony" }
-            local buf, win = FloatWindow:new(opts, lines)
-            -- PRN? setup harmony grammar for filetype + coloring with treesitter?
-            -- PRN? or use LinesBuilder for lines w/ extmarks using LinesBuilder (not hard to do either, and would get me to setup a simple parser!)
-
-            PredictionsFrontend.__last_prompt = response.body.prompt -- track so I can diff two versions
+            dump_rendered_prompt_only(fim_request)
             return
         end
 
