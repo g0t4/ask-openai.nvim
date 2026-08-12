@@ -457,10 +457,9 @@ local function ask_rewrite_command(opts)
         local model = api.get_rewrite_model()
         local reasoning_level = context.includes:get_reasoning_level() or api.get_rewrite_reasoning_level()
 
-        local base_url = config.get_base_url(model)
         RewriteFrontend.last_request = CurlRequest:new({
             body = model_params.body_for(model, generic_body, reasoning_level),
-            base_url = base_url,
+            base_url = config.get_base_url(model),
             endpoint = CompletionsEndpoints.v1_chat_completions,
             type = "rewrite",
         })
