@@ -12,11 +12,9 @@ local stats = require("ask-openai.predictions.stats")
 local Curl = require("ask-openai.backends.curl")
 local CurlRequest = require("ask-openai.backends.curl_request")
 local FimRequestBuilder = require("ask-openai.predictions.fim_request_builder")
-local llama_server_client = require("ask-openai.backends.llama_cpp.llama_server_client")
 local config = require("ask-openai.config")
 local buffer_state = require("ask-openai.predictions.buffer_state")
 local ansi = require("devtools.ansi")
-local FloatWindow = require("ask-openai.helpers.float_window")
 
 ---@class PredictionsFrontend : StreamingFrontend
 local PredictionsFrontend = {}
@@ -79,40 +77,6 @@ local function no_predictions()
         or vim.tbl_contains(IGNORE_FILE_TYPES, vim.bo.filetype)
 end
 
----@param fim_request CurlRequest
-local function dump_rendered_prompt_only(fim_request)
-    -- PRN? move this out into its own module, composed with new open_float
-    local response = llama_server_client.apply_template(fim_request.base_url, fim_request.body)
-    local prompt = response.body.prompt
-    local lines = vim.split(prompt, '\n')
-
-    -- * hack to diff vs last prompt to point out changes easier
-    -- show diff vs last prompt (i.e. toggle FIM reasoning level, or more cursor to new spot to FIM)
-    if PredictionsFrontend.__last_prompt then
-        -- deps:
-        local combined = require("devtools.diff.combined")
-        local should = require("devtools.tests.should")
-        local messages = require("devtools.messages")
-        -- diff:
-        local diff = combined.combined_word_diff(prompt, PredictionsFrontend.__last_prompt)
-        local inspected = should.inspect_diff(diff)
-        -- show it:
-        messages.append(inspected)
-        messages.ensure_open()
-    end
-
-    ---@type FloatWindowOptions
-
-    local buf, win = FloatWindow:new(
-        { width_ratio = 0.8, height_ratio = 0.8, filetype = "harmony" },
-        lines
-    )
-    -- PRN? setup harmony grammar for filetype + coloring with treesitter?
-    -- PRN? or use LinesBuilder for lines w/ extmarks using LinesBuilder (not hard to do either, and would get me to setup a simple parser!)
-
-    PredictionsFrontend.__last_prompt = prompt -- track so I can diff two versions
-end
-
 ---@param params? PredictionParameters
 function PredictionsFrontend.ask_for_prediction(params)
     PredictionsFrontend.cancel_current_prediction(params.bufnr)
@@ -138,7 +102,8 @@ function PredictionsFrontend.ask_for_prediction(params)
         assert(fim_request.body ~= nil)
 
         if this_prediction.apply_template_only then
-            dump_rendered_prompt_only(fim_request)
+            local fim_prompt_dump = require("ask-openai.predictions.fim_prompt_dump")
+            fim_prompt_dump.dump_rendered_prompt_only(fim_request)
             return
         end
 
