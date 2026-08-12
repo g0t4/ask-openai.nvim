@@ -465,7 +465,7 @@ end
 
 local are_predictions_running = false
 
-local AUGROUP = "ask-openai.prediction"
+local PREDICTIONS_AUGROUP = "ask-openai.prediction"
 
 local KEYMAP_ACCEPT_ALL = '<Tab>'
 local KEYMAP_ACCEPT_LINE = '<C-right>'
@@ -504,21 +504,21 @@ function PredictionsFrontend.start_predictions()
     vim.keymap.set("n", "<leader>temp", trigger_apply_template_dump, {})
 
     -- event subscriptions
-    vim.api.nvim_create_augroup(AUGROUP, { clear = true })
+    vim.api.nvim_create_augroup(PREDICTIONS_AUGROUP, { clear = true })
     vim.api.nvim_create_autocmd("InsertLeavePre", {
-        group = AUGROUP,
+        group = PREDICTIONS_AUGROUP,
         pattern = "*",
         callback = PredictionsFrontend.leaving_insert_mode
     })
     vim.api.nvim_create_autocmd("InsertEnter", {
-        group = AUGROUP,
+        group = PREDICTIONS_AUGROUP,
         pattern = "*",
         callback = PredictionsFrontend.entering_insert_mode
     })
     -- vim.api.nvim_create_autocmd("CursorMovedI", { -- FYI old event used to trigger prediction (replaced with TextChangedI below)
     vim.api.nvim_create_autocmd("TextChangedI", {
         -- FYI been using this for a LONG time now and no issues (AFAICT)
-        group = AUGROUP,
+        group = PREDICTIONS_AUGROUP,
         pattern = "*",
         callback = function(event)
             ---@cast event vim.api.keyset.create_autocmd.callback_args
@@ -536,7 +536,7 @@ function PredictionsFrontend.stop_predictions()
 
     -- FYI pcall blocks error propagation (returns status code, though in this case I don't care about that)
     -- remove event triggers
-    pcall(vim.api.nvim_del_augroup_by_name, AUGROUP) -- most del methods will throw if doesn't exist... so just ignore that
+    pcall(vim.api.nvim_del_augroup_by_name, PREDICTIONS_AUGROUP) -- most del methods will throw if doesn't exist... so just ignore that
 
     -- remove keymaps (using same hardcoded values)
     pcall(vim.api.nvim_del_keymap, 'i', KEYMAP_ACCEPT_ALL)
