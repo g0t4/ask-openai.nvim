@@ -250,6 +250,17 @@ function M.body_for_muse_glimmer(request_body, effort)
             error("cannot setup prefill if no messages are provided")
         end
         table.insert(request_body.messages, prefill_msg) -- at end of list
+
+        -- * set reasoning_strength "off" for the system prompt even though that is not a recognized value
+        -- the model is not trained to use "off"...
+        -- but my thought process is...
+        -- this is like telling the model not to think
+        -- then the forced no think prefill hack makes it not think for sure...
+        -- I wonder if this gives better results as far as FIM if it "knows" it is not going to be thinking?
+        --  otherwise this will say "high" which feels like it would cause issues then to block thinking!
+        --  FYI also leave this code explicitly setting "off" value here...
+        --   that way it is very clear this is intentional vs maybe thinking later on .. if I move the reasoning_strength out to one set across all cases... then later maybe I would think it was a mistake to do it for "off" case.. now that is obviously not the case
+        recommended.chat_template_kwargs.reasoning_strength = "off" -- intentionally set it off still so it shows as off in the system message to model (after template renders)...
     else
         log:white_on_red("TODO verify reasoning_strength works: " .. effort)
         recommended.chat_template_kwargs.reasoning_strength = effort
