@@ -13,6 +13,7 @@ local params = require("ask-openai.agents.models.params")
 local gptoss_tokenizer = require("ask-openai.backends.models.gptoss.tokenizer")
 local CurlRequest = require("ask-openai.backends.curl_request")
 local config = require("ask-openai.config")
+local logging_tokens = require("ask-openai.logs.tokens")
 
 require("ask-openai.backends.sse.parsers")
 
@@ -88,7 +89,6 @@ function FimRequestBuilder:new(ps_chunk, rag_matches)
     return instance
 end
 
-FimRequestBuilder.SHOW_PROBABILITIES = true
 function FimRequestBuilder:fim_request()
     local body = {
         stream = true,
@@ -104,7 +104,7 @@ function FimRequestBuilder:fim_request()
         --    dry_* dry sampler params (if/when using)
         --  seed
     }
-    if FimRequestBuilder.SHOW_PROBABILITIES then
+    if logging_tokens.SHOW_PROBABILITIES then
         -- how much overhead does this add?
         body.logprobs = true
         body.post_sampling_probs = true -- map to 0 to 1.0 (appears to truncate anything that ~0 for probability

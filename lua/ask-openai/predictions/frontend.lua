@@ -147,8 +147,8 @@ function PredictionsFrontend.ask_for_prediction(params)
                 end
 
                 if sse_fields.done then
-                    if FimRequestBuilder.SHOW_PROBABILITIES then
-                        local logging_tokens = require("ask-openai.logs.tokens")
+                    local logging_tokens = require("ask-openai.logs.tokens")
+                    if logging_tokens.SHOW_PROBABILITIES then
                         local outputs = logging_tokens.probability_colored_outputs(this_prediction.all_sses)
 
                         -- Log reasoning with probability coloring if available

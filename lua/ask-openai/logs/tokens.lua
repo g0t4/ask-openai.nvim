@@ -56,24 +56,22 @@ local function color_by_probability(text, prob)
     return ansi.rgb(text, r, g, b)
 end
 
+M.SHOW_PROBABILITIES = true
+
 ---@param prob number|nil
 ---@return string probability display
 local function display_probability(prob)
-    -- toggle on/off instead of comment out code
-    local show_probabilities = true
-    -- local show_probabilities = false
-
-    if show_probabilities then
-        -- FYI keep this nested condition for readability
-        local gray = 100
-        if prob == nil then
-            return ansi.rgb(ansi.italic("(?)"), gray, gray, gray)
-        elseif prob < 1.0 then
-            return ansi.rgb(ansi.italic(string.format("(%.2f)", prob)), gray, gray, gray)
-        end
+    if not M.SHOW_PROBABILITIES then
+        return ""
     end
 
-    return ""
+    -- FYI keep this nested condition for readability
+    local gray = 100
+    if prob == nil then
+        return ansi.rgb(ansi.italic("(?)"), gray, gray, gray)
+    elseif prob < 1.0 then
+        return ansi.rgb(ansi.italic(string.format("(%.2f)", prob)), gray, gray, gray)
+    end
 end
 
 --- Format a single token with its probability for logging.
