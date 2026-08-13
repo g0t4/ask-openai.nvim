@@ -132,25 +132,23 @@ function parse_sse_v1_chat_completions(sse)
         error("unexpected missing delta on a chat completions SSE")
     end
 
-    -- content == vim.NIL => first response has `content: null` b/c it is setting the role to asssistant
-    --   - likely due to roles/channels token(s) in harmony parser (among others)
-    -- content == nil
-    --   - 2+ SSEs are for reasoning and use reasoning_content until thinking is complete (these don't even set the content field, so it's nil in this case)
-    local content = empty_for_nil(delta.content)
-
-    -- FYI I have yet to seel reasoning_content come back with vim.NIL (and maybe not even nil?)
-    local reasoning_content = empty_for_nil(delta.reasoning_content)
-
     local prob = get_probs(first_choice)
     -- log:info("prob", prob)
 
     local finish_reason = first_choice.finish_reason
     local done = finish_reason ~= nil and finish_reason ~= vim.NIL -- vim.NIL == JSON null
     return {
-        content = content,
+        -- content == vim.NIL => first response has `content: null` b/c it is setting the role to asssistant
+        --   - likely due to roles/channels token(s) in harmony parser (among others)
+        -- content == nil
+        --   - 2+ SSEs are for reasoning and use reasoning_content until thinking is complete (these don't even set the content field, so it's nil in this case)
+        content = empty_for_nil(delta.content),
+
+        -- FYI I have yet to seel reasoning_content come back with vim.NIL (and maybe not even nil?)
+        reasoning_content = empty_for_nil(delta.reasoning_content),
+
         done = done,
         finish_reason = finish_reason,
-        reasoning_content = reasoning_content,
         prob = prob,
     }
 end
