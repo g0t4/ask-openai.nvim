@@ -130,7 +130,15 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
             accum.finish_reason = first.finish_reason
         end
 
+        -- PRN drop assistant prefill message before last message in trace?
+        --  else these become part of trace too that is sent back to agents!?
+        --  right now this happens with prefill to block reasoning with Muse Glimmer
+        --  actually I'd need to remove the message over in the AgentsFrontend too (or entirely)
+        --  TODO see notes in AgentsFrontend to figure out where I want this
+        --   and FYI this can affect any frontend, not just Agents... i.e. PredictionsFrontend using non reasoning FIM with Muse Glimmer
+
         if sse_parsed.timings then
+            -- track timings per assistant response!
             accum.timings = sse_parsed.timings
         end
 

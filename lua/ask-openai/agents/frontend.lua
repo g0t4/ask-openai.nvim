@@ -653,6 +653,11 @@ function AgentsFrontend.on_curl_exited_successfully()
             -- right now I duplicate that logic here for AgentsFrontend
             -- but, that logic is only in completion_logger for other frontends (PredictionsFrontend/RewriteFrontend) that don't need to accum like with `AgentsFrontend`
 
+            -- TODO strip prefill assistant messages from trace.messages so they don't remain
+            --  they're just a mechanism to constrain the following agent response... need merged with the agent's response actually?
+            --  at the same time I like the history of what was submitted
+            --  this is the inherent tension between adding that assistant response message to the messages array (which is really for the next request)... vs keeping it separate as the completion to the messages array sent as-is to llama-server
+
             local is_final_assistant_message = #rx_message.tool_calls == 0
             if is_final_assistant_message then
                 AgentsFrontend.show_user_role_as_follow_up_hint()
