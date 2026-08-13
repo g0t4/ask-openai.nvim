@@ -3,11 +3,11 @@ local log = require("devtools.logs.logger"):universal()
 -- logic for parsing SSEs from all completion backends
 
 ---@class SseFieldsResult
----@field content string The content chunk from this SSE
----@field done boolean Whether this is the final SSE (generation complete)
----@field finish_reason string|nil Reason why generation stopped (e.g., "stop", "length", "eos")
----@field reasoning_content? string Reasoning/thinking content if available
----@field prob? number Probability of the selected token
+---@field content string  -- The content chunk from this SSE
+---@field done boolean  -- Whether this is the final SSE (generation complete)
+---@field finish_reason? string  -- Reason why generation stopped (e.g., "stop", "length", "eos")
+---@field reasoning_content? string -- Reasoning/thinking content if available
+---@field prob? number -- Probability of the selected token
 
 function get_probs(choice)
     -- PRN parse logprobs
@@ -110,36 +110,31 @@ function parse_sse_v1_chat_completions(sse)
         -- and right now I only use this for predictions
         error("SSE is missing choices - I don't think this ever happens so if it does... then raise hard error")
     end
-    local content = ""
-    local reasoning_content = ""
-    local done = false
-    local finish_reason = nil
-    local prob = nil
-    if sse.choices and sse.choices[1] then
-        local first_choice = sse.choices[1]
 
-        content = first_choice.delta.content
-        if content == nil or content == vim.NIL then
-            -- content == vim.NIL => with llama-server the first response is content: null b/c it is setting the role to asssistant (maybe to do with roles/channels in harmony parser)... doesn't matter, just ignore it
-            --    vim.NIL == "content": null (in the JSON)
-            -- content == nil => then 2+ SSEs are for reasoning and use reasoning_content until thinking is complete (these don't even set the content field, so it's nil in this case)
-            --    skip these too
-            content = ""
-        end
+    local first_choice = sse.choices[1]
+    local delta = first_choice.delta
 
-        -- llama-server's /v1/chat/comppletions endpoint uses delta.reasoning_content
-        reasoning_content = first_choice.delta.reasoning_content
-        if reasoning_content == nil or reasoning_content == vim.NIL then
-            -- FYI I have yet to seel reasoning_content come back with vim.NIL (and maybe not even nil?)
-            reasoning_content = ""
-        end
-
-        prob = get_probs(first_choice)
-        -- log:info("prob", prob)
-
-        finish_reason = first_choice.finish_reason
-        done = finish_reason ~= nil and finish_reason ~= vim.NIL -- vim.NIL == JSON null
+    local content = delta.content
+    if content == nil or content == vim.NIL then
+        -- content == vim.NIL => with llama-server the first response is content: null b/c it is setting the role to asssistant (maybe to do with roles/channels in harmony parser)... doesn't matter, just ignore it
+        --    vim.NIL == "content": null (in the JSON)
+        -- content == nil => then 2+ SSEs are for reasoning and use reasoning_content until thinking is complete (these don't even set the content field, so it's nil in this case)
+        --    skip these too
+        content = ""
     end
+
+    -- llama-server's /v1/chat/comppletions endpoint uses delta.reasoning_content
+    local reasoning_content = delta.reasoning_content
+    if reasoning_content == nil or reasoning_content == vim.NIL then
+        -- FYI I have yet to seel reasoning_content come back with vim.NIL (and maybe not even nil?)
+        reasoning_content = ""
+    end
+
+    local prob = get_probs(first_choice)
+    -- log:info("prob", prob)
+
+    local finish_reason = first_choice.finish_reason
+    local done = finish_reason ~= nil and finish_reason ~= vim.NIL -- vim.NIL == JSON null
     return {
         content = content,
         done = done,
