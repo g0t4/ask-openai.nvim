@@ -13,6 +13,7 @@ local shared = require('ask-openai.agents.messages.shared')
 ---@field name? string
 ---@field tool_calls ToolCall[] -- empty if none
 ---@field last_sse? LlamaServerSSEBase
+---@field timings? LlamaServerTimings
 local RxAccumulatedMessage = {}
 
 ---@enum RX_MESSAGE_ROLES

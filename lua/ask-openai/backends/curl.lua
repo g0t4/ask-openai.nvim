@@ -21,7 +21,7 @@ _G.CompletionsEndpoints = {
 ---@alias ExplainError fun(text: string)
 ---@alias OnCurlExitedSuccessfully fun()
 
----@class LlamaServerSSETimings
+---@class LlamaServerTimings
 ---@field draft_n_accepted integer
 ---@field draft_n integer
 ---@field cache_n integer
@@ -47,11 +47,11 @@ _G.CompletionsEndpoints = {
 ---@field stop boolean
 ---@field stop_type string -- i.e. "eos"
 ---@field stopping_word string
----@field timings LlamaServerSSETimings -- PREFER to use sse.timings
+---@field timings LlamaServerTimings -- PREFER to use sse.timings
 ---@field truncated boolean
 
 ---@class LlamaServerSSEBase
----@field timings LlamaServerSSETimings
+---@field timings LlamaServerTimings
 ---@field __verbose? LlamaServerVerbose
 
 ---@class LlamaServerChatCompletionSSE_Delta
