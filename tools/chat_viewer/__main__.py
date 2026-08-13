@@ -957,11 +957,15 @@ def main() -> None:
     if assistant_speeds:
         _console.rule('[bold]Assistant Generation Speed[/]', style='blue')
         max_speed = max(s for _, s in assistant_speeds)
+        from rich.table import Table
+        table = Table(show_header=False, box=None, padding=(0,1))
+        table.add_column(justify='left')
+        table.add_column(justify='left')
         for i, (msg, speed) in enumerate(assistant_speeds, start=1):
             bar = ProgressBar(total=max_speed, completed=speed, width=40)
-            # Show message index hint: find original index
-            # We'll just show speed
-            _console.print(f'[dim]Assistant #{i}[/] {speed:.1f} tok/sec ', bar)
+            label = f'[dim]Assistant #{i}[/] {speed:.1f} tok/sec'
+            table.add_row(bar, label)
+        _console.print(table)
         _console.print()
     # show summaries at end since command line the last part shows first (unlike web viewer where summary is best at top)
     if len(messages) >= 2:
