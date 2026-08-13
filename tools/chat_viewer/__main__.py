@@ -13,6 +13,7 @@ from rich.syntax import Syntax
 from rich.panel import Panel
 from rich.pretty import Pretty, pprint
 from rich.text import Text
+from rich.progress_bar import ProgressBar
 from rich.tree import Tree
 from typing import Any, Iterable, Iterator, Dict
 import hashlib
@@ -946,6 +947,22 @@ def main() -> None:
     for idx, message in enumerate(messages, start=1):
         print_message(message, idx)
 
+    # ProgressBar speed summary for assistant responses
+    assistant_speeds = []
+    for msg in messages:
+        if msg.get('role') == 'assistant' and msg.get('timings'):
+            t = _parse_timings_from_dict(msg.get('timings'))
+            if t and t.predicted_tokens_per_second and t.predicted_tokens_per_second > 0:
+                assistant_speeds.append((msg, t.predicted_tokens_per_second))
+    if assistant_speeds:
+        _console.rule('[bold]Assistant Generation Speed[/]', style='blue')
+        max_speed = max(s for _, s in assistant_speeds)
+        for i, (msg, speed) in enumerate(assistant_speeds, start=1):
+            bar = ProgressBar(total=max_speed, completed=speed, width=40)
+            # Show message index hint: find original index
+            # We'll just show speed
+            _console.print(f'[dim]Assistant #{i}[/] {speed:.1f} tok/sec ', bar)
+        _console.print()
     # show summaries at end since command line the last part shows first (unlike web viewer where summary is best at top)
     if len(messages) >= 2:
         first_msg = messages[0]

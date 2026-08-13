@@ -36,6 +36,7 @@ export interface Message {
   reasoning_content?: string
   duration_ms?: number
   start_time_ms?: number
+  timings?: Timings
 }
 
 export interface ContentObject {
