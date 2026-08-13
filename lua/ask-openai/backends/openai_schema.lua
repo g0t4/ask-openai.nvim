@@ -114,6 +114,10 @@
 ---@field refusal? string - NOT using
 ---@see https://platform.openai.com/docs/api-reference/chat/create#chat_create-messages-assistant_message
 
+--- my changes, i.e. storing timings for all assistant messages
+---@class Ask_OpenAIChatCompletion_Assistant_TxChatMessage : OpenAIChatCompletion_Assistant_TxChatMessage
+---@field timings LlamaServerTimings
+
 ---@class OpenAIChatCompletion_Assistant_TxChatMessage_ToolCallRequest
 ---@field id string
 ---@field type string -- "function" or "custom"

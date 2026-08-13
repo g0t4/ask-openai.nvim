@@ -95,7 +95,7 @@ function TxChatMessage:from_assistant_rx_message(rx_message)
     -- * content, role, name, tool_calls ...  also: refusal, audio (not using these)
     --   NO mention of sending thinking back! so, no OpenAI compat name for that!
 
-    local tx_message = TxChatMessage:new(rx_message.role, rx_message.content) --[[@as OpenAIChatCompletion_Assistant_TxChatMessage]]
+    local tx_message = TxChatMessage:new(rx_message.role, rx_message.content) --[[@as Ask_OpenAIChatCompletion_Assistant_TxChatMessage]]
 
     tx_message.timings = rx_message.last_sse.timings -- llama-server ignores extra field for timings on subsequent requests (verified in server's request logs)
 
