@@ -100,6 +100,19 @@ function get_probs(choice)
     return selected_token_prob
 end
 
+---@param value string|vim.NIL|nil
+---@return string
+local function empty_for_nil(value)
+    if value == nil then
+        return ""
+    end
+    if value == vim.NIL then
+        return ""
+    end
+    ---@cast value string -- tell type checker to shut up
+    return value
+end
+
 ---@param sse LlamaServerChatCompletionSSE
 ---@return SseFieldsResult
 function parse_sse_v1_chat_completions(sse)
@@ -119,21 +132,14 @@ function parse_sse_v1_chat_completions(sse)
         error("unexpected missing delta on a chat completions SSE")
     end
 
-    local content = delta.content
-    if content == nil or content == vim.NIL then
-        -- content == vim.NIL => with llama-server the first response is content: null b/c it is setting the role to asssistant (maybe to do with roles/channels in harmony parser)... doesn't matter, just ignore it
-        --    vim.NIL == "content": null (in the JSON)
-        -- content == nil => then 2+ SSEs are for reasoning and use reasoning_content until thinking is complete (these don't even set the content field, so it's nil in this case)
-        --    skip these too
-        content = ""
-    end
+    -- content == vim.NIL => first response has `content: null` b/c it is setting the role to asssistant
+    --   - likely due to roles/channels token(s) in harmony parser (among others)
+    -- content == nil
+    --   - 2+ SSEs are for reasoning and use reasoning_content until thinking is complete (these don't even set the content field, so it's nil in this case)
+    local content = empty_for_nil(delta.content)
 
-    -- llama-server's /v1/chat/comppletions endpoint uses delta.reasoning_content
-    local reasoning_content = delta.reasoning_content
-    if reasoning_content == nil or reasoning_content == vim.NIL then
-        -- FYI I have yet to seel reasoning_content come back with vim.NIL (and maybe not even nil?)
-        reasoning_content = ""
-    end
+    -- FYI I have yet to seel reasoning_content come back with vim.NIL (and maybe not even nil?)
+    local reasoning_content = empty_for_nil(delta.reasoning_content)
 
     local prob = get_probs(first_choice)
     -- log:info("prob", prob)
@@ -169,11 +175,13 @@ function parse_sse_llamacpp_completions(sse)
     --
     -- Going forward, use /completions for RAW only
     -- use /v1/chat/completions for any chat template conversations
+    log:info("raw sse", sse)
+
     return {
-        content = sse.content or "",
-        done = sse.stop == true,
-        finish_reason = sse.stop_type,
+        content           = empty_for_nil(sse.content),
+        done              = sse.stop == true,
+        finish_reason     = sse.stop_type,
         reasoning_content = "",
-        prob = nil,
+        prob              = nil,
     }
 end
