@@ -529,6 +529,7 @@ function AgentsFrontend.on_streaming_delta_update_message_history(choice, reques
     local is_last_sse = sse_parsed.timings
     if is_last_sse then
         rx_accum_message.last_sse = sse_parsed
+        -- rx_accum_message.timings = sse_parsed.timings -- ? should I just copy this one part only and skip rest of last_sse?
     end
 
     if choice.delta.content ~= nil and choice.delta.content ~= vim.NIL then
