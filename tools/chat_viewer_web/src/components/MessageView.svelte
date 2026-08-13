@@ -29,7 +29,7 @@
   function humanizeInt(v: number): string { return v.toLocaleString() }
   function humanizeFloat(v: number, d=0): string { return v.toLocaleString(undefined,{minimumFractionDigits:d,maximumFractionDigits:d}) }
   
-  const timingsDisplay = $derived(() => {
+  const timingsDisplay = $derived.by(() => {
     if (!timings) return ''
     const parts: string[] = []
     const prompt_n = timings.prompt_n ?? 0
