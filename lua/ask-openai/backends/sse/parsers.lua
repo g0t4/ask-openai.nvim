@@ -113,6 +113,11 @@ function parse_sse_v1_chat_completions(sse)
 
     local first_choice = sse.choices[1]
     local delta = first_choice.delta
+    if delta == nil then
+        -- TODO get rid of this log if never happens and/or doesn't matter
+        log:info("case with no delta on a chat completions SSE - I think this does happen toward end of trace, right? and maybe at first")
+        error("unexpected missing delta on a chat completions SSE")
+    end
 
     local content = delta.content
     if content == nil or content == vim.NIL then
