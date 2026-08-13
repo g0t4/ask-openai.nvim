@@ -55,8 +55,10 @@ _G.CompletionsEndpoints = {
 ---@field __verbose? LlamaServerVerbose
 
 ---@class LlamaServerChatCompletionSSE_Delta
+---@field role? string -- IIRC set on first SSE
 ---@field content? string|vim.NIL
 ---@field reasoning_content? string|vim.NIL
+---@field index? integer
 
 ---@class LlamaServerChatCompletionSSE_Choice
 ---@field delta LlamaServerChatCompletionSSE_Delta
