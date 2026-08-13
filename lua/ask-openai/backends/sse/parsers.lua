@@ -186,8 +186,12 @@ function parse_sse_llamacpp_completions(sse)
 
     return {
         content           = empty_for_nil(sse.content),
-        done              = sse.stop == true,
-        finish_reason     = sse.stop_type,
+        done              = sse.stop == true, -- ensure always a boolean even if stop were nil
+
+        -- FYI I have not encountered sse.stop_type == vim.NIL, doesn't hurt to check
+        finish_reason     = vim_NIL_to_nil(sse.stop_type),
+
+        -- unused for this endpoint, set default values:
         reasoning_content = "",
         prob              = nil,
     }
