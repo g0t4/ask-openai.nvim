@@ -137,7 +137,19 @@
     }
   })
 
-  async function loadTrace(url: string) {
+  
+  // Assistant speed summary for per-message timings
+  const assistantSpeeds = $derived.by(() => {
+    const speeds: { idx: number; speed: number }[] = []
+    messages.forEach((msg, i) => {
+      if (msg.role === 'assistant' && msg.timings?.predicted_per_second && msg.timings.predicted_per_second > 0) {
+        speeds.push({ idx: i + 1, speed: msg.timings.predicted_per_second })
+      }
+    })
+    return speeds
+  })
+
+async function loadTrace(url: string) {
     loading = true
     error = null
     try {
@@ -369,5 +381,24 @@
         <MessageView message={msg} index={idx + 1} />
       {/each}
     </div>
+    {#if assistantSpeeds.length > 0}
+      <section class="mt-8">
+        <h2 class="text-lg font-semibold mb-3 text-gray-200">Assistant Generation Speed</h2>
+        <div class="space-y-2">
+          {#each assistantSpeeds as { idx, speed } }
+            {@const maxSpeed = assistantSpeeds.reduce((m, s) => Math.max(m, s.speed), 0)}
+            {@const pct = maxSpeed > 0 ? (speed / maxSpeed) * 100 : 0}
+            <div class="flex items-center gap-3">
+              <div class="w-32 text-xs text-gray-400 font-mono">Assistant #{idx}</div>
+              <div class="flex-1 h-4 bg-gray-800 rounded overflow-hidden">
+                <div class="h-full bg-yellow-500/70" style="width: {pct}%"></div>
+              </div>
+              <div class="w-24 text-xs text-gray-300 font-mono text-right">{speed.toFixed(1)} tok/sec</div>
+            </div>
+          {/each}
+        </div>
+      </section>
+    {/if}
+
   {/if}
 </main>
