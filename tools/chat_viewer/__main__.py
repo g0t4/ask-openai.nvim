@@ -925,7 +925,23 @@ def main() -> None:
         parser.print_help()
         return
 
-    print_model_info(model_name, timings)
+    # Detect per-message timings
+    has_message_timings = any(
+        msg.get("role") == "assistant" and msg.get("timings")
+        for msg in messages
+    )
+    if has_message_timings:
+        # Show model name only, no trace-level timings
+        if model_name:
+            _console.print(f"[dim]Model:[/] [bold]{model_name}[/]")
+            _console.print()
+        # Show aggregated timings overview
+        summary = summarize_message_timings(messages)
+        if summary:
+            _console.print(f"[dim]Timings overview:[/] {summary}")
+            _console.print()
+    else:
+        print_model_info(model_name, timings)
 
     for idx, message in enumerate(messages, start=1):
         print_message(message, idx)
@@ -946,6 +962,62 @@ def main() -> None:
             _console.save_html(html_path)
         except Exception as e:
             _console.print(f"[red]Failed to write HTML output to {html_path}: {e}[/]")
+
+
+
+def summarize_message_timings(messages: list[dict[str, Any]]) -> str | None:
+    """Aggregate timings from assistant messages that have a timings dict."""
+    timings_list = []
+    for msg in messages:
+        if msg.get("role") == "assistant" and msg.get("timings"):
+            t = _parse_timings_from_dict(msg.get("timings"))
+            if t:
+                timings_list.append(t)
+    if not timings_list:
+        return None
+
+    total_prompt_tokens = sum(t.prompt_tokens for t in timings_list)
+    total_predicted_tokens = sum(t.predicted_tokens for t in timings_list)
+    total_tokens = sum(t.total_tokens for t in timings_list)
+    total_cached = sum(t.cached_tokens or 0 for t in timings_list)
+    total_prompt_ms = sum(t.prompt_ms for t in timings_list)
+    total_predicted_ms = sum(t.predicted_ms for t in timings_list)
+    total_ms = total_prompt_ms + total_predicted_ms
+
+    # averages
+    n = len(timings_list)
+    avg_prompt_ms = total_prompt_ms / n
+    avg_predicted_ms = total_predicted_ms / n
+
+    # per-second aggregates (weighted)
+    # avoid div zero
+    total_prompt_sec = total_prompt_ms / 1000 if total_prompt_ms else 0
+    total_predicted_sec = total_predicted_ms / 1000 if total_predicted_ms else 0
+
+    parts = []
+    parts.append(f"{n} assistant message{'s' if n>1 else ''} with timings")
+    parts.append(f"{total_tokens:,} total tokens")
+    if total_cached:
+        parts.append(f"{total_cached:,} cached")
+    parts.append(f"{total_ms/1000:.2f}s total inference")
+    parts.append(f"avg {avg_predicted_ms:.0f}ms predicted / msg")
+
+    # speeds
+    if total_prompt_sec > 0:
+        prompt_tps = total_prompt_tokens / total_prompt_sec
+        parts.append(f"prompt {prompt_tps:.0f} tok/s")
+    if total_predicted_sec > 0:
+        pred_tps = total_predicted_tokens / total_predicted_sec
+        parts.append(f"predicted {pred_tps:.0f} tok/s")
+
+    # draft acceptance aggregate
+    draft_total = sum(t.draft_tokens or 0 for t in timings_list)
+    draft_accepted = sum(t.draft_tokens_accepted or 0 for t in timings_list)
+    if draft_total > 0:
+        rate = draft_accepted / draft_total * 100
+        parts.append(f"draft {rate:.1f}% accepted")
+
+    return " · ".join(parts)
 
 if __name__ == "__main__":
     main()
