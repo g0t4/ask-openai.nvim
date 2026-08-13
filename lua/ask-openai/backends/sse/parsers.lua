@@ -113,6 +113,13 @@ local function empty_for_nil(value)
     return value
 end
 
+local function vim_NIL_to_nil(value)
+    if value == vim.NIL then
+        return nil
+    end
+    return value
+end
+
 ---@param sse LlamaServerChatCompletionSSE
 ---@return SseFieldsResult
 function parse_sse_v1_chat_completions(sse)
@@ -135,8 +142,8 @@ function parse_sse_v1_chat_completions(sse)
     local prob = get_probs(first_choice)
     -- log:info("prob", prob)
 
-    local finish_reason = first_choice.finish_reason
-    local done = finish_reason ~= nil and finish_reason ~= vim.NIL -- vim.NIL == JSON null
+    local finish_reason = vim_NIL_to_nil(first_choice.finish_reason)
+
     return {
         -- content == vim.NIL => first response has `content: null` b/c it is setting the role to asssistant
         --   - likely due to roles/channels token(s) in harmony parser (among others)
@@ -147,8 +154,10 @@ function parse_sse_v1_chat_completions(sse)
         -- FYI I have yet to seel reasoning_content come back with vim.NIL (and maybe not even nil?)
         reasoning_content = empty_for_nil(delta.reasoning_content),
 
-        done = done,
+        -- FYI finish_reason is vim.NIL until it is set (end of completion)
         finish_reason = finish_reason,
+        done = finish_reason ~= nil,
+
         prob = prob,
     }
 end
