@@ -27,7 +27,6 @@ local ToolCall = require("ask-openai.agents.tools.tool_call")
 local rag_instructions = require("ask-openai.frontends.prompts.rag_instructions")
 local inspect = require("devtools.inspect")
 local config = require("ask-openai.config")
-local tables = require("ask-openai.helpers.tables")
 
 require("ask-openai.helpers.buffers")
 
@@ -650,15 +649,9 @@ function AgentsFrontend.on_curl_exited_successfully()
             --   theoretically there can be multiple messages, with any role (not just assitant)
             local trace_message = TxChatMessage:from_assistant_rx_message(rx_message)
             trace:add_message(trace_message)
-
-            -- FYI right now we double log the agent trace, seems fine IMO as the first can be like an early capture
-            --  and then we capture after we add response to messages trace with final parsed message
-            --  including timings is the big deal
-            --  TODO I feel like we could skip the double logging though?
-            log:info("Saving agent trace a second time with trace_message filled out")
-            -- completion_logger.log_sse_to_request(rx_message.last_sse, request, AgentsFrontend)
-            local messages_snapshot = tables.shallow_copy(trace.messages or {})
-            completion_logger.save_trace(request, AgentsFrontend, messages_snapshot, rx_message.last_sse, {})
+            -- TODO could I merge this accum logic with completion logger's accum logic?
+            -- right now I duplicate that logic here for AgentsFrontend
+            -- but, that logic is only in completion_logger for other frontends (PredictionsFrontend/RewriteFrontend) that don't need to accum like with `AgentsFrontend`
 
             local is_final_assistant_message = #rx_message.tool_calls == 0
             if is_final_assistant_message then
