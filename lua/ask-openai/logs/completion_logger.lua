@@ -145,7 +145,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
 
         local messages_snapshot = tables.shallow_copy(request.body.messages or {})
         -- FYI it is possible the distill in AgentsFrontend has a difference that you need to keep, if so then call save_trace from that spot and not here just for AgentsFrontend (find a way to pass last_sse, that's the only complexity)
-        table.insert(messages_snapshot, accum)
+        -- table.insert(messages_snapshot, accum)
         vim.schedule(function()
             M.save_trace(request, frontend, messages_snapshot, sse_parsed, {})
         end)
