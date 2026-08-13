@@ -651,8 +651,10 @@ function AgentsFrontend.on_curl_exited_successfully()
             local trace_message = TxChatMessage:from_assistant_rx_message(rx_message)
             trace:add_message(trace_message)
 
-            -- TODO keep existing double logging of full trace? so if error happens we don't interfer with logging what happened
-            -- TODO or just log here only
+            -- FYI right now we double log the agent trace, seems fine IMO as the first can be like an early capture
+            --  and then we capture after we add response to messages trace with final parsed message
+            --  including timings is the big deal
+            --  TODO I feel like we could skip the double logging though?
             log:info("Saving agent trace a second time with trace_message filled out")
             -- completion_logger.log_sse_to_request(rx_message.last_sse, request, AgentsFrontend)
             local messages_snapshot = tables.shallow_copy(trace.messages or {})
