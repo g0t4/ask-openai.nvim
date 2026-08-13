@@ -60,12 +60,46 @@ _G.CompletionsEndpoints = {
 ---@field reasoning_content? string|vim.NIL
 ---@field index? integer
 
+---@class LlamaServerLogProbs_Content_Prob
+---@field bytes integer[]
+---@field id integer
+---@field prob number -- when post_sampling_probs=true (0 to 1)
+---@field logprob number -- when post_sampling_probs=false (FYI only one of prob/logprob is returned)
+---@field token string
+
+---@class LlamaServerLogProbs_Content : LlamaServerLogProbs_Content_Prob
+---field top_probs? LlamaServerLogProbs_Content_Prob[]
+
+---@class LlamaServerLogProbs
+---@field content? LlamaServerLogProbs_Content[]
+
 ---@class LlamaServerChatCompletionSSE_Choice
 ---@field delta LlamaServerChatCompletionSSE_Delta
 ---@field finish_reason string|vim.NIL
+---@field index? integer
+---@field logprobs? LlamaServerLogProbs
 
+-- [INFO ]  sse {
+--   choices = { {
+--       delta = {
+--         content = " error"
+--       },
+--       finish_reason = vim.NIL,
+--       index = 0
+--     } },
+--   created = 1786650360,
+--   id = "chatcmpl-hdvDM7I5IfMsstQoI6oSXS2qyGrEwJHQ",
+--   model = "meta-models/Muse-Glimmer-30B-GGUF:Q4_K_XL",
+--   object = "chat.completion.chunk",
+--   system_fingerprint = "b10413-f65e568fd"
+-- }
 ---@class LlamaServerChatCompletionSSE : LlamaServerSSEBase
 ---@field choices LlamaServerChatCompletionSSE_Choice[]
+---@field created integer
+---@field id string
+---@field model string
+---@field object string -- "chat.completion.chunk"
+---@field system_fingerprint string -- deprecated
 
 ---@class LlamaServerRawCompletionSSE : LlamaServerSSEBase
 ---@field content? string|vim.NIL
