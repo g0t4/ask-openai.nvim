@@ -22,11 +22,27 @@ import argcomplete
 from tools.chat_viewer.markdown_utils import split_h2_markdown_sections
 from tools.chat_viewer.tree_wrapper import TreeWrapper
 from tools.chat_viewer.run_process_formatter import commandline_equivalent_for_argv, format_heredoc_stdin
-from tools.chat_viewer.timings import ModelTimings, parse_timings, format_stats_line
+from tools.chat_viewer.timings import ModelTimings, parse_timings, format_stats_line, format_timings_display
 from tools.chat_viewer.timing_utils import parse_tool_call_timings
 
 # Enable recording so that ``save_html`` can export the rendered output.
 _console = Console(color_system="truecolor")
+
+def _parse_timings_from_dict(timings_dict: dict[str, Any] | None) -> ModelTimings | None:
+    if not timings_dict or not isinstance(timings_dict, dict):
+        return None
+    return ModelTimings(
+        prompt_tokens=timings_dict.get("prompt_n", 0),
+        predicted_tokens=timings_dict.get("predicted_n", 0),
+        cached_tokens=timings_dict.get("cache_n"),
+        draft_tokens=timings_dict.get("draft_n"),
+        draft_tokens_accepted=timings_dict.get("draft_n_accepted"),
+        prompt_ms=timings_dict.get("prompt_ms", 0.0),
+        predicted_ms=timings_dict.get("predicted_ms", 0.0),
+        prompt_tokens_per_second=timings_dict.get("prompt_per_second", 0.0),
+        predicted_tokens_per_second=timings_dict.get("predicted_per_second", 0.0),
+    )
+
 
 preapproved_file_patterns: list[re.Pattern] = []
 SHOW_ALL = False
@@ -764,6 +780,16 @@ def print_raw_completion_message(msg: dict):
 
 def print_assistant_message(msg: dict):
     root = TreeWrapper.hidden_root()
+
+    # Show per-message timings if present
+    msg_timings_dict = msg.get("timings")
+    if msg_timings_dict:
+        msg_timings = _parse_timings_from_dict(msg_timings_dict)
+        if msg_timings:
+            display = format_timings_display(msg_timings)
+            if display:
+                root.add(f"[dim]{display}[/]")
+                root.blank_line()
 
     reasoning = msg.get("reasoning_content")
     if reasoning:
