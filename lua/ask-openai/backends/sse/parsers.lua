@@ -103,6 +103,13 @@ end
 ---@param sse LlamaServerChatCompletionSSE
 ---@return SseFieldsResult
 function parse_sse_v1_chat_completions(sse)
+    if not sse.choices or not sse.choices[1] then
+        log:error("SSE is missing choices", sse)
+        -- leave as hard stop error b/c I don't think this ever happens... but error will help me figure out if it does!
+        -- this would be for chat completions endpoint only... that's part of expectation already in calling this parse_sse_v1_chat_completions
+        -- and right now I only use this for predictions
+        error("SSE is missing choices - I don't think this ever happens so if it does... then raise hard error")
+    end
     local content = ""
     local reasoning_content = ""
     local done = false
