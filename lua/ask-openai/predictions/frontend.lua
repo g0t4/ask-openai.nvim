@@ -109,21 +109,22 @@ function PredictionsFrontend.ask_for_prediction(params)
 
         this_prediction.fim_request = fim_request
 
-        --- Extracts the appropriate SSE parsing result based on the current FIM backend.
         ---@param sse_parsed LlamaServerSSEBase
-        ---@return table sse_result The parsed SSE result.
+        ---@return SseFieldsResult sse_result
         local function _extract_sse_fields(sse_parsed)
             if fim_request.endpoint == CompletionsEndpoints.llamacpp_completions then
                 -- FYI so far all these requests are for raw completions (otherwise I'd use chat completions)
+                ---@cast sse_parsed LlamaServerRawCompletionSSE
                 return parse_sse_llamacpp_completions(sse_parsed)
             end
             if fim_request.endpoint == CompletionsEndpoints.v1_chat_completions then
+                ---@cast sse_parsed LlamaServerChatCompletionSSE
                 return parse_sse_v1_chat_completions(sse_parsed)
             end
             error("Unsupported FIM endpoint: " .. tostring(fim_request.endpoint))
         end
 
-        ---@type OnParsedSSE
+        ---@type fun(sse_parsd: LlamaServerSSEBase)
         local function on_parsed_data_sse(sse_parsed)
             this_prediction.performance:token_arrived()
             -- log:info("sse_parsed", sse_parsed)
