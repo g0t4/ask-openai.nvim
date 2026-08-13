@@ -17,9 +17,55 @@ _G.CompletionsEndpoints = {
     v1_chat_completions = "/v1/chat/completions",
 }
 
----@alias OnParsedSSE fun(sse_parsed: table)
+---@alias OnParsedSSE fun(sse_parsed: LlamaServerSSEBase)
 ---@alias ExplainError fun(text: string)
 ---@alias OnCurlExitedSuccessfully fun()
+
+---@class LlamaServerSSETimings
+---@field draft_n_accepted integer
+---@field draft_n integer
+---@field cache_n integer
+---@field predicted_n integer
+---@field prompt_per_second number
+---@field prompt_ms number
+---@field prompt_per_token_ms number
+---@field predicted_ms number
+---@field predicted_per_token_ms number
+---@field prompt_n integer
+---@field predicted_per_second number
+
+---@class LlamaServerGenerationSettings
+---@field generation_prompt? string
+---@field max_tokens integer -- -1 == no limit
+---@field temperature number
+
+---@class LlamaServerVerbose
+---@field content? string
+---@field generation_settings LlamaServerGenerationSettings
+---@field model string
+---@field prompt string
+---@field stop boolean
+---@field stop_type string -- i.e. "eos"
+---@field stopping_word string
+---@field timings LlamaServerSSETimings -- PREFER to use sse.timings
+---@field truncated boolean
+
+---@class LlamaServerSSEBase
+---@field timings LlamaServerSSETimings
+---@field __verbose? LlamaServerVerbose
+
+---@class LlamaServerChatCompletionSSE_Delta
+---@field content? string|vim.NIL
+---@field reasoning_content? string|vim.NIL
+
+---@class LlamaServerChatCompletionSSE_Choice
+---@field delta LlamaServerChatCompletionSSE_Delta
+---@field finish_reason string|vim.NIL
+
+---@class LlamaServerChatCompletionSSE : LlamaServerSSEBase
+---@field choices LlamaServerChatCompletionSSE_Choice[]
+
+---@class LlamaServerRawCompletionSSE : LlamaServerSSEBase
 
 ---@class StreamingFrontend
 ---@field on_parsed_data_sse OnParsedSSE

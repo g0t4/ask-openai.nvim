@@ -110,7 +110,7 @@ function PredictionsFrontend.ask_for_prediction(params)
         this_prediction.fim_request = fim_request
 
         --- Extracts the appropriate SSE parsing result based on the current FIM backend.
-        ---@param sse_parsed table The raw SSE data to be parsed.
+        ---@param sse_parsed LlamaServerSSEBase
         ---@return table sse_result The parsed SSE result.
         local function _extract_sse_fields(sse_parsed)
             if fim_request.endpoint == CompletionsEndpoints.llamacpp_completions then

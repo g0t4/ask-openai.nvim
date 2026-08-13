@@ -501,7 +501,7 @@ end
 --- think of this as denormalizing SSEs => into aggregate RxAccumulatedMessage
 ---@param choice OpenAIChoice|nil
 ---@param request CurlRequestForTrace
----@param sse_parsed OnParsedSSE
+---@param sse_parsed LlamaServerSSEBase
 function AgentsFrontend.on_streaming_delta_update_message_history(choice, request, sse_parsed)
     -- *** this is a DENORMALIZER (AGGREGATOR) - CQRS style
     -- rebuilds message as if sent `stream: false`

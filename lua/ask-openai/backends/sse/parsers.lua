@@ -100,7 +100,7 @@ function get_probs(choice)
     return selected_token_prob
 end
 
----@param sse OpenAIChatCompletionChunk
+---@param sse LlamaServerChatCompletionSSE
 ---@return SseFieldsResult
 function parse_sse_v1_chat_completions(sse)
     local content = ""
@@ -142,7 +142,7 @@ function parse_sse_v1_chat_completions(sse)
     }
 end
 
----@param sse LlamaCppCompletionSSE
+---@param sse LlamaServerRawCompletionSSE
 ---@return SseFieldsResult
 function parse_sse_llamacpp_completions(sse)
     -- FYI response_fields limits fields per SSE...

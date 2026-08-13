@@ -32,7 +32,7 @@ local M = {
 
 }
 
----@param sse table
+---@param sse LlamaServerSSEBase
 ---@returns SSEStats?
 function M.parse_llamacpp_stats(sse)
     -- *** currently only llama-server stats from its last SSE
