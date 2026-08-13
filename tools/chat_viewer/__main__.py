@@ -789,7 +789,12 @@ def print_assistant_message(msg: dict):
             display = format_timings_display(msg_timings)
             if display:
                 root.add(f"[dim]{display}[/]")
-                root.blank_line()
+            # add per-second stats and draft acceptance if available
+            stats = format_stats_line(msg_timings)
+            if stats:
+                # stats already contains markup, add as is
+                root.add(stats)
+            root.blank_line()
 
     reasoning = msg.get("reasoning_content")
     if reasoning:
