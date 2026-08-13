@@ -66,6 +66,13 @@ _G.CompletionsEndpoints = {
 ---@field choices LlamaServerChatCompletionSSE_Choice[]
 
 ---@class LlamaServerRawCompletionSSE : LlamaServerSSEBase
+---@field content? string|vim.NIL
+---@field id_slot integer
+---@field index integer
+---@field stop? boolean
+---@field tokens integer[]
+---@field tokens_evaluated integer
+---@field tokens_predicted integer
 
 ---@class StreamingFrontend
 ---@field on_parsed_data_sse OnParsedSSE
