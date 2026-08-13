@@ -434,6 +434,22 @@ local function update_ui_chat_viewer(trace)
             lines:append_folded_styled_text(reasoning_content, HLGroups.CHAT_REASONING)
 
             lines:append_text(content)
+            -- Show per-message timings for assistant once complete
+            if rx_message.role == 'assistant' and rx_message.last_sse and rx_message.last_sse.timings then
+                local t = rx_message.last_sse.timings
+                local parts = {}
+                local total = (t.prompt_n or 0) + (t.predicted_n or 0)
+                if t.cache_n and t.cache_n > 0 then
+                    table.insert(parts, string.format('%d cached', t.cache_n))
+                end
+                table.insert(parts, string.format('%d tokens', total))
+                if t.predicted_per_second and t.predicted_per_second > 0 then
+                    table.insert(parts, string.format('%.0f tok/s', t.predicted_per_second))
+                end
+                if #parts > 0 then
+                    lines:append_styled_text(table.concat(parts, ' | '), HLGroups.CHAT_REASONING)
+                end
+            end
             lines:append_blank_line_if_last_is_not_blank() -- only if reasoning doesn't have trailing \n
         elseif #rx_message.tool_calls == 0 then
             -- gptoss120b - this works:
