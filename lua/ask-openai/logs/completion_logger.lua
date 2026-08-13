@@ -30,7 +30,7 @@ end
 function M.log_sse_to_request(sse_parsed, request, frontend)
     local is_last_sse = sse_parsed.timings -- timings only on last sse
 
-    function M.log_raw_completion_sse()
+    local function log_raw_completion_sse()
         -- /v1/completions endpoint
         local is_raw_completion_sse = sse_parsed.content ~= nil
         if not is_raw_completion_sse then
@@ -79,7 +79,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         end)
     end
 
-    function M.log_chat_completion_sse()
+    local function log_chat_completion_sse()
         local is_chat_completion_sse = sse_parsed.choices ~= nil
         if not is_chat_completion_sse then
             return
@@ -152,8 +152,8 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
     end
 
     -- log:info("sse_parsed", vim.inspect(sse_parsed))
-    M.log_raw_completion_sse()
-    M.log_chat_completion_sse()
+    log_raw_completion_sse()
+    log_chat_completion_sse()
 end
 
 ---@param request CurlRequest|CurlRequestForTrace
