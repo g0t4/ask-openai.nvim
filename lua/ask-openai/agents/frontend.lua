@@ -104,6 +104,11 @@ local function ask_agent_command(opts)
         local cwd = vim.fn.getcwd()
         local cwd_text = "Current directory: " .. cwd
         local repo_root = files.get_repo_root()
+        local repo_is_dirty = false
+        if repo_root then
+            local git_status = vim.fn.system("git -C " .. repo_root .. " status --porcelain")
+            repo_is_dirty = git_status ~= ""
+        end
         if repo_root == nil then
             log:info("not in a repo, suggesting to agent to stay within workdir", vim.log.levels.WARN)
             cwd_text = cwd_text .. "\nyou are not in a git repo, please only make changes in the workdir unless requested"
@@ -126,6 +131,10 @@ local function ask_agent_command(opts)
             else
                 vim.notify("You aren't in repo root and yet the calculation for number of levels deep returned 0???, check logic for levels deep warning", vim.log.levels.WARN)
             end
+        end
+        if repo_root and repo_is_dirty then
+            vim.notify("FYI your repo has uncommitted changes (dirty) which may cause issues with agent tool usage", vim.log.levels.WARN)
+            cwd_text = cwd_text .. "\nRepository is dirty (has uncommitted changes)"
         end
         tool_instructs = tool_instructs:gsub("INSERT_CWD", cwd_text)
         system = system .. "\n\n" .. tool_instructs
