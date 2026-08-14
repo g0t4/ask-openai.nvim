@@ -125,7 +125,7 @@ end
 --- @class Endpoint
 --- @field base_url string
 
---- @return table<string, Endpoint>
+--- @return table { cmdline: Endpoint, qwen: Endpoint, deepseek: Endpoint, gptoss: Endpoint, gemma4: Endpoint, glm: Endpoint, muse: Endpoint, ["nemo-lightning"]: Endpoint }`
 function M.get_endpoints()
     local gptoss_url = "http://ask.lan:8013"
     local qwen3_url = "http://ask.lan:8012"
