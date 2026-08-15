@@ -81,8 +81,8 @@ Model info section (print_model_info) displays multi-line timing stats below mod
 ```
 Model: ggml-org/gpt-oss-120b-GGUF
 cached: 11,702 tokens
-in: 342 tokens @ 4,009.5 tok/sec
-out: 41 tokens @ 241.6 tok/sec
+in: 342 tokens @ 4,009.5 tok/s
+out: 41 tokens @ 241.6 tok/s
   draft: 80.8% accepted (101 / 125 tokens)
 ```
 

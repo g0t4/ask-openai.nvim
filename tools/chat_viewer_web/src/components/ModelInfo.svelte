@@ -31,12 +31,12 @@
 
     // Inbound speed
     if (timings.prompt_per_second != null && timings.prompt_per_second > 0) {
-      lines.push(`in: ${humanizeInt(timings.prompt_n ?? 0)} tokens @ ${humanizeFloat(timings.prompt_per_second)} tok/sec`)
+      lines.push(`in: ${humanizeInt(timings.prompt_n ?? 0)} tokens @ ${humanizeFloat(timings.prompt_per_second)} tok/s`)
     }
 
     // Outbound speed
     if (timings.predicted_per_second != null && timings.predicted_per_second > 0) {
-      lines.push(`out: ${humanizeInt(timings.predicted_n ?? 0)} tokens @ ${humanizeFloat(timings.predicted_per_second)} tok/sec`)
+      lines.push(`out: ${humanizeInt(timings.predicted_n ?? 0)} tokens @ ${humanizeFloat(timings.predicted_per_second)} tok/s`)
     }
 
     // Draft tokens (speculative decoding / MTP)

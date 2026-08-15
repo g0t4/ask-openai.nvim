@@ -1012,7 +1012,7 @@ def main() -> None:
         table.add_column(justify='left')
         for i, (msg, speed) in enumerate(assistant_speeds, start=1):
             bar = ProgressBar(total=max_speed, completed=speed, width=40)
-            label = f'[dim]Assistant #{i}[/] {speed:.1f} tok/sec'
+            label = f'[dim]Assistant #{i}[/] {speed:.1f} tok/s'
             table.add_row(bar, label)
         _console.print(table)
         _console.print()

@@ -26,7 +26,7 @@ local M = {}
 -- Tweak these to stress-test different sizes/rates.
 local DEFAULT_TOTAL_LINES = 2000 -- total lines streamed (long trace ballpark)
 local DEFAULT_LINES_PER_WRITE = 2 -- lines appended per timer tick
-local DEFAULT_WRITE_INTERVAL_MS = 4 -- ~250 tok/sec with 1 line/tick
+local DEFAULT_WRITE_INTERVAL_MS = 4 -- ~250 tok/s with 1 line/tick
 
 -- A small pool of long-ish filler lines (plain text, no styling) so the buffer
 -- grows into something that looks like a real agent response.

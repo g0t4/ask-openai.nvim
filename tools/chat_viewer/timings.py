@@ -167,11 +167,11 @@ def format_stats_line(timings: ModelTimings | None) -> str:
 
     # Inbound speed
     if timings.prompt_tokens_per_second > 0:
-        lines.append(f"[dim]in: {_humanize_int(timings.prompt_tokens)} tokens @ {_humanize_float(timings.prompt_tokens_per_second)} tok/sec[/]")
+        lines.append(f"[dim]in: {_humanize_int(timings.prompt_tokens)} tokens @ {_humanize_float(timings.prompt_tokens_per_second)} tok/s[/]")
 
     # Outbound speed
     if timings.predicted_tokens_per_second > 0:
-        lines.append(f"[dim]out: {_humanize_int(timings.predicted_tokens)} tokens @ {_humanize_float(timings.predicted_tokens_per_second)} tok/sec[/]")
+        lines.append(f"[dim]out: {_humanize_int(timings.predicted_tokens)} tokens @ {_humanize_float(timings.predicted_tokens_per_second)} tok/s[/]")
 
     # Draft tokens (speculative decoding / MTP)
     if timings.draft_tokens is not None and timings.draft_tokens > 0:

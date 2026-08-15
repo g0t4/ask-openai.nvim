@@ -393,7 +393,7 @@ async function loadTrace(url: string) {
               <div class="flex-1 h-4 bg-gray-800 rounded overflow-hidden">
                 <div class="h-full bg-yellow-500/70" style="width: {pct}%"></div>
               </div>
-              <div class="w-24 text-xs text-gray-300 font-mono text-right">{speed.toFixed(1)} tok/sec</div>
+              <div class="w-24 text-xs text-gray-300 font-mono text-right">{speed.toFixed(1)} tok/s</div>
             </div>
           {/each}
         </div>

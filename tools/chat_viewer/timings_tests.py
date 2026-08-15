@@ -262,8 +262,8 @@ def test_format_stats_line_basic() -> None:
     
     # Check each line
     assert "cached: 349 tokens" in lines[0]
-    assert "in: 129 tokens @ 2,010.9 tok/sec" in lines[1]
-    assert "out: 296 tokens @ 260.2 tok/sec" in lines[2]
+    assert "in: 129 tokens @ 2,010.9 tok/s" in lines[1]
+    assert "out: 296 tokens @ 260.2 tok/s" in lines[2]
 
 
 def test_format_stats_line_large_numbers() -> None:
@@ -280,8 +280,8 @@ def test_format_stats_line_large_numbers() -> None:
     lines = stats.split("\n")
     
     assert "cached: 25,000 tokens" in lines[0]
-    assert "in: 10,000 tokens @ 100,000.5 tok/sec" in lines[1]
-    assert "out: 50,000 tokens @ 5,000.1 tok/sec" in lines[2]
+    assert "in: 10,000 tokens @ 100,000.5 tok/s" in lines[1]
+    assert "out: 50,000 tokens @ 5,000.1 tok/s" in lines[2]
 
 
 def test_format_stats_line_with_draft() -> None:
@@ -302,8 +302,8 @@ def test_format_stats_line_with_draft() -> None:
     # Should have 4 lines: cached, in, out, draft
     assert len(lines) == 4
     assert "cached: 349 tokens" in lines[0]
-    assert "in: 129 tokens @ 2,010.9 tok/sec" in lines[1]
-    assert "out: 296 tokens @ 260.2 tok/sec" in lines[2]
+    assert "in: 129 tokens @ 2,010.9 tok/s" in lines[1]
+    assert "out: 296 tokens @ 260.2 tok/s" in lines[2]
     assert "  draft:" in lines[3]
     assert "80.8% accepted" in lines[3]  # 101/125 = 80.8%
     assert "(101 / 125 tokens)" in lines[3]
@@ -323,8 +323,8 @@ def test_format_stats_line_no_cache() -> None:
     
     # Should only have 2 lines: in, out (no cached line)
     assert len(lines) == 2
-    assert "in: 100 tokens @ 100.0 tok/sec" in lines[0]
-    assert "out: 50 tokens @ 50.0 tok/sec" in lines[1]
+    assert "in: 100 tokens @ 100.0 tok/s" in lines[0]
+    assert "out: 50 tokens @ 50.0 tok/s" in lines[1]
 
 
 def test_format_stats_line_no_speed() -> None:

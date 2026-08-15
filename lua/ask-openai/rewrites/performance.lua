@@ -99,7 +99,7 @@ function RewritePerformance:ttft_minus_rag_ms()
 end
 
 --- Computes estimated tokens_per_second based on delta counts and elapsed time.
---- Automatically subtracts RAG duration from total elapsed time, since tok/sec
+--- Automatically subtracts RAG duration from total elapsed time, since tok/s
 --- is meant to measure completion speed only.
 ---@return number|nil
 function RewritePerformance:tokens_per_second()
@@ -139,7 +139,7 @@ function RewritePerformance:preview_summary()
 
     local tok_per_sec = self:tokens_per_second()
     if tok_per_sec > 0 then
-        local speed = string.format("~%.0f tok/sec", tok_per_sec)
+        local speed = string.format("~%.0f tok/s", tok_per_sec)
         table.insert(parts, speed)
     end
 
