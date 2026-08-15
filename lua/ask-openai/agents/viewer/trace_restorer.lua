@@ -5,6 +5,7 @@ local LinesBuilder = require("ask-openai.agents.viewer.lines_builder")
 local formatters = require("ask-openai.agents.viewer.formatters")
 local ToolCallOutput = require("ask-openai.agents.tools.tool_call_output")
 local safely = require("ask-openai.helpers.safely")
+local config = require("ask-openai.config")
 
 local M = {}
 
@@ -490,7 +491,6 @@ end
 ---
 ---@return table params -- request body params similar to a fresh request
 local function build_followup_params()
-    local config = require("ask-openai.config")
     local tool_router = require("ask-openai.tools.router")
 
     local model_name = config.get_agents_model()

@@ -26,6 +26,8 @@ local ToolCall = require("ask-openai.agents.tools.tool_call")
 local rag_instructions = require("ask-openai.frontends.prompts.rag_instructions")
 local inspect = require("devtools.inspect")
 local config = require("ask-openai.config")
+local context_builder = require("ask-openai.agents.context_builder")
+local trace_restorer = require("ask-openai.agents.viewer.trace_restorer")
 
 require("ask-openai.helpers.buffers")
 
@@ -102,7 +104,6 @@ local function ask_agent_command(opts)
         -- * repo root vs cwd prompt instructions
         local cwd = vim.fn.getcwd()
         local repo_root = files.get_repo_root()
-        local context_builder = require("ask-openai.agents.context_builder")
         local cwd_text = context_builder.build_git_context(cwd, repo_root)
 
         system = system:gsub("INSERT_CWD", cwd_text)
@@ -377,7 +378,6 @@ function AgentsFrontend.ensure_chat_window_is_open()
 
         -- * lookup model name (to show in title)
         local configured_model = config.get_agents_model()
-        local config = require("ask-openai.config")
         local base_url = config.get_base_url(configured_model)
         config.get_llama_server_model_info(base_url, function(model)
             AgentsFrontend.chat_window:update_model_name(model.name)
@@ -834,7 +834,6 @@ local function remove_last_message(args)
     vim.print("Removed", removed_messages)
 end
 
-local trace_restorer = require("ask-openai.agents.viewer.trace_restorer")
 
 local function restore_trace(trace_path)
     log:info("Restoring session from: " .. trace_path)
