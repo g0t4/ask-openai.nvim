@@ -102,43 +102,17 @@ local function ask_agent_command(opts)
         local tool_instructs = get_file("~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/agents/prompts/tools.md")
         -- * repo root vs cwd prompt instructions
         local cwd = vim.fn.getcwd()
-        local cwd_text = "Current directory: " .. cwd
         local repo_root = files.get_repo_root()
-        if repo_root == nil then
-            log:info("not in a repo, suggesting to agent to stay within workdir", vim.log.levels.WARN)
-            cwd_text = cwd_text .. "\nyou are not in a git repo, please only make changes in the workdir unless requested"
-        elseif repo_root ~= cwd then
-            vim.notify("NESTED REPO", vim.log.levels.WARN)
-            -- PRN path compare instead of text comparison? add this if you run into a problem
-            cwd_text = cwd_text .. "\nRepository root: " .. repo_root
-            -- Determine nesting depth relative to repo root
-            local relative_path = cwd:sub(#repo_root + 2) -- strip trailing slash
-            local depth = 0
-            for _ in string.gmatch(relative_path, "[^/]+") do
-                depth = depth + 1
-            end
-            -- TODO I need to make sure paths are always relative to current dir, that is the real solution me thinks
-            -- TODO and warn the user (me) when I am in a nested dir! for now
-            if depth > 0 then
-                -- FYI it is very rare that I run nvim from a nested dir, so the conditional, added overhead in system message is fine here
-                local rel = ("../"):rep(depth)
-                cwd_text = cwd_text .. "\nYou are " .. depth .. " levels deep, so you need " .. rel .. " to build relative paths from repo root."
-            else
-                vim.notify("You aren't in repo root and yet the calculation for number of levels deep returned 0???, check logic for levels deep warning", vim.log.levels.WARN)
-            end
-        end
-
-        -- * warn if repo is dirty
+        local repo_is_dirty = false
         if repo_root then
             local git_status = vim.fn.system("git -C " .. repo_root .. " status --porcelain")
-            local repo_is_dirty = git_status ~= ""
-            if repo_is_dirty then
-                vim.notify("*** DIRTY REPO ***", vim.log.levels.WARN)
-                cwd_text = cwd_text .. "\nRepository is dirty (has uncommitted changes)"
-            end
+            repo_is_dirty = git_status ~= ""
         end
+        local context_builder = require("ask-openai.agents.context_builder")
+        local cwd_text = context_builder.build_git_context(cwd, repo_root, repo_is_dirty)
 
         tool_instructs = tool_instructs:gsub("INSERT_CWD", cwd_text)
+
         system = system .. "\n\n" .. tool_instructs
 
         local tool_provided_instructs
