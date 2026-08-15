@@ -1,6 +1,7 @@
 local local_share = require("ask-openai.config.local_share")
 local LlamaServerClient = require("ask-openai.backends.llama_cpp.llama_server_client")
 local log = require("devtools.logs.logger"):universal()
+local models = require("ask-openai.config.models")
 
 local M = {}
 
@@ -16,47 +17,6 @@ local _fetch_in_progress = {}
 -- cache: base_url -> ModelCacheEntry
 local _model_cache = {}
 
-local MODEL_PATTERNS = {
-    -- FYI escape - => %- (easy to forget and will bork the pattern)
-    --
-    -- ALSO, order matters: more specific patterns first
-    --
-    -- ggml-org/Qwen3.6-35B-A3B-MTP-GGUF:Q8_0
-    { pattern = "/Qwen3%.6.*%-MTP",      abbrev = "qwen3mtp" },
-    -- ggml-org/Qwen3.6-35B-A3B-GGUF:Q8_0
-    { pattern = "/Qwen3%.6",             abbrev = "qwen3" },
-    -- g0t4/Qwen-AgentWorld-35B-A3B-GGUF:Q8_0
-    { pattern = "/Qwen%-AgentWorld",     abbrev = "agentworld" },
-    -- ggml-org/gpt-oss-120b-GGUF
-    { pattern = "/gpt%-oss",             abbrev = "gptoss" },
-    -- google/gemma-4-26B-A4B-it-qat-q4_0-gguf
-    { pattern = "/gemma%-4",             abbrev = "gemma4" },
-    -- ggml-org/GLM-4.7-Flash-GGUF:Q8_0
-    { pattern = "/GLM%-4.7%-Flash",      abbrev = "glm" },
-    -- ggml-org/DeepSeek-V4-Flash-0731-GGUF
-    { pattern = "/DeepSeek%-V4%-Flash", abbrev = "deepseek" },
-    { pattern = "/Muse%-Glimmer", abbrev = "muse" },
-    -- ggml-org/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-GGUF:Q4_K_M
-    { pattern = "/NVIDIA%-Nemotron", abbrev = "nemo-lightning" },
-}
-
---- Abbreviate a raw model name using pattern matching, or return the original name.
---- @param raw_model string|nil
---- @return string
-function M.abbreviate_model(raw_model)
-    if not raw_model then
-        return "MISSING_NAME"
-    end
-
-    for _, entry in ipairs(MODEL_PATTERNS) do
-        if raw_model:match(entry.pattern) then
-            return entry.abbrev
-        end
-    end
-
-    return raw_model
-end
-
 local function NOOP() end
 
 ---@param base_url string
@@ -71,7 +31,7 @@ local function refresh_model_info_cache_for(base_url, callback)
         return
     end
 
-    local model_name = M.abbreviate_model(model_info.name)
+    local model_name = models.abbreviate_model(model_info.name)
 
     local entry = { name = model_name, model_info = model_info, base_url = base_url, ts = os.time() }
     _model_cache[base_url] = entry

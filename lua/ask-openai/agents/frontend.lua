@@ -644,10 +644,10 @@ function AgentsFrontend.on_curl_exited_successfully()
         local last_message = request.accumulated_model_response_messages and request.accumulated_model_response_messages[#request.accumulated_model_response_messages]
         if last_message and last_message.last_sse and last_message.last_sse.model then
             local actual_name = last_message.last_sse.model
-            local actual_abbrev = config.abbreviate_model(actual_name)
+            local actual_abbrev = models.abbreviate_model(actual_name)
             -- map abstract configured model to expected abbrev
             local configured_model = api.get_agents_model()
-            local configured_abbrev = config.abbreviate_model(configured_model)
+            local configured_abbrev = models.abbreviate_model(configured_model)
             if actual_abbrev ~= configured_abbrev then
                 vim.notify("Model mismatch: configured " .. configured_model .. " (" .. configured_abbrev .. ") vs actual " .. actual_name .. " (" .. actual_abbrev .. ")", vim.log.levels.WARN)
             end
