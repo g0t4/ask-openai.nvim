@@ -418,14 +418,23 @@ local function update_ui_chat_viewer(trace)
             if rx_message.role == 'assistant' and rx_message.last_sse and rx_message.last_sse.timings then
                 local t = rx_message.last_sse.timings
                 local parts = {}
-                local total = (t.prompt_n or 0) + (t.predicted_n or 0)
+
                 if t.cache_n and t.cache_n > 0 then
                     table.insert(parts, string.format('%d cached', t.cache_n))
                 end
-                table.insert(parts, string.format('%d tokens', total))
-                if t.predicted_per_second and t.predicted_per_second > 0 then
-                    table.insert(parts, string.format('%.0f tok/s', t.predicted_per_second))
+
+                local input = string.format('in: %d', t.prompt_n or 0)
+                if t.prompt_per_second and t.prompt_per_second > 0 then
+                    input = input .. string.format(' @ %.0f tok/s', t.prompt_per_second)
                 end
+                table.insert(parts, input)
+
+                local output = string.format('out: %d', t.predicted_n or 0)
+                if t.predicted_per_second and t.predicted_per_second > 0 then
+                    output = output .. string.format(' @ %.0f tok/s', t.predicted_per_second)
+                end
+                table.insert(parts, output)
+
                 if #parts > 0 then
                     lines:append_styled_text(table.concat(parts, ' | '), HLGroups.CHAT_REASONING)
                 end
