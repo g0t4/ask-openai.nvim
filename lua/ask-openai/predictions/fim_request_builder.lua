@@ -112,7 +112,7 @@ function FimRequestBuilder:fim_request()
         body.top_logprobs = 5
     end
 
-    local model = api.get_fim_model()
+    local model = config.get_fim_model()
     local curl_params = CurlParamsBuilder:new(config.get_endpoints()[model].base_url, body)
 
     if string.find(model, "codellama") then

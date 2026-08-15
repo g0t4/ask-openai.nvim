@@ -26,54 +26,6 @@ function M.are_predictions_enabled()
     return config.local_share.are_predictions_enabled()
 end
 
--- * FIM model *
----@param model string
-function M.set_fim_model(model)
-    config.local_share.set_fim_model(model)
-end
-
----@return string
-function M.get_fim_model()
-    return config.local_share.get_fim_model()
-end
-
----@return string
-function M.toggle_fim_model()
-    config.local_share.toggle_fim_model()
-end
-
--- * Rewrite model *
----@param model string
-function M.set_rewrite_model(model)
-    config.local_share.set_rewrite_model(model)
-end
-
----@return string
-function M.get_rewrite_model()
-    return config.local_share.get_rewrite_model()
-end
-
----@return string
-function M.toggle_rewrite_model()
-    return config.local_share.toggle_rewrite_model()
-end
-
--- * Agents model *
----@param model string
-function M.set_agents_model(model)
-    config.local_share.set_agents_model(model)
-end
-
----@return string
-function M.get_agents_model()
-    return config.local_share.get_agents_model()
-end
-
----@return string
-function M.toggle_agents_model()
-    return config.local_share.toggle_agents_model()
-end
-
 -- * reasoning level (universal - FIM, Ask*)
 function M.set_fim_reasoning_level(level)
     config.local_share.set_fim_reasoning_level(level)

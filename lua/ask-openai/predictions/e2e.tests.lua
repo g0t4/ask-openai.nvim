@@ -1,4 +1,5 @@
 require("ask-openai.helpers.test_setup").modify_package_path()
+local config = require("ask-openai.config")
 
 -- * Load shared E2E test utilities
 local e2e = require("ask-openai.helpers.test_e2e")
@@ -35,8 +36,8 @@ describe("E2E - FIM predictions", function()
             api.are_predictions_enabled(),
             "FIM/predictions are DISABLED. Enable them (e.g. :AskEnablePredictions or :AskTogglePredictions) before running this e2e FIM test."
         )
-        local fim_model = api.get_fim_model() or "qwen"
-        api.set_fim_model(fim_model)
+        local fim_model = config.get_fim_model() or "qwen"
+        config.set_fim_model(fim_model)
 
         print("\n========== TRIGGERING FIM PREDICTION ==========")
         print("  Buffer lines: " .. table.concat(buffer_lines, ", "))

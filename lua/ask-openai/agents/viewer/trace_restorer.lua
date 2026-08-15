@@ -494,7 +494,7 @@ local function build_followup_params()
     local config = require("ask-openai.config")
     local tool_router = require("ask-openai.tools.router")
 
-    local model_name = api.get_agents_model()
+    local model_name = config.get_agents_model()
     local base_url = config.get_base_url(model_name)
 
     -- Build tool definitions (same as a fresh request)

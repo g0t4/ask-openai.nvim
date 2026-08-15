@@ -454,7 +454,7 @@ local function ask_rewrite_command(opts)
             verbose = true, -- my llama-server flag to include __verbose one-off (instead of needing --verbose on server start)
         }
 
-        local model = api.get_rewrite_model()
+        local model = config.get_rewrite_model()
         local reasoning_level = context.includes:get_reasoning_level() or api.get_rewrite_reasoning_level()
 
         RewriteFrontend.last_request = CurlRequest:new({

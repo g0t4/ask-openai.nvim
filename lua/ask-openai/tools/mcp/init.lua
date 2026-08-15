@@ -4,6 +4,7 @@ local ansi = require("devtools.ansi")
 local plumbing = require("ask-openai.tools.plumbing")
 local safely = require("ask-openai.helpers.safely")
 local uv_spawn = require("ask-openai.helpers.uv_spawn")
+local config = require("ask-openai.config")
 
 local uv = vim.uv
 
@@ -656,7 +657,7 @@ function M.get_system_message_instructions(tool_name)
         local api = require("ask-openai.api")
         local run_process_dir = "~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/tools/mcp/run_process"
         local commits_template = files.read_text(run_process_dir .. "/commits.md")
-        local current_model = api.get_agents_model()
+        local current_model = config.get_agents_model()
         local author = models_mod.MODEL_AUTHOR_MAP[current_model] or "unknown<unknown@example.com>"
         local commits = commits_template:gsub("INSERT_COMMIT_AUTHOR", author)
         local commands = files.read_text(run_process_dir .. "/commands.md")

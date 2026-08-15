@@ -1,4 +1,5 @@
 require("ask-openai.helpers.test_setup").modify_package_path()
+local config = require("ask-openai.config")
 
 -- * Register only the AskAgent user command without loading the full plugin.
 --   The full init loads telescope (via rag) which isn't available in headless mode.
@@ -116,7 +117,7 @@ describe("E2E - AskAgent /tools with date question", function()
         local frontend = require("ask-openai.agents.frontend")
 
         -- Set a model for testing (use whatever is available)
-        api.set_agents_model(api.get_agents_model() or "qwen")
+        config.set_agents_model(config.get_agents_model() or "qwen")
 
         -- * Action: invoke the AskAgent command with tools and a date question
         --   Prompt explicitly asks to use the run_process tool

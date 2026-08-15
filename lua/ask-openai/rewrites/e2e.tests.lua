@@ -1,4 +1,5 @@
 require("ask-openai.helpers.test_setup").modify_package_path()
+local config = require("ask-openai.config")
 
 -- * Load shared E2E test utilities
 local e2e = require("ask-openai.helpers.test_e2e")
@@ -29,8 +30,8 @@ describe("E2E - AskRewrite", function()
 
         -- * Setup: configure rewrite model
         local api = require("ask-openai.api")
-        local rewrite_model = api.get_rewrite_model() or "qwen"
-        api.set_rewrite_model(rewrite_model)
+        local rewrite_model = config.get_rewrite_model() or "qwen"
+        config.set_rewrite_model(rewrite_model)
 
         print("\n========== ASKREWRITE SETUP ==========")
         print("  Buffer lines: " .. table.concat(buffer_lines, ", "))

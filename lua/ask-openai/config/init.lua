@@ -146,4 +146,52 @@ end
 
 M.local_share = local_share
 
+-- * Agents model *
+---@param model string
+function M.set_agents_model(model)
+    M.local_share.set_agents_model(model)
+end
+
+---@return string
+function M.get_agents_model()
+    return M.local_share.get_agents_model()
+end
+
+---@return string
+function M.toggle_agents_model()
+    return M.local_share.toggle_agents_model()
+end
+
+-- * FIM model *
+---@param model string
+function M.set_fim_model(model)
+    M.local_share.set_fim_model(model)
+end
+
+---@return string
+function M.get_fim_model()
+    return M.local_share.get_fim_model()
+end
+
+---@return string
+function M.toggle_fim_model()
+    M.local_share.toggle_fim_model()
+end
+
+-- * Rewrite model *
+---@param model string
+function M.set_rewrite_model(model)
+    M.local_share.set_rewrite_model(model)
+end
+
+---@return string
+function M.get_rewrite_model()
+    return M.local_share.get_rewrite_model()
+end
+
+---@return string
+function M.toggle_rewrite_model()
+    return M.local_share.toggle_rewrite_model()
+end
+
 return M

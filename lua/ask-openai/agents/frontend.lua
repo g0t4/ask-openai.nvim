@@ -230,7 +230,7 @@ local function ask_agent_command(opts)
             verbose = true, -- capture __verbose one-off
         }
 
-        local model = api.get_agents_model()
+        local model = config.get_agents_model()
         local reasoning_level = context.includes:get_reasoning_level() or api.get_agents_reasoning_level()
 
         local base_url = config.get_base_url(model)
@@ -378,7 +378,7 @@ function AgentsFrontend.ensure_chat_window_is_open()
 
         -- * lookup model name (to show in title)
         local api = require("ask-openai.api")
-        local configured_model = api.get_agents_model()
+        local configured_model = config.get_agents_model()
         local config = require("ask-openai.config")
         local base_url = config.get_base_url(configured_model)
         config.get_llama_server_model_info(base_url, function(model)
@@ -646,7 +646,7 @@ function AgentsFrontend.on_curl_exited_successfully()
             local actual_name = last_message.last_sse.model
             local actual_abbrev = models.abbreviate_model(actual_name)
             -- map abstract configured model to expected abbrev
-            local configured_model = api.get_agents_model()
+            local configured_model = config.get_agents_model()
             local configured_abbrev = models.abbreviate_model(configured_model)
             if actual_abbrev ~= configured_abbrev then
                 vim.notify("Model mismatch: configured " .. configured_model .. " (" .. configured_abbrev .. ") vs actual " .. actual_name .. " (" .. actual_abbrev .. ")", vim.log.levels.WARN)
