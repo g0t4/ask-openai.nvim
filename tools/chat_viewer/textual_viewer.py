@@ -15,6 +15,7 @@ interactive view shows exactly the same content as the plain CLI dump.
 from __future__ import annotations
 
 import argparse
+import argcomplete
 import io
 import sys
 from pathlib import Path
@@ -120,6 +121,7 @@ def main(argv: list[str] | None = None) -> None:
         default=None,
         help="path to trace file (or stdin if omitted)",
     )
+    argcomplete.autocomplete(parser)
     args = parser.parse_args(argv)
 
     viewer.load_preapproved_files()
