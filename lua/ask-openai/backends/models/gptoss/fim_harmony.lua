@@ -1,5 +1,5 @@
 local log = require("devtools.logs.logger").universal()
-local api = require("ask-openai.api")
+local config = require("ask-openai.config")
 local dedupe = require("ask-openai.rag.client.dedupe")
 local harmony = require("ask-openai.backends.models.gptoss.tokenizer").harmony
 local TxChatMessage = require("ask-openai.agents.messages.tx")
@@ -40,7 +40,7 @@ You are ChatGPT, a large language model trained by OpenAI.
 Knowledge cutoff: 2024-06
 Current date: 2025-11-07
 
-Reasoning: ]] .. api.get_fim_reasoning_level() [[
+Reasoning: ]] .. config.get_fim_reasoning_level() [[
 
 # Valid channels: analysis, commentary, final. Channel must be included for every message.
 ]]

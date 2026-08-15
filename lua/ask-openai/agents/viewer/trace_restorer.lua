@@ -490,7 +490,6 @@ end
 ---
 ---@return table params -- request body params similar to a fresh request
 local function build_followup_params()
-    local api = require("ask-openai.api")
     local config = require("ask-openai.config")
     local tool_router = require("ask-openai.tools.router")
 

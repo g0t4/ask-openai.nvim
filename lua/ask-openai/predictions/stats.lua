@@ -1,4 +1,4 @@
-local api = require("ask-openai.api")
+local config = require("ask-openai.config")
 local llamacpp_stats = require("ask-openai.backends.llama_cpp.stats")
 local log = require("devtools.logs.logger").universal()
 local lualine = require("ask-openai.status.lualine")
@@ -14,7 +14,7 @@ function M.show_prediction_stats(sse, perf)
     end
 
     lualine.set_fim_last_sse(stats, sse)
-    if not api.are_notify_stats_enabled() then
+    if not config.are_notify_stats_enabled() then
         -- log:luaify_trace("stats", sse.timings)
         return
     end

@@ -194,4 +194,89 @@ function M.toggle_rewrite_model()
     return M.local_share.toggle_rewrite_model()
 end
 
+-- * predictions *
+function M.enable_predictions()
+    M.local_share.set_predictions_enabled()
+    require("ask-openai.predictions.frontend").start_predictions()
+end
+
+function M.disable_predictions()
+    M.local_share.set_predictions_disabled()
+    require("ask-openai.predictions.frontend").stop_predictions()
+end
+
+function M.toggle_predictions()
+    if M.local_share.are_predictions_enabled() then
+        M.disable_predictions()
+    else
+        M.enable_predictions()
+    end
+end
+
+function M.are_predictions_enabled()
+    return M.local_share.are_predictions_enabled()
+end
+
+-- * reasoning level (universal - FIM, Ask*)
+function M.set_fim_reasoning_level(level)
+    M.local_share.set_fim_reasoning_level(level)
+end
+
+function M.set_rewrite_reasoning_level(level)
+    M.local_share.set_rewrite_reasoning_level(level)
+end
+
+function M.set_agents_reasoning_level(level)
+    M.local_share.set_agents_reasoning_level(level)
+end
+
+function M.get_fim_reasoning_level()
+    return M.local_share.get_fim_reasoning_level()
+end
+
+function M.get_rewrite_reasoning_level()
+    return M.local_share.get_rewrite_reasoning_level()
+end
+
+function M.get_agents_reasoning_level()
+    return M.local_share.get_agents_reasoning_level()
+end
+
+function M.cycle_fim_reasoning_level()
+    return M.local_share.cycle_fim_reasoning_level()
+end
+
+function M.cycle_rewrite_reasoning_level()
+    return M.local_share.cycle_rewrite_reasoning_level()
+end
+
+function M.cycle_agents_reasoning_level()
+    return M.local_share.cycle_agents_reasoning_level()
+end
+
+-- * notify stats *
+function M.toggle_notify_stats()
+    M.local_share.toggle_notify_stats()
+end
+
+function M.are_notify_stats_enabled()
+    return M.local_share.are_notify_stats_enabled()
+end
+
+-- * rag *
+function M.toggle_rag()
+    M.local_share.toggle_rag()
+    -- FOR NOW LSP won't be stopped/started on toggling RAG flag
+    --  and actually, it may not ever make sense to stop it given if RAG is disabled then it won't be used for queries
+    if M.is_rag_enabled() then
+        print("restart nvim to ensure LSP is stopped")
+    else
+        print("restart nvim to ensure LSP is running")
+    end
+end
+
+function M.is_rag_enabled()
+    return M.local_share.is_rag_enabled()
+end
+
 return M

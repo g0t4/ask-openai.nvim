@@ -29,7 +29,6 @@ describe("E2E - AskRewrite", function()
         vim.bo.filetype = "python"
 
         -- * Setup: configure rewrite model
-        local api = require("ask-openai.api")
         local rewrite_model = config.get_rewrite_model() or "qwen"
         config.set_rewrite_model(rewrite_model)
 

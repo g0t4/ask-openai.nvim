@@ -1,7 +1,7 @@
 local messages = require("devtools.messages")
-local api = require("ask-openai.api")
 local log = require("devtools.logs.logger").universal()
 local rag_client = require("ask-openai.rag.client")
+local config = require("ask-openai.config")
 
 local M = {}
 
@@ -13,7 +13,7 @@ end
 function M.setup_lsp()
     -- TMP disable, i.e. when working on lsp itself :)
     --  HRMm wont be easy to enable/disable this though, will have to restart if LSP wasn't started and rag is toggled?
-    if not api.is_rag_enabled() then
+    if not config.is_rag_enabled() then
         log:trace("NOT starting LSP (b/c RAG is toggled off)")
         return
     end
@@ -224,7 +224,7 @@ end
 --- @return boolean is_available
 --- @return string? warning_message
 local function is_semantic_grep_available()
-    local rag_is_enabled = api.is_rag_enabled()
+    local rag_is_enabled = config.is_rag_enabled()
     local rag_is_supported = rag_client.is_rag_supported()
 
     if not rag_is_enabled then

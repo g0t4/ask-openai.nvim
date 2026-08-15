@@ -654,7 +654,6 @@ function M.get_system_message_instructions(tool_name)
     if tool_name == "run_process" then
         local files = require("ask-openai.helpers.files")
         local models_mod = require("ask-openai.config.models")
-        local api = require("ask-openai.api")
         local run_process_dir = "~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/tools/mcp/run_process"
         local commits_template = files.read_text(run_process_dir .. "/commits.md")
         local current_model = config.get_agents_model()

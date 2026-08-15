@@ -1,5 +1,4 @@
 local log = require("devtools.logs.logger").universal()
-local api = require("ask-openai.api")
 local local_share = require("ask-openai.config.local_share")
 local models = require("ask-openai.config.models")
 local gptoss_tokenizer = require("ask-openai.backends.models.gptoss.tokenizer")

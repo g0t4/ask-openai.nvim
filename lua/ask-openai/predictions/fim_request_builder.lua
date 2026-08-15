@@ -8,7 +8,7 @@ local fim_harmony = require("ask-openai.backends.models.gptoss.fim_harmony")
 local meta = require("ask-openai.backends.models.meta")
 local files = require("ask-openai.helpers.files")
 local ansi = require("devtools.ansi")
-local api = require("ask-openai.api")
+local config = require("ask-openai.config")
 local params = require("ask-openai.agents.models.params")
 local gptoss_tokenizer = require("ask-openai.backends.models.gptoss.tokenizer")
 local CurlRequest = require("ask-openai.backends.curl_request")
@@ -145,7 +145,7 @@ function FimRequestBuilder:fim_request()
     elseif string.find(model, "qwen", nil, true) then
         curl_params:set_raw_completions()
         body.prompt = fim.qwen25coder.get_fim_prompt(self)
-        local level = api.get_fim_reasoning_level()
+        local level = config.get_fim_reasoning_level()
         if level ~= "off" then
             log:warn("qwen FIM style does not support thinking, OFF is only logical value.. if you setup chat completions style with qwen3 then you can have thinking")
         end
@@ -171,7 +171,7 @@ function FimRequestBuilder:fim_request()
             body.max_tokens = 2000 -- FYI if I cut off all thinking
         else
             curl_params:set_chat_completions()
-            local level = api.get_fim_reasoning_level()
+            local level = config.get_fim_reasoning_level()
             body.messages = fim_harmony.gptoss.get_fim_chat_messages(self, level, model)
             body.raw = false
             if model == models.GPTOSS then
@@ -204,7 +204,7 @@ function FimRequestBuilder:fim_request()
         body.prompt = fim.codestral.get_fim_prompt(self)
     elseif model == models.DEEPSEEK then
         curl_params.body.max_tokens = nil -- clear default 200 max tokens
-        local level = api.get_fim_reasoning_level()
+        local level = config.get_fim_reasoning_level()
         if level == models.DEEPSEEK_REASONING_EFFORT.PSM then
             -- FYI WORKING WELL for FILE LEVEL with deepseek_v4_flash_0731
             body.prompt = fim.deepseek_v4_flash.get_fim_prompt(self)

@@ -113,7 +113,6 @@ end
 describe("E2E - AskAgent /tools with date question", function()
     it("should use run_process tool to get date and show green checkmark", function()
         -- * Setup: ensure plugin is loaded and configured for agents mode
-        local api = require("ask-openai.api")
         local frontend = require("ask-openai.agents.frontend")
 
         -- Set a model for testing (use whatever is available)

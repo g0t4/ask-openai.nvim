@@ -10,7 +10,6 @@ local Displayer = require("ask-openai.rewrites.displayer")
 local CurrentContext = require("ask-openai.frontends.context")
 local TxChatMessage = require("ask-openai.agents.messages.tx")
 local files = require("ask-openai.helpers.files")
-local api = require("ask-openai.api")
 local rag_client = require("ask-openai.rag.client")
 local CurlRequest = require("ask-openai.backends.curl_request")
 local human = require("devtools.humanize")
@@ -455,7 +454,7 @@ local function ask_rewrite_command(opts)
         }
 
         local model = config.get_rewrite_model()
-        local reasoning_level = context.includes:get_reasoning_level() or api.get_rewrite_reasoning_level()
+        local reasoning_level = context.includes:get_reasoning_level() or config.get_rewrite_reasoning_level()
 
         RewriteFrontend.last_request = CurlRequest:new({
             body = model_params.body_for(model, generic_body, reasoning_level),
@@ -466,7 +465,7 @@ local function ask_rewrite_command(opts)
         curl.spawn(RewriteFrontend.last_request, RewriteFrontend)
     end
 
-    if api.is_rag_enabled() and rag_client.is_rag_supported_in_current_file() then
+    if config.is_rag_enabled() and rag_client.is_rag_supported_in_current_file() then
         local this_request_ids, cancel -- declare in advance for closure
 
         ---@param obj SemanticGrepWithTimeoutResponseObj

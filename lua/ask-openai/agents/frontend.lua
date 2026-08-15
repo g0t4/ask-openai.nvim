@@ -11,7 +11,6 @@ local TracePager = require("ask-openai.agents.viewer.trace_pager")
 local TxChatMessage = require("ask-openai.agents.messages.tx")
 local Selection = require("ask-openai.helpers.selection")
 local CurrentContext = require("ask-openai.frontends.context")
-local api = require("ask-openai.api")
 local rag_client = require("ask-openai.rag.client")
 local files = require("ask-openai.helpers.files")
 local model_params = require("ask-openai.agents.models.params")
@@ -231,7 +230,7 @@ local function ask_agent_command(opts)
         }
 
         local model = config.get_agents_model()
-        local reasoning_level = context.includes:get_reasoning_level() or api.get_agents_reasoning_level()
+        local reasoning_level = context.includes:get_reasoning_level() or config.get_agents_reasoning_level()
 
         local base_url = config.get_base_url(model)
         local new_trace = AgentTrace:new(model_params.body_for(model, generic_body, reasoning_level), base_url)
@@ -241,7 +240,7 @@ local function ask_agent_command(opts)
     end
 
     -- log:error("context.includes", vim.inspect(context.includes))
-    if api.is_rag_enabled() and not context.includes.norag and rag_client.is_rag_supported_in_current_file(code_bufnr) then
+    if config.is_rag_enabled() and not context.includes.norag and rag_client.is_rag_supported_in_current_file(code_bufnr) then
         local this_request_ids, cancel -- declare in advance for closure
 
         ---@param obj SemanticGrepWithTimeoutResponseObj -- for lack of better name, stick with it
@@ -377,7 +376,6 @@ function AgentsFrontend.ensure_chat_window_is_open()
         AgentsFrontend.chat_window = window
 
         -- * lookup model name (to show in title)
-        local api = require("ask-openai.api")
         local configured_model = config.get_agents_model()
         local config = require("ask-openai.config")
         local base_url = config.get_base_url(configured_model)

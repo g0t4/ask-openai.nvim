@@ -2,7 +2,6 @@ local uv = vim.uv
 local Prediction = require("ask-openai.predictions.prediction")
 local ansi = require("devtools.ansi")
 local rag_client = require("ask-openai.rag.client")
-local api = require("ask-openai.api")
 local perf = require("ask-openai.perf")
 local log = require("devtools.logs.logger").universal()
 require("ask-openai.predictions.prefix_suffix")
@@ -90,7 +89,7 @@ function PredictionsFrontend.ask_for_prediction(params)
     local this_prediction = Prediction.new(params)
     PredictionsFrontend._set_current_prediction(params.bufnr, this_prediction)
 
-    local enable_rag = api.is_rag_enabled()
+    local enable_rag = config.is_rag_enabled()
     local ps_chunk = ps.get_prefix_suffix_chunk()
 
     -- Register with performance registry for lualine display
