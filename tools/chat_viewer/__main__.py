@@ -934,46 +934,15 @@ def print_message(msg: dict, idx: int):
             print_markdown_message(msg)
 
 
-def main() -> None:
-    global SHOW_ALL
+def render_trace_to_console(console, messages, model_name, timings) -> None:
+    """Render a full trace to the given rich Console.
 
-    parser = argparse.ArgumentParser(description="View chat traces")
-    parser.add_argument(
-        "trace_file",
-        nargs="?",
-        default=None,
-        help="path to trace file (or stdin if omitted)",
-    )
-    parser.add_argument("--all", action="store_true", help="show all content (no exclusions)")
-    parser.add_argument("--html", action="store_true", help="export rendered output as HTML")
-
-    argcomplete.autocomplete(parser)
-    args = parser.parse_args()
-
-    if args.all:
-        SHOW_ALL = True
-
-    export_html = args.html
-    if export_html:
-        _console.record = True
-    html_path: str | None = None
-
-    load_preapproved_files()
-
-    trace_file_path = Path(args.trace_file) if args.trace_file else None
-
-    if trace_file_path is None and not sys.stdin.isatty():
-        # No file arg and stdin has data (piped)
-        messages, model_name, timings = load_trace_messages_from_stream(sys.stdin)
-        if export_html:
-            html_path = "stdout.html"
-    elif trace_file_path is not None:
-        messages, model_name, timings = load_trace_messages_from_path(trace_file_path)
-        if export_html:
-            html_path = str(trace_file_path) + ".html"
-    else:
-        parser.print_help()
-        return
+    Shared by the CLI entrypoint (``main``) and the Textual viewer
+    (``textual_viewer``). Everything that renders a trace goes through here so
+    the interactive viewer shows exactly the same content as the CLI dump.
+    """
+    global _console
+    _console = console
 
     # Detect per-message timings
     has_message_timings = any(
@@ -1026,6 +995,50 @@ def main() -> None:
                 raw_prompt = _extract_content(first_msg)
                 raw_completion = _extract_content(second_msg)
                 print_raw_fim_diff(raw_prompt, raw_completion)
+
+
+def main() -> None:
+    global SHOW_ALL
+
+    parser = argparse.ArgumentParser(description="View chat traces")
+    parser.add_argument(
+        "trace_file",
+        nargs="?",
+        default=None,
+        help="path to trace file (or stdin if omitted)",
+    )
+    parser.add_argument("--all", action="store_true", help="show all content (no exclusions)")
+    parser.add_argument("--html", action="store_true", help="export rendered output as HTML")
+
+    argcomplete.autocomplete(parser)
+    args = parser.parse_args()
+
+    if args.all:
+        SHOW_ALL = True
+
+    export_html = args.html
+    if export_html:
+        _console.record = True
+    html_path: str | None = None
+
+    load_preapproved_files()
+
+    trace_file_path = Path(args.trace_file) if args.trace_file else None
+
+    if trace_file_path is None and not sys.stdin.isatty():
+        # No file arg and stdin has data (piped)
+        messages, model_name, timings = load_trace_messages_from_stream(sys.stdin)
+        if export_html:
+            html_path = "stdout.html"
+    elif trace_file_path is not None:
+        messages, model_name, timings = load_trace_messages_from_path(trace_file_path)
+        if export_html:
+            html_path = str(trace_file_path) + ".html"
+    else:
+        parser.print_help()
+        return
+
+    render_trace_to_console(_console, messages, model_name, timings)
 
     if export_html and html_path:
         try:
