@@ -619,8 +619,8 @@ M.deepseek_v4_flash = {
     --   * AFAICT only lite has FIM?
     --   base = FIM  /  instruct = chat
     --   ** FAST MoE
-    --   217 TPS! first load OMFG
-    --   model = "deepseek-coder-v2:16b-lite-base-q8_0", # **** 217 TPS!
+    --   217 tok/s! first load OMFG
+    --   model = "deepseek-coder-v2:16b-lite-base-q8_0", # **** 217 tok/s!
 
 }
 -- log:info(M.deepseek_v4_flash.sentinel_tokens)

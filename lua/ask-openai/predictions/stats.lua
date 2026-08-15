@@ -21,8 +21,8 @@ function M.show_prediction_stats(sse, perf)
 
     local messages = {}
     table.insert(messages, "FIM Stats")
-    table.insert(messages, string.format("in: %d tokens @ %.2f tokens/sec", stats.prompt_tokens, stats.prompt_tokens_per_second))
-    table.insert(messages, string.format("out: %d tokens @ %.2f tokens/sec", stats.predicted_tokens, stats.predicted_tokens_per_second))
+    table.insert(messages, string.format("in: %d tokens @ %.2f tok/s", stats.prompt_tokens, stats.prompt_tokens_per_second))
+    table.insert(messages, string.format("out: %d tokens @ %.2f tok/s", stats.predicted_tokens, stats.predicted_tokens_per_second))
 
     --
     -- TODO push these through the perf object and then into registry => lualine

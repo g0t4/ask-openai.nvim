@@ -119,11 +119,11 @@ function M.lualine_components()
 
             if M.last_fim_stats then
                 if M.last_fim_stats.prompt_tokens_per_second then
-                    local text = "in@" .. human.format_num(M.last_fim_stats.prompt_tokens_per_second, 0) .. "tps"
+                    local text = "in@" .. human.format_num(M.last_fim_stats.prompt_tokens_per_second, 0) .. "tok/s"
                     table.insert(icons, text)
                 end
                 if M.last_fim_stats.predicted_tokens_per_second then
-                    local text = "out@" .. human.format_num(M.last_fim_stats.predicted_tokens_per_second, 0) .. "tps"
+                    local text = "out@" .. human.format_num(M.last_fim_stats.predicted_tokens_per_second, 0) .. "tok/s"
                     table.insert(icons, text)
                 end
             end

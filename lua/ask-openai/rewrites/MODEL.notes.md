@@ -16,8 +16,8 @@
 
 ```lua
 local base_url = "https://api.groq.com/openai"
-model = "openai/gpt-oss-20b", -- 1000 tokens/sec
-model = "openai/gpt-oss-120b", -- 500 tokens/sec
+model = "openai/gpt-oss-20b", -- 1000 tok/s
+model = "openai/gpt-oss-120b", -- 500 tok/s
 ```
 
 ## misc

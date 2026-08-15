@@ -205,12 +205,12 @@ function RewriteFrontend.on_sse_llama_server_timings(sse)
 
         -- Build compact timing display: <prompt_n>@<prompt_rate>-><predicted_n>@<predicted_rate>
         local ingest_display = string.format(
-            "%s@%stps",
+            "%s@%stok/s",
             human.comma_delimit(sse.timings.prompt_n),
             human.format_num(sse.timings.prompt_per_second)
         )
         local predicted_display = string.format(
-            "%s@%stps",
+            "%s@%stok/s",
             human.comma_delimit(sse.timings.predicted_n),
             human.format_num(sse.timings.predicted_per_second)
         )
