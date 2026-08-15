@@ -24,7 +24,8 @@ describe("E2E - FIM predictions", function()
 
         -- Set file type so predictions are enabled (not in ignore list)
         vim.bo.filetype = "python"
-        vim.bo.buftype = "python"
+        -- print("buftype", vim.bo.buftype)
+        vim.bo.buftype = "" -- empty == regular file (else test buffer is "nofile" which my predictions skip)
         e2e.set_cursor(2, 4) -- cursor after 4 spaces on line 2
 
         -- * Setup: configure FIM model
