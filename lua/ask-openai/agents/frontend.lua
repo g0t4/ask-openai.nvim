@@ -103,13 +103,8 @@ local function ask_agent_command(opts)
         -- * repo root vs cwd prompt instructions
         local cwd = vim.fn.getcwd()
         local repo_root = files.get_repo_root()
-        local repo_is_dirty = false
-        if repo_root then
-            local git_status = vim.fn.system("git -C " .. repo_root .. " status --porcelain")
-            repo_is_dirty = git_status ~= ""
-        end
         local context_builder = require("ask-openai.agents.context_builder")
-        local cwd_text = context_builder.build_git_context(cwd, repo_root, repo_is_dirty)
+        local cwd_text = context_builder.build_git_context(cwd, repo_root)
 
         tool_instructs = tool_instructs:gsub("INSERT_CWD", cwd_text)
 

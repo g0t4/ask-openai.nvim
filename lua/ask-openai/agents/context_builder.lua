@@ -7,9 +7,8 @@ local M = {}
 --- Returns a string to be injected into INSERT_CWD.
 ---@param cwd string
 ---@param repo_root string|nil
----@param repo_is_dirty boolean
 ---@return string
-function M.build_git_context(cwd, repo_root, repo_is_dirty)
+function M.build_git_context(cwd, repo_root)
     local cwd_text = "Current directory: " .. cwd
 
     if repo_root == nil then
@@ -38,6 +37,9 @@ function M.build_git_context(cwd, repo_root, repo_is_dirty)
         end
     end
 
+    -- dirty check
+    local git_status = vim.fn.system("git -C " .. repo_root .. " status --porcelain")
+    local repo_is_dirty = git_status ~= ""
     if repo_is_dirty then
         vim.notify("DIRTY REPO", vim.log.levels.WARN)
         cwd_text = cwd_text .. "\nDirty repo at start"
