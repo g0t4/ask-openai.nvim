@@ -29,6 +29,7 @@ from tools.chat_viewer.timing_utils import parse_tool_call_timings
 # Enable recording so that ``save_html`` can export the rendered output.
 _console = Console(color_system="truecolor")
 
+
 def _parse_timings_from_dict(timings_dict: dict[str, Any] | None) -> ModelTimings | None:
     if not timings_dict or not isinstance(timings_dict, dict):
         return None
@@ -129,6 +130,7 @@ FIM_PREFIX = "<|fim_prefix|>"
 FIM_MIDDLE = "<|fim_middle|>"
 FIM_SUFFIX = "<|fim_suffix|>"
 
+
 def is_raw_completion_fim(data: dict) -> bool:
     """Check if this is a raw completion trace with FIM marker."""
     if not is_raw_completion_trace(data):
@@ -137,6 +139,7 @@ def is_raw_completion_fim(data: dict) -> bool:
     request_body = data.get("request_body", {})
     prompt = request_body.get("prompt", "")
     return FIM_MIDDLE in prompt
+
 
 def parse_raw_completion_fim(raw_prompt: str, completion: str) -> dict | None:
     """Parse raw completion with FIM marker into diff components."""
@@ -157,6 +160,7 @@ def parse_raw_completion_fim(raw_prompt: str, completion: str) -> dict | None:
         "completion": completion,
         "diff_type": "fim",
     }
+
 
 def print_raw_fim_diff(raw_prompt: str, completion: str) -> None:
     """Print a FIM completion diff for raw completions."""
@@ -192,6 +196,7 @@ def print_raw_fim_diff(raw_prompt: str, completion: str) -> None:
     root.blank_line()
     _console.print(root)
 
+
 def is_raw_completion_trace(data: dict) -> bool:
     """Check if this is a raw completion trace (llamacpp /completions endpoint).
 
@@ -207,6 +212,7 @@ def is_raw_completion_trace(data: dict) -> bool:
 
     # Raw = has prompt + top-level content, but NO messages
     return has_prompt and has_content and not has_messages
+
 
 def create_raw_completion_messages(data: dict) -> list[dict]:
     """Create synthetic messages for raw completions (llamacpp /completions endpoint)."""
@@ -229,6 +235,7 @@ def create_raw_completion_messages(data: dict) -> list[dict]:
 
     return messages
 
+
 def _content_hash(msg: dict[str, Any]) -> str:
     """Return SHA‑256 hash (hex) of the message's raw ``content``."""
     content = msg.get("content", "")
@@ -236,6 +243,7 @@ def _content_hash(msg: dict[str, Any]) -> str:
         # ignore non-string values, when I wanna ignore those I can come in here and add support
         return ""
     return hashlib.sha256(content.encode("utf-8")).hexdigest()
+
 
 def load_preapproved_files() -> None:
     # Use the user‑level configuration location instead of the repository copy.
@@ -254,8 +262,10 @@ def load_preapproved_files() -> None:
         except re.error as exc:
             sys.exit(f"Invalid regular expression '{line}': {exc}\n\nFix this (or comment out the line) to continue...")
 
+
 def is_preapproved(file_path: str) -> bool:
     return any(pat.search(file_path) for pat in preapproved_file_patterns)
+
 
 @dataclass
 class SectionDTO:
@@ -291,6 +301,7 @@ class SectionDTO:
         # else treat header as markdown too:
         return _syntax(self.content, "markdown")
 
+
 def _split_content_into_sections(content: str) -> list[SectionDTO]:
     whole_hash = hashlib.sha256(content.encode("utf-8")).hexdigest()
     if not SHOW_ALL and whole_hash in EXCLUDED_CONTENT_HASHES:
@@ -298,6 +309,7 @@ def _split_content_into_sections(content: str) -> list[SectionDTO]:
         return []
 
     return [SectionDTO(content=sec) for sec in split_h2_markdown_sections(content)]
+
 
 def show_unapproved_auto_rag_matches(content: str) -> bool:
     if not content.strip().startswith('# Semantic Grep matches:'):
@@ -336,11 +348,13 @@ def show_unapproved_auto_rag_matches(content: str) -> bool:
     _console.print(root)
     return True
 
+
 def pprint_no_truncate(what):
     # TODO use new _pretty_no_truncate(what) and then get rid of this old pprint_no_truncate()
     # btw expand_all=False is the default and will truncate some sections (shown w/ yellow bg on black text with "...")
     #   for now just always show everything given the review is supposed to be exhaustive and so far I haven't noticed much that is a huge burden
     pprint(what, expand_all=True, indent_guides=False)
+
 
 def _pretty_no_truncate(text: Any):
     # ?? was I relying on soft_wrap=True from pprint (this replaced pprint)? if yes, what makes sense in a Tree instead?
@@ -350,11 +364,13 @@ def _pretty_no_truncate(text: Any):
         expand_all=True,
     )
 
+
 def yank(mapping, key: str, default=None):
     value = mapping.get(key, default)
     if key in mapping:
         del mapping[key]
     return value
+
 
 def load_messages_jsonl(path: Path) -> Iterable[dict[str, Any]]:
     with open(path, "r", encoding="utf-8") as f:
@@ -364,6 +380,7 @@ def load_messages_jsonl(path: Path) -> Iterable[dict[str, Any]]:
             continue
         message = json.loads(line)
         yield message
+
 
 def print_model_info(name: str | None, timings: ModelTimings | None = None) -> None:
     """Print model name and optional timing stats.
@@ -379,6 +396,7 @@ def print_model_info(name: str | None, timings: ModelTimings | None = None) -> N
             if stats_line:
                 _console.print(f"[dim]{stats_line}[/]")
         _console.print()
+
 
 def load_trace_messages_from_path(trace_file: Path) -> tuple[list[dict[str, Any]], str | None, ModelTimings | None]:
     if not trace_file.is_file():
@@ -412,6 +430,7 @@ def load_trace_messages_from_path(trace_file: Path) -> tuple[list[dict[str, Any]
 
     return messages, model_name, timings
 
+
 def show_rest_of_request_body_properties(data):
     # typical request body, has messages, tools, temp, etc
     # FYI print other properties at the top (i.e. tools)... if some of these nag me I can always write handlers for them to make them pretty too
@@ -419,6 +438,7 @@ def show_rest_of_request_body_properties(data):
     # only show rest of request body in verbose mode (--all)
     print_section_header("UNPROCESSED request.body properties", color="cyan")
     pprint_no_truncate(data)
+
 
 def load_messages(data) -> list[dict[str, Any]]:
     if isinstance(data, list):
@@ -440,6 +460,7 @@ def load_messages(data) -> list[dict[str, Any]]:
             return messages
     return []
 
+
 def load_trace_messages_from_stream(stream) -> tuple[list[dict[str, Any]], str | None, ModelTimings | None]:
     # assume stream can be:
     #   jq .messages | this
@@ -460,8 +481,10 @@ def load_trace_messages_from_stream(stream) -> tuple[list[dict[str, Any]], str |
 
     return messages, model_name, timings
 
+
 def insert_newlines(content: str) -> str:
     return content.replace("\\n", "\n")
+
 
 def _format_json(content: Any) -> str:
     try:
@@ -469,11 +492,13 @@ def _format_json(content: Any) -> str:
     except Exception:
         return str(content)
 
+
 def _extract_content(msg: dict) -> str:
     content = msg.get("content", "")
     if isinstance(content, dict) and "text" in content:
         return content["text"]
     return content  # type: ignore
+
 
 def print_markdown_message(msg: dict):
     raw_content = _extract_content(msg)
@@ -496,6 +521,7 @@ def print_markdown_message(msg: dict):
 
     _console.print(root)
 
+
 def decode_if_json(content):
     if isinstance(content, str):
         try:
@@ -506,6 +532,7 @@ def decode_if_json(content):
             return insert_newlines(content)
     # keep w/e type (dict, list, etc... don't care)
     return content
+
 
 def _add_rag_matches(root: TreeWrapper, content: Any):
     has_rag_matches = isinstance(content, dict) \
@@ -550,10 +577,12 @@ def _add_rag_matches(root: TreeWrapper, content: Any):
     # pprint_asis(content) # for dumping full content
     return True
 
+
 def _add_unrecognized(root: TreeWrapper, content: Any) -> None:
     # FYI this is just a warning to consider adding handlers for it
     root.add("[yellow bold]UNRECOGNIZED RESULT TYPE:[/]") \
         .add(_pretty_no_truncate(content))
+
 
 def print_tool_result_message(msg: Dict[str, Any]) -> None:
     root = TreeWrapper.hidden_root()
@@ -569,6 +598,7 @@ def print_tool_result_message(msg: Dict[str, Any]) -> None:
         _add_unrecognized(root, content)
 
     _console.print(root)
+
 
 def _add_mcp_result(root: TreeWrapper, content: Any) -> bool:
     has_mcp_content_list = isinstance(content, dict) \
@@ -593,6 +623,7 @@ def _add_mcp_result(root: TreeWrapper, content: Any) -> bool:
 
     return True
 
+
 def _add_apply_patch(arguments: str, tree: TreeWrapper):
     child = tree.add(format_call_title("apply_patch"))
 
@@ -614,6 +645,7 @@ def _add_apply_patch(arguments: str, tree: TreeWrapper):
 
     return child.add(str(parsed))
 
+
 def _syntax(source: str, lexer: str) -> Syntax:
     # is_multi_line = "\n" in source
     return Syntax(
@@ -622,10 +654,12 @@ def _syntax(source: str, lexer: str) -> Syntax:
         theme="ansi_dark",  # effectively sets default theme which is why I want a _syntax helper
         line_numbers=False)
 
+
 def _bash(source: str):
     # FYI pygments bash lexer sucks at coloring bash, basically only builtins seem styled... i.e. echo
     # return _syntax(source, "bash")
     return _bash_via_bat_high_contrast(source, language="bash")
+
 
 def _bash_via_bat_high_contrast(
     content: str,
@@ -666,6 +700,7 @@ def _bash_via_bat_high_contrast(
     #     style="bold on #EAF4FF", # High contrast light bg + bold foreground
     # )
 
+
 def _json(data: dict) -> Syntax:
     # PRN add _pprint_syntax?
     pretty = json.dumps(data, ensure_ascii=False, indent=2)
@@ -676,6 +711,7 @@ def _json(data: dict) -> Syntax:
         # indent_guides=True,
         # line_numbers=True,
     )
+
 
 def _add_run_command_and_run_process(arguments: str, call_tree: TreeWrapper):
     try:
@@ -721,6 +757,7 @@ def _add_run_command_and_run_process(arguments: str, call_tree: TreeWrapper):
     except Exception as err:
         call_tree.add_error("Failed parsing command", err, arguments)
 
+
 def _add_run_in_neovim(arguments: str, tree: TreeWrapper):
     try:
         obj = json.loads(arguments)
@@ -737,15 +774,19 @@ def _add_run_in_neovim(arguments: str, tree: TreeWrapper):
     except Exception as err:
         return tree.add_error("Failed adding Lua code", err, code)
 
+
 def format_call_title(title):
     return f"- {title}"
+
 
 def _add_generic_tool(func_name: str, args_json_str: str, tree: TreeWrapper):
     child = tree.add(format_call_title(func_name))
     child.list_json_key_value_pairs(args_json_str)
 
+
 def _handle_unknown_tool(arguments: str):
     return arguments
+
 
 def add_tool_call_request(func_name: str, arguments: str, tree: TreeWrapper):
     if func_name == "apply_patch":
@@ -762,12 +803,14 @@ def add_tool_call_request(func_name: str, arguments: str, tree: TreeWrapper):
     # FYI semantic_grep works good with generic right now:
     return _add_generic_tool(func_name, arguments, tree)
 
+
 def print_if_missing_keys(obj, name, tree: TreeWrapper):
     if not any(obj.keys()):
         return
 
     child = tree.add(f"[red bold]MISSED KEYS on {name}:[/]") \
             .add(_json(obj))
+
 
 def print_raw_completion_message(msg: dict):
     """Print raw completion message (prompt or completion) verbatim."""
@@ -778,6 +821,7 @@ def print_raw_completion_message(msg: dict):
     root = TreeWrapper.hidden_root()
     root.add_no_markup(raw_content)
     _console.print(root)
+
 
 def print_assistant_message(msg: dict):
     root = TreeWrapper.hidden_root()
@@ -833,6 +877,7 @@ def print_assistant_message(msg: dict):
     _console.print(root)
     _console.print()  # blank line
 
+
 def get_display_role(role: str) -> str:
     """Get the display role label for the message title."""
     role_lower = role.lower()
@@ -843,6 +888,7 @@ def get_display_role(role: str) -> str:
     if role_lower == "tool":
         return "TOOL RESULT"
     return role.upper()
+
 
 def get_color(role: str) -> str:
     role_lower = role.lower()
@@ -858,6 +904,7 @@ def get_color(role: str) -> str:
         return "red"
     return "white"
 
+
 def print_section_header(title, color):
     _console.rule(style=color)
     _console.print(
@@ -866,6 +913,7 @@ def print_section_header(title, color):
         highlight=False,
     )  # highlight: False so message numbers stay the same color
     _console.rule(style=color)
+
 
 def print_message(msg: dict, idx: int):
     role = msg.get("role", "").lower()
@@ -884,6 +932,7 @@ def print_message(msg: dict, idx: int):
             print_assistant_message(msg)
         case "system" | "developer" | "user" | _:
             print_markdown_message(msg)
+
 
 def main() -> None:
     global SHOW_ALL
@@ -958,7 +1007,7 @@ def main() -> None:
         _console.rule('[bold]Assistant Generation Speed[/]', style='blue')
         max_speed = max(s for _, s in assistant_speeds)
         from rich.table import Table
-        table = Table(show_header=False, box=None, padding=(0,1))
+        table = Table(show_header=False, box=None, padding=(0, 1))
         table.add_column(justify='left')
         table.add_column(justify='left')
         for i, (msg, speed) in enumerate(assistant_speeds, start=1):
@@ -983,7 +1032,6 @@ def main() -> None:
             _console.save_html(html_path)
         except Exception as e:
             _console.print(f"[red]Failed to write HTML output to {html_path}: {e}[/]")
-
 
 
 def summarize_message_timings(messages: list[dict[str, Any]]) -> str | None:
@@ -1039,6 +1087,7 @@ def summarize_message_timings(messages: list[dict[str, Any]]) -> str | None:
         parts.append(f"draft {rate:.1f}% accepted")
 
     return " · ".join(parts)
+
 
 if __name__ == "__main__":
     main()
