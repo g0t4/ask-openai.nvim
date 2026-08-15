@@ -651,16 +651,16 @@ M._cached_run_process_instructions = nil
 function M.get_system_message_instructions(tool_name)
     -- Return system message instructions for specific MCP tools.
     if tool_name == "run_process" then
-        if M._cached_run_process_instructions then
-            return M._cached_run_process_instructions
-        end
-
         local files = require("ask-openai.helpers.files")
+        local models_mod = require("ask-openai.config.models")
+        local api = require("ask-openai.api")
         local run_process_dir = "~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/tools/mcp/run_process"
-        local commits = files.read_text(run_process_dir .. "/commits.md"):gsub("<<COAUTHOR_NAME>>", "gptoss120b") -- TODO: revisit model slug mapping
+        local commits_template = files.read_text(run_process_dir .. "/commits.md")
+        local current_model = api.get_agents_model()
+        local author = models_mod.MODEL_AUTHOR_MAP[current_model] or "unknown<unknown@example.com>"
+        local commits = commits_template:gsub("INSERT_COMMIT_AUTHOR", author)
         local commands = files.read_text(run_process_dir .. "/commands.md")
-        M._cached_run_process_instructions = commits .. "\n\n" .. commands
-        return M._cached_run_process_instructions
+        return commits .. "\n\n" .. commands
     end
 
     if tool_name == "fetch" then

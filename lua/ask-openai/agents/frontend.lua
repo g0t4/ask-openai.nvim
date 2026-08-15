@@ -110,14 +110,7 @@ local function ask_agent_command(opts)
 
         system = system .. "\n\n" .. tool_instructs
 
-        -- inject dynamic commit author instructions
-        local commits_md = get_file("~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/tools/mcp/run_process/commits.md")
-        local models_mod = require("ask-openai.config.models")
-        local api = require("ask-openai.api")
-        local current_model = api.get_agents_model()
-        local author = models_mod.MODEL_AUTHOR_MAP[current_model] or "unknown<unknown@example.com>"
-        local commits_instruct = commits_md:gsub("INSERT_COMMIT_AUTHOR", author)
-        system = system .. "\n\n" .. commits_instruct
+
 
         local tool_provided_instructs
         -- Pass coordinator flag based on slash command "coordinator"
