@@ -435,6 +435,16 @@ local function update_ui_chat_viewer(trace)
                 end
                 table.insert(parts, output)
 
+                -- draft token stats
+                if t.draft_n then
+                    local draft = string.format('draft: %d', t.draft_n_accepted)
+                    if t.draft_n_accepted then
+                        local percent = t.draft_n_accepted / t.draft_n * 100
+                        draft = draft .. string.format(' @ %.0f%%', percent)
+                    end
+                    table.insert(parts, draft)
+                end
+
                 if #parts > 0 then
                     lines:append_styled_text(table.concat(parts, ' | '), HLGroups.CHAT_REASONING)
                 end
