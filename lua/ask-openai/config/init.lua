@@ -43,7 +43,7 @@ local MODEL_PATTERNS = {
 --- Abbreviate a raw model name using pattern matching, or return the original name.
 --- @param raw_model string|nil
 --- @return string
-local function abbreviate_model(raw_model)
+function M.abbreviate_model(raw_model)
     if not raw_model then
         return "MISSING_NAME"
     end
@@ -71,7 +71,7 @@ local function refresh_model_info_cache_for(base_url, callback)
         return
     end
 
-    local model_name = abbreviate_model(model_info.name)
+    local model_name = M.abbreviate_model(model_info.name)
 
     local entry = { name = model_name, model_info = model_info, base_url = base_url, ts = os.time() }
     _model_cache[base_url] = entry

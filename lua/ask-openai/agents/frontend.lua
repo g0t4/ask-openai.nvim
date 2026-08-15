@@ -636,6 +636,23 @@ function AgentsFrontend.on_curl_exited_successfully()
         -- FYI primary interaction (seam) between RxAccumulatedMessage and TxChatMessage (for assistant messages)
         local trace = AgentsFrontend.trace -- FYI could pass trace from backend that calls on_curl_exited_successfully()
         local request = trace.last_request
+
+        -- * verify responding model matches configured model
+        --  this way I can use configured in advance of first request, which is a reasonable assumption (i.e. to build model specific prompt) and then only warn here if there's an actual problem
+        --  so I don't hold up every request to check this in advance
+        --  PRN add parallel test of the name? send it with RAG request? else before?
+        local last_message = request.accumulated_model_response_messages and request.accumulated_model_response_messages[#request.accumulated_model_response_messages]
+        if last_message and last_message.last_sse and last_message.last_sse.model then
+            local actual_name = last_message.last_sse.model
+            local actual_abbrev = config.abbreviate_model(actual_name)
+            -- map abstract configured model to expected abbrev
+            local configured_model = api.get_agents_model()
+            local configured_abbrev = config.abbreviate_model(configured_model)
+            if actual_abbrev ~= configured_abbrev then
+                vim.notify("Model mismatch: configured " .. configured_model .. " (" .. configured_abbrev .. ") vs actual " .. actual_name .. " (" .. actual_abbrev .. ")", vim.log.levels.WARN)
+            end
+        end
+
         for _, rx_message in ipairs(request.accumulated_model_response_messages or {}) do
             -- *** trace.last_request.accumulated_model_response_messages IS NOT trace.messages
             --    trace.messages => sent with future requests, hence TxChatMessage
