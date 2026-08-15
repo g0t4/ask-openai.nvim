@@ -52,13 +52,14 @@ _G.CompletionsEndpoints = {
 
 ---@class LlamaServerSSEBase
 ---@field timings LlamaServerTimings
----@field __verbose? LlamaServerVerbose
+---@field model string
 
 ---@class LlamaServerChatCompletionSSE_Delta
 ---@field role? string -- IIRC set on first SSE
 ---@field content? string|vim.NIL
 ---@field reasoning_content? string|vim.NIL
 ---@field index? integer
+---@field __verbose? LlamaServerVerbose -- only chat completions has __verbose in my current testing
 
 ---@class LlamaServerLogProbs_Content_Prob
 ---@field bytes integer[]
