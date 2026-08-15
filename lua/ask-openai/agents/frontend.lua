@@ -106,7 +106,7 @@ local function ask_agent_command(opts)
         local context_builder = require("ask-openai.agents.context_builder")
         local cwd_text = context_builder.build_git_context(cwd, repo_root)
 
-        tool_instructs = tool_instructs:gsub("INSERT_CWD", cwd_text)
+        system = system:gsub("INSERT_CWD", cwd_text)
 
         system = system .. "\n\n" .. tool_instructs
 
