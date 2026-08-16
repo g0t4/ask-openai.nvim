@@ -88,8 +88,6 @@ local function extract_initial_user_message(messages)
     return "[no user prompt found]"
 end
 
---- Load and parse a trace JSON file to extract session metadata.
----
 ---@param trace_path string -- absolute path to the -trace.json file
 ---@return SessionEntry|nil entry
 local function load_session_entry(trace_path)
@@ -126,10 +124,8 @@ local function load_session_entry(trace_path)
     }
 end
 
---- List all available trace sessions sorted by time (newest first).
----
 ---@return SessionEntry[] entries
-function M.list_sessions()
+function M.get_sorted_sessions()
     local state_dir = vim.fn.stdpath("state") .. "/ask-openai/agents"
 
     -- Re-implement directory listing here for efficiency (avoid loading each trace twice).
@@ -192,7 +188,7 @@ function M.open()
         M._instance = nil
     end
 
-    local sessions = M.list_sessions()
+    local sessions = M.get_sorted_sessions()
     if #sessions == 0 then
         log:warn("No sessions found to restore")
         return nil
