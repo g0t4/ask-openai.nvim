@@ -33,33 +33,34 @@ def signature_for_type_group(type_children: list, source_bytes: bytes) -> str:
     return "type " + ", ".join(names)
 
 
-def chunks_for_type_declaration(node, source_bytes: bytes) -> list[IdentifiedChunk]:
+def chunks_for_type_declaration(type_declaration, source_bytes: bytes) -> list[IdentifiedChunk]:
     """ 0+ chunks from a go type_declaration.
 
     - single type  => one chunk (the whole declaration, 'type' included)
     - multiple     => a grouped chunk + one chunk per type (do both)
     - empty group  => zero chunks
     """
-    type_children = [c for c in node.children if c.type in ("type_spec", "type_alias")]
+    types = [c for c in type_declaration.children if c.type in ("type_spec", "type_alias")]
 
-    if len(type_children) == 1:
+    if len(types) == 1:
         return [IdentifiedChunk(
-            sibling_nodes=[node],
-            signature=signature_for_type(type_children[0], source_bytes),
+            # TODO look into how sibling_nodes is used here
+            sibling_nodes=[type_declaration],
+            signature=signature_for_type(types[0], source_bytes),
         )]
 
-    if len(type_children) > 1:
+    if len(types) > 1:
         chunks = [IdentifiedChunk(
-            sibling_nodes=[node],
-            signature=signature_for_type_group(type_children, source_bytes),
+            sibling_nodes=[type_declaration],
+            signature=signature_for_type_group(types, source_bytes),
         )]
         chunks += [
             IdentifiedChunk(
-                sibling_nodes=[child],
+                sibling_nodes=[type],
                 prefix="type ",
-                signature=signature_for_type(child, source_bytes),
+                signature=signature_for_type(type, source_bytes),
             )
-            for child in type_children
+            for type in types
         ]
         return chunks
 
