@@ -255,10 +255,10 @@ end
 function M.render_session_list(instance)
     local lines = {}
     for idx, session in ipairs(instance.sessions) do
-        local header_line = ("[%d] %s (%s)"):format(idx, session.session_id, session.age_str)
-        local first_user_request = "└─ " .. truncate_string(session.initial_user_message, 70)
-        table.insert(lines, header_line)
-        table.insert(lines, first_user_request)
+        local title = ("[%d] %s (%s)"):format(idx, session.session_id, session.age_str)
+        local preview = "└─ " .. truncate_string(session.initial_user_message, 70)
+        table.insert(lines, title)
+        table.insert(lines, preview)
     end
 
     vim.api.nvim_buf_set_lines(instance.buffer_number, 0, -1, false, lines)
