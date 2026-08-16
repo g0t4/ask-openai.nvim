@@ -10,6 +10,7 @@ from tree_sitter import Node
 from chunks.identified import IdentifiedChunk
 from chunks.ts.lua import attach_lua_doc_comments
 from chunks.ts import go
+from chunks.ts import js
 from chunks.ts.py import attach_py_decorators
 from chunks.uncovered import UncoveredCode, build_uncovered_intervals
 from index.storage import Chunk, ChunkType, FileStat, chunk_id_for, chunk_id_to_faiss_id, chunk_id_with_columns_for
@@ -314,6 +315,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
                 "local_function_statement",
                 "function_declaration",
                 "function_item",
+                "generator_function_declaration",
                 "method_declaration",  # go: func with receiver
         ]:
             # TODO: extract indentation level from start of line (before matched node)
@@ -353,6 +355,12 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
 
         elif node.type == "type_declaration" and parser_language == "go":
             for chunk in go.chunks_for_type_declaration(node, source_bytes):
+                yield chunk
+            collected_parent = True
+
+        elif parser_language == "javascript" and node.type in js.FUNCTION_EXPRESSION_NODES:
+            # only chunk when bound to a variable (skips inline callbacks)
+            for chunk in js.chunks_for_function_expression(node, source_bytes):
                 yield chunk
             collected_parent = True
 
