@@ -1,4 +1,4 @@
-def attach_lua_doc_comments(node, accumulated_comments: list) -> None:
+def attach_lua_doc_comments(node, sibling_nodes: list) -> None:
     while True:
         prev = node.prev_sibling
         prev_is_doc_comment = prev and prev.type == "comment"
@@ -11,5 +11,5 @@ def attach_lua_doc_comments(node, accumulated_comments: list) -> None:
         if is_blank_line_between:
             break
 
-        accumulated_comments.insert(0, prev)
+        sibling_nodes.insert(0, prev)
         node = prev
