@@ -9,6 +9,7 @@ local AgentWindow = require("ask-openai.agents.viewer.window")
 local AgentTrace = require("ask-openai.agents.trace")
 local TracePager = require("ask-openai.agents.viewer.trace_pager")
 local LlamaServerClient = require("ask-openai.backends.llama_cpp.llama_server_client")
+local notify = require("devtools.notify")
 local TxChatMessage = require("ask-openai.agents.messages.tx")
 local Selection = require("ask-openai.helpers.selection")
 local CurrentContext = require("ask-openai.frontends.context")
@@ -891,26 +892,29 @@ function AgentsFrontend.check_model_command()
     local model_slug = config.get_agents_model()
     local base_url = config.get_base_url(model_slug)
     if not base_url then
-        vim.notify("AskAgentCheckModel: no endpoint configured for model '" .. tostring(model_slug) .. "'", vim.log.levels.ERROR)
+        notify.error("no endpoint configured for model '" .. tostring(model_slug) .. "'", { title = "AskAgentCheckModel" })
         return
     end
 
     local response = LlamaServerClient.get_models(base_url, { connect_timeout = 5, max_time = 10 })
     if not response or response.code ~= 200 then
-        vim.notify("AskAgentCheckModel: /v1/models FAILED at " .. base_url .. " (http " .. tostring(response and response.code or "nil") .. ")", vim.log.levels.ERROR, { title = "AskAgentCheckModel" })
+        notify.error("/v1/models FAILED at " .. base_url .. " (http " .. tostring(response and response.code or "nil") .. ")", { title = "AskAgentCheckModel" })
         return
     end
 
     local data = response.body and response.body.data
     if type(data) ~= "table" or #data == 0 then
-        vim.notify("AskAgentCheckModel: /v1/models OK at " .. base_url .. " but no models returned", vim.log.levels.WARN, { title = "AskAgentCheckModel" })
+        notify.warn("/v1/models OK at " .. base_url .. " but no models returned", { title = "AskAgentCheckModel" })
         return
     end
 
     local model_names = vim.tbl_map(function(m)
         return m.id or "?"
     end, data)
-    vim.notify("AskAgentCheckModel: OK - " .. table.concat(model_names, ", ") .. " (via " .. base_url .. ")", vim.log.levels.INFO, { title = "AskAgentCheckModel" })
+    notify.info("OK - " .. table.concat(model_names, ", ") .. " (via " .. base_url .. ")", {
+        title = "AskAgentCheckModel",
+        fg = "#4ecb71", -- green success
+    })
 end
 
 function AgentsFrontend.setup()
