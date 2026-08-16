@@ -256,7 +256,7 @@ function M.render_session_list(instance)
     local lines = {}
     for idx, session in ipairs(instance.sessions) do
         local title = ("[%d] %s (%s)"):format(idx, session.session_id, session.age_str)
-        local preview = "└─ " .. truncate_string(session.initial_user_message, 70)
+        local preview = "└─ " .. truncate_string(session.initial_user_message:gsub("\n", " \\n "), 70)
         table.insert(lines, title)
         table.insert(lines, preview)
     end
