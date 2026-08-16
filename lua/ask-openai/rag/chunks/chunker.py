@@ -9,6 +9,7 @@ from tree_sitter import Node
 
 from chunks.identified import IdentifiedChunk
 from chunks.ts.lua import attach_lua_doc_comments
+from chunks.ts.go import chunk_type_declaration as chunk_go_type_declaration
 from chunks.ts.py import attach_py_decorators
 from chunks.uncovered import UncoveredCode, build_uncovered_intervals
 from index.storage import Chunk, ChunkType, FileStat, chunk_id_for, chunk_id_to_faiss_id, chunk_id_with_columns_for
@@ -248,42 +249,6 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         else:
             return f"--- TODO {node.type} ---"
 
-    def get_go_type_signature(node, source_bytes: bytes) -> str:
-        # node is a 'type_spec' (go)
-        #   - type_identifier + struct_type   => "type Person struct"
-        #   - type_identifier + interface_type=> "type Shape interface"
-        #   - type_identifier + '='           => "type ID"
-        # the 'type' keyword is child 0 of the parent type_declaration
-        type_keyword = None
-        if node.parent and node.parent.type == "type_declaration":
-            type_keyword = node.parent.child(0)
-        if type_keyword and type_keyword.type == "type":
-            signature = source_bytes[type_keyword.start_byte:type_keyword.end_byte].decode() + " "
-        else:
-            signature = "type "
-
-        for child in node.children:
-            if child.type in ("struct_type", "interface_type"):
-                kind = source_bytes[child.start_byte:child.end_byte].decode().split()[0]
-                name = source_bytes[node.start_byte:child.start_byte].decode().strip()
-                return f"{signature}{name} {kind}"
-            if child.type == "=":
-                name = source_bytes[node.start_byte:child.start_byte].decode().strip()
-                return f"{signature}{name}"
-
-        # no body (e.g. `type X int`)
-        return signature + node.text.decode().strip()
-
-    def get_go_grouped_signature(type_children: list, source_bytes: bytes) -> str:
-        # type_children: the type_spec / type_alias children of a type_declaration
-        # signature is a title of the group's type names, e.g. "type A, B, C"
-        names = []
-        for child in type_children:
-            name_node = child.child(0)
-            if name_node and name_node.type == "type_identifier":
-                names.append(source_bytes[name_node.start_byte:name_node.end_byte].decode())
-        return "type " + ", ".join(names)
-
     def get_function_signature(node) -> str:
         # algorithm: signature == copy everything until start of the function body
         # - function_declaration => statement_block (typescript)
@@ -380,30 +345,9 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
                 attach_py_decorators(node, chunk.sibling_nodes)
 
         elif node.type == "type_declaration" and parser_language == "go":
-            # go: type_declaration wraps one or more type_spec / type_alias children
-            #   - single type  => one chunk (the whole declaration, 'type' included)
-            #   - multiple     => a grouped chunk + one chunk per type (do both)
-            type_children = [c for c in node.children if c.type in ("type_spec", "type_alias")]
-            if len(type_children) == 1:
-                chunk = IdentifiedChunk(
-                    sibling_nodes=[node],
-                    signature=get_go_type_signature(type_children[0], source_bytes),
-                )
+            for chunk in chunk_go_type_declaration(node, source_bytes):
                 yield chunk
-                collected_parent = True
-            elif len(type_children) > 1:
-                grouped_chunk = IdentifiedChunk(
-                    sibling_nodes=[node],
-                    signature=get_go_grouped_signature(type_children, source_bytes),
-                )
-                yield grouped_chunk
-                for child in type_children:
-                    yield IdentifiedChunk(
-                        sibling_nodes=[child],
-                        prefix="type ",
-                        signature=get_go_type_signature(child, source_bytes),
-                    )
-                collected_parent = True
+            collected_parent = True
 
         # elif logger.isEnabledForDebug() and not collected_parent:
         #     debug_uncollected_node(node)
