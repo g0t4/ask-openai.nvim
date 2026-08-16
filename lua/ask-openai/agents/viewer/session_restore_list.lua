@@ -269,8 +269,8 @@ end
 ---@param instance SessionRestoreList
 function M.render_session_list(instance)
     local lines = {}
-    for idx, entry in ipairs(instance.sessions) do
-        local entry_lines = format_session(entry, idx)
+    for idx, session in ipairs(instance.sessions) do
+        local entry_lines = format_session(session, idx)
         table.insert(lines, entry_lines[1]) -- header line (always visible)
 
         -- Content line (no prefix marker anymore)
