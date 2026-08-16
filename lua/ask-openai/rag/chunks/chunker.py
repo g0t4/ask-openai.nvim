@@ -9,7 +9,7 @@ from tree_sitter import Node
 
 from chunks.identified import IdentifiedChunk
 from chunks.ts.lua import attach_lua_doc_comments
-from chunks.ts.go import chunk_type_declaration as chunk_go_type_declaration
+from chunks.ts import go
 from chunks.ts.py import attach_py_decorators
 from chunks.uncovered import UncoveredCode, build_uncovered_intervals
 from index.storage import Chunk, ChunkType, FileStat, chunk_id_for, chunk_id_to_faiss_id, chunk_id_with_columns_for
@@ -345,7 +345,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
                 attach_py_decorators(node, chunk.sibling_nodes)
 
         elif node.type == "type_declaration" and parser_language == "go":
-            for chunk in chunk_go_type_declaration(node, source_bytes):
+            for chunk in go.chunks_for_type_declaration(node, source_bytes):
                 yield chunk
             collected_parent = True
 

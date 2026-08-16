@@ -39,7 +39,7 @@ def get_go_grouped_signature(type_children: list, source_bytes: bytes) -> str:
     return "type " + ", ".join(names)
 
 
-def chunk_type_declaration(node, source_bytes: bytes) -> list[IdentifiedChunk]:
+def chunks_for_type_declaration(node, source_bytes: bytes) -> list[IdentifiedChunk]:
     """ 0+ chunks from a go type_declaration.
 
     - single type  => one chunk (the whole declaration, 'type' included)
