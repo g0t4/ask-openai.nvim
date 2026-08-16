@@ -363,6 +363,8 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
     for chunk in identified_chunks:
 
         # FYI assume contiguous and ordered nodes (so first is literally first in doc, last is last)
+        chunk.throw_if_non_adjacent()  # TODO does this new assertion cause issues, if so you can remove this as I added this recently and it is possible I missed a case where it doesn't apply
+        # honestly this seems fine to assert here given the next assumption:
         first = chunk.nodes[0]
         last = chunk.nodes[-1]
 
