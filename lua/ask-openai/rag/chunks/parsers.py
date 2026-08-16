@@ -33,10 +33,12 @@ def get_cached_parser_for_path(path) -> tuple[Parser | None, str|None]:
         language = "javascript"
     elif language == "ts":
         language = "typescript"
-    elif language == "c":
+    elif language in ("c", "h"):
         language = "c"
-    elif language in ("cpp", "hpp", "hh"):
+    elif language in ("cpp", "hpp", "hh", "cc"):
         language = "cpp"
+    elif language in ("cu", "cuh"):
+        language = "cuda"
     elif language == "cs":
         language = "csharp"
     elif language == "bash":
