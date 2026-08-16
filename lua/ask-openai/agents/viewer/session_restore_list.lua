@@ -177,7 +177,7 @@ end
 ---@param entry SessionEntry
 ---@param index integer -- 1-based index in the list
 ---@return string[] display_lines
-local function format_entry_lines(entry, index)
+local function format_session(entry, index)
     local header_line = ("[%d] %s (%s)"):format(index, entry.session_id, entry.age_str)
 
     -- Wrap the initial message in a folded block for compactness
@@ -270,7 +270,7 @@ end
 function M.render_session_list(instance)
     local lines = {}
     for idx, entry in ipairs(instance.sessions) do
-        local entry_lines = format_entry_lines(entry, idx)
+        local entry_lines = format_session(entry, idx)
         table.insert(lines, entry_lines[1]) -- header line (always visible)
 
         -- Content line (no prefix marker anymore)
