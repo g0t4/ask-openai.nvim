@@ -66,6 +66,7 @@ local IGNORE_FILE_TYPES = {
     "TelescopeResults",
     "NvimTree",
     "DressingInput", -- pickers from nui (IIRC) => in nvim tree add a file => the file name box is one of these
+    "PlenaryTestPopup"
 }
 
 ---@return boolean
