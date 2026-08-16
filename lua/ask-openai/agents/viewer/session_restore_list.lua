@@ -231,7 +231,7 @@ function M.open()
     M._instance = instance
 
     -- * render initial list
-    M.render_list(instance)
+    M.render_session_list(instance)
 
     -- * buffer-local keymaps
     vim.keymap.set("n", "<Down>", function()
@@ -267,7 +267,7 @@ end
 --- Render the session list into the window buffer.
 ---
 ---@param instance SessionRestoreList
-function M.render_list(instance)
+function M.render_session_list(instance)
     local lines = {}
     for idx, entry in ipairs(instance.sessions) do
         local entry_lines = format_entry_lines(entry, idx)
@@ -300,7 +300,7 @@ end
 function M.move_selection_down(instance)
     if instance.selected_idx < #instance.sessions then
         instance.selected_idx = instance.selected_idx + 1
-        M.render_list(instance)
+        M.render_session_list(instance)
     end
 end
 
@@ -310,7 +310,7 @@ end
 function M.move_selection_up(instance)
     if instance.selected_idx > 1 then
         instance.selected_idx = instance.selected_idx - 1
-        M.render_list(instance)
+        M.render_session_list(instance)
     end
 end
 
