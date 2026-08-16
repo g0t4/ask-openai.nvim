@@ -29,6 +29,7 @@ logger = get_logger(__name__)
 # - TODO add keymap for FIM generation that I attribute to RAG context as good/bad
 #   - same idea in AskToolUse and AskRewrite
 
+
 @dataclass
 class RAGChunkerOptions:
     enable_ts_chunks: bool = False
@@ -46,6 +47,7 @@ class RAGChunkerOptions:
     def ProductionOptions():
         return RAGChunkerOptions(enable_line_range_chunks=True, enable_ts_chunks=True)
 
+
 def get_file_hash(file_path: Path | str) -> str:
     file_path = Path(file_path)
     # PRN is this slow? or ok?
@@ -55,12 +57,14 @@ def get_file_hash(file_path: Path | str) -> str:
             hasher.update(chunk)
     return hasher.hexdigest()
 
+
 def get_file_hash_from_lines(lines: list[str]) -> str:
     hasher = hashlib.sha256()
     # FYI lines have \n on end from LSP... so don't need to join w/ that between lines
     for line in lines:
         hasher.update(line.encode())
     return hasher.hexdigest()
+
 
 def get_file_stat(file_path: Path | str) -> FileStat:
     file_path = Path(file_path)
@@ -72,6 +76,7 @@ def get_file_stat(file_path: Path | str) -> FileStat:
         hash=get_file_hash(file_path),
         path=str(file_path)  # for serializing and reading by LSP
     )
+
 
 def build_chunks_from_file(path: Path | str, file_hash: str, options: RAGChunkerOptions) -> list[Chunk]:
     path = Path(path)
@@ -114,6 +119,7 @@ def build_chunks_from_lines(path: Path, file_hash: str, lines: list[str], option
 
     return chunks
 
+
 def build_line_range_chunks_from_uncovered_code(path: Path, file_hash: str, uncovered_code: list[UncoveredCode]) -> Iterator[Chunk]:
     # FYI quick idea for using sliding window on each contiguous section of covered code:
 
@@ -142,6 +148,7 @@ def build_line_range_chunks_from_uncovered_code(path: Path, file_hash: str, unco
             chunk.end_column0 = None
             #
             yield chunk
+
 
 def build_line_range_chunks_from_lines(path: Path, file_hash: str, lines: list[str]) -> list[Chunk]:
     """ only builder for line range chunks (thus denominated in lines only)"""
@@ -186,7 +193,7 @@ def build_line_range_chunks_from_lines(path: Path, file_hash: str, lines: list[s
                 start_line0=start_line_base0,
                 start_column0=0,  # assume first col, again not guaranteed if original line was modified (i.e. uncovered code)
                 end_line0=end_line_base0,
-                end_column0=length_of_last_line, # assume last line is original line, therefore length is column #
+                end_column0=length_of_last_line,  # assume last line is original line, therefore length is column #
                 # FYI probably would be fine to go back to None for end_column_base0 on line_range chunks too
                 #
                 type=chunk_type,
