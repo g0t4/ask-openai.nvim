@@ -172,15 +172,11 @@ function M.list_sessions()
     return sessions
 end
 
---- Format a single session entry as display lines for the list window.
----
----@param entry SessionEntry
----@param index integer -- 1-based index in the list
-local function format_session(entry, index)
-    local header_line = ("[%d] %s (%s)"):format(index, entry.session_id, entry.age_str)
+local function format_session(session, idx)
+    local header_line = ("[%d] %s (%s)"):format(idx, session.session_id, session.age_str)
 
     -- Wrap the initial message in a folded block for compactness
-    local first_user_request = "└─ " .. truncate_string(entry.initial_user_message, 70)
+    local first_user_request = "└─ " .. truncate_string(session.initial_user_message, 70)
 
     return { header_line = header_line, first_user_request = first_user_request }
 end
