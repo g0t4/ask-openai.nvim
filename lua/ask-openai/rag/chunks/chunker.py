@@ -375,6 +375,12 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         first = chunk.nodes[0]
         last = chunk.nodes[-1]
 
+        # if first != last:
+        #     import rich
+        #     rich.print("FIRST != LAST:")
+        #     for n in chunk.nodes:
+        #         rich.print(f'  {n=}')
+
         # ?? allow non-contiguous nodes (i.e. top level module statements if I were to use treesitter to find and aggrgate these instead of sliding window)
         # FYI treesitter chunks have the basis to capture both line and columns for start/endl, unlike uncovered_code
         start_line_base0 = first.start_point[0]
@@ -385,7 +391,6 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         chunk_type = ChunkType.TREESITTER
         chunk_id = chunk_id_with_columns_for(path, chunk_type, start_line_base0, start_column_base0, end_line_base0, end_column_base0, file_hash)
 
-        # TODO! add test cases that cover multi node at the chunk level
         text = source_bytes[first.start_byte:last.end_byte] \
                 .decode("utf-8", errors="replace")
 
