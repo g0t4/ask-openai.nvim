@@ -231,7 +231,9 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
                 break
 
         if not stop_before_node:
-            return f"--- unexpected {stop_node_types=} NOT FOUND ---"
+            # no body node (e.g. abstract/interface methods): fall back to the
+            # whole declaration text as the signature
+            return node.text.decode("utf-8", errors="replace").strip()
 
         return source_bytes[node.start_byte:stop_before_node.start_byte] \
                 .decode("utf-8", errors="replace") \
@@ -251,6 +253,12 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         elif node.type == 'class_declaration':
             # class_declaration: ts, js, java, kotlin, c#, php
             return get_signature_stop_on(node, "class_body")
+        elif node.type == 'record_declaration':
+            # record_declaration: java (record body reuses class_body)
+            return get_signature_stop_on(node, "class_body")
+        elif node.type == 'annotation_type_declaration':
+            # annotation_type_declaration: java @interface
+            return get_signature_stop_on(node, "annotation_type_body")
         elif node.type.find("class_definition") >= 0:
             # class_definition: py, ocaml, scala, puppet
             return get_signature_stop_on(node, "block")
@@ -276,6 +284,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             "statement_block",
             "block",
             "compound_statement",
+            "constructor_body",  # java: class constructor body
         ]
         return get_signature_stop_on(node, *stop_node_types)
 
@@ -316,6 +325,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
                 "function_declaration",
                 "function_item",
                 "generator_function_declaration",
+                "constructor_declaration",  # java: class constructor
                 "method_declaration",  # go: func with receiver
         ]:
             # TODO: extract indentation level from start of line (before matched node)
@@ -343,6 +353,8 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
                 "type_alias_declaration",
                 "interface_declaration",
                 "enum_declaration",
+                "record_declaration",  # java
+                "annotation_type_declaration",  # java: @interface
         ]:
             chunk = IdentifiedChunk(
                 nodes=[node],
