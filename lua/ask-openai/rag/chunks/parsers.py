@@ -53,12 +53,9 @@ def get_cached_parser_for_path(path) -> tuple[Parser | None, str|None]:
         language = "powershell"
     elif language == "rs":
         language = "rust"
-    elif language == "json":
-        language = "json"
-    elif language in ("yaml", "yml"):
-        # TODO add more here to this branch
-        # do not warn about these missing parsers
-        # I have determined I don't need/care to know
+    elif language in ("yaml", "yml", "json", "xml", "toml", "html", "htm"):
+        # markup/config/declarative formats: no meaningful code units
+        # (functions/classes) to chunk, so line-based chunking applies
         return None, None
     else:
         # *** https://github.com/Goldziher/tree-sitter-language-pack#readme
