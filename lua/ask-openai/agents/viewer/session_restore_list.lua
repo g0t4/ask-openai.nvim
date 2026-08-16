@@ -249,24 +249,16 @@ function M.open()
     return instance
 end
 
-local function format_session(session, idx)
-    local header_line = ("[%d] %s (%s)"):format(idx, session.session_id, session.age_str)
-
-    -- Wrap the initial message in a folded block for compactness
-    local first_user_request = "└─ " .. truncate_string(session.initial_user_message, 70)
-
-    return { header_line = header_line, first_user_request = first_user_request }
-end
-
 --- Render the session list into the window buffer.
 ---
 ---@param instance SessionRestoreList
 function M.render_session_list(instance)
     local lines = {}
     for idx, session in ipairs(instance.sessions) do
-        local entry = format_session(session, idx)
-        table.insert(lines, entry.header_line)
-        table.insert(lines, entry.first_user_request)
+        local header_line = ("[%d] %s (%s)"):format(idx, session.session_id, session.age_str)
+        local first_user_request = "└─ " .. truncate_string(session.initial_user_message, 70)
+        table.insert(lines, header_line)
+        table.insert(lines, first_user_request)
     end
 
     vim.api.nvim_buf_set_lines(instance.buffer_number, 0, -1, false, lines)
