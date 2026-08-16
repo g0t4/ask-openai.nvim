@@ -53,8 +53,60 @@ def get_cached_parser_for_path(path) -> tuple[Parser | None, str|None]:
         language = "powershell"
     elif language == "rs":
         language = "rust"
-    elif language in ("yaml", "yml", "json", "xml", "toml", "html", "htm"):
-        # markup/config/declarative formats: no meaningful code units
+    elif language == "go":
+        language = "go"
+    elif language in ("kt", "kts"):
+        language = "kotlin"
+    elif language == "swift":
+        language = "swift"
+    elif language == "dart":
+        language = "dart"
+    elif language in ("php", "php3", "php4", "php5", "phtml"):
+        language = "php"
+    elif language in ("rb", "rake"):
+        language = "ruby"
+    elif language == "scala":
+        language = "scala"
+    elif language == "hs":
+        language = "haskell"
+    elif language in ("ex", "exs"):
+        language = "elixir"
+    elif language == "erl":
+        language = "erlang"
+    elif language == "clj":
+        language = "clojure"
+    elif language == "groovy":
+        language = "groovy"
+    elif language == "jl":
+        language = "julia"
+    elif language in ("pl", "pm"):
+        language = "perl"
+    elif language in ("m", "mm"):
+        language = "objc"
+    elif language == "sol":
+        language = "solidity"
+    elif language == "sql":
+        language = "sql"
+    elif language == "proto":
+        language = "proto"
+    elif language == "graphql":
+        language = "graphql"
+    elif language == "zig":
+        language = "zig"
+    elif language == "prisma":
+        language = "prisma"
+    elif language in (
+        "yaml", "yml", "json", "xml", "toml", "html", "htm",
+        "css", "scss", "less",
+        "ini", "cfg", "properties", "conf",
+        "gitignore", "dockerignore",
+        "csv", "tsv",
+        "diff", "patch",
+        "markdown", "md", "mdown", "mkd",
+        "dockerfile",
+        "make", "mk", "mak",
+    ):
+        # markup/config/declarative/prose formats: no meaningful code units
         # (functions/classes) to chunk, so line-based chunking applies
         return None, None
     else:
