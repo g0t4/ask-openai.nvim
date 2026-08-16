@@ -3,8 +3,7 @@ from pathlib import Path
 
 from index import workspace
 from chunks.chunker import *
-from chunks.ts.ts import *
-from index.storage import Chunk, ChunkType
+from index.storage import Chunk
 
 # * set root dir for relative paths
 my_dir = Path(__file__).absolute().parent
@@ -139,3 +138,38 @@ class TestTsChunker_Go_EmptyTypeGroup:
 
     def test_empty_type_group_yields_no_chunk(self):
         assert self.chunks == []
+
+
+
+class TestTsChunker_Go_Generics:
+    """ go generic types and generic methods. """
+
+    def setup_method(self):
+        self.chunks = build_test_chunks(test_cases_go / "generics.go", RAGChunkerOptions.OnlyTsChunks())
+
+    def test_generic_struct(self):
+        # signature should include the type parameter list
+        assert self.chunks[0].signature == "type List[T any] struct"
+        assert self.chunks[0].text == """type List[T any] struct {
+	items []T
+}"""
+
+    def test_generic_method(self):
+        assert self.chunks[1].signature == "func (l *List[T]) Len() int"
+
+    def test_multi_type_param_struct(self):
+        assert self.chunks[2].signature == "type Pair[K comparable, V any] struct"
+
+
+class TestTsChunker_Go_GroupedAlias:
+    """ a type_alias inside a grouped type_declaration. """
+
+    def setup_method(self):
+        self.chunks = build_test_chunks(test_cases_go / "grouped_alias.go", RAGChunkerOptions.OnlyTsChunks())
+
+    def test_grouped_alias_emits_group_plus_individuals(self):
+        assert [c.signature for c in self.chunks] == [
+            "type A, ID",
+            "type A int",
+            "type ID",
+        ]
