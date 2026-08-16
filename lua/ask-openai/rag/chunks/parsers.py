@@ -55,7 +55,7 @@ def get_cached_parser_for_path(path) -> tuple[Parser | None, str|None]:
         language = "rust"
     elif language == "json":
         language = "json"
-    elif language == "yaml":
+    elif language in ("yaml", "yml"):
         # TODO add more here to this branch
         # do not warn about these missing parsers
         # I have determined I don't need/care to know
