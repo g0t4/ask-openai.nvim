@@ -1,8 +1,9 @@
-abbr ptw_apply_patch_wrapper 'ptw --clear lua/ask-openai/tools/inproc/apply_patch_wrapper_tests.py --  --capture=no --log-cli-level=INFO'
-abbr ptw_chunking 'ptw --clear *_tests.py -- lsp/chunks/*.py --capture=no --log-cli-level=INFO'
-
-abbr run_vite 'cd tools/chat_viewer_web; npm run dev'
-
+set --local cd_repo_root "cd ~/repos/github/g0t4/ask-openai.nvim"
+set --local cd_rag "$cd_repo_root/lua/ask-openai/rag"
+abbr ptw_apply_patch_wrapper "$cd_repo_root; ptw --clear lua/ask-openai/tools/inproc/apply_patch_wrapper_tests.py --  --capture=no --log-cli-level=INFO"
+abbr ptw_chunking "$cd_rag; ptw --clear *_tests.py -- chunks/*.py --capture=no --log-cli-level=INFO"
+set --local cd_chat_viewer_web "$cd_repo_root/tools/chat_viewer_web"
+abbr run_vite "$cd_chat_viewer_web; npm run dev"
 
 # * E2E test abbreviations for ask-openai.nvim
 #    Run with: type the abbr then tab to expand
