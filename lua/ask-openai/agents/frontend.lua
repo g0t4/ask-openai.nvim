@@ -8,6 +8,7 @@ local curl = require("ask-openai.backends.curl")
 local AgentWindow = require("ask-openai.agents.viewer.window")
 local AgentTrace = require("ask-openai.agents.trace")
 local TracePager = require("ask-openai.agents.viewer.trace_pager")
+local LlamaServerClient = require("ask-openai.backends.llama_cpp.llama_server_client")
 local TxChatMessage = require("ask-openai.agents.messages.tx")
 local Selection = require("ask-openai.helpers.selection")
 local CurrentContext = require("ask-openai.frontends.context")
@@ -884,6 +885,34 @@ local function restore_trace_command(opts)
     restore_trace(trace_path)
 end
 
+
+---Checks connectivity to the model server by calling /v1/models and notifies the result.
+function AgentsFrontend.check_model_command()
+    local model_slug = config.get_agents_model()
+    local base_url = config.get_base_url(model_slug)
+    if not base_url then
+        vim.notify("AskAgentCheckModel: no endpoint configured for model '" .. tostring(model_slug) .. "'", vim.log.levels.ERROR)
+        return
+    end
+
+    local response = LlamaServerClient.get_models(base_url, { connect_timeout = 5, max_time = 10 })
+    if not response or response.code ~= 200 then
+        vim.notify("AskAgentCheckModel: /v1/models FAILED at " .. base_url .. " (http " .. tostring(response and response.code or "nil") .. ")", vim.log.levels.ERROR, { title = "AskAgentCheckModel" })
+        return
+    end
+
+    local data = response.body and response.body.data
+    if type(data) ~= "table" or #data == 0 then
+        vim.notify("AskAgentCheckModel: /v1/models OK at " .. base_url .. " but no models returned", vim.log.levels.WARN, { title = "AskAgentCheckModel" })
+        return
+    end
+
+    local model_names = vim.tbl_map(function(m)
+        return m.id or "?"
+    end, data)
+    vim.notify("AskAgentCheckModel: OK - " .. table.concat(model_names, ", ") .. " (via " .. base_url .. ")", vim.log.levels.INFO, { title = "AskAgentCheckModel" })
+end
+
 function AgentsFrontend.setup()
     -- * AskAgent
     vim.api.nvim_create_user_command(
@@ -896,6 +925,9 @@ function AgentsFrontend.setup()
     vim.api.nvim_create_user_command("AskAgentRemoveLastMessage", remove_last_message, {
         nargs = "?",
         desc = "Remove last N messages from AskOpenAI agent trace (default: 1)"
+    })
+    vim.api.nvim_create_user_command("AskAgentCheckModel", AgentsFrontend.check_model_command, {
+        desc = "Check the model server (/v1/models) and notify the result"
     })
     -- * prefill argument combos:
     vim.keymap.set('n', '<Leader>a', ':AskAgent ', { noremap = true })
@@ -920,6 +952,7 @@ function AgentsFrontend.setup()
     vim.keymap.set('n', '<leader>al', AgentsFrontend.clear_chat_command, { noremap = true })
     vim.keymap.set('n', '<leader>af', AgentsFrontend.follow_up_command, { noremap = true })
     vim.keymap.set('n', '<leader>ao', AgentsFrontend.ensure_chat_window_is_open, { noremap = true })
+    vim.keymap.set('n', '<leader>as', AgentsFrontend.check_model_command, { noremap = true, desc = 'Check model server /v1/models' })
     -- * long-trace buffer simulation (replicate chat window lag; watch it live)
     vim.keymap.set('n', '<leader>abs', function()
         require('ask-openai.agents.viewer.buffers_integration_tests').run_simulation()
