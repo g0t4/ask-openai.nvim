@@ -176,15 +176,13 @@ end
 ---
 ---@param entry SessionEntry
 ---@param index integer -- 1-based index in the list
----@return string[] display_lines
 local function format_session(entry, index)
     local header_line = ("[%d] %s (%s)"):format(index, entry.session_id, entry.age_str)
 
     -- Wrap the initial message in a folded block for compactness
-    local message_preview = truncate_string(entry.initial_user_message, 70)
-    local folded_content = "└─ " .. message_preview
+    local first_user_request = "└─ " .. truncate_string(entry.initial_user_message, 70)
 
-    return { header_line, folded_content }
+    return { header_line = header_line, first_user_request = first_user_request }
 end
 
 --- Create and open the session restore list float window.
@@ -270,11 +268,9 @@ end
 function M.render_session_list(instance)
     local lines = {}
     for idx, session in ipairs(instance.sessions) do
-        local entry_lines = format_session(session, idx)
-        table.insert(lines, entry_lines[1]) -- header line (always visible)
-
-        -- Content line (no prefix marker anymore)
-        table.insert(lines, entry_lines[2])
+        local entry = format_session(session, idx)
+        table.insert(lines, entry.header_line)
+        table.insert(lines, entry.first_user_request)
     end
 
     vim.api.nvim_buf_set_lines(instance.buffer_number, 0, -1, false, lines)
