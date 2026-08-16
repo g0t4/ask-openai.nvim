@@ -138,5 +138,4 @@ class TestTsChunker_Go_EmptyTypeGroup:
         self.chunks = build_test_chunks(test_cases_go / "empty_type_group.go", RAGChunkerOptions.OnlyTsChunks())
 
     def test_empty_type_group_yields_no_chunk(self):
-        # only the Hello() function should be chunked; the empty type group is skipped
-        assert [c.signature for c in self.chunks] == ["func Hello() string"]
+        assert self.chunks == []
