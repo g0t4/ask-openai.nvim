@@ -1,4 +1,7 @@
-def attach_lua_doc_comments(node, chunk_nodes: list) -> None:
+from tree_sitter import Node
+
+
+def attach_lua_doc_comments(node: Node, chunk_nodes: list) -> None:
     while True:
         prev = node.prev_sibling
         prev_is_doc_comment = prev and prev.type == "comment"

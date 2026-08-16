@@ -1,4 +1,7 @@
-def attach_py_decorators(node, chunk_nodes: list) -> None:
+from tree_sitter import Node
+
+
+def attach_py_decorators(node: Node, chunk_nodes: list) -> None:
     while True:
         prev = node.prev_sibling
         prev_is_decorator = prev and prev.type == "decorator"
