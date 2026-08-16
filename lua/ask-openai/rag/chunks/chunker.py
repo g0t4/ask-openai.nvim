@@ -10,6 +10,7 @@ from tree_sitter import Node
 from chunks.identified import IdentifiedChunk
 from chunks.ts.lua import attach_lua_doc_comments
 from chunks.ts.py import attach_py_decorators
+from chunks.ts.go import attach_go_type_keyword
 from chunks.uncovered import UncoveredCode, build_uncovered_intervals
 from index.storage import Chunk, ChunkType, FileStat, chunk_id_for, chunk_id_to_faiss_id, chunk_id_with_columns_for
 from logs import get_logger
@@ -245,8 +246,40 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         elif node.type.find("class_definition") >= 0:
             # class_definition: py, ocaml, scala, puppet
             return get_signature_stop_on(node, "block")
+        elif node.type == "type_spec":
+            # go: type_spec lives under type_declaration; the 'type' keyword is a sibling
+            return get_go_type_signature(node, source_bytes)
+        elif node.type == "type_alias":
+            # go: `type ID = string` uses type_alias (not type_spec)
+            return "type " + get_signature_stop_on(node, "=")
         else:
             return f"--- TODO {node.type} ---"
+
+    def get_go_type_signature(node, source_bytes: bytes) -> str:
+        # node is a 'type_spec' (go)
+        #   - type_identifier + struct_type   => "type Person struct"
+        #   - type_identifier + interface_type=> "type Shape interface"
+        #   - type_identifier + '='           => "type ID"
+        # the 'type' keyword is child 0 of the parent type_declaration
+        type_keyword = None
+        if node.parent and node.parent.type == "type_declaration":
+            type_keyword = node.parent.child(0)
+        if type_keyword and type_keyword.type == "type":
+            signature = source_bytes[type_keyword.start_byte:type_keyword.end_byte].decode() + " "
+        else:
+            signature = "type "
+
+        for child in node.children:
+            if child.type in ("struct_type", "interface_type"):
+                kind = source_bytes[child.start_byte:child.end_byte].decode().split()[0]
+                name = source_bytes[node.start_byte:child.start_byte].decode().strip()
+                return f"{signature}{name} {kind}"
+            if child.type == "=":
+                name = source_bytes[node.start_byte:child.start_byte].decode().strip()
+                return f"{signature}{name}"
+
+        # no body (e.g. `type X int`)
+        return signature + node.text.decode().strip()
 
     def get_function_signature(node) -> str:
         # algorithm: signature == copy everything until start of the function body
@@ -306,6 +339,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
                 "local_function_statement",
                 "function_declaration",
                 "function_item",
+                "method_declaration",  # go: func with receiver
         ]:
             # TODO: extract indentation level from start of line (before matched node)
             #   - perhaps take the entire start line and end line?
@@ -332,6 +366,8 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
                 "type_alias_declaration",
                 "interface_declaration",
                 "enum_declaration",
+                "type_spec",  # go
+                "type_alias",  # go: `type ID = string`
         ]:
             chunk = IdentifiedChunk(
                 sibling_nodes=[node],
@@ -341,6 +377,8 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             collected_parent = True
             if parser_language == "python":
                 attach_py_decorators(node, chunk.sibling_nodes)
+            if parser_language == "go":
+                attach_go_type_keyword(node, chunk.sibling_nodes)
 
         # elif logger.isEnabledForDebug() and not collected_parent:
         #     debug_uncollected_node(node)
