@@ -62,9 +62,9 @@ end
 ---@return string initial_message
 local function extract_initial_user_message(messages)
     local first_assistant_index = nil
-    for idx, msg in ipairs(messages) do
-        if msg.role == "assistant" then
-            first_assistant_index = idx
+    for index, message in ipairs(messages) do
+        if message.role == "assistant" then
+            first_assistant_index = index
             break
         end
     end
@@ -74,10 +74,10 @@ local function extract_initial_user_message(messages)
     end
 
     -- Search backwards from just before the first assistant
-    for idx = first_assistant_index - 1, 1, -1 do
-        local role = messages[idx].role
+    for index = first_assistant_index - 1, 1, -1 do
+        local role = messages[index].role
         if role == "user" or role == "developer" then
-            local content = messages[idx].content or ""
+            local content = messages[index].content or ""
             return truncate_string(content, 80)
         end
         if role == "assistant" then
@@ -254,8 +254,8 @@ end
 ---@param instance SessionRestoreList
 function M.render_session_list(instance)
     local lines = {}
-    for idx, session in ipairs(instance.sessions) do
-        local title = ("[%d] %s (%s)"):format(idx, session.session_id, session.age_str)
+    for index, session in ipairs(instance.sessions) do
+        local title = ("[%d] %s (%s)"):format(index, session.session_id, session.age_str)
         local preview = "└─ " .. truncate_string(session.initial_user_message:gsub("\n", " \\n "), 70)
         table.insert(lines, title)
         table.insert(lines, preview)
