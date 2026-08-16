@@ -129,3 +129,14 @@ class TestTsChunker_Go_GroupedTypes:
         assert self.chunks[2].text == "type B string"
         assert self.chunks[3].text == "type C struct {\n\t\tX int\n\t\tY int\n\t}"
         assert self.chunks[4].text == "type Single int"
+
+
+class TestTsChunker_Go_EmptyTypeGroup:
+    """ `type ()` is valid go but declares zero types => must yield zero chunks. """
+
+    def setup_method(self):
+        self.chunks = build_test_chunks(test_cases_go / "empty_type_group.go", RAGChunkerOptions.OnlyTsChunks())
+
+    def test_empty_type_group_yields_no_chunk(self):
+        # only the Hello() function should be chunked; the empty type group is skipped
+        assert [c.signature for c in self.chunks] == ["func Hello() string"]
