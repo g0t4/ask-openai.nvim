@@ -172,15 +172,6 @@ function M.list_sessions()
     return sessions
 end
 
-local function format_session(session, idx)
-    local header_line = ("[%d] %s (%s)"):format(idx, session.session_id, session.age_str)
-
-    -- Wrap the initial message in a folded block for compactness
-    local first_user_request = "└─ " .. truncate_string(session.initial_user_message, 70)
-
-    return { header_line = header_line, first_user_request = first_user_request }
-end
-
 --- Create and open the session restore list float window.
 --- Reuses existing instance if already open.
 ---
@@ -256,6 +247,15 @@ function M.open()
     instance:set_title("Session Restore (" .. #sessions .. " sessions)")
 
     return instance
+end
+
+local function format_session(session, idx)
+    local header_line = ("[%d] %s (%s)"):format(idx, session.session_id, session.age_str)
+
+    -- Wrap the initial message in a folded block for compactness
+    local first_user_request = "└─ " .. truncate_string(session.initial_user_message, 70)
+
+    return { header_line = header_line, first_user_request = first_user_request }
 end
 
 --- Render the session list into the window buffer.
