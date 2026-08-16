@@ -123,10 +123,11 @@ class TestTsChunker_Go_GroupedTypes:
     def test_grouped_chunk_has_whole_group_text(self):
         assert self.chunks[0].text == "type (\n\tA int\n\tB string\n\tC struct {\n\t\tX int\n\t\tY int\n\t}\n)"
 
-    def test_individual_type_chunks(self):
-        assert self.chunks[1].text == "type A int"
-        assert self.chunks[2].text == "type B string"
-        assert self.chunks[3].text == "type C struct {\n\t\tX int\n\t\tY int\n\t}"
+    def test_individual_type_chunks_text_is_raw_node(self):
+        # chunk text is exactly the node's byte range -- no fabricated 'type ' prefix
+        assert self.chunks[1].text == "A int"
+        assert self.chunks[2].text == "B string"
+        assert self.chunks[3].text == "C struct {\n\t\tX int\n\t\tY int\n\t}"
         assert self.chunks[4].text == "type Single int"
 
 

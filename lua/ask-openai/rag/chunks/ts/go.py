@@ -57,7 +57,6 @@ def chunks_for_type_declaration(type_declaration, source_bytes: bytes) -> list[I
         chunks += [
             IdentifiedChunk(
                 sibling_nodes=[type],
-                prefix="type ",
                 signature=signature_for_type(type, source_bytes),
             )
             for type in types

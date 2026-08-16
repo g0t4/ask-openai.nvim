@@ -377,7 +377,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         chunk_id = chunk_id_with_columns_for(path, chunk_type, start_line_base0, start_column_base0, end_line_base0, end_column_base0, file_hash)
 
         # TODO! add test cases that cover multi node at the chunk level
-        text = chunk.prefix + source_bytes[first.start_byte:last.end_byte] \
+        text = source_bytes[first.start_byte:last.end_byte] \
                 .decode("utf-8", errors="replace")
 
         chunk = Chunk(
