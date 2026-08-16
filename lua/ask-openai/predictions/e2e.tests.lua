@@ -1,5 +1,6 @@
 require("ask-openai.helpers.test_setup").modify_package_path()
 local config = require("ask-openai.config")
+local screen = require("devtools.tests.screen")
 
 -- * Load shared E2E test utilities
 local e2e = require("ask-openai.helpers.test_e2e")
@@ -43,12 +44,15 @@ describe("E2E - FIM predictions", function()
         print("  Buffer lines: " .. table.concat(buffer_lines, ", "))
         print("  FIM model: " .. fim_model)
         print("==============================================\n")
+        screen.dump_bounded("before FIM")
 
         -- * Action: trigger prediction manually (bypassing event system)
         predictions_frontend.ask_for_prediction({ bufnr = bufnr })
 
         -- * Wait for the prediction to complete
         local current_prediction = e2e.wait_for_prediction(bufnr, predictions_frontend, 30000)
+
+        screen.dump_bounded("after FIM")
 
         -- * Verify: prediction was created and has content
         assert.is_not_nil(
