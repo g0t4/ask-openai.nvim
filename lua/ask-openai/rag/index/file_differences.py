@@ -145,9 +145,9 @@ def warn_about_file_differences(datasets: Datasets, config: RagConfig, root_dir:
         table.add_column(justify="left", header="hidden" if show_hidden else "")
         for added_file in added_files:
             file_age = time.time() - added_file.current_stat.mtime
-            age_str = format_age(file_age)
+            age = format_age(file_age)
             hidden = hide_reason_by_file_path.get(added_file.path)
-            table.add_row(age_str, str(added_file.display_path), hidden)
+            table.add_row(age, str(added_file.display_path), hidden)
         console.print(table)
 
     if content_differs:

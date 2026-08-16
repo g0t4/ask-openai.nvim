@@ -7,7 +7,7 @@ local HLGroups = require("ask-openai.hlgroups")
 ---@field trace_path string -- absolute path to the -trace.json file
 ---@field session_id string -- unix timestamp extracted from filename
 ---@field start_time integer -- unix timestamp of when session started
----@field age_str string -- human-readable age (e.g. "5m", "2h", "3d")
+---@field age string -- human-readable age (e.g. "5m", "2h", "3d")
 ---@field initial_user_message string -- last user/developer message before first assistant
 
 local M = {}
@@ -23,7 +23,7 @@ local HIGHLIGHT_NS = vim.api.nvim_create_namespace("AskSessionRestoreHighlight")
 --- Format a unix timestamp into a human-readable relative age string.
 ---
 ---@param timestamp integer -- unix timestamp
----@return string age_str
+---@return string age
 local function format_age(timestamp)
     local now = os.time()
     local diff = now - timestamp
@@ -121,7 +121,7 @@ local function load_session_entry(trace_path)
         trace_path = trace_path,
         session_id = session_id,
         start_time = start_time,
-        age_str = format_age(start_time),
+        age = format_age(start_time),
         initial_user_message = extract_initial_user_message(messages),
     }
 end
@@ -255,7 +255,7 @@ end
 function M.render_session_list(instance)
     local lines = {}
     for index, session in ipairs(instance.sessions) do
-        local title = ("[%d] %s (%s)"):format(index, session.session_id, session.age_str)
+        local title = ("[%d] %s (%s)"):format(index, session.session_id, session.age)
         local preview = "└─ " .. truncate_string(session.initial_user_message:gsub("\n", " \\n "), 70)
         table.insert(lines, title)
         table.insert(lines, preview)
