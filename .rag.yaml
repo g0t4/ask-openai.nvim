@@ -13,6 +13,8 @@ include_domains:
     - css
     - js
     - md
+    # currently only for treesitter chunking tests (add here so I can test intra domain searches within the sample files):
+    - go
 ignores:
     - "notes/"
 global_domains:
@@ -25,3 +27,5 @@ global_domains:
     - svelte
     - css
     - js
+    # currently only for treesitter chunking tests (so skip looking at these globally, only support intra-domain searches)
+    # - go
