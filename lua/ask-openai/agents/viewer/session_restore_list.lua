@@ -24,7 +24,7 @@ local HIGHLIGHT_NS = vim.api.nvim_create_namespace("AskSessionRestoreHighlight")
 ---
 ---@param timestamp integer -- unix timestamp
 ---@return string age
-local function format_age(timestamp)
+local function readable_age(timestamp)
     local now = os.time()
     local diff = now - timestamp
 
@@ -121,7 +121,7 @@ local function load_session_entry(trace_path)
         trace_path = trace_path,
         session_id = session_id,
         start_time = start_time,
-        age = format_age(start_time),
+        age = readable_age(start_time),
         initial_user_message = extract_initial_user_message(messages),
     }
 end
@@ -163,9 +163,9 @@ function M.list_sessions()
     local sessions = {}
     for _, filename in ipairs(trace_files) do
         local trace_path = state_dir .. "/" .. filename
-        local entry = load_session_entry(trace_path)
-        if entry then
-            table.insert(sessions, entry)
+        local session = load_session_entry(trace_path)
+        if session then
+            table.insert(sessions, session)
         end
     end
 
