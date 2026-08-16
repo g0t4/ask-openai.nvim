@@ -4,8 +4,10 @@ from tree_sitter import Node
 def attach_lua_doc_comments(node: Node, chunk_nodes: list) -> None:
     while True:
         prev = node.prev_sibling
-        prev_is_doc_comment = prev and prev.type == "comment"
-        if not prev_is_doc_comment:
+        if prev is None:
+            return
+
+        if prev.type != "comment":
             break
 
         comment_end_line = prev.end_point[0]
