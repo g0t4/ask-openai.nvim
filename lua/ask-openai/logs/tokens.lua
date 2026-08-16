@@ -1,3 +1,5 @@
+local ansi = require("devtools.ansi")
+
 local M = {}
 
 --- Color text based on token probability.
