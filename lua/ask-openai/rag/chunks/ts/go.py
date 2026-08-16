@@ -44,7 +44,6 @@ def chunks_for_type_declaration(type_declaration, source_bytes: bytes) -> list[I
 
     if len(types) == 1:
         return [IdentifiedChunk(
-            # TODO look into how sibling_nodes is used here
             sibling_nodes=[type_declaration],
             signature=signature_for_type(types[0], source_bytes),
         )]
