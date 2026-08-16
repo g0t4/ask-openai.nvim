@@ -1,7 +1,7 @@
 from chunks.identified import IdentifiedChunk
 
 
-def get_go_type_signature(node, source_bytes: bytes) -> str:
+def signature_for_type(node, source_bytes: bytes) -> str:
     # node is a 'type_spec' (go)
     #   - type_identifier + struct_type   => "type Person struct"
     #   - type_identifier + interface_type=> "type Shape interface"
@@ -28,7 +28,7 @@ def get_go_type_signature(node, source_bytes: bytes) -> str:
     return signature + node.text.decode().strip()
 
 
-def get_go_grouped_signature(type_children: list, source_bytes: bytes) -> str:
+def signature_for_type_group(type_children: list, source_bytes: bytes) -> str:
     # type_children: the type_spec / type_alias children of a type_declaration
     # signature is a title of the group's type names, e.g. "type A, B, C"
     names = []
@@ -51,19 +51,19 @@ def chunks_for_type_declaration(node, source_bytes: bytes) -> list[IdentifiedChu
     if len(type_children) == 1:
         return [IdentifiedChunk(
             sibling_nodes=[node],
-            signature=get_go_type_signature(type_children[0], source_bytes),
+            signature=signature_for_type(type_children[0], source_bytes),
         )]
 
     if len(type_children) > 1:
         chunks = [IdentifiedChunk(
             sibling_nodes=[node],
-            signature=get_go_grouped_signature(type_children, source_bytes),
+            signature=signature_for_type_group(type_children, source_bytes),
         )]
         chunks += [
             IdentifiedChunk(
                 sibling_nodes=[child],
                 prefix="type ",
-                signature=get_go_type_signature(child, source_bytes),
+                signature=signature_for_type(child, source_bytes),
             )
             for child in type_children
         ]
