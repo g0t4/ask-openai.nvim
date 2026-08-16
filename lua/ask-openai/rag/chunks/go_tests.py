@@ -99,3 +99,33 @@ class TestTsChunker_Go_TypeAlias:
         type_id = self.chunks[6]
         assert type_id.text == "type ID = string"
         assert type_id.signature == "type ID"
+
+
+class TestTsChunker_Go_GroupedTypes:
+    """ multiple type_specs under one type_declaration: emit BOTH a grouped chunk
+    AND one chunk per type.
+
+    `type ( A; B; C )` produces: [grouped chunk, A, B, C].
+    `type Single int` (a single type_declaration) produces just [Single].
+    """
+
+    def setup_method(self):
+        self.chunks = build_test_chunks(test_cases_go / "grouped_types.go", RAGChunkerOptions.OnlyTsChunks())
+
+    def test_grouped_emits_group_plus_individuals(self):
+        assert [c.signature for c in self.chunks] == [
+            "type A, B, C",
+            "type A int",
+            "type B string",
+            "type C struct",
+            "type Single int",
+        ]
+
+    def test_grouped_chunk_has_whole_group_text(self):
+        assert self.chunks[0].text == "type (\n\tA int\n\tB string\n\tC struct {\n\t\tX int\n\t\tY int\n\t}\n)"
+
+    def test_individual_type_chunks(self):
+        assert self.chunks[1].text == "type A int"
+        assert self.chunks[2].text == "type B string"
+        assert self.chunks[3].text == "type C struct {\n\t\tX int\n\t\tY int\n\t}"
+        assert self.chunks[4].text == "type Single int"

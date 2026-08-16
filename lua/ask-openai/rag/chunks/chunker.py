@@ -10,7 +10,6 @@ from tree_sitter import Node
 from chunks.identified import IdentifiedChunk
 from chunks.ts.lua import attach_lua_doc_comments
 from chunks.ts.py import attach_py_decorators
-from chunks.ts.go import attach_go_type_keyword
 from chunks.uncovered import UncoveredCode, build_uncovered_intervals
 from index.storage import Chunk, ChunkType, FileStat, chunk_id_for, chunk_id_to_faiss_id, chunk_id_with_columns_for
 from logs import get_logger
@@ -246,12 +245,6 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         elif node.type.find("class_definition") >= 0:
             # class_definition: py, ocaml, scala, puppet
             return get_signature_stop_on(node, "block")
-        elif node.type == "type_spec":
-            # go: type_spec lives under type_declaration; the 'type' keyword is a sibling
-            return get_go_type_signature(node, source_bytes)
-        elif node.type == "type_alias":
-            # go: `type ID = string` uses type_alias (not type_spec)
-            return "type " + get_signature_stop_on(node, "=")
         else:
             return f"--- TODO {node.type} ---"
 
@@ -280,6 +273,16 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
 
         # no body (e.g. `type X int`)
         return signature + node.text.decode().strip()
+
+    def get_go_grouped_signature(type_children: list, source_bytes: bytes) -> str:
+        # type_children: the type_spec / type_alias children of a type_declaration
+        # signature is a title of the group's type names, e.g. "type A, B, C"
+        names = []
+        for child in type_children:
+            name_node = child.child(0)
+            if name_node and name_node.type == "type_identifier":
+                names.append(source_bytes[name_node.start_byte:name_node.end_byte].decode())
+        return "type " + ", ".join(names)
 
     def get_function_signature(node) -> str:
         # algorithm: signature == copy everything until start of the function body
@@ -366,8 +369,6 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
                 "type_alias_declaration",
                 "interface_declaration",
                 "enum_declaration",
-                "type_spec",  # go
-                "type_alias",  # go: `type ID = string`
         ]:
             chunk = IdentifiedChunk(
                 sibling_nodes=[node],
@@ -377,8 +378,32 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             collected_parent = True
             if parser_language == "python":
                 attach_py_decorators(node, chunk.sibling_nodes)
-            if parser_language == "go":
-                attach_go_type_keyword(node, chunk.sibling_nodes)
+
+        elif node.type == "type_declaration" and parser_language == "go":
+            # go: type_declaration wraps one or more type_spec / type_alias children
+            #   - single type  => one chunk (the whole declaration, 'type' included)
+            #   - multiple     => a grouped chunk + one chunk per type (do both)
+            type_children = [c for c in node.children if c.type in ("type_spec", "type_alias")]
+            if len(type_children) == 1:
+                chunk = IdentifiedChunk(
+                    sibling_nodes=[node],
+                    signature=get_go_type_signature(type_children[0], source_bytes),
+                )
+                yield chunk
+                collected_parent = True
+            elif len(type_children) > 1:
+                grouped_chunk = IdentifiedChunk(
+                    sibling_nodes=[node],
+                    signature=get_go_grouped_signature(type_children, source_bytes),
+                )
+                yield grouped_chunk
+                for child in type_children:
+                    yield IdentifiedChunk(
+                        sibling_nodes=[child],
+                        prefix="type ",
+                        signature=get_go_type_signature(child, source_bytes),
+                    )
+                collected_parent = True
 
         # elif logger.isEnabledForDebug() and not collected_parent:
         #     debug_uncollected_node(node)
@@ -408,7 +433,7 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
         chunk_id = chunk_id_with_columns_for(path, chunk_type, start_line_base0, start_column_base0, end_line_base0, end_column_base0, file_hash)
 
         # TODO! add test cases that cover multi node at the chunk level
-        text = source_bytes[first.start_byte:last.end_byte] \
+        text = chunk.prefix + source_bytes[first.start_byte:last.end_byte] \
                 .decode("utf-8", errors="replace")
 
         chunk = Chunk(

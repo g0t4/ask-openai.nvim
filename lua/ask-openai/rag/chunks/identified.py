@@ -6,6 +6,7 @@ class IdentifiedChunk:
     # i.e. when primary has doc_comments/annotations/decorators before it, these are then siblings and there is not single node
     sibling_nodes: list[Node]
     signature: str = ""
+    prefix: str = ""
 
     def number_lines(self):
         return sum(
