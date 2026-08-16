@@ -6,14 +6,8 @@ def signature_for_type(node, source_bytes: bytes) -> str:
     #   - type_identifier + struct_type   => "type Person struct"
     #   - type_identifier + interface_type=> "type Shape interface"
     #   - type_identifier + '='           => "type ID"
-    # the 'type' keyword is child 0 of the parent type_declaration
-    type_keyword = None
-    if node.parent and node.parent.type == "type_declaration":
-        type_keyword = node.parent.child(0)
-    if type_keyword and type_keyword.type == "type":
-        signature = source_bytes[type_keyword.start_byte:type_keyword.end_byte].decode() + " "
-    else:
-        signature = "type "
+    # every go type_declaration starts with the 'type' keyword, so the prefix is constant
+    signature = "type "
 
     for child in node.children:
         if child.type in ("struct_type", "interface_type"):
