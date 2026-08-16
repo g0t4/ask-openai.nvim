@@ -8,11 +8,18 @@ class IdentifiedChunk:
     signature: str = ""
 
     def number_lines(self):
-        # ? throw if nodes are not adjacent?
         return sum(
             node.end_point[0] - node.start_point[0] + 1 \
                    for node in self.nodes
         )
+
+    def throw_if_non_adjacent(self):
+        # TODO use in building chunks (not uncovered code) b/c right now that assumes it is adjacent
+        import itertools
+        pairs = itertools.pairwise(self.nodes)
+        assert all(a.next_sibling == b for a, b in pairs), \
+            f"IdentifiedChunk nodes are not adjacent: {pairs}"
+
 
 # # PRN switch to NamedTuple?
 # #  pros: hashable, better for caching
