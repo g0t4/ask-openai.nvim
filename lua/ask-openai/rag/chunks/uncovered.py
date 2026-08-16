@@ -119,7 +119,7 @@ def _build_uncovered_intervals(tree: Tree, source_bytes: bytes, chunks: list[Ide
             #   - longer also seems a poor match (probably too many directions averaged together)
             continue
 
-        for node in chunk.sibling_nodes:
+        for node in chunk.nodes:
             # back to treating as standalone nodes, is perfectly fine and best way to keep byte/(line,col) alignments
             covered = P.openclosed(node.start_byte, node.end_byte)
             if show_intervals:

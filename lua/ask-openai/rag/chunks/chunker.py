@@ -318,13 +318,13 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
             #   - applies to treesitter chunks
             #   - applies to uncovered_code chunks
             chunk = IdentifiedChunk(
-                sibling_nodes=[node],
+                nodes=[node],
                 signature=get_function_signature(node),
             )
             if parser_language == "lua":
-                attach_lua_doc_comments(node, chunk.sibling_nodes)
+                attach_lua_doc_comments(node, chunk.nodes)
             if parser_language == "python":
-                attach_py_decorators(node, chunk.sibling_nodes)
+                attach_py_decorators(node, chunk.nodes)
             yield chunk
             collected_parent = True
 
@@ -336,13 +336,13 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
                 "enum_declaration",
         ]:
             chunk = IdentifiedChunk(
-                sibling_nodes=[node],
+                nodes=[node],
                 signature=get_signature(node),
             )
             yield chunk
             collected_parent = True
             if parser_language == "python":
-                attach_py_decorators(node, chunk.sibling_nodes)
+                attach_py_decorators(node, chunk.nodes)
 
         elif node.type == "type_declaration" and parser_language == "go":
             for chunk in go.chunks_for_type_declaration(node, source_bytes):
@@ -363,8 +363,8 @@ def build_ts_chunks_from_source_bytes(path: Path, file_hash: str, source_bytes: 
     for chunk in identified_chunks:
 
         # FYI assume contiguous and ordered nodes (so first is literally first in doc, last is last)
-        first = chunk.sibling_nodes[0]
-        last = chunk.sibling_nodes[-1]
+        first = chunk.nodes[0]
+        last = chunk.nodes[-1]
 
         # ?? allow non-contiguous nodes (i.e. top level module statements if I were to use treesitter to find and aggrgate these instead of sliding window)
         # FYI treesitter chunks have the basis to capture both line and columns for start/endl, unlike uncovered_code

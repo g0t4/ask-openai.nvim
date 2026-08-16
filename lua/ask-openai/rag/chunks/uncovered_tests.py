@@ -44,7 +44,7 @@ class TestUncoveredNodes():
     def test_fully_covered_single_function(self):
         source_bytes, tree = self.parse_lua('function a() return 1 end')
         identified_chunks = [IdentifiedChunk(
-            sibling_nodes=[tree.root_node.children[0]],
+            nodes=[tree.root_node.children[0]],
             signature='a',
         )]
         print("tree", tree.root_node.children[0].start_byte, tree.root_node.children[0].end_byte)
@@ -69,7 +69,7 @@ class TestUncoveredNodes():
         code = 'function a() return 1 end\nfunction b() return 2 end\nfunction c() return 3 end'
         source_bytes, tree = self.parse_lua(code)
         identified_chunks = [IdentifiedChunk(
-            sibling_nodes=[tree.root_node.children[1]],
+            nodes=[tree.root_node.children[1]],
             signature='b',
         )]
 
@@ -110,10 +110,10 @@ class TestUncoveredNodes():
     def test_middle_uncovered_code(self):
         source_bytes, tree = self.parse_lua('function a() return 1 end\nfunction b() return 2 end\nfunction c() return 3 end')
         identified_chunks = [IdentifiedChunk(
-            sibling_nodes=[tree.root_node.children[0]],
+            nodes=[tree.root_node.children[0]],
             signature='a',
         ), IdentifiedChunk(
-            sibling_nodes=[tree.root_node.children[2]],
+            nodes=[tree.root_node.children[2]],
             signature='c',
         )]
 
@@ -135,7 +135,7 @@ class TestUncoveredNodes():
         # FYI right now this will apply to decorators/annotations/doc_comments in python/lua (more in future)
         source_bytes, tree = self.parse_lua('--- doc comment\nfunction a() return 1 end')
         identified_chunks = [
-            IdentifiedChunk(sibling_nodes=[
+            IdentifiedChunk(nodes=[
                 tree.root_node.children[0],
                 tree.root_node.children[1],
             ], ),
@@ -154,10 +154,10 @@ class TestUncoveredNodes():
         # it is possible I don't need this test
         source_bytes, tree = self.parse_lua('function a() return 1 end\nfunction b() return 2 end')
         identified_chunks = [IdentifiedChunk(
-            sibling_nodes=[tree.root_node.children[0]],
+            nodes=[tree.root_node.children[0]],
             signature='a',
         ), IdentifiedChunk(
-            sibling_nodes=[tree.root_node.children[1]],
+            nodes=[tree.root_node.children[1]],
             signature='b',
         )]
 
@@ -180,7 +180,7 @@ class TestUncoveredNodes():
         identified_chunks = [
             IdentifiedChunk(
                 # hypothetically could chunk non-contiguous nodes
-                sibling_nodes=[func_a, func_c],
+                nodes=[func_a, func_c],
                 signature='a',
             )
         ]
@@ -202,7 +202,7 @@ class TestUncoveredNodes():
         identified_chunks = [
             IdentifiedChunk(
                 # hypothetically could chunk non-contiguous nodes
-                sibling_nodes=[func_a, func_a_nested],
+                nodes=[func_a, func_a_nested],
                 signature='a',
             ),
         ]
@@ -223,11 +223,11 @@ class TestUncoveredNodes():
         identified_chunks = [
             IdentifiedChunk(
                 # hypothetically could chunk non-contiguous nodes
-                sibling_nodes=[func_a],
+                nodes=[func_a],
                 signature='a',
             ),
             IdentifiedChunk(
-                sibling_nodes=[func_a_nested],
+                nodes=[func_a_nested],
                 signature='a_nested',
             ),
         ]
