@@ -1,0 +1,13 @@
+-- I am runnig a service w/ a small model Qwen3.5-2B to summarize text (did some evals on speed with Claude and 2B seems to be wise first choice until I can do more qualitative evals)
+-- precan a straightforward explanation / system prompt
+-- give one block of text to summarize
+-- maybe add constraints for how long (literally pass to model then)
+--
+--
+-- build21.lan:8018 is initial model
+--
+--
+-- add an integration test that asks for a summary of a long trace
+--  and another integration test that asks for a summary of a short message (ask it to summarize just the user's first prompt from the long trace but don't give it the long trace)
+--  then another integration test... ask it to summarize the user's first request message w.r.t. the full trace and just make sure it works
+--  these are duplicative but will help me start thinking about how I want to qualitatively test this summarization process
