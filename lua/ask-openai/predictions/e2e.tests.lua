@@ -110,6 +110,8 @@ describe("E2E - FIM predictions", function()
         print(full_buffer_after_accept)
         print("==================================================\n")
 
+        screen.dump_bounded("after accept")
+
         -- TODO review cursor placement above
         should.be_same({
             "def add(x, y):",
