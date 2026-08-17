@@ -87,7 +87,7 @@ describe("E2E - FIM predictions", function()
         -- details for each extmark.
         local all_ns = -1
         local prediction_extmarks = vim.api.nvim_buf_get_extmarks(
-            current_prediction.buffer,
+            bufnr,
             all_ns,
             0,
             -1,
