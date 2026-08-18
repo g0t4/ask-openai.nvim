@@ -143,6 +143,8 @@ local function ask_agent_command(opts)
             end
             tool_definitions = filtered
         end
+    else
+        system = system:gsub("INSERT_CWD", "")
     end
 
     -- * display system message in chat window
