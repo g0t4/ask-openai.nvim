@@ -9,9 +9,10 @@ local UserInputWindow = {}
 local class_mt = { __index = FloatWindow } -- inherit FloatWindow behavior too
 setmetatable(UserInputWindow, class_mt)
 
---- Position the input box at the very bottom of the editor, full width.
+--- Position the input box at the bottom of the usable float area, full width.
 --- The chat (history) window fills the space above it (see window.lua), so the
---- two together use all available lines without overlapping.
+--- two together use all available rows without overlapping. Its bottom border
+--- lands in the command line (hidden), leaving only the shared top border.
 --- NOTE: defined with DOT (not colon) to match FloatWindow.window_config's signature,
 --- which is invoked as `self.window_config(self.opts)`.
 ---@param opts FloatWindowOptions
@@ -19,7 +20,7 @@ setmetatable(UserInputWindow, class_mt)
 function UserInputWindow.window_config(opts)
     local win_width = vim.o.columns
     local win_height = layout.INPUT_HEIGHT
-    local bottom_row = math.max(0, vim.o.lines - win_height)
+    local bottom_row = math.max(0, layout.editor_height() - win_height)
     return {
         row = bottom_row,
         col = 0,
