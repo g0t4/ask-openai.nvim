@@ -2,6 +2,7 @@ local LinesBuilder = require("ask-openai.agents.viewer.lines_builder")
 local BufferController = require("ask-openai.agents.viewer.buffers")
 local HLGroups = require("ask-openai.hlgroups")
 local FloatWindow = require("ask-openai.helpers.float_window")
+local layout = require("ask-openai.agents.viewer.layout")
 
 --- Unicode spinner frames for smooth animation.
 local SPINNER_FRAMES = { '⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏' }
@@ -19,34 +20,46 @@ local AgentWindow = {}
 local class_mt = { __index = FloatWindow } -- inherit FloatWindow behavior too
 setmetatable(AgentWindow, class_mt)
 
+--- Fill the screen above the user input box (full width, no centering).
+--- The input box reserves `layout.INPUT_HEIGHT` rows at the bottom, so the two
+--- windows together use all available lines without overlapping.
+--- NOTE: defined with DOT (not colon) to match FloatWindow.window_config's signature.
+---@param opts FloatWindowOptions
+---@return vim.api.keyset.win_config
+function AgentWindow.window_config(opts)
+    local win_height = math.max(1, vim.o.lines - layout.INPUT_HEIGHT)
+    local win_width = vim.o.columns
+    return {
+        row = 0,
+        col = 0,
+        width = win_width,
+        height = win_height,
+        relative = "editor",
+        style = "minimal",
+        border = "single",
+    }
+end
+
 ---@param model_name string
 function AgentWindow:new()
     ---@type FloatWindowOptions
     local opts = {
-        width_ratio = 0.6,
-        height_ratio = 0.8,
         filetype = "markdown",
         buffer_name = 'AskAgent',
     }
 
-    local instance_mt = { __index = self } -- FYI self is likely AgentWindow here
-
-    local instance = setmetatable(FloatWindow:new(opts), instance_mt)
+    -- NOTE: pass `AgentWindow` as the receiver so the instance inherits from this class
+    -- from the start (giving us our top-filling window_config) on the initial open,
+    -- rather than opening centered via FloatWindow and re-parenting after.
+    local instance = FloatWindow.new(AgentWindow, opts)
     instance._model_name = nil
 
     instance.buffer = BufferController:new(instance.buffer_number)
+    instance.buffer.win_id = instance.win_id
 
     -- * buffer local keymaps
     vim.keymap.set('n', '<leader>c', function() instance:clear() end,
         { buffer = instance.buffer_number, desc = "clear the chat window, and eventually the message history" })
-
-    -- Cycle the chat window width with a normal‑mode "w" press.
-    vim.keymap.set('n', '<leader>aw', function() instance:cycle_width() end,
-        { buffer = instance.buffer_number, desc = "cycle chat window width" })
-
-    -- Cycle the chat window height with a normal‑mode "h" press.
-    vim.keymap.set('n', '<leader>ah', function() instance:cycle_height() end,
-        { buffer = instance.buffer_number, desc = "cycle chat window height" })
 
     -- manually trigger LSP attach, b/c scratch buffers are normally not auto attached
     local client = vim.lsp.get_clients({ name = "ask_language_server" })[1]
@@ -152,63 +165,6 @@ function AgentWindow:stop_spinner(final_title)
     self:rebuild_title()
 end
 
----@param width_ratio number -- new width ratio (0 to 1)
-function AgentWindow:resize_width_ratio(width_ratio)
-    self.opts.width_ratio = width_ratio
-
-    -- clamp the ratio between 0 and 1
-    self.opts.width_ratio = math.max(0, math.min(self.opts.width_ratio, 1))
-
-    -- apply the new size by recreating the window
-    self:close()
-    self:open()
-end
-
----@param height_ratio number -- new height ratio (0 to 1)
-function AgentWindow:resize_height_ratio(height_ratio)
-    self.opts.height_ratio = height_ratio
-
-    -- clamp the ratio between 0 and 1
-    self.opts.height_ratio = math.max(0, math.min(self.opts.height_ratio, 1))
-
-    -- apply the new size by recreating the window
-    self:close()
-    self:open()
-end
-
---- Cycle the width ratio through a predefined set of values.
---- The sequence is 0.5 → 0.6 → 0.8 → 1.0 → back to 0.5.
-function AgentWindow:cycle_width()
-    -- Increment width by 0.1, wrapping back to 0.5 after 1.0.
-    local step = 0.1
-    local min_ratio = 0.5
-    local max_ratio = 1.0
-    local current = self.opts.width_ratio
-    local next_ratio = current + step
-    if next_ratio > max_ratio + 1e-6 then
-        next_ratio = min_ratio
-    else
-        -- round to one decimal place to avoid floating‑point drift
-        next_ratio = math.floor(next_ratio * 10 + 0.5) / 10
-    end
-    self:resize_width_ratio(next_ratio)
-end
-
---- Cycle the height ratio by 0.1 steps, wrapping from a minimum (0.1 less than the current height) back to 1.0.
-function AgentWindow:cycle_height()
-    local step = 0.1
-    local max_ratio = 1.0
-    local min_ratio = 0.6
-    local current = self.opts.height_ratio
-    local next_ratio = current + step
-    if next_ratio > max_ratio + 1e-6 then
-        next_ratio = min_ratio
-    else
-        next_ratio = math.floor(next_ratio * 10 + 0.5) / 10
-    end
-    self:resize_height_ratio(next_ratio)
-end
-
 ---@type ExplainError
 function AgentWindow:explain_error(text)
     local lines = LinesBuilder:new()
@@ -238,6 +194,11 @@ end
 
 function AgentWindow:open()
     FloatWindow.open(self)
+    -- * track the owning window on the buffer so cursor/scroll ops work even when
+    --   another window (e.g. the user input box) has focus
+    if self.buffer then
+        self.buffer.win_id = self.win_id
+    end
     self:ensure_spinner_running() -- it will stop itself
     return self
 end

@@ -700,14 +700,6 @@ function AgentsFrontend.on_parsed_data_sse(sse_parsed)
     update_ui_chat_viewer(trace)
 end
 
-function AgentsFrontend.show_user_role_as_follow_up_hint()
-    local lines_builder = LinesBuilder:new()
-    lines_builder:create_marks_namespace()
-    lines_builder:append_role_header("user")
-    lines_builder:append_blank_line()
-    AgentsFrontend.chat_window:append_styled_lines(lines_builder)
-end
-
 ---@type OnCurlExitedSuccessfully
 function AgentsFrontend.on_curl_exited_successfully()
     vim.schedule(function()
@@ -770,9 +762,6 @@ function AgentsFrontend.on_curl_exited_successfully()
         -- * If the agent finished (final message) and the user queued messages while it ran,
         --   deliver them now as a normal follow-up instead of waiting for the next tool call.
         local should_deliver_queued_as_followup = reached_final_message and #AgentsFrontend.queued_user_messages > 0
-        if reached_final_message and not should_deliver_queued_as_followup then
-            AgentsFrontend.show_user_role_as_follow_up_hint()
-        end
 
         if should_deliver_queued_as_followup then
             local queued = AgentsFrontend.queued_user_messages
@@ -850,6 +839,12 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(trace)
 end
 
 function AgentsFrontend.abort_request()
+    -- * aborting discards any queued user messages
+    if #AgentsFrontend.queued_user_messages > 0 then
+        AgentsFrontend.queued_user_messages = {}
+        AgentsFrontend.redraw_queued_user_messages()
+    end
+
     local trace = AgentsFrontend.trace
     if not trace then
         return
@@ -1010,10 +1005,10 @@ function AgentsFrontend.ensure_user_input_window_is_open(focus)
             AgentsFrontend.submit_from_input_window()
         end, { buffer = bufnr, desc = "submit the queued user message" })
 
-        -- * insert a literal newline (for multi-line messages) without submitting
-        vim.keymap.set("i", "<C-j>", function()
+        -- * Shift+Enter inserts a blank line (for multi-line messages) without submitting
+        vim.keymap.set("i", "<S-CR>", function()
             vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<CR>", true, false, true), "n", false)
-        end, { buffer = bufnr, desc = "insert newline in user message" })
+        end, { buffer = bufnr, desc = "insert a blank line in user message" })
 
         -- * hide the input box
         vim.keymap.set({ "i", "n" }, "<C-c>", function()

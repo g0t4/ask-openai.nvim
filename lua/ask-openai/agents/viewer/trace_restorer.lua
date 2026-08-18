@@ -535,9 +535,6 @@ local function setup_trace_for_followup(tx_messages)
     AgentsFrontend.chat_window:mark_agent_running(true)
     AgentsFrontend.chat_window:ensure_spinner_running("ready")
 
-    -- Show user role hint for follow-up
-    AgentsFrontend.show_user_role_as_follow_up_hint()
-
     -- * Set the follow-up start offset AFTER rendering.
     --   If left stale/nil (e.g. from a prior session), follow_up_command falls back
     --   to `or 0` and re-ingests the ENTIRE restored buffer as the user's next

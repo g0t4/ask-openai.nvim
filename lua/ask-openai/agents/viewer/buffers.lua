@@ -4,18 +4,28 @@ require("ask-openai.frontends.context.inspect")
 
 ---@class BufferController
 ---@field buffer_number number
+---@field win_id? integer -- window displaying this buffer (for cursor/scroll ops)
 ---@field folds Fold[]
 local BufferController = {}
 
 function BufferController:new(buffer_number)
     self = setmetatable({}, { __index = BufferController })
     self.buffer_number = buffer_number
+    self.win_id = nil
     self.folds = {}
     return self
 end
 
+--- Scroll the buffer to the end. Uses the owning window (not the current window)
+--- so streaming content stays pinned to the bottom even when another window
+--- (e.g. the user input box) has focus.
 function BufferController:scroll_cursor_to_end_of_buffer()
-    vim.cmd("normal! G")
+    if self.win_id and vim.api.nvim_win_is_valid(self.win_id) then
+        local last_line_base1 = vim.api.nvim_buf_line_count(self.buffer_number)
+        vim.api.nvim_win_set_cursor(self.win_id, { last_line_base1, 0 })
+    else
+        vim.cmd("normal! G")
+    end
 end
 
 function BufferController:clear()
@@ -27,7 +37,8 @@ function BufferController:get_line_count()
 end
 
 function BufferController:get_cursor_line_number_0indexed()
-    local cursor = vim.api.nvim_win_get_cursor(0)
+    local win_id = (self.win_id and vim.api.nvim_win_is_valid(self.win_id)) and self.win_id or 0
+    local cursor = vim.api.nvim_win_get_cursor(win_id)
     return cursor[1] - 1
 end
 
