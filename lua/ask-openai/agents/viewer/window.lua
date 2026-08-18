@@ -31,7 +31,13 @@ setmetatable(AgentWindow, class_mt)
 ---@return vim.api.keyset.win_config
 function AgentWindow.window_config(opts)
     -- content height; -1 leaves room for the shared border row with the input box
-    local win_height = math.max(1, layout.editor_height() - layout.INPUT_HEIGHT - 1)
+    -- TODO look into what else needs to change w.r.t. attempt to hide top and bottom borders off-screen when they still show on-screen and cause overlap
+    --   FYI here I subtracted 2 more for the top and bottom borders and finally no overlap... that said a shared border needs a different border icon then to look shared
+    --   and it'd need to look different once again if user window is closed albeit I am not going to be too pick about that for now
+    --   so 1 less again (-4 total) so we don't share a border for now, that way I don't lose the footer of the message history window too and it looks good with side by side border IMO
+    --     reminds me of telescope multi pane pickers that are probably multi window pickers... double borders look nice and yeah I can change this later
+    --   long term, I wonder if bg color would allow no borders between the two windows?
+    local win_height = math.max(1, layout.editor_height() - layout.INPUT_HEIGHT - 4)
     local win_width = vim.o.columns
     return {
         row = 0,
