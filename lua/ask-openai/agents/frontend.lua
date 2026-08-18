@@ -6,6 +6,7 @@ local completion_logger = require("ask-openai.logs.completion_logger")
 local tool_router = require("ask-openai.tools.router")
 local curl = require("ask-openai.backends.curl")
 local AgentWindow = require("ask-openai.agents.viewer.window")
+local UserInputWindow = require("ask-openai.agents.viewer.user_input_window")
 local AgentTrace = require("ask-openai.agents.trace")
 local TracePager = require("ask-openai.agents.viewer.trace_pager")
 local LlamaServerClient = require("ask-openai.backends.llama_cpp.llama_server_client")
@@ -35,6 +36,13 @@ require("ask-openai.helpers.buffers")
 
 ---@class AgentsFrontend : StreamingFrontend
 local AgentsFrontend = {}
+
+---@type string[] -- user messages typed into the input box while the agent is running (awaiting delivery)
+AgentsFrontend.queued_user_messages = {}
+---@type number|nil -- 0-indexed line where the rendered queued-messages section begins in the chat window
+AgentsFrontend.queued_section_start_line_base0 = nil
+---@type UserInputWindow|nil
+AgentsFrontend.user_input_window = nil
 
 local first_turn_ns_id
 
@@ -295,6 +303,9 @@ function AgentsFrontend.then_get_assistant_response(trace)
     AgentsFrontend.chat_window:mark_agent_running(true)
     AgentsFrontend.chat_window:ensure_spinner_running("agenting...")
 
+    -- * make the dedicated input box available so the user can type while the agent works
+    AgentsFrontend.ensure_user_input_window_is_open()
+
     local next_request = CurlRequestForTrace:new({
         body = trace:next_curl_request_body(),
         base_url = trace.base_url,
@@ -310,6 +321,9 @@ function AgentsFrontend.abort_and_close()
     AgentsFrontend.abort_request()
     if AgentsFrontend.chat_window ~= nil then
         AgentsFrontend.chat_window:close()
+    end
+    if AgentsFrontend.user_input_window ~= nil then
+        AgentsFrontend.user_input_window:hide()
     end
 end
 
@@ -530,6 +544,10 @@ local function update_ui_chat_viewer(trace)
         lines.marks_ns_id = request.marks_ns_id -- ?? generate namespace here in lines builder? lines:gen_mark_ns()? OR do it on first downstream use?
         AgentsFrontend.chat_window.buffer:replace_with_styled_lines_after(AgentsFrontend.this_turn_chat_start_line_base0, lines)
 
+        -- * re-pin any queued user messages to the bottom (the replace wiped the prior queued section)
+        AgentsFrontend.queued_section_start_line_base0 = nil
+        AgentsFrontend.redraw_queued_user_messages()
+
         -- * update window title with model name and token count
         local last_message = request.accumulated_model_response_messages[#request.accumulated_model_response_messages]
         if last_message and last_message.last_sse then
@@ -713,6 +731,8 @@ function AgentsFrontend.on_curl_exited_successfully()
             end
         end
 
+        local has_tool_calls = false
+        local reached_final_message = false
         for _, rx_message in ipairs(request.accumulated_model_response_messages or {}) do
             -- *** trace.last_request.accumulated_model_response_messages IS NOT trace.messages
             --    trace.messages => sent with future requests, hence TxChatMessage
@@ -734,8 +754,11 @@ function AgentsFrontend.on_curl_exited_successfully()
             --  this is the inherent tension between adding that assistant response message to the messages array (which is really for the next request)... vs keeping it separate as the completion to the messages array sent as-is to llama-server
 
             local is_final_assistant_message = #rx_message.tool_calls == 0
+            if not is_final_assistant_message then
+                has_tool_calls = true
+            end
             if is_final_assistant_message then
-                AgentsFrontend.show_user_role_as_follow_up_hint()
+                reached_final_message = true
                 AgentsFrontend.chat_window:mark_agent_running(false)
                 AgentsFrontend.chat_window:stop_spinner("Agent Finished")
             end
@@ -743,6 +766,22 @@ function AgentsFrontend.on_curl_exited_successfully()
             AgentsFrontend.chat_window.followup_starts_at_line_0indexed = AgentsFrontend.chat_window.buffer:get_line_count() - 1
         end
         AgentsFrontend.clear_undos()
+
+        -- * If the agent finished (final message) and the user queued messages while it ran,
+        --   deliver them now as a normal follow-up instead of waiting for the next tool call.
+        local should_deliver_queued_as_followup = reached_final_message and #AgentsFrontend.queued_user_messages > 0
+        if reached_final_message and not should_deliver_queued_as_followup then
+            AgentsFrontend.show_user_role_as_follow_up_hint()
+        end
+
+        if should_deliver_queued_as_followup then
+            local queued = AgentsFrontend.queued_user_messages
+            AgentsFrontend.queued_user_messages = {}
+            -- * drop the rendered queued section (submit_follow_up re-displays it as a normal user message)
+            AgentsFrontend.redraw_queued_user_messages()
+            AgentsFrontend.submit_follow_up(table.concat(queued, "\n"))
+            return
+        end
 
         AgentsFrontend.run_tools_and_send_results_back_to_the_model(trace)
     end)
@@ -780,6 +819,9 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(trace)
                     return
                 end
                 request.already_sent = true
+
+                -- * deliver any queued user messages as an interruption before continuing
+                AgentsFrontend.inject_queued_user_messages(trace)
 
                 -- IIUC I need to queue this after the changes from update_chat_viewer_buffer?
                 -- else IIRC, the line count will be broken for the next message
@@ -823,6 +865,200 @@ function AgentsFrontend.abort_request()
     end
 end
 
+--- Add a user message to the current trace and trigger the next agent response.
+---@param user_message string
+local function send_trace_follow_up(user_message)
+    local trace = AgentsFrontend.trace
+    local message = TxChatMessage:user(user_message)
+    trace:add_message(message)
+    AgentsFrontend.then_get_assistant_response(trace)
+end
+
+--- Build the interruption user message from one or more queued messages.
+--- Instructs the agent to resume the prior request unless told otherwise.
+---@param queued_messages string[]
+---@return string
+local function build_interruption_message(queued_messages)
+    local parts = {
+        "[Queued while you were completing the prior request]",
+        "I wanted to add context while you were working. Please resume the prior request unless I instruct you to stop and/or change course.",
+    }
+    for index, message in ipairs(queued_messages) do
+        if #queued_messages > 1 then
+            table.insert(parts, string.format("-- queued message %d of %d --", index, #queued_messages))
+        end
+        table.insert(parts, message)
+    end
+    return table.concat(parts, "\n")
+end
+
+--- Display a user message as a role-styled section at the end of the chat window.
+---@param text string
+local function display_user_message_in_chat(text)
+    local lines = LinesBuilder:new()
+    lines:create_marks_namespace()
+    lines:append_role_header("user")
+    lines:append_text(text)
+    lines:append_blank_line()
+    AgentsFrontend.chat_window:append_styled_lines(lines)
+end
+
+--- Re-render the queued user messages pinned to the bottom of the chat window.
+--- Drops any previously-rendered queued section, then (re)appends the current queue.
+function AgentsFrontend.redraw_queued_user_messages()
+    if not AgentsFrontend.chat_window then
+        return
+    end
+    local buffer = AgentsFrontend.chat_window.buffer
+    local bufnr = buffer.buffer_number
+
+    -- * drop any previously rendered queued section (a viewer update wiped it, marker is stale)
+    if AgentsFrontend.queued_section_start_line_base0 then
+        local start_line_base0 = AgentsFrontend.queued_section_start_line_base0
+        local line_count = vim.api.nvim_buf_line_count(bufnr)
+        if start_line_base0 < line_count then
+            vim.api.nvim_buf_set_lines(bufnr, start_line_base0, -1, false, {})
+        end
+        AgentsFrontend.queued_section_start_line_base0 = nil
+    end
+
+    if #AgentsFrontend.queued_user_messages == 0 then
+        return
+    end
+
+    local lines = LinesBuilder:new()
+    lines:create_marks_namespace()
+    lines:append_role_header("user")
+    for _, message in ipairs(AgentsFrontend.queued_user_messages) do
+        lines:append_text(message)
+    end
+    lines:append_blank_line()
+
+    local start_line_base0 = buffer:get_line_count()
+    if start_line_base0 == 1 and buffer:get_lines_from(0) == "" then
+        start_line_base0 = 0
+    end
+    AgentsFrontend.queued_section_start_line_base0 = start_line_base0
+    buffer:append_styled_lines(lines)
+end
+
+--- Submit a user message. While the agent runs it is queued for later delivery;
+--- otherwise it is submitted as a normal follow-up.
+---@param user_message string
+---@return "empty"|"queued"|"submitted"
+function AgentsFrontend.submit_user_message(user_message)
+    user_message = user_message:gsub("^%s+", ""):gsub("%s+$", "")
+    if user_message == "" then
+        return "empty"
+    end
+
+    if AgentsFrontend.chat_window and AgentsFrontend.chat_window._agent_is_running then
+        table.insert(AgentsFrontend.queued_user_messages, user_message)
+        AgentsFrontend.redraw_queued_user_messages()
+        return "queued"
+    end
+
+    AgentsFrontend.submit_follow_up(user_message)
+    return "submitted"
+end
+
+--- Submit a follow-up user message against the current trace (or start a new one).
+---@param user_message string
+function AgentsFrontend.submit_follow_up(user_message)
+    AgentsFrontend.ensure_chat_window_is_open()
+
+    local trace = AgentsFrontend.trace
+    if not trace then
+        -- * start a brand-new trace; ask_agent_command also displays the user message
+        ask_agent_command({ args = user_message })
+        return
+    end
+
+    -- * display the user message in the chat window, then send it
+    display_user_message_in_chat(user_message)
+    send_trace_follow_up(user_message)
+end
+
+--- Inject queued user messages into the trace as an interruption user message.
+--- Called right before the next request is sent after a tool call completes.
+---@param trace AgentTrace
+function AgentsFrontend.inject_queued_user_messages(trace)
+    if #AgentsFrontend.queued_user_messages == 0 then
+        return
+    end
+
+    local interruption = TxChatMessage:user(build_interruption_message(AgentsFrontend.queued_user_messages))
+    trace:add_message(interruption)
+
+    -- * consumed: clear the queue (the rendered section stays in the buffer as history)
+    AgentsFrontend.queued_user_messages = {}
+    AgentsFrontend.queued_section_start_line_base0 = nil
+end
+
+--- Ensure the dedicated user message input box is open.
+--- Focuses + starts insert mode on first creation (or when `focus` is truthy).
+---@param focus? boolean
+function AgentsFrontend.ensure_user_input_window_is_open(focus)
+    local is_new = AgentsFrontend.user_input_window == nil
+    if is_new then
+        AgentsFrontend.user_input_window = UserInputWindow:new()
+
+        local bufnr = AgentsFrontend.user_input_window.buffer_number
+
+        -- * submit on <CR> (insert & normal mode)
+        vim.keymap.set({ "i", "n" }, "<CR>", function()
+            AgentsFrontend.submit_from_input_window()
+        end, { buffer = bufnr, desc = "submit the queued user message" })
+
+        -- * insert a literal newline (for multi-line messages) without submitting
+        vim.keymap.set("i", "<C-j>", function()
+            vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<CR>", true, false, true), "n", false)
+        end, { buffer = bufnr, desc = "insert newline in user message" })
+
+        -- * hide the input box
+        vim.keymap.set({ "i", "n" }, "<C-c>", function()
+            AgentsFrontend.user_input_window:hide()
+        end, { buffer = bufnr, desc = "close the user message input box" })
+    end
+
+    AgentsFrontend.user_input_window:open()
+
+    if is_new or focus then
+        pcall(function()
+            local win = AgentsFrontend.user_input_window
+            if vim.api.nvim_win_is_valid(win.win_id) then
+                vim.api.nvim_set_current_win(win.win_id)
+                vim.api.nvim_win_set_cursor(win.win_id, { 1, 0 })
+                vim.cmd("startinsert")
+            end
+        end)
+    end
+end
+
+--- Read the input box contents, clear it, and submit.
+function AgentsFrontend.submit_from_input_window()
+    if not AgentsFrontend.user_input_window then
+        return
+    end
+    local bufnr = AgentsFrontend.user_input_window.buffer_number
+    local text = table.concat(vim.api.nvim_buf_get_lines(bufnr, 0, -1, false), "\n")
+
+    -- * clear the input buffer after reading
+    vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { "" })
+
+    AgentsFrontend.submit_user_message(text)
+
+    -- * keep focus in the input window, ready for the next message
+    pcall(function()
+        local win = AgentsFrontend.user_input_window
+        if vim.api.nvim_win_is_valid(win.win_id) then
+            vim.api.nvim_set_current_win(win.win_id)
+            vim.api.nvim_win_set_cursor(win.win_id, { 1, 0 })
+            vim.cmd("startinsert")
+        end
+    end)
+end
+
 function AgentsFrontend.follow_up_command()
     -- take follow up after end of prior response message from assistant
     --  if already a M.trace then add to that with a new message
@@ -834,7 +1070,6 @@ function AgentsFrontend.follow_up_command()
     local user_message = AgentsFrontend.chat_window.buffer:get_lines_from(start_line_base0)
     AgentsFrontend.chat_window.buffer:scroll_cursor_to_end_of_buffer()
     vim.cmd("normal! o") -- move to end of buffer, add new line below to separate subsequent follow up response message
-    -- log:trace("follow up content:", user_message)
 
     local trace = AgentsFrontend.trace
     if not trace then
@@ -852,9 +1087,7 @@ function AgentsFrontend.follow_up_command()
         return
     end
 
-    local message = TxChatMessage:user(user_message)
-    trace:add_message(message)
-    AgentsFrontend.then_get_assistant_response(trace)
+    send_trace_follow_up(user_message)
 end
 
 function ask_dump_agent_trace_command()
@@ -997,6 +1230,7 @@ function AgentsFrontend.setup()
     vim.keymap.set('n', '<leader>al', AgentsFrontend.clear_chat_command, { noremap = true })
     vim.keymap.set('n', '<leader>af', AgentsFrontend.follow_up_command, { noremap = true })
     vim.keymap.set('n', '<leader>ao', AgentsFrontend.ensure_chat_window_is_open, { noremap = true })
+    vim.keymap.set('n', '<leader>au', function() AgentsFrontend.ensure_user_input_window_is_open(true) end, { noremap = true, desc = 'open/focus the user message input box' })
     vim.keymap.set('n', '<leader>as', AgentsFrontend.check_model_command, { noremap = true, desc = 'Check model server /v1/models' })
     -- * long-trace buffer simulation (replicate chat window lag; watch it live)
     vim.keymap.set('n', '<leader>abs', function()

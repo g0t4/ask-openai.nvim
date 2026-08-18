@@ -187,3 +187,55 @@ describe("E2E - AskAgent /tools with date question", function()
         )
     end)
 end)
+
+describe("E2E - AskAgent queued user message in dedicated input window", function()
+    it("should queue a message typed while the agent runs and deliver it after the tool completes", function()
+        local frontend = require("ask-openai.agents.frontend")
+
+        -- * Start a request that uses a slow tool so there is time to type while it runs.
+        --   The agent runs `sleep 4` (via run_process) which gives us a window to queue.
+        local user_prompt = "use the run_process tool to run 'sleep 4 && date' and then tell me today's date"
+        vim.cmd(string.format("AskAgent /tools %s", user_prompt))
+
+        -- * Wait for the agent to start running
+        local running = wait_for(function()
+            return frontend.chat_window and frontend.chat_window._agent_is_running
+        end, 30000, 100)
+        assert.is_true(running, "Agent did not start running within timeout")
+
+        -- * Open the dedicated user input box and type a message while the agent works
+        frontend.ensure_user_input_window_is_open()
+        assert.is_not_nil(frontend.user_input_window, "User input window was not created")
+        assert.is_true(
+            vim.api.nvim_win_is_valid(frontend.user_input_window.win_id),
+            "User input window is not valid"
+        )
+
+        local input_bufnr = frontend.user_input_window.buffer_number
+        local queued_text = "while you work, remember to mention the year in your final answer"
+        vim.api.nvim_buf_set_lines(input_bufnr, 0, -1, false, { queued_text })
+        frontend.submit_from_input_window()
+
+        -- * Assert the message was queued (agent is still running)
+        assert.are.same({ queued_text }, frontend.queued_user_messages,
+            "Typed message should be queued while the agent is running")
+
+        -- * Assert the queued message is shown pinned at the bottom of the chat window
+        local chat_bufnr = frontend.chat_window.buffer_number
+        local chat_text = table.concat(vim.api.nvim_buf_get_lines(chat_bufnr, 0, -1, false), "\n")
+        assert.is_true(
+            chat_text:find(queued_text, 1, true) ~= nil,
+            "Queued message should appear in the chat window. Buffer:\n" .. chat_text
+        )
+
+        -- * Wait for the agent to finish (the queued message should have been delivered)
+        local finished = wait_for(function()
+            return frontend.chat_window and not frontend.chat_window._agent_is_running
+        end, 120000, 500)
+        assert.is_true(finished, "Agent did not finish within timeout")
+
+        -- * After delivery the queue should be drained
+        assert.are.same({}, frontend.queued_user_messages,
+            "Queued messages should be delivered (drained) after the agent finishes")
+    end)
+end)
