@@ -43,6 +43,8 @@ AgentsFrontend.queued_user_messages = {}
 AgentsFrontend.queued_section_start_line_base0 = nil
 ---@type UserInputWindow|nil
 AgentsFrontend.user_input_window = nil
+---@type boolean -- true while a request was aborted; prevents a finishing tool call from resuming the agent
+AgentsFrontend.request_aborted = false
 
 local first_turn_ns_id
 
@@ -296,6 +298,9 @@ end
 
 ---@param trace AgentTrace
 function AgentsFrontend.then_get_assistant_response(trace)
+    -- * a new request is starting, clear any prior abort state
+    AgentsFrontend.request_aborted = false
+
     -- * conversation turns (track start line for streaming chunks)
 
     AgentsFrontend.this_turn_chat_start_line_base0 = AgentsFrontend.chat_window.buffer:get_line_count()
@@ -807,6 +812,12 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(trace)
                 if request:any_outstanding_tool_calls() or request.already_sent then
                     return
                 end
+
+                -- * if the user aborted while the tool ran, do NOT resume the agent
+                if AgentsFrontend.request_aborted then
+                    log:warn("request aborted during tool call; not resuming the agent")
+                    return
+                end
                 request.already_sent = true
 
                 -- * deliver any queued user messages as an interruption before continuing
@@ -839,6 +850,9 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(trace)
 end
 
 function AgentsFrontend.abort_request()
+    -- * remember we aborted so a finishing tool call won't resume the agent
+    AgentsFrontend.request_aborted = true
+
     -- * aborting discards any queued user messages
     if #AgentsFrontend.queued_user_messages > 0 then
         AgentsFrontend.queued_user_messages = {}
