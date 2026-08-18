@@ -16,16 +16,34 @@ function BufferController:new(buffer_number)
     return self
 end
 
---- Scroll the buffer to the end. Uses the owning window (not the current window)
---- so streaming content stays pinned to the bottom even when another window
---- (e.g. the user input box) has focus.
-function BufferController:scroll_cursor_to_end_of_buffer()
+--- Resolve the window currently displaying this buffer, preferring the tracked
+--- owning window. Returns nil when the buffer isn't shown in any window so
+--- callers must NOT fall back to operating on the *current* (focused) window.
+---@return integer|nil
+function BufferController:get_window_id()
     if self.win_id and vim.api.nvim_win_is_valid(self.win_id) then
-        local last_line_base1 = vim.api.nvim_buf_line_count(self.buffer_number)
-        vim.api.nvim_win_set_cursor(self.win_id, { last_line_base1, 0 })
-    else
-        vim.cmd("normal! G")
+        return self.win_id
     end
+    for _, win_id in ipairs(vim.api.nvim_list_wins()) do
+        if vim.api.nvim_win_is_valid(win_id)
+            and vim.api.nvim_win_get_buf(win_id) == self.buffer_number then
+            return win_id
+        end
+    end
+    return nil
+end
+
+--- Scroll the buffer to the end. Uses a window displaying this buffer (the
+--- owning window when valid) so streaming content stays pinned to the bottom
+--- even when another window (e.g. the user input box) has focus. Never scrolls
+--- the current/focused window, so a redraw can't steal the user's typing cursor.
+function BufferController:scroll_cursor_to_end_of_buffer()
+    local win_id = self:get_window_id()
+    if not win_id then
+        return
+    end
+    local last_line_base1 = vim.api.nvim_buf_line_count(self.buffer_number)
+    vim.api.nvim_win_set_cursor(win_id, { last_line_base1, 0 })
 end
 
 function BufferController:clear()
@@ -37,7 +55,7 @@ function BufferController:get_line_count()
 end
 
 function BufferController:get_cursor_line_number_0indexed()
-    local win_id = (self.win_id and vim.api.nvim_win_is_valid(self.win_id)) and self.win_id or 0
+    local win_id = self:get_window_id() or 0 -- 0 == current window (read-only here)
     local cursor = vim.api.nvim_win_get_cursor(win_id)
     return cursor[1] - 1
 end
