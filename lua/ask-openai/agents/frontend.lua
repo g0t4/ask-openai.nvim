@@ -313,6 +313,47 @@ function AgentsFrontend.abort_and_close()
     end
 end
 
+function AgentsFrontend.save_current_user_message()
+    local start_line_base0 = AgentsFrontend.chat_window.followup_starts_at_line_0indexed or 0
+    local user_message = AgentsFrontend.chat_window.buffer:get_lines_from(start_line_base0)
+
+    -- * save it to a file in SHADA DIR for recovery
+    local api = require('non-plugins.werkspaces.api')
+    local state_dir = api.get_werkspace_state_dir()
+    if not user_message then
+        error("NO USER MESSAGE, aborting save...")
+    end
+
+    local file_path = state_dir .. "/last-user-message.txt"
+    local file = io.open(file_path, "w")
+    if file then
+        file:write(user_message)
+        file:close()
+    end
+    print("saved to " .. file_path)
+end
+
+function AgentsFrontend.load_last_user_message()
+    -- TODO open chat if not already
+    AgentsFrontend.ensure_chat_window_is_open()
+
+    local api = require('non-plugins.werkspaces.api')
+    local state_dir = api.get_werkspace_state_dir()
+    local file_path = state_dir .. "/last-user-message.txt"
+    local file = io.open(file_path, "r")
+    if not file then
+        error("no user message found, aborting restore... " .. file_path)
+    end
+    local user_message_lines = vim.split(file:read("*a"), "\n")
+    table.insert(user_message_lines, "") -- add blank line after so cursor feels right (moves to end which s/b blank line) - remove this if I hate it later
+    file:close()
+    -- FYI when we move to split user message input, can just load into that dedicated user message floating window
+    -- insert at end of buffer as the user's message
+    vim.api.nvim_buf_set_lines(AgentsFrontend.chat_window.buffer.buffer_number, -1, -1, false, user_message_lines)
+    -- move cursor to end
+    AgentsFrontend.chat_window.buffer:scroll_cursor_to_end_of_buffer()
+end
+
 ---@type ExplainError
 function AgentsFrontend.explain_error(text)
     vim.schedule(function()
@@ -391,7 +432,7 @@ function AgentsFrontend.ensure_chat_window_is_open()
         -- I already use this globally to close a window (:q) ... so just add stop to it:
         vim.keymap.set("n", "<F8>", AgentsFrontend.abort_and_close, { buffer = AgentsFrontend.chat_window.buffer_number })
 
-        vim.keymap.set({ "n", "i" }, "<C-s>", AgentsFrontend.follow_up_command, { buffer = AgentsFrontend.chat_window.buffer_number })
+        vim.keymap.set({ "n", "i" }, "<C-s>", AgentsFrontend.save_current_user_message, { buffer = AgentsFrontend.chat_window.buffer_number })
     end
 
     AgentsFrontend.chat_window:open()
@@ -980,6 +1021,11 @@ function AgentsFrontend.setup()
     end, {
         nargs = 1,
         desc = "Open a trace JSON file in a terminal pager with navigation keymaps (n/p for next/prev line, nu/pu for USER, na/pa for ASSISTANT)"
+    })
+
+    vim.api.nvim_create_user_command("AskAgentLoadLastUserMessage", AgentsFrontend.load_last_user_message, {
+        nargs = "?",
+        desc = "Load last saved user message"
     })
 end
 
