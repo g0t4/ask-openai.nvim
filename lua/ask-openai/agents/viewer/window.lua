@@ -21,13 +21,16 @@ local class_mt = { __index = FloatWindow } -- inherit FloatWindow behavior too
 setmetatable(AgentWindow, class_mt)
 
 --- Fill the screen above the user input box (full width, no centering).
---- The input box reserves `layout.INPUT_HEIGHT` rows at the bottom, so the two
---- windows together use all available lines without overlapping.
+--- The input box reserves `layout.INPUT_HEIGHT` content rows at the bottom.
+--- Because float borders are drawn OUTSIDE the config area, we subtract an extra
+--- row so this window's bottom border lands on the same row as the input box's
+--- top border (no content overlap).
 --- NOTE: defined with DOT (not colon) to match FloatWindow.window_config's signature.
 ---@param opts FloatWindowOptions
 ---@return vim.api.keyset.win_config
 function AgentWindow.window_config(opts)
-    local win_height = math.max(1, vim.o.lines - layout.INPUT_HEIGHT)
+    -- content height; -1 leaves room for the shared border row with the input box
+    local win_height = math.max(1, vim.o.lines - layout.INPUT_HEIGHT - 1)
     local win_width = vim.o.columns
     return {
         row = 0,
