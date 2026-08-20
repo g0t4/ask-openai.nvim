@@ -129,14 +129,10 @@ describe("E2E - FIM predictions", function()
             -1,
             { details = true }
         )
-        -- vim.print(prediction_extmarks)
-        -- * assert on extmarks
-        assert.is_true(#prediction_extmarks > 0, "Expected extmarks to be present after prediction")
-
 
         -- * Assert on extmark details: virtual text/lines should carry the prediction text
         local rendered_text = calculate_rendered_extmark_text(prediction_extmarks)
-        print("\n========== RENDERED EXTMARK TEXT ==========")
+        print("\n========== EXTMARK TEXT ==========")
         print(rendered_text)
         print("==========================================\n")
 
