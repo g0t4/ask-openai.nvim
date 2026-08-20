@@ -7,6 +7,7 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 from rich.console import Console, Group
+from rich.style import Style
 from rich.markdown import Markdown
 from rich.padding import Padding
 from rich.syntax import Syntax
@@ -905,14 +906,32 @@ def get_color(role: str) -> str:
     return "white"
 
 
+def get_font_color_for_bg(bg_color: str) -> str:
+    """Pick black or white text for best contrast on the given background."""
+    from rich.color import Color
+
+    r, g, b = Color.parse(bg_color).get_truecolor()
+    # relative luminance (WCAG): 0 = black, 1 = white
+    def linearize(channel: int) -> float:
+        channel /= 255
+        return channel / 12.92 if channel <= 0.03928 else ((channel + 0.055) / 1.055) ** 2.4
+
+    luminance = 0.2126 * linearize(r) + 0.7152 * linearize(g) + 0.0722 * linearize(b)
+    return "black" if luminance > 0.4 else "white"
+
+
 def print_section_header(title, color):
-    _console.rule(style=color)
-    _console.print(
-        title,
-        style=color + " bold",
-        highlight=False,
-    )  # highlight: False so message numbers stay the same color
-    _console.rule(style=color)
+    from rich.color import Color
+
+    # rich 14.3.3 mangles named on_* markup, so use an explicit hex background.
+    r, g, b = Color.parse(color).get_truecolor()
+    bg_hex = f"#{r:02x}{g:02x}{b:02x}"
+    font_color = get_font_color_for_bg(color)
+    # Solid full-width bar: background fills every cell, including trailing spaces,
+    # so messages are cleanly separated without consuming three full lines.
+    bar = Text(f" {title} ", style=Style(bgcolor=bg_hex, color=font_color, bold=True))
+    bar.pad_right(max(0, _console.width - len(bar)))
+    _console.print(bar)
 
 
 def print_message(msg: dict, idx: int):
