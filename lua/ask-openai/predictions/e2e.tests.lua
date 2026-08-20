@@ -54,6 +54,9 @@ describe("E2E - FIM predictions", function()
     it("should get a prediction when triggered from a code buffer", function()
         -- * Setup: create a buffer with code and position cursor
         local buffer_lines = {
+            "def multiply(x, y):",
+            "    return x * y",
+            "",
             "def add(x, y):",
             "", -- empty line: cursor at start, expecting "return x + y"
         }
@@ -63,7 +66,7 @@ describe("E2E - FIM predictions", function()
         vim.bo.filetype = "python"
         -- print("buftype", vim.bo.buftype)
         vim.bo.buftype = "" -- empty == regular file (else test buffer is "nofile" which my predictions skip)
-        e2e.set_cursor_base1(2, 1) -- start of empty line (col_base1==1) on line 2
+        e2e.set_cursor_base1(5, 1) -- start of empty line (col_base1==1) on line 2
 
         -- * Setup: configure FIM model
         -- Guard: FIM predictions must be enabled (the request path short-circuits when disabled,
