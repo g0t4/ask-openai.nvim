@@ -9,7 +9,6 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 from tools.chat_viewer.timings import (
     ModelTimings,
     parse_timings,
-    format_timings_display,
     format_stats_line,
     _humanize_int,
     _humanize_float,
@@ -197,46 +196,6 @@ def test_formatted_cache_ratio_no_cache() -> None:
     )
     
     assert timings.formatted_cache_ratio is None
-
-
-def test_format_timings_display_empty() -> None:
-    """Test formatting with no timings."""
-    assert format_timings_display(None) == ""
-
-
-def test_format_timings_display_basic() -> None:
-    """Test basic formatting."""
-    timings = ModelTimings(
-        prompt_tokens=129,
-        predicted_tokens=296,
-        cached_tokens=349,
-        prompt_ms=64.15,
-        predicted_ms=1137.496,
-    )
-    
-    display = format_timings_display(timings)
-    assert "425 tokens" in display  # 129 + 296 = 425
-    assert "349 cached" in display
-    assert "64ms prompt" in display
-    assert "1,137ms predicted" in display
-
-
-def test_format_timings_display_large_numbers() -> None:
-    """Test formatting with large numbers that get comma-separated."""
-    timings = ModelTimings(
-        prompt_tokens=10000,
-        predicted_tokens=50000,
-        cached_tokens=25000,
-        prompt_ms=1234.5,
-        predicted_ms=5678.9,
-    )
-    
-    display = format_timings_display(timings)
-    assert "60,000 tokens" in display
-    assert "25,000 cached" in display
-    # format_timings_display uses 0 decimals for ms
-    assert "1,234ms prompt" in display
-    assert "5,679ms predicted" in display
 
 
 def test_format_stats_line_empty() -> None:

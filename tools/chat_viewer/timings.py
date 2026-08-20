@@ -147,12 +147,13 @@ def format_timings_display(timings: ModelTimings | None) -> str:
     return " | ".join(parts)
 
 
-def format_stats_line(timings: ModelTimings | None) -> str:
+def format_stats_line(timings: ModelTimings | None, color: str = "dim") -> str:
     """Format multi-line stats for display (similar to AskRewrite format).
-    
+
     Args:
         timings: The parsed ModelTimings object.
-        
+        color: Rich color name used for the lines (e.g. a role color).
+
     Returns:
         Multi-line stats string, or empty string if no timings.
     """
@@ -163,23 +164,23 @@ def format_stats_line(timings: ModelTimings | None) -> str:
 
     # Cache tokens (if present and > 0)
     if timings.cached_tokens is not None and timings.cached_tokens > 0:
-        lines.append(f"[dim]cached: {_humanize_int(timings.cached_tokens)} tokens[/]")
+        lines.append(f"[{color}]cached: {_humanize_int(timings.cached_tokens)} tokens[/]")
 
     # Inbound speed
     if timings.prompt_tokens_per_second > 0:
-        lines.append(f"[dim]in: {_humanize_int(timings.prompt_tokens)} tokens @ {_humanize_float(timings.prompt_tokens_per_second)} tok/s[/]")
+        lines.append(f"[{color}]in: {_humanize_int(timings.prompt_tokens)} tokens @ {_humanize_float(timings.prompt_tokens_per_second)} tok/s[/]")
 
     # Outbound speed
     if timings.predicted_tokens_per_second > 0:
-        lines.append(f"[dim]out: {_humanize_int(timings.predicted_tokens)} tokens @ {_humanize_float(timings.predicted_tokens_per_second)} tok/s[/]")
+        lines.append(f"[{color}]out: {_humanize_int(timings.predicted_tokens)} tokens @ {_humanize_float(timings.predicted_tokens_per_second)} tok/s[/]")
 
     # Draft tokens (speculative decoding / MTP)
     if timings.draft_tokens is not None and timings.draft_tokens > 0:
         draft_accepted = timings.draft_tokens_accepted or 0
         acceptance_rate = timings.formatted_acceptance_rate
         if acceptance_rate:
-            lines.append(f"[dim]  draft: {acceptance_rate} accepted ({_humanize_int(draft_accepted)} / {_humanize_int(timings.draft_tokens)} tokens)[/]")
+            lines.append(f"[{color}]  draft: {acceptance_rate} accepted ({_humanize_int(draft_accepted)} / {_humanize_int(timings.draft_tokens)} tokens)[/]")
         else:
-            lines.append(f"[dim]  draft: {_humanize_int(draft_accepted)} accepted ({_humanize_int(draft_accepted)} / {_humanize_int(timings.draft_tokens)} tokens)[/]")
+            lines.append(f"[{color}]  draft: {_humanize_int(draft_accepted)} accepted ({_humanize_int(draft_accepted)} / {_humanize_int(timings.draft_tokens)} tokens)[/]")
 
     return "\n".join(lines)

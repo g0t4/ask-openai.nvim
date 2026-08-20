@@ -591,7 +591,7 @@ def print_tool_result_message(msg: Dict[str, Any], color: str) -> None:
     # * show duration if available (for after-the-fact review)
     timings = parse_tool_call_timings(msg)
     if timings:
-        root.add(f"[{color} bold]⏱️  {timings.formatted_duration}[/]")
+        root.add(f"[{color}]⏱️  {timings.formatted_duration}[/]")
 
     content = decode_if_json(msg.get("content", ""))
     handled = _add_rag_matches(root, content) or _add_mcp_result(root, content)
@@ -834,7 +834,7 @@ def print_assistant_message(msg: dict, color: str):
         if msg_timings:
             # Skip the compact one-liner (format_timings_display); the verbose
             # per-second stats + draft acceptance lines below are more useful.
-            stats = format_stats_line(msg_timings)
+            stats = format_stats_line(msg_timings, color)
             if stats:
                 # stats already contains markup, add as is
                 root.add(stats)
