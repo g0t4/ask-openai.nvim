@@ -129,7 +129,7 @@ describe("E2E - FIM predictions", function()
             -1,
             { details = true }
         )
-        vim.print(prediction_extmarks)
+        -- vim.print(prediction_extmarks)
         -- * assert on extmarks
         assert.is_true(#prediction_extmarks > 0, "Expected extmarks to be present after prediction")
 
@@ -166,7 +166,7 @@ describe("E2E - FIM predictions", function()
         print(full_buffer_after_accept)
         print("==================================================\n")
 
-        screen.dump_bounded("after accept")
+        -- screen.dump_bounded("after accept")
 
         -- * Assert: cursor moved to the end of the accepted prediction (soft check -
         --   a wrong model response may still be acceptable, so warn instead of fail)
