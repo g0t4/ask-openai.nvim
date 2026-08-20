@@ -425,14 +425,29 @@ function _G.MyAgentWindowFoldingForLine(line_num_base1)
 end
 
 function AgentsFrontend.clear_undos()
-    -- wipe undo history
+    -- wipe undo history on the CHAT buffer only.
     -- i.e. after assistant response - undo fucks up the extmarks, and the assistant response is not gonna be sent back if modified (this is view only) so just default to making that UX a bit more intuitive
+    -- NOTE: must operate ONLY on the chat buffer. The old `vim.cmd("normal! a ")` ran on
+    -- whatever buffer is *current* (e.g. the user input box while the agent works), inserting
+    -- a stray space and shoving the user's cursor right by one on every tool call.
 
-    local previous_undo_level = vim.bo.undolevels
-    vim.bo.undolevels = -1
-    vim.cmd("normal! a ") -- no-op edit to commit the change
-    vim.cmd("undo") -- clear old tree
-    vim.bo.undolevels = previous_undo_level
+    -- TODO remove this when we move to a read only history window
+    local buffer = AgentsFrontend.chat_window and AgentsFrontend.chat_window.buffer
+    if not buffer then
+        return
+    end
+
+    local bufnr = buffer.buffer_number
+    local previous_undo_level = vim.bo[bufnr].undolevels
+
+    vim.bo[bufnr].undolevels = -1
+
+    -- Rewrite one line to clear the undo tree without moving any cursor.
+    local first_line = vim.api.nvim_buf_get_lines(bufnr, 0, 1, false)
+    vim.api.nvim_buf_set_lines(bufnr, 0, 1, false, first_line)
+
+    vim.bo[bufnr].undolevels = previous_undo_level
+    local buffer = AgentsFrontend.chat_window and AgentsFrontend.chat_window.buffer
 end
 
 function AgentsFrontend.ensure_chat_window_is_open()
