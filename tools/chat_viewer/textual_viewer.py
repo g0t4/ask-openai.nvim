@@ -54,6 +54,55 @@ class RichLogFile(io.TextIOBase):
             self._buffer = ""
 
 
+class NonAnimatedRichLog(RichLog):
+    """RichLog with scroll animation disabled.
+
+    Textual's default scroll animates with an easing curve (out_cubic),
+    which makes page-down/arrow scrolling feel sluggish. Overriding the
+    action methods to pass animate=False jumps instantly instead.
+    """
+
+    def action_scroll_home(self) -> None:
+        if not self._allow_scroll:
+            return
+        self.scroll_home(x_axis=self.scroll_y == 0, animate=False)
+
+    def action_scroll_end(self) -> None:
+        if not self._allow_scroll:
+            return
+        self.scroll_end(x_axis=self.scroll_y == self.is_vertical_scroll_end, animate=False)
+
+    def action_scroll_left(self) -> None:
+        if not self.allow_horizontal_scroll:
+            return
+        self.scroll_left(animate=False)
+
+    def action_scroll_right(self) -> None:
+        if not self.allow_horizontal_scroll:
+            return
+        self.scroll_right(animate=False)
+
+    def action_scroll_up(self) -> None:
+        if not self.allow_vertical_scroll:
+            return
+        self.scroll_up(animate=False)
+
+    def action_scroll_down(self) -> None:
+        if not self.allow_vertical_scroll:
+            return
+        self.scroll_down(animate=False)
+
+    def action_page_up(self) -> None:
+        if not self.allow_vertical_scroll:
+            return
+        self.scroll_page_up(animate=False)
+
+    def action_page_down(self) -> None:
+        if not self.allow_vertical_scroll:
+            return
+        self.scroll_page_down(animate=False)
+
+
 class TraceViewerApp(App):
     """Textual app for interactively browsing a chat trace."""
 
@@ -85,20 +134,21 @@ class TraceViewerApp(App):
 
     def compose(self) -> ComposeResult:
         yield Header()
-        yield RichLog(highlight=True, markup=False, wrap=True, id="trace-log")
+        yield NonAnimatedRichLog(highlight=True, markup=False, wrap=True, id="trace-log")
         yield Footer()
 
     def _render(self) -> None:
         log = self.query_one(RichLog)
         log.clear()
-        # Match rich's console width to the widget's real width so long
-        # lines (header bars, command panels) use the full terminal width
-        # instead of hard-wrapping at a fixed 400 columns.
+        # Match rich's console width to the app width so long lines (header
+        # bars, command panels) use the full terminal width instead of
+        # hard-wrapping at a fixed 400 columns. Use self.size.width (not the
+        # widget's) because the RichLog isn't laid out yet during on_mount.
         console = Console(
             file=RichLogFile(log),
             soft_wrap=True,
             color_system="truecolor",
-            width=log.size.width,
+            width=self.size.width,
         )
         viewer.render_trace_to_console(
             console, self._messages, self._model_name, self._timings

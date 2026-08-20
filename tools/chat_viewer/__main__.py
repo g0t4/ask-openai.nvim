@@ -992,7 +992,7 @@ def render_trace_to_console(console, messages, model_name, timings) -> None:
             if t and t.predicted_tokens_per_second and t.predicted_tokens_per_second > 0:
                 assistant_speeds.append((msg, t.predicted_tokens_per_second))
     if assistant_speeds:
-        _console.rule('[bold]Assistant Generation Speed[/]', style='blue')
+        print_section_header('Assistant Generation Speed', 'blue')
         max_speed = max(s for _, s in assistant_speeds)
         from rich.table import Table
         table = Table(show_header=False, box=None, padding=(0, 1))
