@@ -115,7 +115,17 @@ function FloatWindow:open()
     end
 
     local initial_config = self.window_config(self.opts)
+
+    -- `winhighlight` is a window option, not an nvim_open_win config key, so pull it
+    -- out and apply it after the window exists (e.g. for borderless bg-colored panes).
+    local winhighlight = initial_config.winhighlight
+    initial_config.winhighlight = nil
+
     self.win_id = vim.api.nvim_open_win(self.buffer_number, true, initial_config)
+
+    if winhighlight then
+        vim.api.nvim_set_option_value('winhighlight', winhighlight, { win = self.win_id })
+    end
 
     -- * make window resizable
     local group_id = vim.api.nvim_create_augroup("float_window_" .. self.win_id, { clear = true })
@@ -124,6 +134,8 @@ function FloatWindow:open()
         callback = function()
             if not vim.api.nvim_win_is_valid(self.win_id) then return end
             local resized_config = self.window_config(self.opts)
+            -- `winhighlight` is not a valid nvim_win_set_config key (it's a win option)
+            resized_config.winhighlight = nil
             vim.api.nvim_win_set_config(self.win_id, resized_config)
         end,
     })

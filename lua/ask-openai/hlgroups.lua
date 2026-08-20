@@ -20,6 +20,9 @@ vim.api.nvim_set_hl(0, HLGroups.TOOL_PROGRESS, { fg = "#FFD700", italic = true }
 HLGroups.CHAT_REASONING = "AskChatReasoning"
 HLGroups.EXPLAIN_ERROR = "AskExplainError"
 vim.api.nvim_set_hl(0, HLGroups.CHAT_REASONING, { fg = "#808080", italic = true })
+HLGroups.USER_INPUT = "AskUserInput"
+vim.api.nvim_set_hl(0, HLGroups.USER_INPUT, { bg = "#2C3E50", fg = "#E6E6E6" })
+
 -- TODO rewrite with nvim_set_hl
 vim.api.nvim_command("highlight default " .. HLGroups.EXPLAIN_ERROR .. " guibg=#ff7777 guifg=#000000 ctermbg=red ctermfg=black")
 

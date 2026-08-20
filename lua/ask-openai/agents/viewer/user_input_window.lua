@@ -1,5 +1,6 @@
 local FloatWindow = require("ask-openai.helpers.float_window")
 local layout = require("ask-openai.agents.viewer.layout")
+local HLGroups = require("ask-openai.hlgroups")
 
 ---@class UserInputWindow : FloatWindow
 ---@field buffer_number number
@@ -28,7 +29,10 @@ function UserInputWindow.window_config(opts)
         height = win_height,
         relative = "editor",
         style = "minimal",
-        border = "single",
+        -- empty border cells => no visible box around the input box
+        border = { "", "", "", "", "", "", "", "" },
+        -- distinct background so the input box stands out from the chat viewer above it
+        winhighlight = "NormalFloat:" .. HLGroups.USER_INPUT,
     }
 end
 
