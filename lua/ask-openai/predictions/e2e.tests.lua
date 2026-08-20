@@ -152,23 +152,10 @@ describe("E2E - FIM predictions", function()
 
         -- screen.dump_bounded("after accept")
 
-        -- * Assert: cursor moved to the end of the accepted prediction (soft check -
-        --   a wrong model response may still be acceptable, so warn instead of fail)
-        local lines = vim.split(buffer_after_accept, "\n")
-        local last_line = lines[#lines]
-        local expected_cursor_line_base1, expected_cursor_col_base1 = #lines, #last_line + 1
-
+        -- * Assert: cursor moved to the end of the accepted prediction
         local actual_cursor_line_base1, actual_cursor_col_base1 = e2e.get_cursor_base1()
-        print("========== CURSOR AFTER ACCEPT ==========")
-        print("  Expected: line " .. expected_cursor_line_base1 .. ", col " .. expected_cursor_col_base1)
-        print("  Actual:   line " .. actual_cursor_line_base1 .. ", col " .. actual_cursor_col_base1)
-        print("----------------------------------------------\n")
-        if actual_cursor_line_base1 ~= expected_cursor_line_base1
-            or actual_cursor_col_base1 ~= expected_cursor_col_base1
-        then
-            print("NOTE: cursor did not land at the expected spot.")
-            print("      The prediction might still be ok - manually review the buffer above.")
-        end
+        assert.are_equal(5, actual_cursor_line_base1, "cursor line mismatch")
+        assert.are_equal(17, actual_cursor_col_base1, "cursor column mismatch")
 
         -- * TODO run other tests w/ accept_line_invoked and accept_word_invoked
         --  and verify how they behave!!!
