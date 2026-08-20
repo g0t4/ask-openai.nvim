@@ -91,12 +91,14 @@ class TraceViewerApp(App):
     def _render(self) -> None:
         log = self.query_one(RichLog)
         log.clear()
-        # Generous width so rich does not hard-wrap; RichLog wraps to its own width.
+        # Match rich's console width to the widget's real width so long
+        # lines (header bars, command panels) use the full terminal width
+        # instead of hard-wrapping at a fixed 400 columns.
         console = Console(
             file=RichLogFile(log),
             soft_wrap=True,
             color_system="truecolor",
-            width=400,
+            width=log.size.width,
         )
         viewer.render_trace_to_console(
             console, self._messages, self._model_name, self._timings
@@ -104,6 +106,10 @@ class TraceViewerApp(App):
 
     def on_mount(self) -> None:
         viewer.SHOW_ALL = False
+        self._render()
+
+    def on_resize(self) -> None:
+        # Re-render so content matches the new terminal width.
         self._render()
 
     def action_toggle_all(self) -> None:
