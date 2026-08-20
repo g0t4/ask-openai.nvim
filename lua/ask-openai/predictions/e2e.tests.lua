@@ -44,7 +44,7 @@ describe("E2E - FIM predictions", function()
         print("  Buffer lines: " .. table.concat(buffer_lines, ", "))
         print("  FIM model: " .. fim_model)
         print("==============================================\n")
-        screen.dump_bounded("before FIM")
+        -- screen.dump_bounded("before FIM")
 
         -- * Action: trigger prediction manually (bypassing event system)
         predictions_frontend.ask_for_prediction({ bufnr = bufnr })
@@ -52,7 +52,7 @@ describe("E2E - FIM predictions", function()
         -- * Wait for the prediction to complete
         local current_prediction = e2e.wait_for_prediction(bufnr, predictions_frontend, 30000)
 
-        screen.dump_bounded("after FIM")
+        -- screen.dump_bounded("after FIM")
 
         -- * Verify: prediction was created and has content
         assert.is_not_nil(
@@ -97,7 +97,7 @@ describe("E2E - FIM predictions", function()
 
         -- * Display full buffer after prediction (prediction is shown as extmarks so you won't see it here)
         local full_buffer_before_accept = e2e.get_buffer_text(bufnr)
-        print("\n========== FULL BUFFER AFTER PREDICTION ==========")
+        print("\n========== FULL BUFFER AFTER PREDICTION (no extmarks) ==========")
         print(full_buffer_before_accept)
         print("==================================================\n")
 
@@ -106,7 +106,7 @@ describe("E2E - FIM predictions", function()
 
         -- * Display full buffer after prediction accepted (prediction is here)
         local full_buffer_after_accept = e2e.get_buffer_text(bufnr)
-        print("\n========== FULL BUFFER AFTER PREDICTION ==========")
+        print("\n========== FULL BUFFER AFTER ACCEPT ==========")
         print(full_buffer_after_accept)
         print("==================================================\n")
 
