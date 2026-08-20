@@ -19,7 +19,7 @@ local assert = require("luassert")
 -- text rendered via extmarks (virt_text + virt_lines) in buffer order.
 ---@param extmarks table[]
 ---@return string rendered_text
-local function calculate_rendered_extmark_text(extmarks)
+local function text_of_extmarks(extmarks)
     local chunks = {}
     for _, extmark in ipairs(extmarks) do
         local details = extmark[4] or {}
@@ -126,7 +126,7 @@ describe("E2E - FIM predictions", function()
         local all_extmarks = vim.api.nvim_buf_get_extmarks(bufnr, all_ns, 0, -1, { details = true })
 
         -- * Assert on extmark details: virtual text/lines should carry the prediction text
-        local all_extmark_text = calculate_rendered_extmark_text(all_extmarks)
+        local all_extmark_text = text_of_extmarks(all_extmarks)
         print("========== EXTMARK TEXT ==========")
         print(all_extmark_text)
         print("----------------------------------------------\n")
