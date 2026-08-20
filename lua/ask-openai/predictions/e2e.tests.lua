@@ -76,13 +76,11 @@ describe("E2E - FIM predictions", function()
             config.are_predictions_enabled(),
             "FIM/predictions are DISABLED. Enable them (e.g. :AskEnablePredictions or :AskTogglePredictions) before running this e2e FIM test."
         )
-        local fim_model = config.get_fim_model() or "qwen"
-        config.set_fim_model(fim_model)
+        config.get_fim_model()
 
-        print("\n========== TRIGGERING FIM PREDICTION ==========")
-        print("  Buffer lines: " .. table.concat(buffer_lines, ", "))
-        print("  FIM model: " .. fim_model)
-        print("==============================================\n")
+        print("========== INITIAL BUFFER ==========")
+        print(table.concat(buffer_lines, "\n"))
+        print("----------------------------------------------\n")
         -- screen.dump_bounded("before FIM")
 
         -- * Action: trigger prediction manually (bypassing event system)
@@ -105,12 +103,12 @@ describe("E2E - FIM predictions", function()
             "Prediction should contain text. Got empty prediction."
         )
 
-        -- * Display the prediction for debugging
-        print("\n========== PREDICTION RESULT ==========")
-        print("  Prediction text: '" .. current_prediction.prediction .. "'")
-        print("  Has duplicate prefix: " .. tostring(current_prediction.has_duplicate_prefix))
-        print("  First line: '" .. (current_prediction.first_line or "(none)") .. "'")
-        print("======================================\n")
+        -- -- * Display the prediction for debugging
+        -- print("========== PREDICTION RESULT ==========")
+        -- print("  Prediction text: '" .. current_prediction.prediction .. "'")
+        -- print("  Has duplicate prefix: " .. tostring(current_prediction.has_duplicate_prefix))
+        -- print("  First line: '" .. (current_prediction.first_line or "(none)") .. "'")
+        -- print("----------------------------------------------\n")
 
         -- * Assert: prediction should be meaningful code (not just whitespace)
         local has_code_content = current_prediction.prediction:match("[%w_]") ~= nil
@@ -129,9 +127,9 @@ describe("E2E - FIM predictions", function()
 
         -- * Assert on extmark details: virtual text/lines should carry the prediction text
         local all_extmark_text = calculate_rendered_extmark_text(all_extmarks)
-        print("\n========== EXTMARK TEXT ==========")
+        print("========== EXTMARK TEXT ==========")
         print(all_extmark_text)
-        print("==========================================\n")
+        print("----------------------------------------------\n")
 
         -- * Assert: the rendered virtual text matches the prediction shown (duplicate prefix stripped)
         assert.is_true(
@@ -146,18 +144,18 @@ describe("E2E - FIM predictions", function()
 
         -- * Display full buffer after prediction (prediction is shown as extmarks so you won't see it here)
         local full_buffer_before_accept = e2e.get_buffer_text(bufnr)
-        print("\n========== FULL BUFFER AFTER PREDICTION (no extmarks) ==========")
+        print("========== FULL BUFFER AFTER PREDICTION (no extmarks) ==========")
         print(full_buffer_before_accept)
-        print("==================================================\n")
+        print("----------------------------------------------\n")
 
         -- * accept prediction by pressing tab
         predictions_frontend.accept_all_invoked()
 
         -- * Display full buffer after prediction accepted (prediction is here)
         local full_buffer_after_accept = e2e.get_buffer_text(bufnr)
-        print("\n========== FULL BUFFER AFTER ACCEPT ==========")
+        print("========== FULL BUFFER AFTER ACCEPT ==========")
         print(full_buffer_after_accept)
-        print("==================================================\n")
+        print("----------------------------------------------\n")
 
         -- screen.dump_bounded("after accept")
 
@@ -167,10 +165,10 @@ describe("E2E - FIM predictions", function()
             full_buffer_after_accept
         )
         local actual_cursor_line_base1, actual_cursor_col_base1 = e2e.get_cursor_base1()
-        print("\n========== CURSOR AFTER ACCEPT ==========")
+        print("========== CURSOR AFTER ACCEPT ==========")
         print("  Expected: line " .. expected_cursor_line_base1 .. ", col " .. expected_cursor_col_base1)
         print("  Actual:   line " .. actual_cursor_line_base1 .. ", col " .. actual_cursor_col_base1)
-        print("==========================================\n")
+        print("----------------------------------------------\n")
         if actual_cursor_line_base1 ~= expected_cursor_line_base1
             or actual_cursor_col_base1 ~= expected_cursor_col_base1
         then
