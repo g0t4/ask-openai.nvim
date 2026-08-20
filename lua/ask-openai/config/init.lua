@@ -87,7 +87,7 @@ end
 
 --- @return table { cmdline: Endpoint, qwen: Endpoint, deepseek: Endpoint, gptoss: Endpoint, gemma4: Endpoint, glm: Endpoint, muse: Endpoint, ["nemo-lightning"]: Endpoint }`
 function M.get_endpoints()
-    local gptoss_url = "http://ask.lan:8013"
+    local gptoss_url = "http://build21.lan:8013"
     local qwen3_url = "http://ask.lan:8012"
     local gemma4_url = "http://ask.lan:8011"
     local glm_url = "http://ask.lan:8010"
