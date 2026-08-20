@@ -1,5 +1,5 @@
 llama-server -hf Qwen/Qwen3-Embedding-0.6B-GGUF:Q8_0 \
-    --host 0.0.0.0 --port 8013 \
+    --host 0.0.0.0 --port 6015 \
     -embeddings
 
 # * We recommend enabling flash_attention_2 for better acceleration and memory saving.

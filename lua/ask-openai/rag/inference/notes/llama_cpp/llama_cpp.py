@@ -6,7 +6,7 @@ import httpx
 
 def encode(input_texts: list[str]):
     payload = {'input': input_texts}
-    response = httpx.post('http://ask.lan:8013/embedding', json=payload)
+    response = httpx.post('http://ask.lan:6015/embedding', json=payload)
     embeddings = response.json()
 
     return embeddings
