@@ -77,8 +77,20 @@ describe("E2E - FIM predictions", function()
         )
         config.get_fim_model()
 
-
         -- * Action: trigger prediction manually (bypassing event system)
+        vim.cmd('startinsert') -- go into insert mode for cursor column to be correct below (end of test)
+        -- print("mode:", vim.fn.mode()) -- TODO timing issue why this is still "n" here? or?
+        --  and yet w/o startinsert here ... the cursor calc at end is wrong so WTF.. why is it still marked normal mode
+        --  and even though still normal why does cursor col at end seem to behave as if it is insert mode?!
+        --  and down there at end mode() still reports "n"
+        --  vim.schedule (function () mode()end) still reports "n" too?!
+        --  perhaps test scheduler issue or?
+        --
+        -- TODO get test to trigger on insert mode alone?
+        --   would need to change test buffer type/filetype to not be ignored by my predictions_frontend
+        --   and other stuff that's blocking, not sure yet (async timing most likely)
+        --   ahhh yes that is why startinsert is probably not triggering here... perhaps it would if I waited and deferred assertions until after this completes!
+        -- trigger manually for now:
         predictions_frontend.ask_for_prediction({ bufnr = bufnr })
 
         -- * Wait for the prediction to complete
@@ -152,19 +164,17 @@ describe("E2E - FIM predictions", function()
 
         -- screen.dump_bounded("after accept")
 
-        -- * Assert: cursor moved to the end of the accepted prediction
+        -- ** cursor line
         local actual_cursor_line_base1, actual_cursor_col_base1 = e2e.get_cursor_base1()
         assert.are_equal(5, actual_cursor_line_base1, "cursor line mismatch")
+        --
+        -- ** cursor column
         assert.are_equal(17, actual_cursor_col_base1, "cursor column mismatch")
+        -- FYI if in insert mode "i" then add one to cursor column (char after last char) and is thus 17 for insert mode
+        -- in normal mode it is last char column (not char after) hence why it is 16 then for normal mode
 
-        -- * TODO run other tests w/ accept_line_invoked and accept_word_invoked
-        --  and verify how they behave!!!
-
-
-        -- * Cleanup: cancel the prediction to free resources
+        -- * cleanup
         predictions_frontend.cancel_current_prediction(bufnr)
-
-        -- * Cleanup buffer
         e2e.delete_buffer(bufnr)
     end)
 end)
