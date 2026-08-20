@@ -45,6 +45,15 @@ function M.set_cursor_base1(line_base1, col_base1)
     vim.api.nvim_win_set_cursor(0, { line_base1, col_base0 })
 end
 
+--- Get the cursor position in the current window.
+--- @return number line_base1 1-indexed line number
+--- @return number col_base1 1-indexed column number
+function M.get_cursor_base1()
+    local line_base1, col_base0 = unpack(vim.api.nvim_win_get_cursor(0))
+    local col_base1 = col_base0 + 1
+    return line_base1, col_base1
+end
+
 --- Get all lines from a buffer as a single string.
 --- @param bufnr number The buffer number
 --- @return string text The full buffer contents joined with newlines
