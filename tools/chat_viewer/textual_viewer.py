@@ -117,7 +117,7 @@ class TraceViewerApp(App):
     CSS = """
     RichLog {
         border: round $accent;
-        padding: 0 1;
+        background: transparent;
     }
     """
 
