@@ -132,6 +132,18 @@ class TraceViewerApp(App):
         self._model_name = model_name
         self._timings = timings
 
+    def get_css_variables(self) -> dict[str, str]:
+        """Use the terminal's default background instead of Textual's dark theme.
+
+        Textual paints a dark (#121212) background over the whole screen by
+        default. Making these transparent lets the user's terminal colors show
+        through, so the app doesn't impose a brownish tint.
+        """
+        variables = super().get_css_variables()
+        for name in ("background", "surface", "panel"):
+            variables[name] = "transparent"
+        return variables
+
     def compose(self) -> ComposeResult:
         yield Header()
         yield NonAnimatedRichLog(highlight=True, markup=False, wrap=True, id="trace-log")
