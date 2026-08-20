@@ -27,7 +27,7 @@ describe("E2E - FIM predictions", function()
         vim.bo.filetype = "python"
         -- print("buftype", vim.bo.buftype)
         vim.bo.buftype = "" -- empty == regular file (else test buffer is "nofile" which my predictions skip)
-        e2e.set_cursor(2, 4) -- cursor after 4 spaces on line 2
+        e2e.set_cursor_base1(2, 5) -- cursor after 4 spaces (col_base1==5) on line 2
 
         -- * Setup: configure FIM model
         -- Guard: FIM predictions must be enabled (the request path short-circuits when disabled,

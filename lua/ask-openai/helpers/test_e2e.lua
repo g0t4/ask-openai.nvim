@@ -39,8 +39,9 @@ end
 
 --- Set the cursor position in the current window.
 --- @param line_base1 number 1-indexed line number
---- @param col_base0 number 0-indexed column number
-function M.set_cursor(line_base1, col_base0)
+--- @param col_base1 number 1-indexed column number
+function M.set_cursor_base1(line_base1, col_base1)
+    local col_base0 = col_base1 - 1
     vim.api.nvim_win_set_cursor(0, { line_base1, col_base0 })
 end
 
