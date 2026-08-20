@@ -51,7 +51,13 @@ local function calculate_expected_cursor_after_accept(buffer_text)
 end
 
 describe("E2E - FIM predictions", function()
-    it("should get a prediction when triggered from a code buffer", function()
+    -- TODO! other primary scenario integration tests?
+    --   do not need to test edge cases of minor things... just top level features
+    --   largely the ones that require custom UI code that needs to be validated
+    --   push as much  as possible into unit tests
+    --   i.e. validating cursor position is best done mathematically and then we just make sure the #s get plugged in here to actually move the cursor for one case
+
+    it("accept full prediction", function()
         -- * Setup: create a buffer with code and position cursor
         local initial_buffer_lines = {
             "def multiply(x, y):",
