@@ -39,17 +39,6 @@ local function text_of_extmarks(extmarks)
     return table.concat(chunks, "\n")
 end
 
--- New calculator: expected cursor position after accepting the prediction
--- (cursor lands at the end of the last inserted line).
----@param buffer_text string
----@return number line_base1
----@return number col_base1
-local function calculate_expected_cursor_after_accept(buffer_text)
-    local lines = vim.split(buffer_text, "\n")
-    local last_line = lines[#lines]
-    return #lines, #last_line + 1
-end
-
 describe("E2E - FIM predictions", function()
     -- TODO! other primary scenario integration tests?
     --   do not need to test edge cases of minor things... just top level features
@@ -165,9 +154,10 @@ describe("E2E - FIM predictions", function()
 
         -- * Assert: cursor moved to the end of the accepted prediction (soft check -
         --   a wrong model response may still be acceptable, so warn instead of fail)
-        local expected_cursor_line_base1, expected_cursor_col_base1 = calculate_expected_cursor_after_accept(
-            buffer_after_accept
-        )
+        local lines = vim.split(buffer_after_accept, "\n")
+        local last_line = lines[#lines]
+        local expected_cursor_line_base1, expected_cursor_col_base1 = #lines, #last_line + 1
+
         local actual_cursor_line_base1, actual_cursor_col_base1 = e2e.get_cursor_base1()
         print("========== CURSOR AFTER ACCEPT ==========")
         print("  Expected: line " .. expected_cursor_line_base1 .. ", col " .. expected_cursor_col_base1)
