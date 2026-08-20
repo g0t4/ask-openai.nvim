@@ -128,20 +128,20 @@ describe("E2E - FIM predictions", function()
         local all_extmarks = vim.api.nvim_buf_get_extmarks(bufnr, all_ns, 0, -1, { details = true })
 
         -- * Assert on extmark details: virtual text/lines should carry the prediction text
-        local extmark_text = calculate_rendered_extmark_text(all_extmarks)
+        local all_extmark_text = calculate_rendered_extmark_text(all_extmarks)
         print("\n========== EXTMARK TEXT ==========")
-        print(extmark_text)
+        print(all_extmark_text)
         print("==========================================\n")
 
         -- * Assert: the rendered virtual text matches the prediction shown (duplicate prefix stripped)
         assert.is_true(
-            #extmark_text > 0,
+            #all_extmark_text > 0,
             "Expected extmarks to render virtual text (first_line and/or rest_of_lines)"
         )
         assert.is_true(
-            extmark_text:find(current_prediction.first_line, 1, true) ~= nil,
+            all_extmark_text:find(current_prediction.first_line, 1, true) ~= nil,
             "Expected rendered extmark text to include the prediction first line. Got: '"
-            .. extmark_text .. "'"
+            .. all_extmark_text .. "'"
         )
 
         -- * Display full buffer after prediction (prediction is shown as extmarks so you won't see it here)
