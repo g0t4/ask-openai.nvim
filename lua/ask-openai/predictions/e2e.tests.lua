@@ -125,13 +125,7 @@ describe("E2E - FIM predictions", function()
         -- and `virt_lines` fields. Using `{ details = true }` returns all available
         -- details for each extmark.
         local all_ns = -1
-        local prediction_extmarks = vim.api.nvim_buf_get_extmarks(
-            bufnr,
-            all_ns,
-            0,
-            -1,
-            { details = true }
-        )
+        local prediction_extmarks = vim.api.nvim_buf_get_extmarks(bufnr, all_ns, 0, -1, { details = true })
 
         -- * Assert on extmark details: virtual text/lines should carry the prediction text
         local extmark_text = calculate_rendered_extmark_text(prediction_extmarks)
