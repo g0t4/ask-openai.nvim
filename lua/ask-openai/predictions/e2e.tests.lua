@@ -53,14 +53,18 @@ end
 describe("E2E - FIM predictions", function()
     it("should get a prediction when triggered from a code buffer", function()
         -- * Setup: create a buffer with code and position cursor
-        local buffer_lines = {
+        local initial_buffer_lines = {
             "def multiply(x, y):",
             "    return x * y",
             "",
             "def add(x, y):",
             "", -- empty line: cursor at start, expecting "return x + y"
         }
-        local bufnr = e2e.create_test_buffer(buffer_lines)
+        local bufnr = e2e.create_test_buffer(initial_buffer_lines)
+        print("========== INITIAL BUFFER ==========")
+        print(table.concat(initial_buffer_lines, "\n"))
+        print("----------------------------------------------\n")
+        -- screen.dump_bounded("before FIM")
 
         -- Set file type so predictions are enabled (not in ignore list)
         vim.bo.filetype = "python"
@@ -78,10 +82,6 @@ describe("E2E - FIM predictions", function()
         )
         config.get_fim_model()
 
-        print("========== INITIAL BUFFER ==========")
-        print(table.concat(buffer_lines, "\n"))
-        print("----------------------------------------------\n")
-        -- screen.dump_bounded("before FIM")
 
         -- * Action: trigger prediction manually (bypassing event system)
         predictions_frontend.ask_for_prediction({ bufnr = bufnr })
@@ -143,18 +143,16 @@ describe("E2E - FIM predictions", function()
         )
 
         -- * Display full buffer after prediction (prediction is shown as extmarks so you won't see it here)
-        local full_buffer_before_accept = e2e.get_buffer_text(bufnr)
-        print("========== FULL BUFFER AFTER PREDICTION (no extmarks) ==========")
-        print(full_buffer_before_accept)
-        print("----------------------------------------------\n")
+        local buffer_before_accept = e2e.get_buffer_text(bufnr)
+        assert.are_equal(table.concat(initial_buffer_lines, "\n"), buffer_before_accept)
 
         -- * accept prediction by pressing tab
         predictions_frontend.accept_all_invoked()
 
         -- * Display full buffer after prediction accepted (prediction is here)
-        local full_buffer_after_accept = e2e.get_buffer_text(bufnr)
-        print("========== FULL BUFFER AFTER ACCEPT ==========")
-        print(full_buffer_after_accept)
+        local buffer_after_accept = e2e.get_buffer_text(bufnr)
+        print("========== BUFFER AFTER ACCEPT ==========")
+        print(buffer_after_accept)
         print("----------------------------------------------\n")
 
         -- screen.dump_bounded("after accept")
@@ -162,7 +160,7 @@ describe("E2E - FIM predictions", function()
         -- * Assert: cursor moved to the end of the accepted prediction (soft check -
         --   a wrong model response may still be acceptable, so warn instead of fail)
         local expected_cursor_line_base1, expected_cursor_col_base1 = calculate_expected_cursor_after_accept(
-            full_buffer_after_accept
+            buffer_after_accept
         )
         local actual_cursor_line_base1, actual_cursor_col_base1 = e2e.get_cursor_base1()
         print("========== CURSOR AFTER ACCEPT ==========")
