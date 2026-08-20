@@ -10,7 +10,7 @@ Think Failure First Development (à la TDD)
 - 💥 Fail first (red)
 - 🔧 Fix
 - 🧪 Test (green)
-- 🧹 Clean
+- 🧹 Refactor
 
 How to reproduce:
 - Ask the user to provide arguments and their failure message.
