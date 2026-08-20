@@ -585,13 +585,13 @@ def _add_unrecognized(root: TreeWrapper, content: Any) -> None:
         .add(_pretty_no_truncate(content))
 
 
-def print_tool_result_message(msg: Dict[str, Any]) -> None:
+def print_tool_result_message(msg: Dict[str, Any], color: str) -> None:
     root = TreeWrapper.hidden_root()
 
     # * show duration if available (for after-the-fact review)
     timings = parse_tool_call_timings(msg)
     if timings:
-        root.add(f"[dim]⏱️  {timings.formatted_duration}[/]")
+        root.add(f"[{color} bold]⏱️  {timings.formatted_duration}[/]")
 
     content = decode_if_json(msg.get("content", ""))
     handled = _add_rag_matches(root, content) or _add_mcp_result(root, content)
@@ -824,7 +824,7 @@ def print_raw_completion_message(msg: dict):
     _console.print(root)
 
 
-def print_assistant_message(msg: dict):
+def print_assistant_message(msg: dict, color: str):
     root = TreeWrapper.hidden_root()
 
     # Show per-message timings if present
@@ -834,7 +834,7 @@ def print_assistant_message(msg: dict):
         if msg_timings:
             display = format_timings_display(msg_timings)
             if display:
-                root.add(f"[dim]{display}[/]")
+                root.add(f"[{color} bold]{display}[/]")
             # add per-second stats and draft acceptance if available
             stats = format_stats_line(msg_timings)
             if stats:
@@ -940,15 +940,16 @@ def print_message(msg: dict, idx: int):
     title = f"{idx}: {display_role}"
     if "output.json" in msg:
         title = f"{title} (output.json)"
-    print_section_header(title, get_color(role))
+    color = get_color(role)
+    print_section_header(title, color)
 
     match role:
         case "tool":
-            print_tool_result_message(msg)
+            print_tool_result_message(msg, color)
         case "assistant_raw" | "user_raw":
             print_raw_completion_message(msg)
         case "assistant":
-            print_assistant_message(msg)
+            print_assistant_message(msg, color)
         case "system" | "developer" | "user" | _:
             print_markdown_message(msg)
 
