@@ -832,10 +832,8 @@ def print_assistant_message(msg: dict, color: str):
     if msg_timings_dict:
         msg_timings = _parse_timings_from_dict(msg_timings_dict)
         if msg_timings:
-            display = format_timings_display(msg_timings)
-            if display:
-                root.add(f"[{color} bold]{display}[/]")
-            # add per-second stats and draft acceptance if available
+            # Skip the compact one-liner (format_timings_display); the verbose
+            # per-second stats + draft acceptance lines below are more useful.
             stats = format_stats_line(msg_timings)
             if stats:
                 # stats already contains markup, add as is
