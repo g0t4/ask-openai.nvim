@@ -134,20 +134,20 @@ describe("E2E - FIM predictions", function()
         )
 
         -- * Assert on extmark details: virtual text/lines should carry the prediction text
-        local rendered_text = calculate_rendered_extmark_text(prediction_extmarks)
+        local extmark_text = calculate_rendered_extmark_text(prediction_extmarks)
         print("\n========== EXTMARK TEXT ==========")
-        print(rendered_text)
+        print(extmark_text)
         print("==========================================\n")
 
         -- * Assert: the rendered virtual text matches the prediction shown (duplicate prefix stripped)
         assert.is_true(
-            #rendered_text > 0,
+            #extmark_text > 0,
             "Expected extmarks to render virtual text (first_line and/or rest_of_lines)"
         )
         assert.is_true(
-            rendered_text:find(current_prediction.first_line, 1, true) ~= nil,
+            extmark_text:find(current_prediction.first_line, 1, true) ~= nil,
             "Expected rendered extmark text to include the prediction first line. Got: '"
-            .. rendered_text .. "'"
+            .. extmark_text .. "'"
         )
 
         -- * Display full buffer after prediction (prediction is shown as extmarks so you won't see it here)
