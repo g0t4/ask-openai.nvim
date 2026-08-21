@@ -150,6 +150,20 @@ function FloatWindow:open()
     })
 end
 
+--- Resize the window from window_config (e.g. when the user input box grows to
+--- fit a long prompt, or the chat shrinks to make room).
+function FloatWindow:resize()
+    if not self.win_id or not vim.api.nvim_win_is_valid(self.win_id) then return end
+    local config = self.window_config(self.opts)
+    -- `winhighlight` is a window option, not an nvim_win_set_config key.
+    local winhighlight = config.winhighlight
+    config.winhighlight = nil
+    vim.api.nvim_win_set_config(self.win_id, config)
+    if winhighlight then
+        vim.api.nvim_set_option_value('winhighlight', winhighlight, { win = self.win_id })
+    end
+end
+
 --- Close the float window and delete its buffer.
 --- This fully cleans up the instance so it can be recreated fresh on next open().
 function FloatWindow:close()

@@ -1031,6 +1031,17 @@ function AgentsFrontend.ensure_user_input_window_is_open(focus)
 
         local bufnr = AgentsFrontend.user_input_window.buffer_number
 
+        -- * auto-resize as the prompt grows/shrinks (TextChangedI catches each
+        --   keystroke; TextChanged catches pastes/undo) so a long prompt gets more
+        --   room and the chat window shrinks to match
+        vim.api.nvim_create_autocmd({ "TextChanged", "TextChangedI" }, {
+            buffer = bufnr,
+            callback = function()
+                if AgentsFrontend.user_input_window then AgentsFrontend.user_input_window:resize() end
+                if AgentsFrontend.chat_window then AgentsFrontend.chat_window:resize() end
+            end,
+        })
+
         -- * submit on <CR> (insert & normal mode)
         vim.keymap.set({ "i", "n" }, "<CR>", function()
             AgentsFrontend.submit_from_input_window()

@@ -20,7 +20,7 @@ setmetatable(UserInputWindow, class_mt)
 ---@return vim.api.keyset.win_config
 function UserInputWindow.window_config(opts)
     local win_width = vim.o.columns
-    local win_height = layout.INPUT_HEIGHT
+    local win_height = layout.input_height()
     local bottom_row = math.max(0, layout.editor_height() - win_height)
     return {
         row = bottom_row,

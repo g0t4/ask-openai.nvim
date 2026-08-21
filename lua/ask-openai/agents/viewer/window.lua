@@ -36,7 +36,7 @@ function AgentWindow.window_config(opts)
     -- the input box's (invisible) top border row - closing the one-line gap that
     -- appeared once both borders became invisible. The two windows sit flush and are
     -- told apart purely by background color (chat blends into the editor bg).
-    local win_height = math.max(1, layout.editor_height() - layout.INPUT_HEIGHT)
+    local win_height = math.max(1, layout.editor_height() - layout.input_height())
     local win_width = vim.o.columns
     return {
         row = 0,
