@@ -367,6 +367,7 @@ function MCPStdioClient:initialize(on_done)
                     tool.call = function(id, tool_name, args, callback, on_progress)
                         self:tools_call(id, tool_name, args, callback, on_progress)
                     end
+                    tool._mcp_client = self
                     M.tools_available[tool.name] = tool
                 end
             end
@@ -504,6 +505,7 @@ function MCPHttpServer:initialize(on_done)
                 tool.call = function(id, tool_name, args, callback, on_progress)
                     self:tools_call(id, tool_name, args, callback, on_progress)
                 end
+                tool._mcp_client = self
                 M.tools_available[tool.name] = tool
             end
         elseif response.error then
@@ -644,6 +646,19 @@ function M.send_tool_call(tool_call, callback, on_progress)
 
     local args_decoded = decode_tool_args(tool_call["function"].arguments)
     tool.call(tool_call.id, name, args_decoded, vim.schedule_wrap(callback), on_progress)
+
+    -- * cooperative cancellation: ask the owning MCP server to cancel this request.
+    --   Best-effort — a server that doesn't handle notifications/cancelled just ignores it.
+    ---@return fun()
+    return function()
+        local client = tool._mcp_client
+        if client then
+            client:send_notification({
+                method = "notifications/cancelled",
+                params = { requestId = tool_call.id, reason = "interrupted" },
+            })
+        end
+    end
 end
 
 M._cached_run_process_instructions = nil

@@ -68,15 +68,18 @@ end
 ---@param tool_call table
 ---@param callback ToolCallDoneCallback
 ---@param on_progress? ToolCallOnProgress
+---@return fun()|nil cancel function (no-op for tools without a cancel hook)
 function M.send_tool_call_router(tool_call, callback, on_progress)
     local tool_name = tool_call["function"].name
 
     local function safe_call(fn)
         -- treat as tool call failure, that way model can choose how to recover... vs just killing your tool runner :)
-        local ok, err = pcall(fn)
+        local ok, result = pcall(fn)
         if not ok then
-            callback(plumbing.create_tool_call_output_for_error_message(err))
+            callback(plumbing.create_tool_call_output_for_error_message(result))
+            return nil
         end
+        return result
     end
 
     local function safe_on_progress(...)
@@ -96,16 +99,15 @@ function M.send_tool_call_router(tool_call, callback, on_progress)
     end
 
     if mcp.handles_tool(tool_name) then
-        safe_call(function() mcp.send_tool_call(tool_call, callback, safe_on_progress) end)
-        return
+        return safe_call(function() return mcp.send_tool_call(tool_call, callback, safe_on_progress) end)
     end
 
     if inprocess.handles_tool(tool_name) then
-        safe_call(function() inprocess.send_tool_call(tool_call, callback) end)
-        return
+        return safe_call(function() return inprocess.send_tool_call(tool_call, callback) end)
     end
 
     callback(plumbing.create_tool_call_output_for_error_message("Invalid tool name: " .. tool_name))
+    return nil
 end
 
 return M

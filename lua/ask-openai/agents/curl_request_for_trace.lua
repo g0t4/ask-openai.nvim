@@ -16,6 +16,8 @@ function CurlRequestForTrace:new(params)
 
     self.trace = nil
     self.already_sent = false
+    self.cancelled = false -- true when this request was interrupted/aborted; ignore its tool results
+    self.tool_cancel_fns = {} -- one cancel fn per in-flight tool call (parallel tool calling)
     self.accumulated_model_response_messages = {}
     return self
 end

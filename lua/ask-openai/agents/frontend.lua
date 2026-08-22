@@ -43,8 +43,6 @@ AgentsFrontend.queued_user_messages = {}
 AgentsFrontend.queued_section_start_line_base0 = nil
 ---@type UserInputWindow|nil
 AgentsFrontend.user_input_window = nil
----@type boolean -- true while a request was aborted; prevents a finishing tool call from resuming the agent
-AgentsFrontend.request_aborted = false
 
 local first_turn_ns_id
 
@@ -305,9 +303,6 @@ end
 
 ---@param trace AgentTrace
 function AgentsFrontend.then_get_assistant_response(trace)
-    -- * a new request is starting, clear any prior abort state
-    AgentsFrontend.request_aborted = false
-
     -- * conversation turns (track start line for streaming chunks)
 
     AgentsFrontend.this_turn_chat_start_line_base0 = AgentsFrontend.chat_window.buffer:get_line_count()
@@ -812,6 +807,13 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(trace)
 
             ---@type ToolCallDoneCallback
             local function when_this_tool_is_done(tool_call_output)
+                -- * if this request was interrupted/aborted, ignore the stale tool result
+                --   entirely (don't add it to the trace, don't resume the agent)
+                if request.cancelled then
+                    log:warn("request cancelled during tool call; ignoring tool result")
+                    return
+                end
+
                 -- * compute tool call duration
                 local end_time_ms = math.floor(vim.uv.hrtime() / 1e6)
                 local tool_call_duration_ms = end_time_ms - tool_call.start_time_ms
@@ -832,12 +834,6 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(trace)
                 trace:add_message(tool_response_message)
 
                 if request:any_outstanding_tool_calls() or request.already_sent then
-                    return
-                end
-
-                -- * if the user aborted while the tool ran, do NOT resume the agent
-                if AgentsFrontend.request_aborted then
-                    log:warn("request aborted during tool call; not resuming the agent")
                     return
                 end
                 request.already_sent = true
@@ -865,15 +861,39 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(trace)
             -- * capture start time before running the tool
             tool_call.start_time_ms = math.floor(vim.uv.hrtime() / 1e6)
 
-            -- * run the tool!
-            tool_router.send_tool_call_router(tool_call, when_this_tool_is_done, on_tool_progress)
+            -- * run the tool! collect its cooperative-cancel fn (parallel tool calling => multiple)
+            local cancel_fn = tool_router.send_tool_call_router(tool_call, when_this_tool_is_done, on_tool_progress)
+            if type(cancel_fn) == "function" then
+                request.tool_cancel_fns = request.tool_cancel_fns or {}
+                table.insert(request.tool_cancel_fns, cancel_fn)
+            end
         end
     end
 end
 
+--- Cooperative-cancel all in-flight tool calls that belong to a request.
+--- Each tool call registers a cancel fn on the request (multiple for parallel tool calling).
+---@param request CurlRequestForTrace|nil
+function AgentsFrontend.cancel_in_flight_tools(request)
+    if not request or not request.tool_cancel_fns then
+        return
+    end
+    for _, cancel_fn in ipairs(request.tool_cancel_fns) do
+        pcall(cancel_fn)
+    end
+    request.tool_cancel_fns = {}
+end
+
 function AgentsFrontend.abort_request()
-    -- * remember we aborted so a finishing tool call won't resume the agent
-    AgentsFrontend.request_aborted = true
+    local trace = AgentsFrontend.trace
+    if not trace then
+        return
+    end
+
+    -- * mark THIS request cancelled so a finishing tool call won't resume the agent
+    if trace.last_request then
+        trace.last_request.cancelled = true
+    end
 
     -- * aborting discards any queued user messages
     if #AgentsFrontend.queued_user_messages > 0 then
@@ -881,11 +901,8 @@ function AgentsFrontend.abort_request()
         AgentsFrontend.redraw_queued_user_messages()
     end
 
-    local trace = AgentsFrontend.trace
-    if not trace then
-        return
-    end
     CurlRequestForTrace.terminate(trace.last_request)
+    AgentsFrontend.cancel_in_flight_tools(trace.last_request)
     if AgentsFrontend.chat_window._agent_is_running then
         -- TODO only "cancel" if agent is running? (i.e. why call rag_cancel (etc) if agent is done (or never started)
         AgentsFrontend.chat_window:mark_agent_running(false)
@@ -914,14 +931,18 @@ function AgentsFrontend.interrupt_agent()
     end
 
     local trace = AgentsFrontend.trace
+    -- * capture the request being interrupted BEFORE then_get_assistant_response replaces it
+    local interrupted_request = trace and trace.last_request
     -- * capture the queued user messages (they are sent immediately, not deferred)
     local queued_messages = AgentsFrontend.queued_user_messages
     AgentsFrontend.queued_user_messages = {}
 
-    -- * stop the agent like cancel/escape does
-    AgentsFrontend.request_aborted = true
-    if trace then
-        CurlRequestForTrace.terminate(trace.last_request)
+    -- * stop the agent like cancel/escape does, marking THIS request cancelled so any
+    --   still-running tool call's result is ignored (future requests are unaffected)
+    if interrupted_request then
+        interrupted_request.cancelled = true
+        CurlRequestForTrace.terminate(interrupted_request)
+        AgentsFrontend.cancel_in_flight_tools(interrupted_request)
     end
     AgentsFrontend.chat_window:mark_agent_running(false)
     AgentsFrontend.chat_window:stop_spinner("Interrupted")
@@ -937,13 +958,14 @@ function AgentsFrontend.interrupt_agent()
         return
     end
 
-    -- * keep the partial agent response (reasoning/content/tool calls) so the model
-    --   can continue from where it was cut off
-    local request = trace.last_request
-    if request and request.accumulated_model_response_messages then
-        for _, rx_message in ipairs(request.accumulated_model_response_messages) do
+    -- * keep the partial agent response (reasoning/content) so the model can continue.
+    --   Drop any in-flight tool_calls: they were interrupted and will have no tool result.
+    if interrupted_request and interrupted_request.accumulated_model_response_messages then
+        for _, rx_message in ipairs(interrupted_request.accumulated_model_response_messages) do
             if rx_message.content and rx_message.content ~= "" then
-                trace:add_message(TxChatMessage:from_assistant_rx_message(rx_message))
+                local partial = TxChatMessage:from_assistant_rx_message(rx_message)
+                partial.tool_calls = nil -- strip dangling tool_calls (no result will follow)
+                trace:add_message(partial)
             end
         end
     end
