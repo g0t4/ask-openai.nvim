@@ -891,6 +891,67 @@ function AgentsFrontend.abort_request()
     end
 end
 
+--- Interrupt the agent mid-completion: stop it (like cancel/escape), keep the partial
+--- assistant response as context, and immediately deliver the queued user message(s) as an
+--- interruption so the agent can butt in and respond without waiting for it to finish.
+function AgentsFrontend.interrupt_agent()
+    local is_running = AgentsFrontend.chat_window and AgentsFrontend.chat_window._agent_is_running
+
+    -- * if the agent isn't running, just deliver any queued messages as a normal follow-up
+    if not is_running then
+        local queued_messages = AgentsFrontend.queued_user_messages
+        AgentsFrontend.queued_user_messages = {}
+        AgentsFrontend.redraw_queued_user_messages()
+        if #queued_messages > 0 then
+            AgentsFrontend.submit_follow_up(table.concat(queued_messages, "\n"))
+        end
+        return
+    end
+
+    local trace = AgentsFrontend.trace
+    -- * capture the queued user messages (they are sent immediately, not deferred)
+    local queued_messages = AgentsFrontend.queued_user_messages
+    AgentsFrontend.queued_user_messages = {}
+
+    -- * stop the agent like cancel/escape does
+    AgentsFrontend.request_aborted = true
+    if trace then
+        CurlRequestForTrace.terminate(trace.last_request)
+    end
+    AgentsFrontend.chat_window:mark_agent_running(false)
+    AgentsFrontend.chat_window:stop_spinner("Interrupted")
+    if AgentsFrontend.rag_cancel then
+        AgentsFrontend.rag_cancel()
+    end
+
+    -- * drop the rendered queued section (re-rendered as a normal user message below)
+    AgentsFrontend.queued_section_start_line_base0 = nil
+    AgentsFrontend.redraw_queued_user_messages()
+
+    if not trace then
+        return
+    end
+
+    -- * keep the partial agent response (reasoning/content/tool calls) so the model
+    --   can continue from where it was cut off
+    local request = trace.last_request
+    if request and request.accumulated_model_response_messages then
+        for _, rx_message in ipairs(request.accumulated_model_response_messages) do
+            if rx_message.content and rx_message.content ~= "" then
+                trace:add_message(TxChatMessage:from_assistant_rx_message(rx_message))
+            end
+        end
+    end
+
+    -- * tell the agent we interrupted its work and pass along the queued message(s)
+    local interruption = TxChatMessage:user(build_interrupt_message(queued_messages))
+    trace:add_message(interruption)
+
+    -- * render the interruption message, then immediately ask the agent to continue
+    display_user_message_in_chat(interruption.content)
+    AgentsFrontend.then_get_assistant_response(trace)
+end
+
 --- Add a user message to the current trace and trigger the next agent response.
 ---@param user_message string
 local function send_trace_follow_up(user_message)
@@ -908,6 +969,24 @@ local function build_interruption_message(queued_messages)
     local parts = {
         "[Queued while you were completing the prior request]",
         "I wanted to add context while you were working. Please resume the prior request unless I instruct you to stop and/or change course.",
+    }
+    for index, message in ipairs(queued_messages) do
+        if #queued_messages > 1 then
+            table.insert(parts, string.format("-- queued message %d of %d --", index, #queued_messages))
+        end
+        table.insert(parts, message)
+    end
+    return table.concat(parts, "\n")
+end
+
+--- Build the interruption user message that explains the agent's work was cut short
+--- to deliver one or more queued messages immediately (vs. waiting for completion).
+---@param queued_messages string[]
+---@return string
+local function build_interrupt_message(queued_messages)
+    local parts = {
+        "[I interrupted your work before you finished]",
+        "I stopped you mid-completion so I could tell you this. Keep the work you had done so far, incorporate what I am telling you now, and continue/resume your prior request unless I instruct you to stop and/or change course.",
     }
     for index, message in ipairs(queued_messages) do
         if #queued_messages > 1 then
@@ -1263,6 +1342,7 @@ function AgentsFrontend.setup()
     vim.keymap.set({ 'n', 'v' }, '<leader>ard', ':<C-u>AskAgent /tools can you review my outstanding git changes', { noremap = true })
 
     vim.keymap.set('n', '<leader>aa', AgentsFrontend.abort_request, { noremap = true })
+    vim.keymap.set('n', '<leader>ai', AgentsFrontend.interrupt_agent, { noremap = true, desc = 'interrupt the agent mid-completion and deliver queued messages' })
     vim.keymap.set('n', '<leader>ac', ':<C-u>:AskAgent /tools /norag /coordinator ', { noremap = true })
     vim.keymap.set('n', '<leader>al', AgentsFrontend.clear_chat_command, { noremap = true })
     vim.keymap.set('n', '<leader>af', AgentsFrontend.follow_up_command, { noremap = true })
