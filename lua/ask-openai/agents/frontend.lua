@@ -50,6 +50,11 @@ local first_turn_ns_id
 
 local cached_files = {}
 
+-- * forward declarations so interrupt_agent (defined earlier in source) can capture
+--   these as upvalues (Lua binds names at parse time, before later `local function`s)
+local build_interrupt_message
+local display_user_message_in_chat
+
 local function get_file(path)
     if cached_files[path] then
         return cached_files[path]
@@ -983,7 +988,7 @@ end
 --- to deliver one or more queued messages immediately (vs. waiting for completion).
 ---@param queued_messages string[]
 ---@return string
-local function build_interrupt_message(queued_messages)
+build_interrupt_message = function(queued_messages)
     local parts = {
         "[I interrupted your work before you finished]",
         "I stopped you mid-completion so I could tell you this. Keep the work you had done so far, incorporate what I am telling you now, and continue/resume your prior request unless I instruct you to stop and/or change course.",
@@ -999,7 +1004,7 @@ end
 
 --- Display a user message as a role-styled section at the end of the chat window.
 ---@param text string
-local function display_user_message_in_chat(text)
+display_user_message_in_chat = function(text)
     local lines = LinesBuilder:new()
     lines:create_marks_namespace()
     lines:append_role_header("user")
