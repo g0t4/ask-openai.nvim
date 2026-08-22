@@ -66,11 +66,13 @@ function M.call(parsed_args, callback)
         embedTopK = parsed_args.embed_top_k or 18,
     }
 
-    -- PRN I could transform the response object here if I didn't want all tools to use this rediculous MCP tool response object...
     local _client_request_ids, _cancel_all_requests = client.semantic_grep_with_timeout(semantic_grep_request, nil, callback)
-    -- FYI I do not yet support any cooperative cancelation but this could be a first step (returning _cancel_all_requests)
-    return _cancel_all_requests -- TODO support cooperative cancelation within tool use... I would need to pass back a cancel function
-    --  perhaps in this case just cancel the LSP request(s) and that's it?
+    local function cancel_with_logging()
+        -- FYI low priority to cancel this as semantic_grep is cheap
+        log:info("FYI cancelling semantic_grep tool call, just wanted to leave a note so I can see this in the future to verify it works end to end... then remove this log entry")
+        _cancel_all_requests()
+    end
+    return cancel_with_logging
 end
 
 return M
