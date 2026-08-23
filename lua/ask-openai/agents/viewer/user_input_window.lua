@@ -46,7 +46,15 @@ function UserInputWindow:new()
 
     -- NOTE: pass `UserInputWindow` as the receiver so the created instance inherits
     -- from this class (giving us the bottom-positioned window_config), not FloatWindow.
-    return FloatWindow.new(UserInputWindow, opts)
+    local instance = FloatWindow.new(UserInputWindow, opts)
+
+    -- Scratch buffers are not automatically attached, but we want LSP features (tool calls, semantic_grep telescope)
+    local client = vim.lsp.get_clients({ name = "ask_language_server" })[1]
+    if client then
+        vim.lsp.buf_attach_client(instance.buffer_number, client.id)
+    end
+
+    return instance
 end
 
 --- Close the input window but keep its buffer (so typed text is preserved).
