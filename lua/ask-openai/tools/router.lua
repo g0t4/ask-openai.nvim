@@ -75,13 +75,13 @@ function M.send_tool_call_router(tool_call, callback, on_progress)
 
     local function call_tool(fn)
         -- treat as tool call failure, that way model can choose how to recover... vs just killing your tool runner :)
-        local ok, result = safely.call(fn)
+        local ok, result_or_error = safely.call(fn)
         if not ok then
             -- only pass message to the model, leave stack trace for logs only
-            callback(plumbing.create_tool_call_output_for_error_message(result.message))
+            callback(plumbing.create_tool_call_output_for_error_message(result_or_error.message))
             return nil
         end
-        return result
+        return result_or_error
     end
 
     local function safe_on_progress(...)
