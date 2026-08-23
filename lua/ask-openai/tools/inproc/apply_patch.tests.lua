@@ -89,8 +89,9 @@ describe("apply_patch integration tests", function()
 
             -- the file must not exist
             local created_path = temp_dir .. "/" .. target_file
-            assert.is_true(vim.fn.filereadable(created_path) == 0, "target file should NOT exist")
+            assert.is_true(vim.fn.filereadable(created_path) == 0, "target file should NOT exist, looks like CANCEL FAILED or was too slow?")
             print("DONE")
+            -- FYI comment out the kill() call to test this fails
         end)
     end)
 
