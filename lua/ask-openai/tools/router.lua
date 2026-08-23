@@ -4,6 +4,7 @@ local plumbing = require("ask-openai.tools.plumbing")
 local apply_patch_tool = require("ask-openai.tools.inproc.apply_patch")
 local client = require("ask-openai.rag.client.client")
 local log = require("devtools.logs.logger").universal()
+local safely = require("ask-openai.helpers.safely")
 
 local M = {}
 
@@ -74,9 +75,10 @@ function M.send_tool_call_router(tool_call, callback, on_progress)
 
     local function safe_call(fn)
         -- treat as tool call failure, that way model can choose how to recover... vs just killing your tool runner :)
-        local ok, result = pcall(fn)
+        local ok, result = safely.call(fn)
         if not ok then
-            callback(plumbing.create_tool_call_output_for_error_message(result))
+            -- only pass message to the model, leave stack trace for logs only
+            callback(plumbing.create_tool_call_output_for_error_message(result.message))
             return nil
         end
         return result
