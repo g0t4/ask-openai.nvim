@@ -236,6 +236,7 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
             if _request_timeout_timer then
                 _request_timeout_timer:stop()
             end
+            -- TODO does lsp_error already mention cancels, do I need that anywhere?
             on_language_server_response(lsp_error, lsp_result, context, config)
         end)
     -- log:info("REQUEST IDs:", _client_request_ids)
