@@ -28,8 +28,8 @@ end
 ---@return MCP_CallToolResponse
 function M.create_tool_call_output_for_error(content)
     return {
-        isError = true,
         result = {
+            isError = true,
             content = content
         },
     }
