@@ -44,8 +44,11 @@ function M.get_system_message_instructions()
     return M.DevMessageInstructions
 end
 
+local NOOP = function() end
+
 ---@param parsed_args string|table
 ---@param callback ToolCallDoneCallback
+---@return fun() cancel function (kills the external apply_patch process)
 function M.call(parsed_args, callback)
     local patch
     if type(parsed_args) == "table" then
@@ -54,7 +57,7 @@ function M.call(parsed_args, callback)
         patch = parsed_args
     else
         callback(plumbing.create_tool_call_output_for_error_message("Invalid parsed_args: " .. vim.inspect(parsed_args)))
-        return
+        return NOOP
     end
 
     -- -- Check for multiple Begin/End Patch markers
@@ -73,42 +76,59 @@ function M.call(parsed_args, callback)
     local python = vim.fn.expand("~/repos/github/g0t4/gpt-oss/.venv/bin/python3")
     local runner = vim.fn.expand("~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/tools/inproc/apply_patch_wrapper.py")
 
-    -- PRN use async and get callback?
-    -- FYI do not differentiate STDOUT/STDERR unless you can prove it fixes a problem with model performance
-    local result = vim.fn.system({ python, runner }, patch)
-    log:info("apply_patch - vim.v.shell_error", vim.v.shell_error)
+    -- * run the external apply_patch process asynchronously so we can hand back a
+    --   cancel fn that kills it (the python wrapper may spawn a long-running apply_patch)
+    local cancelled = false
+    local system_obj = vim.system({ python, runner }, {
+        stdin = patch,
+        text = true,
+    }, function(out)
+        if cancelled then
+            -- request was aborted; ignore the (probably partial) output
+            return
+        end
 
-    -- apply_patch tool behaviors:
-    --   STDERR used for DiffError, and in this case it doesn't set non-zero exit code
+        local result = (out.stdout or "") .. (out.stderr or "")
+        log:info("apply_patch - exit code", out.code)
 
-    -- chat.py app reference implementation does this for apply_patch tool call:
-    --   https://github.com/g0t4/gpt-oss/blob/017c732/gpt_oss/chat.py#L189-L221
-    --
-    --   OK so it doesn't show non-zero exit codes
-    --   only returns one item... the STDOUT/ERR or if an error then it returns error message as if it were STDOUT/ERR
-    --     does not label anything STDOUT/STDERR so I will mirror that
-    --
-    --     content=[TextContent(text=tool_output)]
-    --     maps to =>  return {"type": "text", "text": self.text}
+        -- apply_patch tool behaviors:
+        --   STDERR used for DiffError, and in this case it doesn't set non-zero exit code
+        --   chat.py app reference implementation does this for apply_patch tool call:
+        --     https://github.com/g0t4/gpt-oss/blob/017c732/gpt_oss/chat.py#L189-L221
+        --     OK so it doesn't show non-zero exit codes
+        --     only returns one item... the STDOUT/ERR or if an error then it returns error message as if it were STDOUT/ERR
+        --       does not label anything STDOUT/STDERR so I will mirror that
+        --       content=[TextContent(text=tool_output)]
+        --       maps to =>  return {"type": "text", "text": self.text}
+        local exit_code = out.code or 1
+        if exit_code ~= 0 then
+            -- keep EXIT_CODE/isError here for your glue code at least... i.e. missing wrapper script
+            callback(plumbing.create_tool_call_output_for_error({
+                -- do not name first result.. could be STDOUT or STDERR!
+                -- do not differentiate STDOUT/STDERR unless you can prove it fixes a problem with model performance
+                plumbing.text_content(result),
+                plumbing.text_content(tostring(exit_code), "EXIT_CODE"),
+            }))
+            return
+        end
 
-    local exit_code = vim.v.shell_error
-    if exit_code ~= 0 then
-        -- keep EXIT_CODE/isError here for your glue code at least... i.e. missing wrapper script
-        callback(plumbing.create_tool_call_output_for_error({
-            -- do not name first result.. could be STDOUT or STDERR!
-            plumbing.text_content(result),
-            plumbing.text_content(tostring(exit_code), "EXIT_CODE"),
+        callback(plumbing.create_tool_call_output_for_success({
+            -- do not send EXIT_CODE if zero, because:
+            -- 1. chat.py app doesn't...
+            -- 2. apply_patch on DiffError still returns RC=0 w/ error message in output text (instead of STDOUT/ERR)
+            --    thus, showing zero might confuse the model => causing it to ignore the error message text!
+            plumbing.text_content(result)
         }))
-        return
-    end
+    end)
 
-    callback(plumbing.create_tool_call_output_for_success({
-        -- do not send EXIT_CODE if zero, because:
-        -- 1. chat.py app doesn't...
-        -- 2. apply_patch on DiffError still returns RC=0 w/ error message in output text (instead of STDOUT/ERR)
-        --    thus, showing zero might confuse the model => causing it to ignore the error message text!
-        plumbing.text_content(result)
-    }))
+    return function()
+        if cancelled then
+            return
+        end
+        cancelled = true
+        -- * kill the external apply_patch process (and any children it spawned)
+        pcall(function() system_obj:kill() end)
+    end
 end
 
 -- notes

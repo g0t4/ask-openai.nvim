@@ -9,8 +9,8 @@ local M = {}
 M.tools_available = {
     semantic_grep = semantic_grep_tool.ToolDefinition,
     -- TODO setup so tools available can be model dependent (i.e. gptoss gets apply_patch)
-    -- apply_patch = apply_patch_tool.ToolDefinition,
-    -- run_in_neovim = run_in_neovim_tool.ToolDefinition,
+    apply_patch = apply_patch_tool.ToolDefinition,
+    run_in_neovim = run_in_neovim_tool.ToolDefinition,
     --   TODO setup slash commands that can trigger tools like run_in_neovim
 }
 
@@ -34,11 +34,9 @@ function M.send_tool_call(tool_call, callback)
         return semantic_grep_tool.call(parsed_args, callback)
     end
     if name == "apply_patch" then
-        error("Missing cancel logic in apply_patch")
         return apply_patch_tool.call(parsed_args, callback)
     end
     if name == "run_in_neovim" then
-        error("Missing cancel logic in run_in_neovim")
         return run_in_neovim_tool.call(parsed_args, callback)
     end
     callback(plumbing.create_tool_call_output_for_error_message("Invalid in-process tool name: " .. name))
