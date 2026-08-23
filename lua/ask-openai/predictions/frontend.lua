@@ -110,7 +110,7 @@ function PredictionsFrontend.ask_for_prediction(params)
         this_prediction.fim_request = fim_request
 
         ---@param sse_parsed LlamaServerSSEBase
-        ---@return SseFieldsResult sse_result
+        ---@return SseFieldsResult? sse_result
         local function _extract_sse_fields(sse_parsed)
             if fim_request.endpoint == CompletionsEndpoints.llamacpp_completions then
                 -- FYI so far all these requests are for raw completions (otherwise I'd use chat completions)
@@ -142,6 +142,11 @@ function PredictionsFrontend.ask_for_prediction(params)
                 end
 
                 local sse_fields = _extract_sse_fields(sse_parsed)
+
+                if sse_fields == nil then
+                    -- skip if nil (can happen when SSE.error is defined)
+                    return
+                end
 
                 if sse_fields.content or sse_fields.reasoning_content then
                     this_prediction:add_chunk_sse(sse_fields)

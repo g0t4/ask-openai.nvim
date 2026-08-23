@@ -121,8 +121,14 @@ local function vim_NIL_to_nil(value)
 end
 
 ---@param sse LlamaServerChatCompletionSSE
----@return SseFieldsResult
+---@return SseFieldsResult?
 function parse_sse_v1_chat_completions(sse)
+    if sse.error ~= nil then
+        -- error examples:
+        -- { error = { code = 503, message = "Loading model", type = "unavailable_error" } }
+        log:info("skipping SSE with error b/c that will be handled elsewhere", sse)
+        return nil
+    end
     if not sse.choices or not sse.choices[1] then
         log:error("SSE is missing choices", sse)
         -- leave as hard stop error b/c I don't think this ever happens... but error will help me figure out if it does!

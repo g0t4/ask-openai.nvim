@@ -101,6 +101,7 @@ _G.CompletionsEndpoints = {
 ---@field model string
 ---@field object string -- "chat.completion.chunk"
 ---@field system_fingerprint string -- deprecated
+---@field error { code: integer, message: string, type: string } -- TODO are there any other fields?
 
 ---@class LlamaServerRawCompletionSSE : LlamaServerSSEBase
 ---@field content? string|vim.NIL
@@ -269,7 +270,11 @@ function Curl.on_one_data_value(data_value, frontend, request)
 
         if sse_parsed.error then
             -- only confirmed this on llama_server
-            -- {"error":{"code":500,"message":"tools param requires --jinja flag","type":"server_error"}}
+            --
+            -- examples:
+            --  {"error":{"code":500,"message":"tools param requires --jinja flag","type":"server_error"}}
+            --   error = { code = 503, message = "Loading model", type = "unavailable_error" } }
+            --   TODO any special handling for Loading model error? A way to display that in UI? in statusline maybe?
             local message = "Curl.on_one_data_value sse_parsed.error:" .. vim.inspect(sse_parsed)
             log:error(message)
             frontend.explain_error(message)
