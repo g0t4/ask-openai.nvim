@@ -2,6 +2,7 @@ require("ask-openai.helpers.test_setup").modify_package_path()
 local assert = require "luassert"
 local should = require("devtools.tests.should")
 local describe = require('devtools.tests.define.describe')
+local only = require("devtools.tests.define.only")
 
 local apply_patch = require("ask-openai.tools.inproc.apply_patch")
 
@@ -18,6 +19,7 @@ end
 local function in_temp_dir(run)
     local original_cwd = vim.fn.getcwd()
     local temp_dir = vim.fn.tempname() .. ".dir"
+    print("temp_dir", temp_dir)
     vim.fn.mkdir(temp_dir, "p")
     vim.fn.chdir(temp_dir)
 
@@ -56,6 +58,7 @@ describe("apply_patch integration tests", function()
             assert.is_true(vim.fn.filereadable(created_path) == 1, "target file should exist")
             local created_contents = table.concat(vim.fn.readfile(created_path), "\n")
             assert.is_equal("Hello world", created_contents)
+            print("DONE")
         end)
     end)
 
@@ -87,6 +90,7 @@ describe("apply_patch integration tests", function()
             -- the file must not exist
             local created_path = temp_dir .. "/" .. target_file
             assert.is_true(vim.fn.filereadable(created_path) == 0, "target file should NOT exist")
+            print("DONE")
         end)
     end)
 
@@ -113,6 +117,7 @@ describe("apply_patch integration tests", function()
             -- non-zero exit is surfaced as a labeled EXIT_CODE content block
             assert.is_equal("EXIT_CODE", content[2] and content[2].name,
                 "invalid patch should include EXIT_CODE")
+            print("DONE")
         end)
     end)
 end)
