@@ -60,7 +60,7 @@ function M.call(parsed_args, callback)
     -- * dispatch execution async so we can hand back the cancel fn immediately
     vim.schedule(function()
         if token.cancel then
-            callback(plumbing.create_tool_call_output_for_error_message("run_in_neovim cancelled before execution"))
+            callback(plumbing.create_tool_call_output_for_canceled("run_in_neovim was canceled before tool call started"))
             return
         end
 
@@ -69,7 +69,7 @@ function M.call(parsed_args, callback)
         if token.cancel then
             -- keep in mind after interrupting agent they won't see the tool results anyways, so this is for logging only
             -- * request was aborted; report it (frontend ignores the result anyway via request.cancelled)
-            callback(plumbing.create_tool_call_output_for_error_message("run_in_neovim ignore result after cancelled tool call"))
+            callback(plumbing.create_tool_call_output_for_canceled("run_in_neovim was canceled after tool call started"))
             return
         end
 

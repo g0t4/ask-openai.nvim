@@ -45,6 +45,21 @@ function M.create_tool_call_output_for_success(content)
     }
 end
 
+--- generic cancel response,
+--- usually a model does not get tool call results after interrupt/stop
+--- but if you cancel using a different mechanism then they will at least receive the message
+---@param message string
+---@return MCP_CallToolResponse
+function M.create_tool_call_output_for_canceled(message)
+    return {
+        -- Wes invented this response
+        isError = true,
+        result = {
+            content = { M.text_content(message, "canceled") }
+        },
+    }
+end
+
 ---@param value string
 ---@param name? string -- optional
 ---@return MCP_TextContent

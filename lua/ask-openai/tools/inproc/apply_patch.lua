@@ -74,8 +74,8 @@ function M.call(parsed_args, callback)
     local python = vim.fn.expand("~/repos/github/g0t4/gpt-oss/.venv/bin/python3")
     local runner = vim.fn.expand("~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/tools/inproc/apply_patch_wrapper.py")
 
-    -- * run the external apply_patch process asynchronously so we can hand back a
-    --   cancel fn that kills it (the python wrapper may spawn a long-running apply_patch)
+    -- * run the external apply_patch process asynchronously so we can hand back a cancel function
+    --  PRN? start async too, like run_in_neovim does... and not even start if already canceled?
     local cancelled = false
     local system_obj = vim.system({ python, runner }, {
         stdin = patch,
@@ -83,6 +83,8 @@ function M.call(parsed_args, callback)
     }, function(out)
         if cancelled then
             -- request was aborted; ignore the (probably partial) output
+            log:info("apply_patch on_exit - canceled")
+            callback(plumbing.create_tool_call_output_for_canceled("apply_patch was canceled"))
             return
         end
 
