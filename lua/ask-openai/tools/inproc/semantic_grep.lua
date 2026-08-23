@@ -40,8 +40,6 @@ local M = {
     }
 }
 
-local NOOP = function() end
-
 ---@type InProcessToolCall
 function M.call(parsed_args, callback)
     local domains = ""
@@ -68,12 +66,7 @@ function M.call(parsed_args, callback)
     }
 
     local _client_request_ids, _cancel_all_requests = client.semantic_grep_with_timeout(semantic_grep_request, nil, callback)
-    return function()
-        -- FYI low priority to cancel this as semantic_grep is cheap
-        log:info("FYI cancelling semantic_grep tool call, just wanted to leave a note so I can see this in the future to verify it works end to end... then remove this log entry")
-        _cancel_all_requests()
-        _cancel_all_requests = NOOP -- ignore repeated calls
-    end
+    return _cancel_all_requests -- FYI rag client already gracefull deals with cancel handling so no need to duplicate that here
 end
 
 return M
