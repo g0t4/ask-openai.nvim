@@ -73,7 +73,7 @@ end
 function M.send_tool_call_router(tool_call, callback, on_progress)
     local tool_name = tool_call["function"].name
 
-    local function safe_call(fn)
+    local function call_tool(fn)
         -- treat as tool call failure, that way model can choose how to recover... vs just killing your tool runner :)
         local ok, result = safely.call(fn)
         if not ok then
@@ -101,11 +101,11 @@ function M.send_tool_call_router(tool_call, callback, on_progress)
     end
 
     if mcp.handles_tool(tool_name) then
-        return safe_call(function() return mcp.send_tool_call(tool_call, callback, safe_on_progress) end)
+        return call_tool(function() return mcp.send_tool_call(tool_call, callback, safe_on_progress) end)
     end
 
     if inprocess.handles_tool(tool_name) then
-        return safe_call(function() return inprocess.send_tool_call(tool_call, callback) end)
+        return call_tool(function() return inprocess.send_tool_call(tool_call, callback) end)
     end
 
     callback(plumbing.create_tool_call_output_for_error_message("Invalid tool name: " .. tool_name))
