@@ -24,7 +24,7 @@ import argcomplete
 from tools.chat_viewer.markdown_utils import split_h2_markdown_sections
 from tools.chat_viewer.tree_wrapper import TreeWrapper
 from tools.chat_viewer.run_process_formatter import commandline_equivalent_for_argv, format_heredoc_stdin
-from tools.chat_viewer.timings import ModelTimings, parse_timings, format_stats_line, format_timings_display
+from tools.chat_viewer.timings import ModelTimings, parse_timings, format_stats_line, format_timings_display, _humanize_float, _humanize_int
 from tools.chat_viewer.timing_utils import parse_tool_call_timings
 
 # Enable recording so that ``save_html`` can export the rendered output.
@@ -997,15 +997,21 @@ def render_trace_to_console(console, messages, model_name, timings) -> None:
         assistant_in_speeds = [(msg, t.prompt_tokens_per_second) for msg, t in assistant_timings]
         max_in_speed = max(s for _, s in assistant_in_speeds)
         from rich.table import Table
-        table = Table(show_header=False, box=None, padding=(0, 1))
+        table = Table(show_header=True, box=None, padding=(0, 1))
+        table.add_column(justify='left', header='in speed')
+        table.add_column(justify='left', header='out speed')
         table.add_column(justify='left')
-        table.add_column(justify='left')
-        table.add_column(justify='left')
+        table.add_column(justify='right', header="in speed")
+        table.add_column(justify='right', header="out speed")
+        table.add_column(justify='right', header="total tokens")
         for i, (msg, timings) in enumerate(assistant_timings, start=1):
             in_speed = ProgressBar(total=max_in_speed, completed=timings.prompt_tokens_per_second, width=40)
             out_speed = ProgressBar(total=max_out_speed, completed=timings.predicted_tokens_per_second, width=40)
-            label = f'[dim]Assistant #{i}[/] in={timings.prompt_tokens_per_second:.1f} out={timings.predicted_tokens_per_second:.1f} tok/s'
-            table.add_row(in_speed, out_speed, label)
+            total_tokens = f"{_humanize_int(timings.cached_tokens + timings.prompt_tokens + timings.predicted_tokens)}"
+            label = f'[dim]Assistant #{i}[/]'
+            in_label = f'{timings.prompt_tokens_per_second:.1f} tok/s'
+            out_label = f'{timings.predicted_tokens_per_second:.1f} tok/s'
+            table.add_row(in_speed, out_speed, label, in_label, out_label, total_tokens)
         _console.print(table)
         _console.print()
     # show summaries at end since command line the last part shows first (unlike web viewer where summary is best at top)
