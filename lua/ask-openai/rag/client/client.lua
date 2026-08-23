@@ -163,6 +163,13 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
                 -- * ok to ignore cancel (b/c client requested it)
                 --  otherwise if I don't ignore it here, then I have to ignore it downstream!
                 --  why detect this twice?!
+
+                -- error_response("semantic_grep canceled")
+                -- -- FYI add this if you want agent (or other callers) to know about the cancelation
+                -- -- but then ignore it in other callers like PredictionsFrontend
+                -- --   Predictions Frontend will mark it as a potentially stale result, skip cancel in that case to avoid spamming logs
+                -- -- BUT, right now there isn't a pathway for triggering a cancel that the agent then gets notified about
+                -- --   b/c agent cancel is only for stopping/interrupting agent and in that case no tool call results are returned
                 return
             end
 
