@@ -985,23 +985,27 @@ def render_trace_to_console(console, messages, model_name, timings) -> None:
         print_message(message, idx)
 
     # ProgressBar speed summary for assistant responses
-    assistant_speeds = []
+    assistant_timings = []
     for msg in messages:
         if msg.get('role') == 'assistant' and msg.get('timings'):
-            t = _parse_timings_from_dict(msg.get('timings'))
-            if t and t.predicted_tokens_per_second and t.predicted_tokens_per_second > 0:
-                assistant_speeds.append((msg, t.predicted_tokens_per_second))
-    if assistant_speeds:
+            timings = _parse_timings_from_dict(msg.get('timings'))
+            assistant_timings.append((msg, timings))
+    if assistant_timings:
         print_section_header('Assistant Generation Speed', 'blue')
-        max_speed = max(s for _, s in assistant_speeds)
+        assistant_out_speeds = [(msg, t.predicted_tokens_per_second) for msg, t in assistant_timings]
+        max_out_speed = max(s for _, s in assistant_out_speeds)
+        assistant_in_speeds = [(msg, t.prompt_tokens_per_second) for msg, t in assistant_timings]
+        max_in_speed = max(s for _, s in assistant_in_speeds)
         from rich.table import Table
         table = Table(show_header=False, box=None, padding=(0, 1))
         table.add_column(justify='left')
         table.add_column(justify='left')
-        for i, (msg, speed) in enumerate(assistant_speeds, start=1):
-            bar = ProgressBar(total=max_speed, completed=speed, width=40)
-            label = f'[dim]Assistant #{i}[/] {speed:.1f} tok/s'
-            table.add_row(bar, label)
+        table.add_column(justify='left')
+        for i, (msg, timings) in enumerate(assistant_timings, start=1):
+            in_speed = ProgressBar(total=max_in_speed, completed=timings.prompt_tokens_per_second, width=40)
+            out_speed = ProgressBar(total=max_out_speed, completed=timings.predicted_tokens_per_second, width=40)
+            label = f'[dim]Assistant #{i}[/] in={timings.prompt_tokens_per_second:.1f} out={timings.predicted_tokens_per_second:.1f} tok/s'
+            table.add_row(in_speed, out_speed, label)
         _console.print(table)
         _console.print()
     # show summaries at end since command line the last part shows first (unlike web viewer where summary is best at top)
