@@ -22,9 +22,12 @@ function M.handles_tool(tool_name)
     return tool ~= nil
 end
 
+---@alias InProcessToolCall
+---| fun(parsed_args: table, callback: ToolCallDoneCallback): fun() cancel
+
 ---@param tool_call table
 ---@param callback ToolCallDoneCallback
----@return fun() cancel function (no-op for synchronous/fast tools without an obvious cancel)
+---@return fun() cancel function
 function M.send_tool_call(tool_call, callback)
     local args = tool_call["function"].arguments
     local parsed_args = vim.json.decode(args)

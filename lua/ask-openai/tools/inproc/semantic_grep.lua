@@ -40,8 +40,9 @@ local M = {
     }
 }
 
----@param parsed_args table
----@param callback ToolCallDoneCallback -- alternatively fun(obj: SemanticGrepWithTimeoutResponseObj)
+local NOOP = function() end
+
+---@type InProcessToolCall
 function M.call(parsed_args, callback)
     local domains = ""
     -- log:info("parsed_args", vim.inspect(parsed_args))
@@ -67,12 +68,12 @@ function M.call(parsed_args, callback)
     }
 
     local _client_request_ids, _cancel_all_requests = client.semantic_grep_with_timeout(semantic_grep_request, nil, callback)
-    local function cancel_with_logging()
+    return function()
         -- FYI low priority to cancel this as semantic_grep is cheap
         log:info("FYI cancelling semantic_grep tool call, just wanted to leave a note so I can see this in the future to verify it works end to end... then remove this log entry")
         _cancel_all_requests()
+        _cancel_all_requests = NOOP -- ignore repeated calls
     end
-    return cancel_with_logging
 end
 
 return M

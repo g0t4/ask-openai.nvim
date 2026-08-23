@@ -46,9 +46,7 @@ end
 
 local NOOP = function() end
 
----@param parsed_args string|table
----@param callback ToolCallDoneCallback
----@return fun() cancel function (kills the external apply_patch process)
+---@type InProcessToolCall
 function M.call(parsed_args, callback)
     local patch
     if type(parsed_args) == "table" then

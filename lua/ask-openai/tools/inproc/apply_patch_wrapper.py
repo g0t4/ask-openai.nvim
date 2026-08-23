@@ -28,6 +28,11 @@ def main() -> None:
     - fix issues without modifying upstream tool (i.e. de-duplicate End Patch)
     """
 
+    # # use sleep if need to test slow apply_patch tool call... better yet add some automated testing
+    # # better yet, test immediate kill which should beat this to the punch (test it in nvim btw e2e test around agent tools most likely if I need confidence in it)
+    # import time
+    # time.sleep(3)
+
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--dry-run",
