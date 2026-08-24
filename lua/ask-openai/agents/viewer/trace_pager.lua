@@ -35,6 +35,13 @@ local function setup_trace_keymaps(bufnr)
     -- PRN add more keymaps like
     --   nc for next command (run_process)?
     --
+    vim.keymap.set("n", "q", "", vim.tbl_extend("force", base_opts, {
+        callback = function()
+            -- in my other viewers I have q mapped this way, else I'd just use my normal F9
+            vim.cmd("quitall")
+        end,
+    }))
+
     vim.keymap.set("n", "nm", "", vim.tbl_extend("force", base_opts, {
         callback = function()
             vim.cmd("/" .. PATTERN_ALL_MESSAGES)
