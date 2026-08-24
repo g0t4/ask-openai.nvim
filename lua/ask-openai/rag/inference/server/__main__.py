@@ -53,8 +53,8 @@ def _persist_lifetime_token_count() -> None:
     rich.print(f"[magenta]NEW LIFETIME tokens processed: {new_lifetime:,}[/]")
 
 def clear_iterm_scrollback():
-    clear_iterm_scrolback = "\x1b]1337;ClearScrollback\a"
-    print(clear_iterm_scrolback)
+    clear_iterm_scrollback = "\x1b]1337;ClearScrollback\a"
+    print(clear_iterm_scrollback)
 
 def colorful_ms(ms: float) -> str:
     if ms < 20:

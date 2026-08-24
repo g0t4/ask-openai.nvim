@@ -55,9 +55,9 @@ def clear_iterm_scrollback(log_file):
     # https://iterm2.com/documentation-escape-codes.html
 
     # see: https://apple.stackexchange.com/a/382057/53333
-    # clear_iterm_scrolback = "\x1b]50;ClearScrollback\a"
-    clear_iterm_scrolback = "\x1b]1337;ClearScrollback\a"
-    log_file.write(clear_iterm_scrolback)
+    # clear_iterm_scrollback = "\x1b]50;ClearScrollback\a"
+    clear_iterm_scrollback = "\x1b]1337;ClearScrollback\a"
+    log_file.write(clear_iterm_scrollback)
     log_file.flush()
     #
     # * clear just current screen using rich (through log works):
