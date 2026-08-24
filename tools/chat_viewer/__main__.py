@@ -923,10 +923,11 @@ def get_font_color_for_bg(bg_color: str) -> str:
     from rich.color import Color
 
     r, g, b = Color.parse(bg_color).get_truecolor()
+
     # relative luminance (WCAG): 0 = black, 1 = white
     def linearize(channel: int) -> float:
         channel /= 255
-        return channel / 12.92 if channel <= 0.03928 else ((channel + 0.055) / 1.055) ** 2.4
+        return channel / 12.92 if channel <= 0.03928 else ((channel + 0.055) / 1.055)**2.4
 
     luminance = 0.2126 * linearize(r) + 0.7152 * linearize(g) + 0.0722 * linearize(b)
     return "black" if luminance > 0.4 else "white"
@@ -977,10 +978,7 @@ def render_trace_to_console(console, messages, model_name, timings) -> None:
     _console = console
 
     # Detect per-message timings
-    has_message_timings = any(
-        msg.get("role") == "assistant" and msg.get("timings")
-        for msg in messages
-    )
+    has_message_timings = any(msg.get("role") == "assistant" and msg.get("timings") for msg in messages)
     if has_message_timings:
         # Show model name only, no trace-level timings
         if model_name:
