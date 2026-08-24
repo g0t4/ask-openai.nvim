@@ -122,9 +122,23 @@ EXCLUDED_CONTENT_HASHES: list[str] = [
     "b870ef7225f0a2b973f266c40ceba102867224ce64709d96ad01c9e532f15ba4",  ## Committing (gptoss author)
     "2ddf6ba106f6c037ee986e69a1f0df37b64b8e2501388fff1933a8ffd49333ba",  ## Committing (qwen author)
     "a44326d06b491c9406c0b9d560aed11df0cd36e3bcb9afe0e574e8582245a56c",  ## Committing
+    "667c5c7b600b24bb3516bef99ba0b9af69af16f1c5941892f7e69d57137218a1",  ## Committing (deepseek)
     #
     "5b4513e0987158cfbc9225e1535f437eb054f5ca5455759984dcbf7631f56197",  ## Fetch tool
     "a9e229dae529161fe195077c1d6c79cc66ab3c37e287a20d9203616f13596d0a",  ## Fetch Tool
+    #
+    "8413badb34e5ddcff9e8789486a47d6f7cf4d3e9a65a353af54af6b489d84483",  ## Tool use
+    #
+    # system message common directories I modify:
+    "d19df70165c3e1214bfe6ca4fc12c03abf07b1dba26df369f2340e7387e33864",  ## Current directory - dotfiles
+    #
+    # FIM system prompt
+    "fb1842d9f11887b8a23baf27c8faa6c1ee58ed9047b8b6431ef8b277787dd156", ## You are completing code from a Neovim plugin...
+    "80c4c3b46c1c387c83a08d102d4a89a869b006ed8bf054a6c3217c9dca1d0a49", ## Example: suggest middle of line (cursor has existing code before and after it)
+    "21e6255cbed477f7d444b57093d4a3a5ad517eab0f0c5a65b78ac1cb1033bb07", ## Example: cursor is indented
+    #
+
+
 ]
 
 FIM_PREFIX = "<|fim_prefix|>"
