@@ -86,4 +86,14 @@ def _is_gitignored(file_path: str | Path, fs_root_path, config):
     rel_path = file_path.relative_to(fs_root_path)
 
     spec = get_gitignore_spec(fs_root_path, config)
+
+    # # if ".config/xonsh" in str(rel_path):
+    # logger.info("")
+    # logger.info(rel_path)
+    # for s in spec.patterns:
+    #     if s.match_file(str(rel_path)):
+    #         logger.info(f"  matched pattern: {s.include} {s.pattern}")
+    # result = spec.match_file(rel_path)
+    # logger.info(f"  result {result=}")
+
     return spec.match_file(rel_path)
