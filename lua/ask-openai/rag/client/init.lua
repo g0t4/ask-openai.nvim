@@ -120,6 +120,7 @@ function M.get_filetypes_for_workspace()
         tsx = "typescriptreact",
         vimrc = "vim",
         yml = "yaml", -- *
+        xsh = "xonsh",
     }
 
     return vim.iter(M.rag_indexed_file_extensions or {})

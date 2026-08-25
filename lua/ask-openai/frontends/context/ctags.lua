@@ -145,6 +145,7 @@ function M.get_language_for_current_buffer()
         sh = "sh",
         javascript = "js",
         typescript = "ts",
+        xonsh = "xsh",
         yaml = "yml",
         markdown = "md",
         json = "json",

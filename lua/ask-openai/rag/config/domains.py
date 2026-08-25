@@ -77,6 +77,9 @@ EXTENSION_TO_SEMANTIC_DOMAIN: dict[str, str] = {
     "pyw": "py",
     "pyi": "py",
 
+    # --- xonsh ---
+    "xsh": "xonsh", # do I want xsh in with "py" ?
+
     # --- Lua ---
     "lua": "lua",
 
@@ -465,6 +468,7 @@ DEFAULT_ALLOWED_SEMANTIC_DOMAINS: set[str] = {
     # --- Programming languages ---
     "lua",
     "py",
+    "xonsh", # full spelling to match xonsh filetype in nvim
     "java",
     "javascript",
     "typescript",
