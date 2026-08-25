@@ -95,6 +95,9 @@ def get_cached_parser_for_path(path) -> tuple[Parser | None, str|None]:
         language = "zig"
     elif language == "prisma":
         language = "prisma"
+    # # TODO use my custom parser config
+    # elif language == "xonsh":
+    #     language = "xonsh"
     elif language in (
         "yaml", "yml", "json", "xml", "toml", "html", "htm",
         "css", "scss", "less",
