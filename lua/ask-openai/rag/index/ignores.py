@@ -12,11 +12,11 @@ def setup_ignores(fs_root_path: Path, config: RagConfig) -> PathSpec:
     # TODO why not just create this on first use! have helper to create/get it
     gitignore_path = fs_root_path.joinpath(".gitignore")
 
-    ignore_entries = set()
+    ignore_entries = []
     if gitignore_path.exists():
-        ignore_entries = set(gitignore_path.read_text().splitlines())
+        ignore_entries.extend(gitignore_path.read_text().splitlines())
 
-    # ALWAYS exclude:
+    # FYI don't worry about duplicates, worse case it matches twice... who cares...
     always_exclude = [
         # focus on directories mostly, the languages you actually index can filter on file types implicitly (not indexed == ignored too)
         ".git",
@@ -31,9 +31,9 @@ def setup_ignores(fs_root_path: Path, config: RagConfig) -> PathSpec:
         "uv.lock",  # PRN *.lock?
         # ? other lock files?
     ]
-    ignore_entries.update(always_exclude)
+    ignore_entries.extend(always_exclude)
     if config.ignores:
-        ignore_entries.update(config.ignores)
+        ignore_entries.extend(config.ignores)
 
     return PathSpec.from_lines(GitWildMatchPattern, ignore_entries)
 
@@ -89,12 +89,12 @@ def _is_gitignored(file_path: str | Path, fs_root_path, config):
     spec = get_gitignore_spec(fs_root_path, config)
 
     # if ".config/xonsh" in str(rel_path):
-    logger.info("")
-    logger.info(rel_path)
-    for s in spec.patterns:
-        if s.match_file(str(rel_path)):
-            logger.info(f"  matched pattern: {s.include} {s.pattern}")
-    result = spec.match_file(rel_path)
-    logger.info(f"  result {result=}")
+    #     logger.info("")
+    #     logger.info(rel_path)
+    #     for s in spec.patterns:
+    #         if s.match_file(str(rel_path)):
+    #             logger.info(f"  matched pattern: {s.include} {s.pattern}")
+    #     result = spec.match_file(rel_path)
+    #     logger.info(f"  result {result=}")
 
     return spec.match_file(rel_path)
