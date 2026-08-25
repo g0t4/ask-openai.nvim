@@ -35,6 +35,7 @@ dependencies = [
     "textual>=8.2.8",
     "tree-sitter>=0.25.2",
     "tree-sitter-language-pack==1.3.3",
+    "tree-sitter-xonsh>=0.2.2",
     "whoosh>=2.7.4",
     "yapf>=0.43.0",
 ]
