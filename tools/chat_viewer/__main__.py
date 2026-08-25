@@ -102,6 +102,7 @@ EXCLUDED_CONTENT_HASHES: list[str] = [
     "fc581a8b5aa1c4d88597127dd96b7efbdf42251fa914981850a763fc1331d875",  ## Python Code Preferences
     "a844f2839047f9959d06f26720378f57124635fc89d691d376147926c5ff7c6b",  ## Python Code Preferences
     "741d8c7d24f66cae2957a7e856cf6656bacce97cdfddd8febe41071d16014b35",  ## Python Code Preferences
+    "0b17741fc0ab82348b6a377b7fcdfd27d91fa63039b35207c53ff04d2a8fbe48",  # ## Python Code Preferences
     #
     "232276fe3bb7baf13ede0343f5c076774b2dbd64be3b010a314b85816f718f31",  # rewrite - fish user prefs
     "4f20f6289174db47cefe46f27829c02078f22ce8717594b10c2551c18a57fca6",  # manually added exclusion
@@ -137,7 +138,7 @@ EXCLUDED_CONTENT_HASHES: list[str] = [
     "80c4c3b46c1c387c83a08d102d4a89a869b006ed8bf054a6c3217c9dca1d0a49", ## Example: suggest middle of line (cursor has existing code before and after it)
     "21e6255cbed477f7d444b57093d4a3a5ad517eab0f0c5a65b78ac1cb1033bb07", ## Example: cursor is indented
     #
-
+    "8d81ff4c004007e887bee0462ab6e1de3d712c62d856c3b004b3771c1784501e",  # Here is context that's automatically provided, that MAY be relevant.
 
 ]
 
