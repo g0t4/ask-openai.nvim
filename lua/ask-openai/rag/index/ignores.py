@@ -17,7 +17,7 @@ def setup_ignores(fs_root_path: Path, config: RagConfig) -> PathSpec:
         ignore_entries = set(gitignore_path.read_text().splitlines())
 
     # ALWAYS exclude:
-    ignore_entries.update([
+    always_exclude = [
         # focus on directories mostly, the languages you actually index can filter on file types implicitly (not indexed == ignored too)
         ".git",
         ".venv",
@@ -30,7 +30,8 @@ def setup_ignores(fs_root_path: Path, config: RagConfig) -> PathSpec:
         "package-lock.json",
         "uv.lock",  # PRN *.lock?
         # ? other lock files?
-    ])
+    ]
+    ignore_entries.update(always_exclude)
     if config.ignores:
         ignore_entries.update(config.ignores)
 
