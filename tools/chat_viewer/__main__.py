@@ -532,7 +532,8 @@ def print_markdown_message(msg: dict):
     for sec in sections:
         if sec.is_excluded:
             continue
-        root.add(f"[dim]HASH: {sec.content_hash}[/]")
+        header_line = sec.content.splitlines()[0]
+        root.add(f'[dim]"{sec.content_hash}",  # {header_line}[/]')
         root.add(sec.get_renderable())
 
     _console.print(root)
