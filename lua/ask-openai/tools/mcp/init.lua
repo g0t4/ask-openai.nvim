@@ -43,16 +43,26 @@ local servers = {
         },
         -- env = { FOO = "BAR" }, -- example, env var overrides (BTW see below for env var inheritence + overrides logic + auto drop VIRTUAL_ENV* unless you set it in the overrides here
     },
-    commands = {
+    xonsh   = {
         transport = "stdio",
-        command = "npx",
+        command = "uv",
         args = {
-            os.getenv("HOME") .. "/repos/github/g0t4/mcp-server-commands/build/index.js",
-            -- FYI leave --verbose on for now given I am using a log file so it s/b NBD
-            --    this will be a huge help in troubleshooting hung tool calls and other issues
-            "--verbose",
+            "run",
+            "--directory",
+            os.getenv("HOME") .. "/repos/github/g0t4/mcp-servers/src/xonsh",
+            "mcp-server-xonsh",
         },
     },
+    -- commands = {
+    --     transport = "stdio",
+    --     command = "npx",
+    --     args = {
+    --         os.getenv("HOME") .. "/repos/github/g0t4/mcp-server-commands/build/index.js",
+    --         -- FYI leave --verbose on for now given I am using a log file so it s/b NBD
+    --         --    this will be a huge help in troubleshooting hung tool calls and other issues
+    --         "--verbose",
+    --     },
+    -- },
     agents   = {
         transport = "stdio",
         command = "uv",
