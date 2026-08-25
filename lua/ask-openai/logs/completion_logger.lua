@@ -207,7 +207,17 @@ function M.save_trace(request, frontend, messages_snapshot, last_sse, trace_data
             end
         end
 
-        file:write(json.encode(trace_data, { indent = true }))
+        local encoded = json.encode(trace_data, {
+            indent = true,
+            exception = function(reason, bad_value, _, default_message)
+                if reason == "unsupported type" and bad_value == vim.NIL then
+                    return "null"
+                end
+
+                return nil, default_message
+            end,
+        })
+        file:write(encoded)
         file:close()
     end
 end
