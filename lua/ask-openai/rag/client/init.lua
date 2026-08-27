@@ -222,7 +222,7 @@ function M.context_query_for_agents(same_file_bufnr, user_prompt, code_context, 
     }
     -- TODO review caller for error handling and update to get full object back (not just matches now)
     --   TODO obj not matches in caller!
-    return client.semantic_grep_with_timeout(request, nil, callback)
+    return client.semantic_grep_with_timeout(request, nil, callback, "agent-auto-context")
 end
 
 ---@param user_prompt string
@@ -249,7 +249,7 @@ function M.context_query_rewrites(user_prompt, code_context, top_k, callback)
     }
     -- TODO review caller for error handling and update to get full object back (not just matches now)
     --   TODO obj not matches in caller!
-    return client.semantic_grep_with_timeout(request, nil, callback)
+    return client.semantic_grep_with_timeout(request, nil, callback, "rewrite")
 end
 
 ---@param query string
@@ -274,7 +274,7 @@ function M.context_query_fim(query, callback)
         embedTopK = 18,
     }
     -- TODO pass bufnr for 2nd param?
-    return client.semantic_grep_with_timeout(request, nil, callback)
+    return client.semantic_grep_with_timeout(request, nil, callback, "fim")
 end
 
 -- require("ask-openai.rag.client.known").run_verification()

@@ -1,5 +1,6 @@
 local ansi = require("devtools.ansi")
 local log = require("devtools.logs.logger").universal()
+local rag_trace = require("ask-openai.rag.client.trace")
 
 local M = {}
 
@@ -108,18 +109,24 @@ end
 ---@param semantic_grep_request LSPSemanticGrepRequest
 --- @param lsp_buffer_number? integer
 ---@param callback_like_mcp_tool fun(response_obj: SemanticGrepWithTimeoutResponseObj) -- called with the result or error
+---@param trace_source? string identifies the retrieval surface in saved traces
 ---@return integer[] _client_request_ids, fun() _cancel_all_requests
-function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, callback_like_mcp_tool)
+function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, callback_like_mcp_tool, trace_source)
     lsp_buffer_number = lsp_buffer_number or 0
-    -- log:info("semantic_grep_request", vim.inspect(semantic_grep_request))
-    -- TODO! add logging of semantic_grep request and response (matches) like I do with tracing agents
-    -- I want to start cataloging how I feel about various RAG queries and responses
-    -- perhaps store here: ~/.local/state/nvim/ask-openai/rag/{rag_type} (or put all RAG into one dir?)
-    --   types:
-    --   - auto RAG (FIM vs Rewrite vs Agent) - not requested by agent, just bunded as initial context
-    --   - semantic_grep agent tool (in-process) - when agent explicitly asks for a RAG search
-    --   - semantic_grep telescope plugin
-    --   what about diff auto RAG scenarios (FIM vs Rewrite vs Agent)?
+    trace_source = trace_source or "unknown"
+    local trace = rag_trace.start(trace_source, semantic_grep_request)
+    local trace_saved = false
+
+    local function save_trace(response)
+        if trace_saved then
+            return
+        end
+        trace_saved = true
+        local _, save_error = rag_trace.save(trace, response)
+        if save_error then
+            log:error("failed to save semantic grep trace: " .. save_error)
+        end
+    end
 
     -- normally I'd move closer to first use, but for this LSP cancel scenario, sometimes a nested func wants to use these (with nil check) and I forget about these... so leave here so it is obvious I can use them anywhere if check happens
     local _client_request_ids, _cancel_all_requests, _request_timeout_timer
@@ -128,12 +135,14 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
     -- Invokes the provided callback with a standardized error payload.
     -- The function name is chosen to better convey its purpose.
     local function error_response(message)
-        callback_like_mcp_tool({
+        local response = {
             result = {
                 isError = true,
                 error = message,
             },
-        })
+        }
+        save_trace(response)
+        callback_like_mcp_tool(response)
     end
 
     ---@param lsp_error? lsp.ResponseError
@@ -201,12 +210,14 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
 
         -- log_semantic_grep_matches(lsp_result)
 
-        callback_like_mcp_tool({
+        local response = {
             result = {
                 -- do not mark isError = false here... that is assumed, might also cause issues if mis-interpreted as an error!
                 matches = lsp_result.matches
             }
-        })
+        }
+        save_trace(response)
+        callback_like_mcp_tool(response)
     end
 
     local params = {

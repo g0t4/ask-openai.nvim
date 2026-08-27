@@ -65,7 +65,8 @@ function M.call(parsed_args, callback)
         embedTopK = parsed_args.embed_top_k or 18,
     }
 
-    local _client_request_ids, _cancel_all_requests = client.semantic_grep_with_timeout(semantic_grep_request, nil, callback)
+    local _client_request_ids, _cancel_all_requests = client.semantic_grep_with_timeout(semantic_grep_request, nil, callback,
+        "agent-tool")
     return _cancel_all_requests -- FYI rag client already gracefull deals with cancel handling so no need to duplicate that here
 end
 

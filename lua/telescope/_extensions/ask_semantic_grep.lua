@@ -56,7 +56,7 @@ function _semantic_grep(semantic_grep_request, lsp_buffer_number, process_result
                 process_result(entry)
             end
             process_complete()
-        end)
+        end, "telescope")
     last_cancel_requests = _cancel_all_requests
     last_client_request_ids = _client_request_ids
 end
