@@ -24,6 +24,7 @@ import argcomplete
 from tools.chat_viewer.markdown_utils import split_h2_markdown_sections
 from tools.chat_viewer.tree_wrapper import TreeWrapper
 from tools.chat_viewer.run_process_formatter import commandline_equivalent_for_argv, format_heredoc_stdin
+from tools.chat_viewer.xonsh_formatter import parse_run_xonsh_arguments
 from tools.chat_viewer.timings import ModelTimings, parse_timings, format_stats_line, format_timings_display, _humanize_float, _humanize_int
 from tools.chat_viewer.timing_utils import parse_tool_call_timings
 
@@ -792,6 +793,15 @@ def _add_run_in_neovim(arguments: str, tree: TreeWrapper):
         return tree.add_error("Failed adding Lua code", err, code)
 
 
+def _add_run_xonsh(arguments: str, tree: TreeWrapper):
+    try:
+        code, remaining_arguments = parse_run_xonsh_arguments(arguments)
+        tree.add(_bash_via_bat_high_contrast(code, language="python"))
+        tree.list_key_value_pairs(remaining_arguments)
+    except Exception as err:
+        tree.add_error("Failed parsing run_xonsh arguments", err, arguments)
+
+
 def format_call_title(title):
     return f"- {title}"
 
@@ -812,6 +822,10 @@ def add_tool_call_request(func_name: str, arguments: str, tree: TreeWrapper):
     if func_name in ("run_command", "run_process"):
         child = tree.add(format_call_title(func_name))
         return _add_run_command_and_run_process(arguments, child)
+
+    if func_name == "run_xonsh":
+        child = tree.add(format_call_title(func_name))
+        return _add_run_xonsh(arguments, child)
 
     if func_name == "run_in_neovim":
         child = tree.add(format_call_title(func_name))

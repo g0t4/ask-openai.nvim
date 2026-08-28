@@ -49,6 +49,10 @@
         }
       }
 
+      if (name === 'run_xonsh' && typeof parsed.code === 'string') {
+        return { type: 'code', code: parsed.code, language: 'python' }
+      }
+
       return { type: 'code', code: JSON.stringify(parsed, null, 2), language: 'json' }
     } catch {
       return { type: 'code', code: argsJson, language: 'text' }

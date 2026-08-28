@@ -94,6 +94,7 @@ Messages are rendered based on role:
 Assistant tool calls are rendered via `ToolCalls.svelte`:
 - `apply_patch` - uses ApplyPatch component with word-level diff
 - `run_command` / `run_process` - shows bash command with toggle between pretty and raw JSON
+- `run_xonsh` - shows the `code` argument with Xonsh/Python syntax highlighting and a raw JSON toggle
 - Other tools - shown as JSON code block
 - Each tool call gets a copyable anchor link (#msg-tool-n)
 

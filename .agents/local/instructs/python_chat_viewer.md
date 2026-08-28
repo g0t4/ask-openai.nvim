@@ -72,6 +72,7 @@ Messages are rendered based on role:
 Assistant tool calls are expanded in a rich Tree structure:
 - `apply_patch` - shows patch as syntax-highlighted diff
 - `run_command` / `run_process` - shows bash command with bat syntax highlighting
+- `run_xonsh` - shows the `code` argument in the same high-contrast panel, with Xonsh/Python syntax highlighting
 - `run_in_neovim` - shows Lua code with syntax highlighting
 - Other tools - shown as JSON key-value pairs in the tree
 
