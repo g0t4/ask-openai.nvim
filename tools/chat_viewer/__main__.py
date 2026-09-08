@@ -796,7 +796,7 @@ def _add_run_in_neovim(arguments: str, tree: TreeWrapper):
 def _add_run_xonsh(arguments: str, tree: TreeWrapper):
     try:
         code, remaining_arguments = parse_run_xonsh_arguments(arguments)
-        tree.add(_bash_via_bat_high_contrast(code, language="python"))
+        tree.add(_bash_via_bat_high_contrast(code, language="xsh"))
         tree.list_key_value_pairs(remaining_arguments)
     except Exception as err:
         tree.add_error("Failed parsing run_xonsh arguments", err, arguments)
