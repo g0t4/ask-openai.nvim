@@ -51,18 +51,20 @@ local servers = {
             "--directory",
             os.getenv("HOME") .. "/repos/github/g0t4/mcp-servers/src/xonsh",
             "mcp-server-xonsh",
+            "--workdir",
+            vim.fn.getcwd()
         },
     },
-    -- commands = {
-    --     transport = "stdio",
-    --     command = "npx",
-    --     args = {
-    --         os.getenv("HOME") .. "/repos/github/g0t4/mcp-server-commands/build/index.js",
-    --         -- FYI leave --verbose on for now given I am using a log file so it s/b NBD
-    --         --    this will be a huge help in troubleshooting hung tool calls and other issues
-    --         "--verbose",
-    --     },
-    -- },
+    commands = {
+        transport = "stdio",
+        command = "npx",
+        args = {
+            os.getenv("HOME") .. "/repos/github/g0t4/mcp-server-commands/build/index.js",
+            -- FYI leave --verbose on for now given I am using a log file so it s/b NBD
+            --    this will be a huge help in troubleshooting hung tool calls and other issues
+            "--verbose",
+        },
+    },
     agents   = {
         transport = "stdio",
         command = "uv",
