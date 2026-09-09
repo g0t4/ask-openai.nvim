@@ -82,7 +82,7 @@ M.CYCLE_MUSE_REASONING_EFFORT = {
 M.MODEL_AUTHOR_MAP = {
     [M.GPTOSS] = "gptoss120b<wes.mcclure+gptoss120b@gmail.com>",
     [M.QWEN] = "qwen3.6-35b-a3b<wes.mcclure+qwen3.6-35b-a3b@gmail.com>",
-    [M.DEEPSEEK] = "deepseek-v4-flash-0731<wes.mcclure+deepseek-v4-flash-0731@gmail.com>",
+    [M.DEEPSEEK] = "deepseek-v4-flash<wes.mcclure+deepseek-v4-flash@gmail.com>",
     [M.MUSE] = "muse-glimmer-30b-dspark<wes.mcclure+muse-glimmer-30b-dspark@gmail.com>",
 }
 

@@ -102,7 +102,7 @@ function M.body_for_deepseek4flash(request_body, effort)
         -- - TODO try response_format_template? is this how people provide a template to follow i.e. reasoning but for final response?
 
         -- jinja template not included in the model:
-        --  BTW currently llama-sever does not start w/ the template it bundles for deepseek-v4-flash-0731
+        --  BTW currently llama-sever does not start w/ the template it bundles for deepseek-v4-flash
         --   probably because there is no template bundled in the upstream model itself?
         --   uses some v3.2/v4 template?
         --
