@@ -74,6 +74,8 @@ local servers = {
             os.getenv("HOME") .. "/repos/github/g0t4/mcp-servers/src/agents",
             "-m",
             "subagents",
+            "--workdir",
+            vim.fn.getcwd(),
             -- PRN add verbosity flag across all my tools "--verbose",
         },
     },
