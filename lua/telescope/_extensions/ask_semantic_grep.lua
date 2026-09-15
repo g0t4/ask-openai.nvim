@@ -122,7 +122,21 @@ local custom_buffer_previewer = previewers.new_buffer_previewer({
         if is_file_preview() then
             -- might not match RAG chunk text
             -- so far, I haven't noticed this, but it might not be obvious beyond a bad match or not quite right match!
-            vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, vim.fn.readfile(filename))
+            local file_path = vim.fn.expand(filename)
+            local content = {}
+            if vim.fn.filereadable(file_path) == 1 then
+                content = vim.fn.readfile(file_path)
+            else
+                local error_message = {
+                    "File not found " .. tostring(file_path)
+                    .. "... cannot preview in telescope semantic_grep picker"
+                }
+                -- TODO would be neat to have a tool that tries to explain what is amiss... i.e. go to each parent until find dir that exist and explain where in the path things might've gone wrong
+                --    IOTW green color text for existing dirs and then when hit dirs/file that is missing then red color text?
+                log:error(error_message)
+                content = error_message
+            end
+            vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, content)
         elseif is_entry_debug_preview() then
             vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, vim.split(vim.inspect(entry), "\n"))
         elseif is_chunk_text_preview() then
