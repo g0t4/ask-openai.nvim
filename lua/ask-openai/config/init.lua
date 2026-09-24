@@ -88,11 +88,11 @@ end
 --- @return table { cmdline: Endpoint, qwen: Endpoint, deepseek: Endpoint, gptoss: Endpoint, gemma4: Endpoint, glm: Endpoint, muse: Endpoint, ["nemo-lightning"]: Endpoint }`
 function M.get_endpoints()
     local gptoss_url = "http://build21.lan:8013"
-    local qwen3_url = "http://ask.lan:8012"
-    local gemma4_url = "http://ask.lan:8011"
+    local qwen3_url = "http://build21.lan:8012"
+    local gemma4_url = "http://build21.lan:8011"
     local glm_url = "http://ask.lan:8010"
     local deepseek_url = "http://ask.lan:8014"
-    local muse_url = "http://ask.lan:8016"
+    local muse_url = "http://build21.lan:8016"
     local nemo_lightning_url = "http://build21.lan:8017"
 
     -- FYI fine by me to collapse Endpoint into a string
