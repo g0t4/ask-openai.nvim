@@ -232,16 +232,18 @@ local custom_buffer_previewer = previewers.new_buffer_previewer({
                     return
                 end
 
+                -- cursor line is 1-based, our offsets are 0-based
+                local start_line_base1 = start_line_base0 + 1
+                pcall(vim.api.nvim_win_set_cursor, winid, { start_line_base1, 0 })
+
                 local window_height = vim.api.nvim_win_get_height(winid)
                 local num_highlight_lines = end_line_base0 - start_line_base0
                 if num_highlight_lines <= window_height then
                     -- * center it
-                    local center_line_0based = start_line_base0 + math.floor((num_highlight_lines) / 2)
-                    pcall(vim.api.nvim_win_set_cursor, winid, { center_line_0based, 0 })
                     vim.cmd('normal! zz')
                 else
                     -- * doesn't all fit, so start on top line
-                    vim.fn.winrestview({ topline = start_line_base0 })
+                    vim.cmd('normal! zt')
                 end
             end
 
