@@ -1032,6 +1032,10 @@ def render_trace_to_console(console, messages, model_name, timings) -> None:
         table.add_column(justify='right', header="in speed")
         table.add_column(justify='right', header="out speed")
         table.add_column(justify='right', header="total tokens")
+        has_draft = any(t.draft_tokens for _, t in assistant_timings if t.draft_tokens)
+        if has_draft:
+            table.add_column(justify='right', header='draft accept')
+            table.add_column(justify='left', header='draft ratio')
         for i, (msg, timings) in enumerate(assistant_timings, start=1):
             in_speed = ProgressBar(total=max_in_speed, completed=timings.prompt_tokens_per_second, width=40)
             out_speed = ProgressBar(total=max_out_speed, completed=timings.predicted_tokens_per_second, width=40)
@@ -1039,7 +1043,16 @@ def render_trace_to_console(console, messages, model_name, timings) -> None:
             label = f'[dim]Assistant #{i}[/]'
             in_label = f'{timings.prompt_tokens_per_second:.1f} tok/s'
             out_label = f'{timings.predicted_tokens_per_second:.1f} tok/s'
-            table.add_row(in_speed, out_speed, label, in_label, out_label, total_tokens)
+            if has_draft:
+                draft_accept = timings.formatted_acceptance_rate or ''
+                if timings.draft_tokens:
+                    accepted = timings.draft_tokens_accepted or 0
+                    ratio = f"{accepted} / {timings.draft_tokens}"
+                else:
+                    ratio = ''
+                table.add_row(in_speed, out_speed, label, in_label, out_label, total_tokens, draft_accept, ratio)
+            else:
+                table.add_row(in_speed, out_speed, label, in_label, out_label, total_tokens)
         _console.print(table)
         _console.print()
     # show summaries at end since command line the last part shows first (unlike web viewer where summary is best at top)
