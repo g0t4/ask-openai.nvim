@@ -18,6 +18,7 @@ local FIMPerformance = require("ask-openai.predictions.fim_performance")
 ---@field abandoned boolean         # user aborted prediction
 ---@field skip_text_changed_from_accept_suggestion boolean
 ---@field failures string[]
+---@field done boolean
 ---
 ---@field has_reasoning boolean
 ---@field private reasoning_chunks string[]
@@ -66,6 +67,7 @@ function Prediction.new(params)
     self.rag_request_ids = nil
     self.rag_cancel = nil
     self.failures = {}
+    self.done = false
 
     params = params or {}
     self.apply_template_only = params.apply_template_only
@@ -73,6 +75,14 @@ function Prediction.new(params)
 
     setmetatable(self, instance_metatable)
     return self
+end
+
+function Prediction:finalize_prediction()
+    self.done = true
+    if self.prediction == "" then
+        -- hide reasoning... BTW this should probably be put into fix_fim_and_redraw_extmarks() so we have one way to handle all updates?
+        self:clear_extmarks()
+    end
 end
 
 ---@param sse_fields SseFieldsResult

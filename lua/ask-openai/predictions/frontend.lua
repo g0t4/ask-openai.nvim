@@ -153,6 +153,8 @@ function PredictionsFrontend.ask_for_prediction(params)
                 end
 
                 if sse_fields.done then
+                    this_prediction:finalize_prediction() -- FYI alternative is to put this in on_curl_exited_successfully (I left that stubbed out as a reminder)
+
                     local logging_tokens = require("ask-openai.logs.tokens")
                     if logging_tokens.SHOW_PROBABILITIES then
                         local outputs = logging_tokens.probability_colored_outputs(this_prediction.all_sses)
@@ -182,6 +184,11 @@ function PredictionsFrontend.ask_for_prediction(params)
         ---@type OnCurlExitedSuccessfully
         local function on_curl_exited_successfully()
             -- placeholder, not sure I will even need this
+            --
+            -- -- alternative spot to check for empty prediction, might make more sense here ultimately
+            -- vim.schedule(function()
+            --     this_prediction:finalize_prediction()
+            -- end)
         end
 
         ---@type ExplainError

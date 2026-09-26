@@ -163,13 +163,22 @@ function Curl.spawn(request, frontend)
     local parser = SSEDataOnlyParser.new(on_data_sse)
     local _stderr_data_parts = {}
 
+    local function is_empty(value)
+        local is_whitespace_only = value:match("^%s*$")
+        return value == nil or value == "" or is_whitespace_only
+    end
+
+    local function is_not_empty(value)
+        return not is_empty(value)
+    end
+
     ---@param code integer
     ---@param signal integer
     local function on_exit(code, signal)
         log:trace_on_exit_always(code, signal)
         -- log:trace_on_exit_errors(code, signal) -- less verbose
         local cumulative_stderr = table.concat(_stderr_data_parts, "")
-        if cumulative_stderr then
+        if is_not_empty(cumulative_stderr) then
             log:error("Curl.spawn.on_exit cumulative_stderr=", cumulative_stderr)
             -- FYI stderr output has "curl (7)" with exit code == 7 in this case, so don't duplicate those in the message:
             frontend.explain_error(cumulative_stderr)
