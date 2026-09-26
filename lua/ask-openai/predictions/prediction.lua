@@ -82,6 +82,7 @@ function Prediction:finalize_prediction()
     if self.prediction == "" then
         -- hide reasoning... BTW this should probably be put into fix_fim_and_redraw_extmarks() so we have one way to handle all updates?
         self:clear_extmarks()
+        -- ? should I add a visual cue to signal that there wasn't a failure?
     end
 end
 
