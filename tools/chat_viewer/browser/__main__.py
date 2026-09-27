@@ -115,8 +115,9 @@ class TraceBrowser:
 
         ts = datetime.fromtimestamp(int(trace.stem.split("-")[0]))
         relative = relative_age(ts)
-        print(f"[{self.index + 1}/{len(self.traces)}] {display_path}  "
-              f"({ts.isoformat()}, {relative})")
+        sys.stdout.write(f"[{self.index + 1}/{len(self.traces)}] {display_path}  "
+              f"({ts.isoformat()}, {relative})\n")
+        sys.stdout.flush()
         # meta = load_trace_json(trace)
         # print(f"  summary: {meta.get('summary', 'n/a')}")
 
