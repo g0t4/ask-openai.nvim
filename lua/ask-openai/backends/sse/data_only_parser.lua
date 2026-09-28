@@ -87,6 +87,8 @@ function SSEDataOnlyParser:write(data)
     --   default not removing empties, can use to check if a \n\n was present
     local events = vim.split(self._buffer, "\n\n", {})
 
+    -- TODO is this the right scope for chunk_length check? or somewhere else? i.e. in http raw_request client?
+
     if (#events == 1) then
         -- FYI would need to check content length here IIUC too
         -- no event separator (blank line) yet
@@ -100,13 +102,12 @@ function SSEDataOnlyParser:write(data)
 
             -- SSEs (events) are comprised of \n delimited fields
             -- *** \n is FIELD SEPARATOR (cannot have another \n next to it)
-            local lines = vim.split(event, "\n")
+            local lines = vim.split(event, "\n") -- lines aka fields
 
+            -- * FYI ignoring chunk length is fine (i.e. curl strips it anyways)
             -- TODO do this later when it matters, warn / fail if content length of chunk doesn't match actual length? (this doesn't belong here)
             --   TODO this is once per chunk (not once per event, not necessarily... it may often be per event too but not always, in fact llama-server always seems to include two events (SSEs) in the first chunk
             -- log:info("lines", lines)
-            -- -- -- FYI lines == fields in SSE events (data is one field)
-            -- -- --  but I want to keep `lines` because there can be more than just the fields, i.e. the content length of the chunk if handling the raw HTTP response (i.e. raw sockets)
             -- local chunk_length = nil
             -- if #lines > 0 then
             --     local chunk_length_hex = lines[1]:match("^[0-9a-fA-F]+$")
