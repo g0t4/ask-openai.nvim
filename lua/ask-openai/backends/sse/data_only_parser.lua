@@ -103,26 +103,6 @@ function SSEDataOnlyParser:write(data)
             -- SSEs (events) are comprised of \n delimited fields
             -- *** \n is FIELD SEPARATOR (cannot have another \n next to it)
             local lines = vim.split(event, "\n") -- lines aka fields
-
-            -- * FYI ignoring chunk length is fine (i.e. curl strips it anyways)
-            -- TODO do this later when it matters, warn / fail if content length of chunk doesn't match actual length? (this doesn't belong here)
-            --   TODO this is once per chunk (not once per event, not necessarily... it may often be per event too but not always, in fact llama-server always seems to include two events (SSEs) in the first chunk
-            -- log:info("lines", lines)
-            -- local chunk_length = nil
-            -- if #lines > 0 then
-            --     local chunk_length_hex = lines[1]:match("^[0-9a-fA-F]+$")
-            --     if chunk_length_hex then
-            --         log:info("chunk_length", vim.inspect(chunk_length_hex))
-            --         -- chunk_length = tonumber(chunk_length_hex, 16)
-            --         -- log:info("chunk_length", chunk_length)
-            --         if chunk_length_hex then
-            --             -- FYI I do not need to remove this for data: filter below to work
-            --             --  so you can yank this code if it causes issues
-            --             table.remove(lines, 1)
-            --         end
-            --     end
-            -- end
-
             local data_value = vim.iter(lines)
                 :filter(function(f)
                     -- limit to data fields, ignore the rest for now
