@@ -100,7 +100,7 @@ function SSEDataOnlyParser:write(data)
 
             -- SSEs (events) are comprised of \n delimited fields
             -- *** \n is FIELD SEPARATOR (cannot have another \n next to it)
-            local lines = vim.split(event, "\n", { trimempty = true }) -- trim empties here is fine, no value in keeping them
+            local lines = vim.split(event, "\n")
 
             -- TODO do this later when it matters, warn / fail if content length of chunk doesn't match actual length? (this doesn't belong here)
             --   TODO this is once per chunk (not once per event, not necessarily... it may often be per event too but not always, in fact llama-server always seems to include two events (SSEs) in the first chunk
