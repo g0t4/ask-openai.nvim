@@ -88,6 +88,7 @@ function SSEDataOnlyParser:write(data)
     local events = vim.split(self._buffer, "\n\n", {})
 
     if (#events == 1) then
+        -- FYI would need to check content length here IIUC too
         -- no event separator (blank line) yet
         return
     elseif (#events >= 2) then
@@ -99,9 +100,27 @@ function SSEDataOnlyParser:write(data)
 
             -- SSEs (events) are comprised of \n delimited fields
             -- *** \n is FIELD SEPARATOR (cannot have another \n next to it)
-            local lines = vim.split(event, "\n")
-            -- FYI lines == fields in SSE events (data is one field)
-            --  but I want to keep `lines` because there can be more than just the fields, i.e. the content length of the chunk if handling the raw HTTP response (i.e. raw sockets)
+            local lines = vim.split(event, "\n", { trimempty = true }) -- trim empties here is fine, no value in keeping them
+
+            -- TODO do this later when it matters, warn / fail if content length of chunk doesn't match actual length? (this doesn't belong here)
+            --   TODO this is once per chunk (not once per event, not necessarily... it may often be per event too but not always, in fact llama-server always seems to include two events (SSEs) in the first chunk
+            -- log:info("lines", lines)
+            -- -- -- FYI lines == fields in SSE events (data is one field)
+            -- -- --  but I want to keep `lines` because there can be more than just the fields, i.e. the content length of the chunk if handling the raw HTTP response (i.e. raw sockets)
+            -- local chunk_length = nil
+            -- if #lines > 0 then
+            --     local chunk_length_hex = lines[1]:match("^[0-9a-fA-F]+$")
+            --     if chunk_length_hex then
+            --         log:info("chunk_length", vim.inspect(chunk_length_hex))
+            --         -- chunk_length = tonumber(chunk_length_hex, 16)
+            --         -- log:info("chunk_length", chunk_length)
+            --         if chunk_length_hex then
+            --             -- FYI I do not need to remove this for data: filter below to work
+            --             --  so you can yank this code if it causes issues
+            --             table.remove(lines, 1)
+            --         end
+            --     end
+            -- end
 
             local data_value = vim.iter(lines)
                 :filter(function(f)
