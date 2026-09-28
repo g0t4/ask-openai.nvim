@@ -88,10 +88,14 @@ describe("http", function()
                 path = "/v1/chat/completions",
                 method = "POST",
                 body = body,
-            },
-            function(sse)
-                log:info("sse", ansi.yellow(sse))
-            end)
+                on_done = function(err)
+                    assert.is_nil(err)
+                    counter:decrement()
+                end,
+                on_data_value = function(data_value)
+                    log:info("ON_DATA_VALUE", ansi.yellow(data_value))
+                end,
+            })
 
         -- vim.print(data)
         counter:wait(2500)

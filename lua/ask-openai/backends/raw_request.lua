@@ -55,20 +55,22 @@ function M.parse_headers(raw_headers)
         end
     end
 
-    -- * chunked or not?
+    -- * chunked or not
     -- perhaps this warning does not belong here, leave it for now
     headers.chunked = headers["transfer-encoding"] == "chunked"
-    local is_chunked = headers.chunked
-    local has_content_length = headers["content-length"] ~= nil
-    if is_chunked and has_content_length then
-        log:warn("Response has both transfer-encoding: chunked and content-length; handling as chunked")
-        -- ? do I wanna raise instead?
-    end
 
     return headers
 end
 
----@alias HttpRawRequest { host: string, port: number, path: string, method: string, body?: table, on_data: fun(data: string), on_done: fun(err?: string), on_headers?: fun(headers: RawRequestHeaders) }
+---@class HttpRawRequest
+---@field host string
+---@field port number
+---@field path string
+---@field method string
+---@field body? table
+---@field on_data fun(data: string)
+---@field on_done fun(err?: string)
+---@field on_headers? fun(headers: RawRequestHeaders)
 
 ---@param request HttpRawRequest
 ---@return userdata
@@ -120,7 +122,7 @@ function M.http(request)
                     return request.on_done()
                 end
 
-                log:info('chunk', chunk)
+                -- log:info('chunk', chunk)
                 buffer = buffer .. chunk
 
                 if not headers_done then
@@ -133,7 +135,7 @@ function M.http(request)
                         -- TODO look at headers to find if fixed lenght Content-Length OR stream
                         --   TODO and if streaming => need to parse the length at the start of each "chunk" and then read exactly that and then wait for next length
                         --   TODO if not streaming => read content-length chars and stop (I suppose warn if more than that?)
-                        log:info("headers", headers)
+                        -- log:info("headers", headers)
                         on_headers(headers)
 
                         -- dregs after headers would be start of body, so `on_data` it!
@@ -155,27 +157,48 @@ function M.http(request)
     return tcp
 end
 
----@param request HttpRawRequest
----@param on_sse fun(sse: string): nil
+---@class HttpRawRequestForEvents
+---@field host string
+---@field port number
+---@field path string
+---@field method string
+---@field body? table
+---@field on_data_value fun(data_value: string)
+---@field on_done fun(err: string)
+
+---@param request HttpRawRequestForEvents
 ---@return nil
-function M.http_events(request, on_sse)
+function M.http_events(request)
     local SSEDataOnlyParser = require("ask-openai.backends.sse.data_only_parser")
     parser = SSEDataOnlyParser.new(function(sse)
-        on_sse(sse)
+        request.on_data_value(sse)
     end)
 
-    -- ❤️ that my existing SSEDataOnlyParser fits perfectly into my new raw request client
-    request.on_data = function(data) parser:write(data) end
-    request.on_done = function(err)
-        parser:flush_dregs()
-    end
-    request.on_headers = function(headers)
-        -- here would be a good spot to warn if no transfer-encoding chunked
-        if not headers.chunked then
-            log:warn(string.format("Expected transfer-encoding: chunked, got headers: %s", vim.inspect(headers)))
-        end
-    end
-    M.http(request)
+    local raw = {
+        host = request.host,
+        port = request.port,
+        path = request.path,
+        method = request.method,
+        body = request.body,
+        on_data = function(data)
+            -- ❤️ that my existing SSEDataOnlyParser fits perfectly into my new raw request client
+            -- FYI consumers of http_events should not set these...
+            parser:write(data)
+        end,
+        on_done = function(err)
+            parser:flush_dregs()
+            request.on_done(err)
+        end,
+        on_headers = function(headers)
+            if not headers.OK then
+                log:warn("Non-OK status code: %s", headers.status_code)
+            end
+            if not headers.chunked then
+                log:warn(string.format("Expected transfer-encoding: chunked, got headers: %s", vim.inspect(headers)))
+            end
+        end,
+    }
+    M.http(raw)
 end
 
 return M
