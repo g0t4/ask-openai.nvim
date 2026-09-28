@@ -99,9 +99,11 @@ function SSEDataOnlyParser:write(data)
 
             -- SSEs (events) are comprised of \n delimited fields
             -- *** \n is FIELD SEPARATOR (cannot have another \n next to it)
-            local fields = vim.split(event, "\n")
+            local lines = vim.split(event, "\n")
+            -- FYI lines == fields in SSE events (data is one field)
+            --  but I want to keep `lines` because there can be more than just the fields, i.e. the content length of the chunk if handling the raw HTTP response (i.e. raw sockets)
 
-            local data_value = vim.iter(fields)
+            local data_value = vim.iter(lines)
                 :filter(function(f)
                     -- limit to data fields, ignore the rest for now
                     return f:match("^data:")
