@@ -1,7 +1,7 @@
 require("ask-openai.helpers.test_setup").modify_package_path()
 local assert = require 'luassert'
 local should = require('devtools.tests.should')
-local describe = require('devtools.tests.define.describe')
+local describe = require('devtools.tests.describe')
 local buffers = require('devtools.tests.buffers')
 
 local fim = require('ask-openai.backends.models.fim')

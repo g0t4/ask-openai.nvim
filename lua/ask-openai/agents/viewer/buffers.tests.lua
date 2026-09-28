@@ -1,7 +1,7 @@
 -- testing modules:
 require("ask-openai.helpers.test_setup").modify_package_path()
 local should = require('devtools.tests.should')
-local describe = require('devtools.tests.define.describe')
+local describe = require('devtools.tests.describe')
 local test_buffers = require('devtools.tests.buffers')
 -- system under test:
 local BufferController = require('ask-openai.agents.viewer.buffers')

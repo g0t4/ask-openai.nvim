@@ -9,7 +9,7 @@ local e2e = require("ask-openai.helpers.test_e2e")
 local predictions_frontend = require("ask-openai.predictions.frontend")
 predictions_frontend.start_predictions()
 
-local describe = require("devtools.tests.define.describe")
+local describe = require("devtools.tests.describe")
 local should = require("devtools.tests.should")
 local assert = require("luassert")
 

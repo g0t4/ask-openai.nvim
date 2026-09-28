@@ -60,7 +60,7 @@ assert.is_true(
     .. table.concat(vim.tbl_keys(mcp_tools.tools_available or {}), ", ")
 )
 
-local describe = require("devtools.tests.define.describe")
+local describe = require("devtools.tests.describe")
 local should = require("devtools.tests.should")
 local assert = require("luassert")
 

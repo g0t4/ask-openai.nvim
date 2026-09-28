@@ -11,7 +11,7 @@ local Selection = require("ask-openai.helpers.selection")
 local rewrite_frontend = require("ask-openai.rewrites.frontend")
 rewrite_frontend.setup()
 
-local describe = require("devtools.tests.define.describe")
+local describe = require("devtools.tests.describe")
 local should = require("devtools.tests.should")
 local assert = require("luassert")
 
