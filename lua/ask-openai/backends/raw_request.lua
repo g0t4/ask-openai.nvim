@@ -167,7 +167,7 @@ end
 ---@field on_done fun(err: string)
 
 ---@param request HttpRawRequestForEvents
----@return nil
+---@return userdata
 function M.http_events(request)
     local SSEDataOnlyParser = require("ask-openai.backends.sse.data_only_parser")
     parser = SSEDataOnlyParser.new(function(sse)
@@ -186,7 +186,12 @@ function M.http_events(request)
             parser:write(data)
         end,
         on_done = function(err)
-            parser:flush_dregs()
+            local dregs_error = parser:flush_dregs()
+            if dregs_error ~= nil then
+                -- PRN do not swallow passed err too? if both have info?
+                request.on_done(dregs_error)
+                return
+            end
             request.on_done(err)
         end,
         on_headers = function(headers)
@@ -198,7 +203,7 @@ function M.http_events(request)
             end
         end,
     }
-    M.http(raw)
+    return M.http(raw)
 end
 
 return M
