@@ -149,6 +149,7 @@ describe("http_events", function()
             max_tokens = 10,
             stream = true,
         }
+        local done_err = nil
         raw_request.http_events(
             {
                 host = "paxy.lan",
@@ -157,16 +158,15 @@ describe("http_events", function()
                 method = "POST",
                 body = body,
                 on_done = function(err)
-                    assert.is_nil(err)
+                    done_err = err
                     counter:decrement()
                 end,
-                on_data_value = function(data_value)
-                    log:info("ON_DATA_VALUE", ansi.yellow(data_value))
-                end,
+                on_data_value = NOOP,
             })
 
         -- vim.print(data)
         counter:wait(2500)
+        assert.is_nil(done_err, "should not have a failure on_done")
     end)
 end)
 
