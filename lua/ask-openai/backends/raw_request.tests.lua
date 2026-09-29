@@ -10,7 +10,7 @@ local NOOP = function() end
 
 describe("lookup IP addy", function()
     it("should resolve IP address", function()
-        local counter = Counter.new():increment()
+        local counter = Counter.one()
         raw_request.query_inet_addy("dns.google.com", function(addy)
             -- print(addy)
             assert(addy == "8.8.4.4" or addy == "8.8.8.8")
@@ -45,7 +45,7 @@ end)
 
 describe("http", function()
     it("v1/models", function()
-        local counter = Counter.new():increment()
+        local counter = Counter.one()
         local data = ""
         local body = nil
         raw_request.http({
@@ -74,7 +74,7 @@ describe("http_events", function()
     describe("canceling", function()
         -- PRN add "sync close()" test if I ever need that
         it("async close() after 0ms", function()
-            local counter = Counter.new():increment()
+            local counter = Counter.one()
 
             local body = {
                 messages = { { role = "user", content = "What is your name?" }, },
@@ -106,7 +106,7 @@ describe("http_events", function()
     describe("connection failure", function()
         -- PRN add "sync close()" test if I ever need that
         it("async close() after 0ms", function()
-            local counter = Counter.new():increment()
+            local counter = Counter.one()
 
             local body = {
                 messages = { { role = "user", content = "What is your name?" }, },
@@ -134,7 +134,7 @@ describe("http_events", function()
 
 
     it("/v1/chat/completions", function()
-        local counter = Counter.new():increment()
+        local counter = Counter.one()
 
         local data = ""
         local body = {
