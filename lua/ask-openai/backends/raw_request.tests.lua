@@ -135,8 +135,8 @@ describe("http_events", function()
 
     it("/v1/chat/completions", function()
         local counter = Counter.one()
+        -- FYI! you can cleanup cruft/duplication later in these tests
 
-        local data = ""
         local body = {
             messages = {
                 { role = "user", content = "What is your name?" },
@@ -156,17 +156,10 @@ describe("http_events", function()
                     done_err = err
                     counter:decrement()
                 end,
-                on_data_value = NOOP,
+                on_data_value = NOOP, -- PRN capture and assert on the data?
             })
 
-        -- vim.print(data)
         counter:wait(2500)
         assert.is_nil(done_err, "should not have a failure on_done")
     end)
 end)
-
--- describe("fork data_only_parser to build on top of raw_request", function()
---     it("", function()
---         -- TODO merge this with my backends/sse/data_only_parser.lua but do so outside of the low level http client I have in raw_request
---     end)
--- end)
