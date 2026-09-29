@@ -142,6 +142,10 @@ function Curl.spawn(request, frontend)
 
     ---@param data_value string
     function on_raw_data_value(data_value)
+        if request.tcp_handle == nil then
+            return
+        end
+
         -- FYI right now this function exists to catch unhandled errors and terminate
         local success, error_message = safely.call(Curl.on_one_data_value, data_value, frontend, request)
         if success then
@@ -212,8 +216,11 @@ function Curl.spawn(request, frontend)
     -- end
     local function on_raw_done(err)
         log:info("on_raw_done", err)
+        if request.tcp_handle == nil then
+            return -- nothing to do
+        end
 
-        request.socket = nil
+        request.tcp_handle = nil
 
         -- flush dregs before on_curl_exited_successfully
         -- - which may depend on, for example, a tool_call in dregs
@@ -250,7 +257,7 @@ function Curl.spawn(request, frontend)
 
     local host, port,path = request:get_url():match("^https?://([^/:]+):?(%d*)(/.*)")
     ---@type HttpRawRequestForEvents raw
-    local request = {
+    the_raw_request = {
         host = host,
         port = port,
         path = path,
@@ -259,7 +266,7 @@ function Curl.spawn(request, frontend)
         on_data_value = on_raw_data_value,
         on_done = on_raw_done,
     }
-    request.socket = raw_request.http_events(request)
+    request.tcp_handle = raw_request.http_events(the_raw_request)
 
 
     -- ---@param read_error? string

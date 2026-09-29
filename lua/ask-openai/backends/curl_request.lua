@@ -46,9 +46,10 @@ function CurlRequest:get_url()
 end
 
 function CurlRequest.terminate(request)
-    if request ~= nil and request.socket then
-        log:info("close socket")
-        request.socket:close()
+    if request ~= nil and request.tcp_handle ~= nil then
+        log:info("close tcp_handle")
+        request.tcp_handle:close()
+        request.tcp_handle = nil
         return
     end
 
