@@ -87,6 +87,9 @@ function M.http(request)
         host_ip = first_ip
         local headers_done = false
 
+        if tcp_handle:is_closing() then
+            return -- defensive, in case close is called before we connect, not likely to happen in reality
+        end
         tcp_handle:connect(host_ip, request.port, function(err)
             if err then
                 tcp_handle:close()
