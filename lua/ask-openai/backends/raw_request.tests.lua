@@ -6,6 +6,8 @@ local only = require('devtools.tests.only')
 local log = require("devtools.logs.logger").universal()
 local ansi = require("devtools.ansi")
 
+local NOOP = function() end
+
 describe("lookup IP addy", function()
     it("should resolve IP address", function()
         local counter = Counter:new()
@@ -103,6 +105,37 @@ describe("http_events", function()
             counter:wait(2500)
         end)
     end)
+
+    describe("connection failure", function()
+        -- PRN add "sync close()" test if I ever need that
+        it("async close() after 0ms", function()
+            local counter = Counter:new()
+            counter:increment()
+
+            local body = {
+                messages = { { role = "user", content = "What is your name?" }, },
+                stream = true,
+            }
+            local done_err = nil
+            local tcp_handle = raw_request.http_events(
+                {
+                    host = "paxy.lan", -- host must resolve
+                    port = 8090, -- port must not be listening
+                    path = "/v1/chat/completions",
+                    method = "POST",
+                    body = body,
+                    on_done = function(err)
+                        done_err = err
+                        counter:decrement()
+                    end,
+                    on_data_value = NOOP,
+                })
+            counter:wait(2500) -- FYI invalid port on a valid host can take a second to fail
+            assert(done_err)
+            assert.has_string(done_err, "ECONNREFUSED")
+        end)
+    end)
+
 
     it("/v1/chat/completions", function()
         local counter = Counter:new()
