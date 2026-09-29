@@ -73,18 +73,24 @@ end
 ---@field on_headers? fun(headers: RawRequestHeaders)
 
 ---@param request HttpRawRequest
----@return userdata
+---@return uv.uv_tcp_t tcp_handle
 function M.http(request)
     on_headers = request.on_headers or function() end
-    local tcp = assert(uv.new_tcp())
+    -- FYI https://docs.libuv.org/en/v1.x/tcp.html for uv_tcp_t
+    local tcp_handle, err, err_name = uv.new_tcp()
+    assert(tcp_handle ~= nil)
+    if err ~= nil then
+        log:error("uv.new_tcp failed", err, err_name)
+    end
+
     M.query_inet_addy(request.host, function(first_ip)
         host_ip = first_ip
         local headers_done = false
 
-        tcp:connect(host_ip, request.port, function(err)
+        tcp_handle:connect(host_ip, request.port, function(err)
             if err then
-                tcp:close()
-                return request.on_done(err)
+                tcp_handle:close()
+                return request.on_done('connect failed: ' .. err)
             end
 
             local body_json = ""
@@ -108,17 +114,17 @@ function M.http(request)
 
             -- log:info('message', message)
 
-            tcp:write(message)
+            tcp_handle:write(message)
 
             local buffer = ""
-            tcp:read_start(function(read_err, chunk)
+            tcp_handle:read_start(function(read_err, chunk)
                 if read_err then
-                    tcp:close()
+                    tcp_handle:close()
                     return request.on_done(read_err)
                 end
 
                 if not chunk then
-                    tcp:close()
+                    tcp_handle:close()
                     return request.on_done()
                 end
 
@@ -154,7 +160,7 @@ function M.http(request)
             end)
         end)
     end)
-    return tcp
+    return tcp_handle
 end
 
 ---@class HttpRawRequestForEvents
@@ -167,7 +173,7 @@ end
 ---@field on_done fun(err: string)
 
 ---@param request HttpRawRequestForEvents
----@return userdata
+---@return uv.uv_tcp_t tcp_handle
 function M.http_events(request)
     local SSEDataOnlyParser = require("ask-openai.backends.sse.data_only_parser")
     parser = SSEDataOnlyParser.new(function(sse)

@@ -248,7 +248,6 @@ function Curl.spawn(request, frontend)
     -- end
     -- stdout:read_start(on_stdout)
 
-    log:info("FUXOR")
     local host, port,path = request:get_url():match("^https?://([^/:]+):?(%d*)(/.*)")
     ---@type HttpRawRequestForEvents raw
     local request = {
