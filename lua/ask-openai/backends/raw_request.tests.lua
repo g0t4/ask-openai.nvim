@@ -97,7 +97,7 @@ describe("http_events", function()
                 tcp_handle:close(function()
                     counter:decrement()
                 end)
-            end, 50) -- delay close, else:  Assertion failed: (!(stream->flags & UV_HANDLE_CLOSING)), function uv__stream_io, file stream.c, line 1198.
+            end, 0) -- delay close, else:  Assertion failed: (!(stream->flags & UV_HANDLE_CLOSING)), function uv__stream_io, file stream.c, line 1198.
             counter:wait(2500)
         end)
     end)
