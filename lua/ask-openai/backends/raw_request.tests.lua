@@ -6,38 +6,6 @@ local only = require('devtools.tests.only')
 local log = require("devtools.logs.logger").universal()
 local ansi = require("devtools.ansi")
 
-describe("canceling", function()
-    only("/v1/chat/completions", function()
-        local counter = Counter:new()
-        counter:increment()
-
-        local body = {
-            messages = { { role = "user", content = "What is your name?" }, },
-            stream = true,
-        }
-        local tcp_handle = raw_request.http_events(
-            {
-                host = "paxy.lan",
-                port = 8014,
-                path = "/v1/chat/completions",
-                method = "POST",
-                body = body,
-                on_done = function(err)
-                    log:info("ON_DONE", ansi.yellow(err))
-                end,
-                on_data_value = function(data_value)
-                    log:info("ON_DATA_VALUE", ansi.yellow(data_value))
-                end,
-            })
-        vim.defer_fn(function()
-            tcp_handle:close(function()
-                counter:decrement()
-            end)
-        end, 0) -- delay close, else:  Assertion failed: (!(stream->flags & UV_HANDLE_CLOSING)), function uv__stream_io, file stream.c, line 1198.
-        counter:wait(2500)
-    end)
-end)
-
 describe("lookup IP addy", function()
     it("should resolve IP address", function()
         local counter = Counter:new()
@@ -101,7 +69,41 @@ describe("http", function()
         -- vim.print(models.data)
     end)
 end)
+
 describe("http_events", function()
+    describe("canceling", function()
+        -- PRN add "sync close()" test if I ever need that
+        it("async close() after 0ms", function()
+            local counter = Counter:new()
+            counter:increment()
+
+            local body = {
+                messages = { { role = "user", content = "What is your name?" }, },
+                stream = true,
+            }
+            local tcp_handle = raw_request.http_events(
+                {
+                    host = "paxy.lan",
+                    port = 8014,
+                    path = "/v1/chat/completions",
+                    method = "POST",
+                    body = body,
+                    on_done = function(err)
+                        log:info("ON_DONE", ansi.yellow(err))
+                    end,
+                    on_data_value = function(data_value)
+                        log:info("ON_DATA_VALUE", ansi.yellow(data_value))
+                    end,
+                })
+            vim.defer_fn(function()
+                tcp_handle:close(function()
+                    counter:decrement()
+                end)
+            end, 0) -- delay close, else:  Assertion failed: (!(stream->flags & UV_HANDLE_CLOSING)), function uv__stream_io, file stream.c, line 1198.
+            counter:wait(2500)
+        end)
+    end)
+
     it("/v1/chat/completions", function()
         local counter = Counter:new()
         counter:increment()

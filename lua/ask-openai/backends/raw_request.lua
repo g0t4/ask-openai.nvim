@@ -92,8 +92,9 @@ function M.http(request)
         end
         tcp_handle:connect(host_ip, request.port, function(err)
             if err then
+                log:error('tcp_handle:connect failed', err, request)
                 tcp_handle:close()
-                return request.on_done('connect failed: ' .. err)
+                return request.on_done('tcp_handle:connect failed: ' .. err)
             end
 
             local body_json = ""
