@@ -31,13 +31,13 @@ function _semantic_grep(semantic_grep_request, lsp_buffer_number, process_result
         last_cancel_requests = nil
     end
 
-    local _client_request_ids, _cancel_all_requests -- "my" as in this closure's request
-    _client_request_ids, _cancel_all_requests = client.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number,
+    local _rag_request_id, _rag_cancel_request
+    _rag_request_id, _rag_cancel_request = client.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number,
 
         ---@param obj SemanticGrepWithTimeoutResponseObj -- FYI I call this obj in several spots, stick with it or rename all of them
         function(obj)
             -- Ensure this is the most recent request before processing results.
-            if last_client_request_ids ~= _client_request_ids then
+            if last_client_request_ids ~= _rag_request_id then
                 return
             end
 
@@ -57,8 +57,8 @@ function _semantic_grep(semantic_grep_request, lsp_buffer_number, process_result
             end
             process_complete()
         end, "telescope")
-    last_cancel_requests = _cancel_all_requests
-    last_client_request_ids = _client_request_ids
+    last_cancel_requests = _rag_cancel_request
+    last_client_request_ids = _rag_request_id
 end
 
 local ns = vim.api.nvim_create_namespace("rag_preview")
