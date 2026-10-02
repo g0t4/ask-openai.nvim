@@ -146,6 +146,7 @@ EXCLUDED_CONTENT_HASHES: list[str] = [
 FIM_PREFIX = "<|fim_prefix|>"
 FIM_MIDDLE = "<|fim_middle|>"
 FIM_SUFFIX = "<|fim_suffix|>"
+CURSOR_IS_HERE = "<|CURSOR_IS_HERE|>"
 
 
 def is_raw_completion_fim(data: dict) -> bool:
@@ -158,19 +159,28 @@ def is_raw_completion_fim(data: dict) -> bool:
     return FIM_MIDDLE in prompt
 
 
-def parse_raw_completion_fim(raw_prompt: str, completion: str) -> dict | None:
-    """Parse raw completion with FIM marker into diff components."""
-    middle_idx = raw_prompt.find(FIM_MIDDLE)
-    prefix_idx = raw_prompt.find(FIM_PREFIX)
-    suffix_idx = raw_prompt.find(FIM_SUFFIX)
+def _extract_fim_code_block(text: str) -> str | None:
+    """Extract the fenced code block containing the chat-style FIM cursor marker."""
+    for match in re.finditer(r"```[^\n]*\n(.*?)\n```", text, re.DOTALL):
+        code_block = match.group(1)
+        if CURSOR_IS_HERE in code_block:
+            return code_block
+    return None
+
+
+def _parse_native_fim(prompt: str, completion: str) -> dict | None:
+    """Parse native FIM (FIM_PREFIX/FIM_SUFFIX/FIM_MIDDLE tokens) into diff components."""
+    middle_idx = prompt.find(FIM_MIDDLE)
+    prefix_idx = prompt.find(FIM_PREFIX)
+    suffix_idx = prompt.find(FIM_SUFFIX)
     if middle_idx < 0 or prefix_idx < 0 or suffix_idx < 0:
         return None
 
     # we skip everything before FIM_PREFIX (it's only used in repo level FIM where you have other files included before the FIM PSM request
     # prefix is FIM_PREFIX until FIM_SUFFIX
-    prefix = raw_prompt[prefix_idx + len(FIM_PREFIX):suffix_idx]
+    prefix = prompt[prefix_idx + len(FIM_PREFIX):suffix_idx]
     # suffix is FIM_SUFFIX until FIM_MIDDLE
-    suffix = raw_prompt[suffix_idx + len(FIM_SUFFIX):middle_idx]
+    suffix = prompt[suffix_idx + len(FIM_SUFFIX):middle_idx]
     return {
         "prefix": prefix,
         "suffix": suffix,
@@ -179,9 +189,37 @@ def parse_raw_completion_fim(raw_prompt: str, completion: str) -> dict | None:
     }
 
 
-def print_raw_fim_diff(raw_prompt: str, completion: str) -> None:
-    """Print a FIM completion diff for raw completions."""
-    parsed = parse_raw_completion_fim(raw_prompt, completion)
+def _parse_chat_style_fim(prompt: str, completion: str) -> dict | None:
+    """Parse chat-style FIM (CURSOR_IS_HERE marker in a fenced code block) into diff components."""
+    code_block = _extract_fim_code_block(prompt)
+    if code_block is None:
+        return None
+    # The code block's CURSOR_IS_HERE marker is the actual cursor position; the
+    # intro ("Please suggest text to replace <|CURSOR_IS_HERE|>:") also uses it,
+    # so grab the LAST occurrence (inside the code block).
+    cursor_idx = code_block.rfind(CURSOR_IS_HERE)
+    if cursor_idx < 0:
+        return None
+    prefix = code_block[:cursor_idx]
+    suffix = code_block[cursor_idx + len(CURSOR_IS_HERE):]
+    return {
+        "prefix": prefix,
+        "suffix": suffix,
+        "completion": completion,
+        "diff_type": "fim",
+    }
+
+
+def parse_fim_diff(prompt: str, completion: str) -> dict | None:
+    """Parse a FIM-style prompt into diff components (native or chat-style)."""
+    if CURSOR_IS_HERE in prompt:
+        return _parse_chat_style_fim(prompt, completion)
+    return _parse_native_fim(prompt, completion)
+
+
+def print_fim_diff(prompt: str, completion: str) -> None:
+    """Print a FIM completion diff (native FIM tokens or chat-style CURSOR_IS_HERE)."""
+    parsed = parse_fim_diff(prompt, completion)
     if not parsed:
         return
 
@@ -212,6 +250,36 @@ def print_raw_fim_diff(raw_prompt: str, completion: str) -> None:
     root.add(final_text)
     root.blank_line()
     _console.print(root)
+
+
+def find_fim_diff(messages: list[dict]) -> tuple[str, str] | None:
+    """Find the FIM prompt + completion pair in messages for the diff summary.
+
+    Supports both native raw completions (``user_raw``/``assistant_raw`` with
+    ``FIM_MIDDLE``) and chat-style FIM (``user``/``assistant`` messages with the
+    ``CURSOR_IS_HERE`` marker).
+    """
+    if len(messages) < 2:
+        return None
+
+    # Native raw completion: user_raw (FIM_MIDDLE) followed by assistant_raw
+    first_msg = messages[0]
+    if first_msg.get("role") == "user_raw" and FIM_MIDDLE in _extract_content(first_msg):
+        second_msg = messages[1]
+        if second_msg.get("role") == "assistant_raw":
+            return _extract_content(first_msg), _extract_content(second_msg)
+
+    # Chat-style FIM: last user message w/ CURSOR_IS_HERE followed by an assistant message
+    last_user_idx = -1
+    for idx, msg in enumerate(messages):
+        if msg.get("role") == "user" and CURSOR_IS_HERE in _extract_content(msg):
+            last_user_idx = idx
+    if last_user_idx < 0:
+        return None
+    for msg in messages[last_user_idx + 1:]:
+        if msg.get("role") == "assistant":
+            return _extract_content(messages[last_user_idx]), _extract_content(msg)
+    return None
 
 
 def is_raw_completion_trace(data: dict) -> bool:
@@ -1056,15 +1124,10 @@ def render_trace_to_console(console, messages, model_name, timings) -> None:
         _console.print(table)
         _console.print()
     # show summaries at end since command line the last part shows first (unlike web viewer where summary is best at top)
-    if len(messages) >= 2:
-        first_msg = messages[0]
-        if first_msg.get("role") == "user_raw" and FIM_MIDDLE in _extract_content(first_msg):
-            # Find assistant_raw message
-            second_msg = messages[1] if len(messages) > 1 else None
-            if second_msg and second_msg.get("role") == "assistant_raw":
-                raw_prompt = _extract_content(first_msg)
-                raw_completion = _extract_content(second_msg)
-                print_raw_fim_diff(raw_prompt, raw_completion)
+    fim_diff = find_fim_diff(messages)
+    if fim_diff:
+        prompt, completion = fim_diff
+        print_fim_diff(prompt, completion)
 
 
 def main() -> None:

@@ -19,7 +19,7 @@ const DS_HOLE = '\uff5cfim\u2581hole\uff5c>'
 const DS_END = '\uff5cfim\u2581end\uff5c>'
 
 // Regex matching either FIM hole marker (used to split prefix/suffix)
-const HOLE_REGEX = /<\|fim_middle\|>|\uff5cfim\u2581hole\uff5c>/
+const HOLE_REGEX = /<\|fim_middle\|>|\uff5cfim\u2581hole\uff5c>|<\|CURSOR_IS_HERE\|>/
 
 // deepseek native FIM prompts include repo/file context before the FIM file.
 // Extract just the FIM file's code and normalize it to `prefix + hole + suffix`

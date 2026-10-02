@@ -79,8 +79,12 @@
 
     // Check if it contains the FIM prompt
     const content = typeof lastUserMessage.content === 'string' ? lastUserMessage.content : ''
-    // qwen native FIM uses <|fim_middle|>, deepseek native FIM uses ｜fim▁hole｜>
-    const isFimPrompt = content.includes('<|fim_middle|>') || content.includes('\uff5cfim\u2581hole\uff5c>')
+    // qwen native FIM uses <|fim_middle|>, deepseek native FIM uses ｜fim▁hole｜>,
+    // chat-style FIM (gptoss harmony / deepseek v4 flash) uses <|CURSOR_IS_HERE|>
+    const isFimPrompt =
+      content.includes('<|fim_middle|>') ||
+      content.includes('\uff5cfim\u2581hole\uff5c>') ||
+      content.includes('<|CURSOR_IS_HERE|>')
     if (!isFimPrompt) return null
 
     // Find the assistant's response
