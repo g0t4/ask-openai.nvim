@@ -49,7 +49,7 @@ function UserInputWindow:new()
     local instance = FloatWindow.new(UserInputWindow, opts)
 
     -- Scratch buffers are not automatically attached, but we want LSP features (tool calls, semantic_grep telescope)
-    local client = vim.lsp.get_clients({ name = "ask_language_server" })[1]
+    local client = vim.lsp.get_clients({ name = "ask_ls" })[1]
     if client then
         vim.lsp.buf_attach_client(instance.buffer_number, client.id)
     end

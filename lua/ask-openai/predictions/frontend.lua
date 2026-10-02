@@ -230,10 +230,10 @@ function PredictionsFrontend.ask_for_prediction(params)
     end
 
     if enable_rag and rag_client.is_rag_supported_in_current_file() then
-        if not vim.lsp.get_clients({ name = "ask_language_server", bufnr = 0 })[1] then
+        if not vim.lsp.get_clients({ name = "ask_ls", bufnr = 0 })[1] then
             -- FYI this check of client ready, must have immaterial overhead for working clients
             --  would be better to do no checks than slow down normal use
-            log:error("ask_language_server not available, sending FIM w/o RAG")
+            log:error("ask_ls not available, sending FIM w/o RAG")
             then_send_fim({})
             return
         end

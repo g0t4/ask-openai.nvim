@@ -17,7 +17,7 @@ def setup(server: LanguageServer):
 
         folders = params.workspace_folders or []
         if not any(folders):
-            message = "no workspace folders provided, cannot start ask_language_server"
+            message = "no workspace folders provided, cannot start ask_ls"
             logger.error(message)
             raise ValueError(message)
 

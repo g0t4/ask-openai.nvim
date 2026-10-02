@@ -9,7 +9,7 @@ local M = {}
 --- @return boolean
 function M.is_lsp_client_available(lsp_buffer_number)
     lsp_buffer_number = lsp_buffer_number or 0
-    local clients = vim.lsp.get_clients({ name = "ask_language_server", bufnr = lsp_buffer_number })
+    local clients = vim.lsp.get_clients({ name = "ask_ls", bufnr = lsp_buffer_number })
     return clients ~= nil and clients[1] ~= nil
 end
 
@@ -226,10 +226,10 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
     }
 
     if not M.is_lsp_client_available(lsp_buffer_number) then
-        log:error("ask_language_server is not available")
+        log:error("ask_ls is not available")
         vim.schedule(function()
             -- do not synchronously callback on sync failures, most callers check request ids and they won't have those yet.. NBD to cancel in a split second vs instant
-            error_response("Semantic Grep aborted... ask_language_server is not available")
+            error_response("Semantic Grep aborted... ask_ls is not available")
         end)
         return {}, function() end
     end

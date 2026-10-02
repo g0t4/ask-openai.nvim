@@ -11,7 +11,7 @@ logging_fwk_to_language_server_log_file(logging.INFO)
 # logging_fwk_to_language_server_log_file(logging.DEBUG)
 logger = get_logger(__name__)
 
-server = LanguageServer("ask_language_server", "v0.1")
+server = LanguageServer("ask_ls", "v0.1")
 
 # server setup is split up to organize and simplify this top-level module
 cancel.setup(server)

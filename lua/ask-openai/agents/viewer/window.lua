@@ -74,7 +74,7 @@ function AgentWindow:new()
         { buffer = instance.buffer_number, desc = "clear the chat window, and eventually the message history" })
 
     -- manually trigger LSP attach, b/c scratch buffers are normally not auto attached
-    local client = vim.lsp.get_clients({ name = "ask_language_server" })[1]
+    local client = vim.lsp.get_clients({ name = "ask_ls" })[1]
     if client then vim.lsp.buf_attach_client(instance.buffer_number, client.id) end
 
     -- * folding options

@@ -71,7 +71,7 @@ function M.setup_lsp()
         on_dir(rag_root_dir)
     end
 
-    vim.lsp.config("ask_language_server", {
+    vim.lsp.config("ask_ls", {
 
         -- * language server
         cmd = {
@@ -89,7 +89,7 @@ function M.setup_lsp()
         root_dir = root_dir
     })
     -- log:info(vim.inspect(vim.lsp.config))
-    vim.lsp.enable("ask_language_server")
+    vim.lsp.enable("ask_ls")
     -- FYI :checkhealth vim.lsp  " shows enabled vs active (buffer #s too)
 
     -- ---@param result { message: string, type: number }  -- Language Server MessageType
@@ -119,7 +119,7 @@ function M.setup_lsp()
             log:info(string.format("client/registerCapability: client_id=%s", ctx.client_id))
             local result = overridden(err, res, ctx)
             local client = vim.lsp.get_client_by_id(ctx.client_id)
-            if not client or client.name ~= "ask_language_server" then
+            if not client or client.name ~= "ask_ls" then
                 return
             end
 
@@ -139,7 +139,7 @@ function M.setup_lsp()
             function(event_args)
                 log:info(string.format("LspDetach: client_id=%s (buf %d)", event_args.data.client_id, event_args.buf))
                 local client = vim.lsp.get_client_by_id(event_args.data.client_id)
-                if not client or client.name ~= "ask_language_server" then return end
+                if not client or client.name ~= "ask_ls" then return end
 
                 -- PRN remove keymaps (if added in LspAttach)
                 -- -- Remove the autocommand to format the buffer on save, if it exists
@@ -158,7 +158,7 @@ function M.setup_lsp()
             function(event_args)
                 -- log:info(string.format("LspAttach: client_id=%s (buf %d)", event_args.data.client_id, event_args.buf))
                 local client = vim.lsp.get_client_by_id(event_args.data.client_id)
-                if not client or client.name ~= "ask_language_server" then return end
+                if not client or client.name ~= "ask_ls" then return end
 
                 -- Log server capabilities only once per client to avoid noisy output
                 -- if not client._asked_openai_capabilities_logged then
