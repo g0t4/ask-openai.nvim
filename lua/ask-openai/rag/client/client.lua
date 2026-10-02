@@ -132,7 +132,7 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
     end
 
     -- normally I'd move closer to first use, but for this LSP cancel scenario, sometimes a nested func wants to use these (with nil check) and I forget about these... so leave here so it is obvious I can use them anywhere if check happens
-    local _client_request_id, _cancel_all_requests, _request_timeout_timer
+    local _request_id, _cancel_request, _request_timeout_timer
 
     ---@param message string
     -- Invokes the provided callback with a standardized error payload.
@@ -233,14 +233,14 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
     }
 
     local function stop_request()
-        if _cancel_all_requests == nil then
+        if _cancel_request == nil then
             return
         end
         if _request_timeout_timer then
             _request_timeout_timer:stop()
         end
-        _cancel_all_requests() -- IIAC same as vim.lsp.cancel_request(0, _client_request_ids) ... so I could skip passing the func around?
-        _cancel_all_requests = nil -- avoid double canceling (raises error) i.e. if user cancels after a timeout
+        _cancel_request() -- IIAC same as vim.lsp.cancel_request(0, _client_request_ids) ... so I could skip passing the func around?
+        _cancel_request = nil -- avoid double canceling (raises error) i.e. if user cancels after a timeout
     end
     ---@type vim.lsp.Client
     local ask_ls = vim.lsp.get_clients({ name = "ask_ls", bufnr = lsp_buffer_number })[1]
@@ -272,14 +272,14 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
             error("ask_ls:request failed synchronously while making semantic_grep request")
         end
 
-        _client_request_id = request_id
-        _cancel_all_requests = function()
+        _request_id = request_id
+        _cancel_request = function()
             ask_ls:cancel_request(request_id)
         end
 
         local timeout_ms = 5000
         _request_timeout_timer = vim.defer_fn(function()
-            if _cancel_all_requests == nil then -- already canceled
+            if _cancel_request == nil then -- already canceled
                 return
             end
             log:info("Semantic Grep request timed out")
@@ -297,7 +297,7 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
     end
 
     -- TODO! update callers to use singular request_id... in fact, can callers just use stop_requests only and not need request_id?
-    return { _client_request_id }, stop_request
+    return { _request_id }, stop_request
 end
 
 return M
