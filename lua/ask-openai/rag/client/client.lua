@@ -248,31 +248,60 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
         _cancel_all_requests() -- IIAC same as vim.lsp.cancel_request(0, _client_request_ids) ... so I could skip passing the func around?
         _cancel_all_requests = nil -- avoid double canceling (raises error) i.e. if user cancels after a timeout
     end
+    -- log:info("attached", vim.iter(attached_clients):map(function(c) return c.name end):totable())
+    local attached_clients = vim.lsp.get_clients({ bufnr = lsp_buffer_number })
+    ---@type vim.lsp.Client
+    local ask_ls = vim.iter(attached_clients):filter(function(c) return c.name == "ask_ls" end):totable()[1]
+    if ask_ls == nil then
+        log:info("cannot find ask_ls language server, aborting query...")
+        return {}, function() end
+    end
 
-    _client_request_ids, _cancel_all_requests = vim.lsp.buf_request(lsp_buffer_number, "workspace/executeCommand", params,
-        ---@param lsp_error? lsp.ResponseError
-        ---@param lsp_result any
-        ---@param context lsp.HandlerContext
-        ---@param config? table
-        function(lsp_error, lsp_result, context, config)
-            if _request_timeout_timer then
-                _request_timeout_timer:stop()
-            end
-            -- TODO does lsp_error already mention cancels, do I need that anywhere?
-            on_language_server_response(lsp_error, lsp_result, context, config)
-        end)
-    -- log:info("REQUEST IDs:", _client_request_ids)
-
-    local timeout_ms = 5000
-    _request_timeout_timer = vim.defer_fn(function()
-        if _cancel_all_requests == nil then -- already canceled
-            return
+    local safely = require("ask-openai.helpers.safely")
+    local ok, result_or_error = safely.call(function()
+        local status, request_id = ask_ls:request("workspace/executeCommand", params,
+            ---@param lsp_error? lsp.ResponseError
+            ---@param lsp_result any
+            ---@param context lsp.HandlerContext
+            ---@param config? table
+            function(lsp_error, lsp_result, context, config)
+                if _request_timeout_timer then
+                    _request_timeout_timer:stop()
+                end
+                -- TODO does lsp_error already mention cancels, do I need that anywhere?
+                on_language_server_response(lsp_error, lsp_result, context, config)
+            end, lsp_buffer_number)
+        if status == false then
+            log:info("ask_ls:request failed synchronously while making semantic_grep request")
+            _client_request_ids = {}
+            _cancel_all_requests = function() end
         end
-        log:info("Semantic Grep request timed out")
-        error_response("Semantic Grep request timed out")
-        stop_requests()
-    end, timeout_ms)
 
+        -- TODO if status is False => failed already
+
+        _client_request_ids = { request_id }
+        _cancel_all_requests = function()
+            if request_id == nil then
+                return
+            end
+            ask_ls:cancel_request(request_id)
+        end
+        -- log:info("REQUEST IDs:", _client_request_ids)
+
+        local timeout_ms = 5000
+        _request_timeout_timer = vim.defer_fn(function()
+            if _cancel_all_requests == nil then -- already canceled
+                return
+            end
+            log:info("Semantic Grep request timed out")
+            error_response("Semantic Grep request timed out")
+            stop_requests()
+        end, timeout_ms)
+    end)
+    -- TODO! any special logic on failures? ok == false? from safely.call here... actually just move safely.call up and out so I don't neeed to think about it here?
+
+    -- TODO! rewrite request_ids => singular request_id
+    -- TODO! redo stop_requests to be singular too
     return _client_request_ids, stop_requests
 end
 
