@@ -1,6 +1,7 @@
 local ansi = require("devtools.ansi")
 local log = require("devtools.logs.logger").universal()
 local rag_trace = require("ask-openai.rag.client.trace")
+local safely = require("ask-openai.helpers.safely")
 
 local M = {}
 
@@ -253,8 +254,7 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
         return {}, NOOP
     end
 
-    local safely = require("ask-openai.helpers.safely")
-    local ok, result_or_error = safely.call(function()
+    local ok, result_or_error = safely.call(function() -- FYI safely.call will log raised errors
         local status, request_id = ask_ls:request("workspace/executeCommand", params,
             ---@param lsp_error? lsp.ResponseError
             ---@param lsp_result any
@@ -269,12 +269,7 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
             end, lsp_buffer_number
         )
         if status == false or request_id == nil then
-            log:warn("ask_ls:request failed synchronously while making semantic_grep request")
-            vim.schedule(function()
-                -- do not synchronously callback on sync failures, most callers check request ids and they won't have those yet.. NBD to cancel in a split second vs instant
-                error_response("ask_ls:request failed synchronously while making semantic_grep request")
-            end)
-            return
+            error("ask_ls:request failed synchronously while making semantic_grep request")
         end
 
         _client_request_id = request_id
@@ -292,7 +287,14 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
             stop_request()
         end, timeout_ms)
     end)
-    -- TODO! any special logic on failures? ok == false? from safely.call here... actually just move safely.call up and out so I don't neeed to think about it here?
+    if not ok then
+        -- FYI already logged by safely.call, just need to fail the result to the caller
+        vim.schedule(function()
+            -- do not synchronously callback on sync failures, most callers check request ids and they won't have those yet.. NBD to cancel in a split second vs instant
+            error_response(result_or_error)
+        end)
+        return {}, NOOP
+    end
 
     -- TODO! update callers to use singular request_id... in fact, can callers just use stop_requests only and not need request_id?
     return { _client_request_id }, stop_request
