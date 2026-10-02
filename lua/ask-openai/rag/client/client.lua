@@ -153,6 +153,10 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
         -- FYI connection failure will arive with message:
         --   "ConnectionRefusedError: [Errno 61] Connect call failed ('IP', PORT)"
         -- ? any special connection failure logic? or warn me logic? like update a dot in the status lualine?
+        if lsp_result == nil then
+            log:info("lsp_result is nil (are you querying an unrelated LS?)", lsp_result)
+            return
+        end
 
         -- walk_for_vim_NIL(lsp_result) -- FYI uncomment for testing known vim.NIL values before replacing with nil_means_nil
         if lsp_result and lsp_result.matches then
