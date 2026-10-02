@@ -103,6 +103,8 @@ end
 ---@field error? string
 ---@field matches? LSPRankedMatch[]
 
+function NOOP() end
+
 --- Executes a semantic grep request with:
 --- - check server is available
 --- - supports timeout
@@ -253,7 +255,7 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
     -- local ask_ls = vim.iter():filter(function(c) return c.name == "ask_ls" end):totable()[1]
     if ask_ls == nil then
         log:info("cannot find ask_ls language server, aborting query...")
-        return {}, function() end
+        return {}, NOOP
     end
 
     local safely = require("ask-openai.helpers.safely")
@@ -270,22 +272,15 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
                 -- TODO does lsp_error already mention cancels, do I need that anywhere?
                 on_language_server_response(lsp_error, lsp_result, context, config)
             end, lsp_buffer_number)
-        if status == false then
+        if status == false or request_id == nil then
             log:info("ask_ls:request failed synchronously while making semantic_grep request")
-            _client_request_ids = {}
-            _cancel_all_requests = function() end
+            return
         end
-
-        -- TODO if status is False => failed already
 
         _client_request_ids = { request_id }
         _cancel_all_requests = function()
-            if request_id == nil then
-                return
-            end
             ask_ls:cancel_request(request_id)
         end
-        -- log:info("REQUEST IDs:", _client_request_ids)
 
         local timeout_ms = 5000
         _request_timeout_timer = vim.defer_fn(function()
