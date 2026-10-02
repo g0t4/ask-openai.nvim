@@ -239,7 +239,7 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
         if _request_timeout_timer then
             _request_timeout_timer:stop()
         end
-        _cancel_request() -- IIAC same as vim.lsp.cancel_request(0, _client_request_ids) ... so I could skip passing the func around?
+        _cancel_request()
         _cancel_request = nil -- avoid double canceling (raises error) i.e. if user cancels after a timeout
     end
     ---@type vim.lsp.Client
