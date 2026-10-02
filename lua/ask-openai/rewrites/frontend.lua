@@ -471,9 +471,9 @@ local function ask_rewrite_command(opts)
         ---@param obj SemanticGrepWithTimeoutResponseObj
         function on_rag_response(obj)
             -- * make sure prior (canceled) rag request doesn't still respond
-            if RewriteFrontend.rag_request_ids ~= this_rag_request_id then
+            if RewriteFrontend.rag_request_id ~= this_rag_request_id then
                 log:trace("possibly stale rag results, skipping: " .. vim.inspect({
-                    global_rag_request_ids = RewriteFrontend.rag_request_ids,
+                    global_rag_request_ids = RewriteFrontend.rag_request_id,
                     this_request_ids = this_rag_request_id,
                 }))
                 return
@@ -502,14 +502,14 @@ local function ask_rewrite_command(opts)
             log:warn("canceling RAG")
             RewriteFrontend.rag_cancel = nil
             rag_cancel()
-            RewriteFrontend.rag_request_ids = nil
+            RewriteFrontend.rag_request_id = nil
         end
 
         RewriteFrontend.rag_cancel = rag_cancel
-        RewriteFrontend.rag_request_ids = this_rag_request_id
+        RewriteFrontend.rag_request_id = this_rag_request_id
     else
         RewriteFrontend.rag_cancel = nil
-        RewriteFrontend.rag_request_ids = nil
+        RewriteFrontend.rag_request_id = nil
         -- PRN add a promise fwk in here
         then_send_rewrite({})
     end

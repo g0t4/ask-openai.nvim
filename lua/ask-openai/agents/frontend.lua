@@ -264,10 +264,10 @@ local function ask_agent_command(opts)
         ---@param obj SemanticGrepWithTimeoutResponseObj -- for lack of better name, stick with it
         function on_rag_response(obj)
             -- * make sure prior (canceled) rag request doesn't still respond
-            if AgentsFrontend.rag_request_ids ~= this_rag_request_id then
+            if AgentsFrontend.rag_request_id ~= this_rag_request_id then
                 log:trace("possibly stale rag results, skipping: " .. vim.inspect({
-                    global_rag_request_ids = AgentsFrontend.rag_request_ids,
-                    this_request_ids = this_rag_request_id,
+                    global_rag_request_ids = AgentsFrontend.rag_request_id,
+                    this_request_id = this_rag_request_id,
                 }))
                 return
             end
@@ -291,12 +291,12 @@ local function ask_agent_command(opts)
             log:warn("canceling RAG")
             AgentsFrontend.rag_cancel = nil
             rag_cancel()
-            AgentsFrontend.rag_request_ids = nil
+            AgentsFrontend.rag_request_id = nil
         end
-        AgentsFrontend.rag_request_ids = this_rag_request_id
+        AgentsFrontend.rag_request_id = this_rag_request_id
     else
         AgentsFrontend.rag_cancel = nil
-        AgentsFrontend.rag_request_ids = nil
+        AgentsFrontend.rag_request_id = nil
         then_add_seed_user_messages({})
     end
 end
