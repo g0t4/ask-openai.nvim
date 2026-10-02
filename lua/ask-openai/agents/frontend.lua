@@ -259,15 +259,15 @@ local function ask_agent_command(opts)
 
     -- log:error("context.includes", vim.inspect(context.includes))
     if config.is_rag_enabled() and not context.includes.norag and rag_client.is_rag_supported_in_current_file(code_bufnr) then
-        local this_request_ids, rag_cancel -- declare in advance for closure
+        local this_rag_request_id, rag_cancel -- declare in advance for closure
 
         ---@param obj SemanticGrepWithTimeoutResponseObj -- for lack of better name, stick with it
         function on_rag_response(obj)
             -- * make sure prior (canceled) rag request doesn't still respond
-            if AgentsFrontend.rag_request_ids ~= this_request_ids then
+            if AgentsFrontend.rag_request_ids ~= this_rag_request_id then
                 log:trace("possibly stale rag results, skipping: " .. vim.inspect({
                     global_rag_request_ids = AgentsFrontend.rag_request_ids,
-                    this_request_ids = this_request_ids,
+                    this_request_ids = this_rag_request_id,
                 }))
                 return
             end
@@ -286,14 +286,14 @@ local function ask_agent_command(opts)
             then_add_seed_user_messages(obj.result.matches or {})
         end
 
-        this_request_ids, rag_cancel = rag_client.context_query_for_agents(code_bufnr, cleaned_prompt, code_context, nil, on_rag_response)
+        this_rag_request_id, rag_cancel = rag_client.context_query_for_agents(code_bufnr, cleaned_prompt, code_context, nil, on_rag_response)
         AgentsFrontend.rag_cancel = function()
             log:warn("canceling RAG")
             AgentsFrontend.rag_cancel = nil
             rag_cancel()
             AgentsFrontend.rag_request_ids = nil
         end
-        AgentsFrontend.rag_request_ids = this_request_ids
+        AgentsFrontend.rag_request_ids = this_rag_request_id
     else
         AgentsFrontend.rag_cancel = nil
         AgentsFrontend.rag_request_ids = nil
