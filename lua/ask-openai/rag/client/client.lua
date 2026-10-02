@@ -113,7 +113,7 @@ function NOOP() end
 --- @param lsp_buffer_number? integer
 ---@param callback_like_mcp_tool fun(response_obj: SemanticGrepWithTimeoutResponseObj) -- called with the result or error
 ---@param trace_source? string identifies the retrieval surface in saved traces
----@return integer[] _client_request_ids, fun() _cancel_all_requests
+---@return integer? request_id, fun() cancel_request
 function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, callback_like_mcp_tool, trace_source)
     lsp_buffer_number = lsp_buffer_number or 0
     trace_source = trace_source or "unknown"
