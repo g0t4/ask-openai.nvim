@@ -17,7 +17,7 @@ local client = require('ask-openai.rag.client.client')
 local latest_query_num = 0
 local picker
 
-local last_client_request_ids, last_cancel_requests
+local last_rag_request_id, last_cancel_requests
 
 ---@param semantic_grep_request LSPSemanticGrepRequest
 ---@param lsp_buffer_number integer
@@ -26,7 +26,7 @@ local last_client_request_ids, last_cancel_requests
 ---@param entry_maker fun(match: LSPRankedMatch): SemanticGrepTelescopeEntryMatch
 function _semantic_grep(semantic_grep_request, lsp_buffer_number, process_result, process_complete, entry_maker)
     if last_cancel_requests then
-        log:info("canceling semantic_grep request, last_client_request_ids: " .. vim.inspect(last_client_request_ids))
+        log:info("canceling semantic_grep request, last_client_request_ids: " .. vim.inspect(last_rag_request_id))
         last_cancel_requests()
         last_cancel_requests = nil
     end
@@ -37,7 +37,7 @@ function _semantic_grep(semantic_grep_request, lsp_buffer_number, process_result
         ---@param obj SemanticGrepWithTimeoutResponseObj -- FYI I call this obj in several spots, stick with it or rename all of them
         function(obj)
             -- Ensure this is the most recent request before processing results.
-            if last_client_request_ids ~= _rag_request_id then
+            if last_rag_request_id ~= _rag_request_id then
                 return
             end
 
@@ -58,7 +58,7 @@ function _semantic_grep(semantic_grep_request, lsp_buffer_number, process_result
             process_complete()
         end, "telescope")
     last_cancel_requests = _rag_cancel_request
-    last_client_request_ids = _rag_request_id
+    last_rag_request_id = _rag_request_id
 end
 
 local ns = vim.api.nvim_create_namespace("rag_preview")
