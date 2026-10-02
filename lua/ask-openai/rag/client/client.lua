@@ -231,15 +231,6 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
         arguments = { semantic_grep_request },
     }
 
-    if not M.is_lsp_client_available(lsp_buffer_number) then
-        log:error("ask_ls is not available")
-        vim.schedule(function()
-            -- do not synchronously callback on sync failures, most callers check request ids and they won't have those yet.. NBD to cancel in a split second vs instant
-            error_response("Semantic Grep aborted... ask_ls is not available")
-        end)
-        return {}, function() end
-    end
-
     local function stop_request()
         if _cancel_all_requests == nil then
             return
@@ -254,7 +245,11 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
     local ask_ls = vim.lsp.get_clients({ name = "ask_ls", bufnr = lsp_buffer_number })[1]
     -- local ask_ls = vim.iter():filter(function(c) return c.name == "ask_ls" end):totable()[1]
     if ask_ls == nil then
-        log:info("cannot find ask_ls language server, aborting query...")
+        log:warn("cannot find ask_ls, aborting query...")
+        vim.schedule(function()
+            -- do not synchronously callback on sync failures, most callers check request ids and they won't have those yet.. NBD to cancel in a split second vs instant
+            error_response("Semantic Grep aborted... ask_ls is not available")
+        end)
         return {}, NOOP
     end
 
@@ -271,9 +266,14 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
                 end
                 -- TODO does lsp_error already mention cancels, do I need that anywhere?
                 on_language_server_response(lsp_error, lsp_result, context, config)
-            end, lsp_buffer_number)
+            end, lsp_buffer_number
+        )
         if status == false or request_id == nil then
-            log:info("ask_ls:request failed synchronously while making semantic_grep request")
+            log:warn("ask_ls:request failed synchronously while making semantic_grep request")
+            vim.schedule(function()
+                -- do not synchronously callback on sync failures, most callers check request ids and they won't have those yet.. NBD to cancel in a split second vs instant
+                error_response("ask_ls:request failed synchronously while making semantic_grep request")
+            end)
             return
         end
 
