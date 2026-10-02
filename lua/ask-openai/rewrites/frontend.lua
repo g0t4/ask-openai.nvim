@@ -466,15 +466,15 @@ local function ask_rewrite_command(opts)
     end
 
     if config.is_rag_enabled() and rag_client.is_rag_supported_in_current_file() then
-        local this_request_ids, rag_cancel -- declare in advance for closure
+        local this_rag_request_id, rag_cancel -- declare in advance for closure
 
         ---@param obj SemanticGrepWithTimeoutResponseObj
         function on_rag_response(obj)
             -- * make sure prior (canceled) rag request doesn't still respond
-            if RewriteFrontend.rag_request_ids ~= this_request_ids then
+            if RewriteFrontend.rag_request_ids ~= this_rag_request_id then
                 log:trace("possibly stale rag results, skipping: " .. vim.inspect({
                     global_rag_request_ids = RewriteFrontend.rag_request_ids,
-                    this_request_ids = this_request_ids,
+                    this_request_ids = this_rag_request_id,
                 }))
                 return
             end
@@ -497,7 +497,7 @@ local function ask_rewrite_command(opts)
         RewriteFrontend.response.performance:rag_started()
 
         -- TODO should abort logic also clear rag_cancel/rag_request_ids?
-        this_request_ids, rag_cancel = rag_client.context_query_rewrites(user_prompt, code_context, nil, on_rag_response)
+        this_rag_request_id, rag_cancel = rag_client.context_query_rewrites(user_prompt, code_context, nil, on_rag_response)
         RewriteFrontend.rag_cancel = function()
             log:warn("canceling RAG")
             RewriteFrontend.rag_cancel = nil
@@ -506,7 +506,7 @@ local function ask_rewrite_command(opts)
         end
 
         RewriteFrontend.rag_cancel = rag_cancel
-        RewriteFrontend.rag_request_ids = this_request_ids
+        RewriteFrontend.rag_request_ids = this_rag_request_id
     else
         RewriteFrontend.rag_cancel = nil
         RewriteFrontend.rag_request_ids = nil
