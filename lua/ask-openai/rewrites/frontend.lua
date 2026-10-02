@@ -473,8 +473,8 @@ local function ask_rewrite_command(opts)
             -- * make sure prior (canceled) rag request doesn't still respond
             if RewriteFrontend.rag_request_id ~= this_rag_request_id then
                 log:trace("possibly stale rag results, skipping: " .. vim.inspect({
-                    global_rag_request_ids = RewriteFrontend.rag_request_id,
-                    this_request_ids = this_rag_request_id,
+                    RewriteFrontend_rag_request_id = RewriteFrontend.rag_request_id,
+                    this_rag_request_id = this_rag_request_id,
                 }))
                 return
             end

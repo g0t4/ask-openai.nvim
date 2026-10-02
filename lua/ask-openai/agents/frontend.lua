@@ -266,8 +266,8 @@ local function ask_agent_command(opts)
             -- * make sure prior (canceled) rag request doesn't still respond
             if AgentsFrontend.rag_request_id ~= this_rag_request_id then
                 log:trace("possibly stale rag results, skipping: " .. vim.inspect({
-                    global_rag_request_ids = AgentsFrontend.rag_request_id,
-                    this_request_id = this_rag_request_id,
+                    AgentsFrontend_rag_request_id = AgentsFrontend.rag_request_id,
+                    this_rag_request_id = this_rag_request_id,
                 }))
                 return
             end
