@@ -241,30 +241,31 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
         return nil, NOOP
     end
 
-    local _request_id, _request_timeout_timer
+    local request_id, request_timeout_timer
     local canceled = false
     local function stop_request()
         if canceled then
             return
         end
-        if _request_timeout_timer then
-            _request_timeout_timer:stop()
+        if request_timeout_timer then
+            request_timeout_timer:stop()
         end
-        if _request_id ~= nil then
-            ask_ls:cancel_request(_request_id)
+        if request_id ~= nil then
+            ask_ls:cancel_request(request_id)
         end
         canceled = true -- avoid double canceling (raises error) i.e. if user cancels after a timeout
     end
 
     local ok, result_or_error = safely.call(function() -- FYI safely.call will log raised errors
-        local status, request_id = ask_ls:request("workspace/executeCommand", params,
+        local status
+        status, request_id = ask_ls:request("workspace/executeCommand", params,
             ---@param lsp_error? lsp.ResponseError
             ---@param lsp_result any
             ---@param context lsp.HandlerContext
             ---@param config? table
             function(lsp_error, lsp_result, context, config)
-                if _request_timeout_timer then
-                    _request_timeout_timer:stop()
+                if request_timeout_timer then
+                    request_timeout_timer:stop()
                 end
                 -- TODO does lsp_error already mention cancels, do I need that anywhere?
                 on_language_server_response(lsp_error, lsp_result, context, config)
@@ -274,10 +275,8 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
             error("ask_ls:request failed synchronously while making semantic_grep request")
         end
 
-        _request_id = request_id
-
         local timeout_ms = 5000
-        _request_timeout_timer = vim.defer_fn(function()
+        request_timeout_timer = vim.defer_fn(function()
             if canceled then
                 return
             end
@@ -295,7 +294,7 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
         return nil, NOOP
     end
 
-    return _request_id, stop_request
+    return request_id, stop_request
 end
 
 return M
