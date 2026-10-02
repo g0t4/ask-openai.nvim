@@ -251,7 +251,7 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
             -- do not synchronously callback on sync failures, most callers check request ids and they won't have those yet.. NBD to cancel in a split second vs instant
             error_response("Semantic Grep aborted... ask_ls is not available")
         end)
-        return {}, NOOP
+        return nil, NOOP
     end
 
     local ok, result_or_error = safely.call(function() -- FYI safely.call will log raised errors
@@ -293,11 +293,10 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
             -- do not synchronously callback on sync failures, most callers check request ids and they won't have those yet.. NBD to cancel in a split second vs instant
             error_response(result_or_error)
         end)
-        return {}, NOOP
+        return nil, NOOP
     end
 
-    -- TODO! update callers to use singular request_id... in fact, can callers just use stop_requests only and not need request_id?
-    return { _request_id }, stop_request
+    return _request_id, stop_request
 end
 
 return M
