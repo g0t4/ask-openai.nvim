@@ -131,9 +131,6 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
         end
     end
 
-    -- normally I'd move closer to first use, but for this LSP cancel scenario, sometimes a nested func wants to use these (with nil check) and I forget about these... so leave here so it is obvious I can use them anywhere if check happens
-    local _request_id, _cancel_request, _request_timeout_timer
-
     ---@param message string
     -- Invokes the provided callback with a standardized error payload.
     -- The function name is chosen to better convey its purpose.
@@ -232,17 +229,6 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
         arguments = { semantic_grep_request },
     }
 
-    local function stop_request()
-        if _cancel_request == nil then
-            return
-        end
-        if _request_timeout_timer then
-            _request_timeout_timer:stop()
-        end
-        _cancel_request()
-        _cancel_request = nil -- avoid double canceling (raises error) i.e. if user cancels after a timeout
-    end
-
     ---@type vim.lsp.Client
     local ask_ls = vim.lsp.get_clients({ name = "ask_ls", bufnr = lsp_buffer_number })[1]
     -- local ask_ls = vim.iter():filter(function(c) return c.name == "ask_ls" end):totable()[1]
@@ -253,6 +239,21 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
             error_response("Semantic Grep aborted... ask_ls is not available")
         end)
         return nil, NOOP
+    end
+
+    local _request_id, _request_timeout_timer
+    local canceled = false
+    local function stop_request()
+        if canceled then
+            return
+        end
+        if _request_timeout_timer then
+            _request_timeout_timer:stop()
+        end
+        if _request_id ~= nil then
+            ask_ls:cancel_request(_request_id)
+        end
+        canceled = true -- avoid double canceling (raises error) i.e. if user cancels after a timeout
     end
 
     local ok, result_or_error = safely.call(function() -- FYI safely.call will log raised errors
@@ -274,13 +275,10 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
         end
 
         _request_id = request_id
-        _cancel_request = function()
-            ask_ls:cancel_request(request_id)
-        end
 
         local timeout_ms = 5000
         _request_timeout_timer = vim.defer_fn(function()
-            if _cancel_request == nil then -- already canceled
+            if canceled then
                 return
             end
             log:info("Semantic Grep request timed out")
