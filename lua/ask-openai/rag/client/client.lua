@@ -241,7 +241,8 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
         return nil, NOOP
     end
 
-    local request_id, request_timeout_timer
+    local request_id = nil
+    local request_timeout_timer = nil
     local canceled = false
     local function stop_request()
         if canceled then
