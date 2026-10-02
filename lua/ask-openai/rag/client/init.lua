@@ -254,7 +254,7 @@ end
 
 ---@param query string
 ---@param callback fun(matches: LSPRankedMatch[])
----@return integer[] _client_request_ids, fun() _cancel_all_requests
+---@return fun() _cancel_request
 function M.context_query_fim(query, callback)
     -- FYI IIRC I put the query building here to consolidate query/instruct logic across frontends
     --   it would be fine to push this out into PredictionsFrontend too...
@@ -274,7 +274,8 @@ function M.context_query_fim(query, callback)
         embedTopK = 18,
     }
     -- TODO pass bufnr for 2nd param?
-    return client.semantic_grep_with_timeout(request, nil, callback, "fim")
+    local _, cancel_request = client.semantic_grep_with_timeout(request, nil, callback, "fim")
+    return cancel_request
 end
 
 -- require("ask-openai.rag.client.known").run_verification()

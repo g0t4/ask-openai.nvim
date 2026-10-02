@@ -277,7 +277,6 @@ function PredictionsFrontend.ask_for_prediction(params)
 
             -- clear cancel so not getting cancel message after retrieval (on next keystroke)
             this_prediction.rag_cancel = nil
-            this_prediction.rag_request_ids = nil
 
             then_send_fim(obj.result.matches or {})
         end
@@ -289,7 +288,6 @@ function PredictionsFrontend.ask_for_prediction(params)
                 -- test this w/ empty buffer => go into insert mode (get prediction) => Escape to exit insert mode (kaboom)
                 cancel()
             end
-            this_prediction.rag_request_ids = nil
         end
 
         ---@param str string
@@ -335,10 +333,8 @@ function PredictionsFrontend.ask_for_prediction(params)
         end
 
         this_request_ids, cancel = rag_client.context_query_fim(query, on_rag_response)
-        this_prediction.rag_request_ids = this_request_ids
     else
         this_prediction.rag_cancel = nil
-        this_prediction.rag_request_ids = nil
         then_send_fim({})
     end
 end
