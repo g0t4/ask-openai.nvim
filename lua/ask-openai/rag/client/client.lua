@@ -157,7 +157,7 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
         --   "ConnectionRefusedError: [Errno 61] Connect call failed ('IP', PORT)"
         -- ? any special connection failure logic? or warn me logic? like update a dot in the status lualine?
         if lsp_result == nil then
-            log:info("lsp_result is nil (are you querying an unrelated LS?)", lsp_result)
+            log:warn("lsp_result is nil???", lsp_result)
             return
         end
 
