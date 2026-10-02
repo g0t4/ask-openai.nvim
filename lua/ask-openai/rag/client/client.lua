@@ -131,7 +131,7 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
     end
 
     -- normally I'd move closer to first use, but for this LSP cancel scenario, sometimes a nested func wants to use these (with nil check) and I forget about these... so leave here so it is obvious I can use them anywhere if check happens
-    local _client_request_ids, _cancel_all_requests, _request_timeout_timer
+    local _client_request_id, _cancel_all_requests, _request_timeout_timer
 
     ---@param message string
     -- Invokes the provided callback with a standardized error payload.
@@ -277,7 +277,7 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
             return
         end
 
-        _client_request_ids = { request_id }
+        _client_request_id = request_id
         _cancel_all_requests = function()
             ask_ls:cancel_request(request_id)
         end
@@ -294,9 +294,8 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
     end)
     -- TODO! any special logic on failures? ok == false? from safely.call here... actually just move safely.call up and out so I don't neeed to think about it here?
 
-    -- TODO! rewrite request_ids => singular request_id
-    -- TODO! redo stop_requests to be singular too
-    return _client_request_ids, stop_requests
+    -- TODO! update callers to use singular request_id... in fact, can callers just use stop_requests only and not need request_id?
+    return { _client_request_id }, stop_requests
 end
 
 return M
