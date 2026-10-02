@@ -8,4 +8,9 @@
     // - i.e. I still intend to use private members in some test cases
     "reportPrivateUsage": "information",
     "reportPrivateImportUsage": "information",
+
+    "extraPaths": [
+        "../dotfiles/.config/xonsh/lib",
+        "../dotfiles/xonsh"
+    ]
 }
