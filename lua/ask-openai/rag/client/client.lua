@@ -242,6 +242,7 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
         _cancel_request()
         _cancel_request = nil -- avoid double canceling (raises error) i.e. if user cancels after a timeout
     end
+
     ---@type vim.lsp.Client
     local ask_ls = vim.lsp.get_clients({ name = "ask_ls", bufnr = lsp_buffer_number })[1]
     -- local ask_ls = vim.iter():filter(function(c) return c.name == "ask_ls" end):totable()[1]
