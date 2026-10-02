@@ -240,7 +240,7 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
         return {}, function() end
     end
 
-    local function stop_requests()
+    local function stop_request()
         if _cancel_all_requests == nil then
             return
         end
@@ -289,13 +289,13 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
             end
             log:info("Semantic Grep request timed out")
             error_response("Semantic Grep request timed out")
-            stop_requests()
+            stop_request()
         end, timeout_ms)
     end)
     -- TODO! any special logic on failures? ok == false? from safely.call here... actually just move safely.call up and out so I don't neeed to think about it here?
 
     -- TODO! update callers to use singular request_id... in fact, can callers just use stop_requests only and not need request_id?
-    return { _client_request_id }, stop_requests
+    return { _client_request_id }, stop_request
 end
 
 return M
