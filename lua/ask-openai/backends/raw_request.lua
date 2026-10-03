@@ -1,6 +1,7 @@
 local log = require("devtools.logs.logger").universal()
 local ansi = require("devtools.ansi")
 local uv = vim.uv
+local perf = require("devtools.performance")
 
 
 -- !!! FYI this is just a spike of an idea to reduce dependence on curl externally
@@ -126,7 +127,18 @@ function M.http(request)
             tcp_handle:write(message)
 
             local buffer = ""
+
             tcp_handle:read_start(function(read_err, chunk)
+                if request.start_ns ~= nil then
+                    -- 61ms to 88ms - with alt+tab on line right before this, also 65ms often (so prompt is fully cached) => put cursor above this line
+                    local now_ns = perf.get_time_in_ns()
+                    local duration_ns = now_ns - request.start_ns
+                    local duration_ms = duration_ns / 1e6
+                    log:info(string.format("tcp time_to_first_data_value =%f", duration_ms))
+                    request.start_ns = nil
+                end
+
+                -- here is same as curl
                 if read_err then
                     tcp_handle:close()
                     return request.on_done(read_err)
@@ -180,6 +192,7 @@ end
 ---@field body? table
 ---@field on_data_value fun(data_value: string)
 ---@field on_done fun(err: string)
+---@field start_ns integer?
 
 ---@param request HttpRawRequestForEvents
 ---@return uv.uv_tcp_t tcp_handle
@@ -190,6 +203,7 @@ function M.http_events(request)
     end)
 
     local raw = {
+        start_ns = request.start_ns,
         host = request.host,
         port = request.port,
         path = request.path,
