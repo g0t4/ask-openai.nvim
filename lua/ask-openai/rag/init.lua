@@ -120,6 +120,7 @@ function M.setup_lsp()
             local result = overridden(err, res, ctx)
             local client = vim.lsp.get_client_by_id(ctx.client_id)
             if not client or client.name ~= "ask_ls" then
+                log:info("client/registerCapability - client.name is not ask_ls", client.name)
                 return
             end
 
