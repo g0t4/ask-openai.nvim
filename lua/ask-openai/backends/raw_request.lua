@@ -108,7 +108,7 @@ function M.http(request)
         if tcp_handle:is_closing() then
             return -- defensive, in case close is called before we connect, not likely to happen in reality
         end
-        tcp_handle:connect(host_ip, request.port, function(err)
+        local conn, err, err_name = tcp_handle:connect(host_ip, request.port, function(err)
             if err then
                 log:error('tcp_handle:connect failed', err, request)
                 tcp_handle:close()
@@ -195,6 +195,8 @@ function M.http(request)
                 request.on_data(chunk)
             end)
         end)
+        -- FYI likely can ignore ECANCELED as that would be me calling tcp_handle:close() during connection
+        log:info("connect results", conn, err, err_name)
     end)
     return tcp_handle
 end
