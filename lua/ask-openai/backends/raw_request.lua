@@ -108,14 +108,20 @@ function M.http(request)
         if tcp_handle:is_closing() then
             return -- defensive, in case close is called before we connect, not likely to happen in reality
         end
-        local conn, err, err_name = tcp_handle:connect(host_ip, request.port, function(err)
-            if err then
-                if err_name == "ECANCELED" then
+        local conn, conn_err, conn_err_name = tcp_handle:connect(host_ip, request.port, function(inner_err)
+            if inner_err then
+                if inner_err:find("ECANCELED") then
                     log:info("ECANCELED detected, turn this into an ignore if it is tied to close, BTW tcp_handle:is_closing():", tcp_handle:is_closing())
                 end
-                log:error('tcp_handle:connect failed', err, request)
-                tcp_handle:close()
-                return request.on_done('tcp_handle:connect failed: ' .. err)
+                log:error('tcp_handle:connect failed', inner_err, request)
+                log:info('  FYI tcp_handle:is_closing()', tcp_handle:is_closing())
+                if tcp_handle:is_closing() then
+                    log:info("  tcp_handle already closing, not calling close again")
+                else
+                    -- TODO centralize one spot to avoid calling close twice
+                    tcp_handle:close()
+                end
+                return request.on_done('tcp_handle:connect failed: ' .. inner_err)
             end
 
             local body_json = ""
@@ -199,7 +205,7 @@ function M.http(request)
             end)
         end)
         -- FYI likely can ignore ECANCELED as that would be me calling tcp_handle:close() during connection
-        log:info("connect results", conn, err, err_name)
+        log:info("connect results", conn, conn_err, conn_err_name)
     end)
     return tcp_handle
 end
