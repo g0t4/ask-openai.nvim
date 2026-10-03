@@ -6,11 +6,11 @@ local config = require("ask-openai.config")
 local M = {}
 
 function M.setup()
-    M.setup_lsp()
+    M.setup_vim_lsp()
     M.setup_telescope_picker() -- allow testing queries always
 end
 
-function M.setup_lsp()
+function M.setup_vim_lsp()
     -- TMP disable, i.e. when working on lsp itself :)
     --  HRMm wont be easy to enable/disable this though, will have to restart if LSP wasn't started and rag is toggled?
     if not config.is_rag_enabled() then
