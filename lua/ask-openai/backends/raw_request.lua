@@ -6,6 +6,9 @@ local uv = vim.uv
 -- !!! FYI this is just a spike of an idea to reduce dependence on curl externally
 -- it would probably be best to find an http client I like that is async and in-process
 -- OR perhaps just keep curl and up your `ulimit -Sn` to more than 256 to avoid `too many files open warning`
+-- FYI if you don't like this, you should consider moving back to curl OR... another in-process http client
+-- FYI doubtful I can get https working BTW
+
 
 local M = {}
 function M.query_inet_addy(host, on_first_ip_address)

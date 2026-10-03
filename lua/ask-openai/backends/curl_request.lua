@@ -48,12 +48,13 @@ end
 function CurlRequest.terminate(request)
     if request ~= nil and request.tcp_handle ~= nil then
         log:info("close tcp_handle")
+
         request.tcp_handle:close()
         request.tcp_handle = nil
         return
     end
 
-    -- legacy curl
+    -- legacy curl -- TODO strip once I am happy with new approach (low level in-process)
     if request == nil or request.handle == nil then
         -- FYI prefer CurlRequest.terminate(request) b/c no error if request is nil
         --   NOT request:terminate() -- get an error if request is nil
