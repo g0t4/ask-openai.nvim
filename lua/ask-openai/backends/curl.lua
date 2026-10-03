@@ -255,7 +255,7 @@ function Curl.spawn(request, frontend)
     -- end
     -- stdout:read_start(on_stdout)
 
-    local host, port,path = request:get_url():match("^https?://([^/:]+):?(%d*)(/.*)")
+    local host, port, path = request:get_url():match("^https?://([^/:]+):?(%d*)(/.*)")
     ---@type HttpRawRequestForEvents raw
     the_raw_request = {
         host = host,
