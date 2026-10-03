@@ -126,7 +126,7 @@ _G.CompletionsEndpoints = {
 function Curl.spawn(request, frontend)
     request.body.stream = true
 
-    local USE_RAW_TCP = true
+    local USE_RAW_TCP = false
     if USE_RAW_TCP then
         ---@param data_value string
         function on_raw_data_value(data_value)
@@ -198,106 +198,106 @@ function Curl.spawn(request, frontend)
         },
     }
 
-    -- local stdout = vim.uv.new_pipe(false)
-    -- local stderr = vim.uv.new_pipe(false)
+    local stdout = vim.uv.new_pipe(false)
+    local stderr = vim.uv.new_pipe(false)
 
-    -- local parser = SSEDataOnlyParser.new(on_data_sse)
-    -- local _stderr_data_parts = {}
-    --
-    -- local function is_empty(value)
-    --     local is_whitespace_only = value:match("^%s*$")
-    --     return value == nil or value == "" or is_whitespace_only
-    -- end
-    --
-    -- local function is_not_empty(value)
-    --     return not is_empty(value)
-    -- end
-    --
-    -- ---@param code integer
-    -- ---@param signal integer
-    -- local function on_exit(code, signal)
-    --     log:trace_on_exit_always(code, signal)
-    --     -- log:trace_on_exit_errors(code, signal) -- less verbose
-    --     local cumulative_stderr = table.concat(_stderr_data_parts, "")
-    --     if is_not_empty(cumulative_stderr) then
-    --         log:error("Curl.spawn.on_exit cumulative_stderr=", cumulative_stderr)
-    --         -- FYI stderr output has "curl (7)" with exit code == 7 in this case, so don't duplicate those in the message:
-    --         frontend.explain_error(cumulative_stderr)
-    --     end
-    --
-    --     -- close before check dregs (b/c might still be data unflushed in STDOUT/ERR)
-    --     stdout:close()
-    --     stderr:close()
-    --
-    --     request.handle = nil
-    --     request.pid = nil
-    --
-    --     -- flush dregs before on_curl_exited_successfully
-    --     -- - which may depend on, for example, a tool_call in dregs
-    --     local error_text = parser:flush_dregs()
-    --     if error_text then
-    --         local message = "Curl.spawn.on_exit -> flush_dregs -> error_text=" .. vim.inspect(error_text)
-    --         log:error(message)
-    --         frontend.explain_error(message)
-    --     end
-    --
-    --     if code == 0 then
-    --         -- FYI this has to come after dregs which may have data used by exit handler!
-    --         --  i.e. triggering tool_calls
-    --         frontend.on_curl_exited_successfully()
-    --     end
-    --
-    --     -- FYI review proper uv.spawn cleanup LATER:
-    --     -- - review:   vim.loop.walk(function(handle) print(handle) end)
-    --     --   - I am seeing alot after I just startup nvim... I wonder if some are from my MCP tool comms?
-    --     --   - and what about my timer/schduling for debounced keyboard events to trigger predictions?
-    --     -- - REVIEW OTHER uses of uv.spawn (and timers)... for missing cleanup logic!
-    -- end
+    local parser = SSEDataOnlyParser.new(on_data_sse)
+    local _stderr_data_parts = {}
 
-    -- request.handle, request.pid = uv_spawn(options.command, {
-    --     args = options.args,
-    --     stdio = { nil, stdout, stderr },
-    -- }, on_exit)
+    local function is_empty(value)
+        local is_whitespace_only = value:match("^%s*$")
+        return value == nil or value == "" or is_whitespace_only
+    end
 
-    -- ---@param read_error any
-    -- ---@param data? string
-    -- local function on_stdout(read_error, data)
-    --     log:log_if_stdio_read_error("on_stdout", read_error, data)
-    --     -- log:trace_stdio_read_always("on_stdout", read_error, data)
-    --
-    --     local no_data = data == nil or data == ""
-    --     if read_error or no_data then
-    --         return
-    --     end
-    --     assert(data ~= nil)
-    --
-    --     parser:write(data)
-    -- end
-    -- stdout:read_start(on_stdout)
+    local function is_not_empty(value)
+        return not is_empty(value)
+    end
 
-    -- ---@param read_error? string
-    -- ---@param data? string
-    -- local function on_stderr(read_error, data)
-    --     log:log_if_stdio_read_error("on_stderr", read_error, data)
-    --     -- log:trace_stdio_read_always("on_stderr", read_error, data)
-    --     if data then
-    --         table.insert(_stderr_data_parts, data)
-    --     end
-    --
-    --     local no_data = data == nil or data == ""
-    --     if read_error or no_data then
-    --         return
-    --     end
-    --     assert(data ~= nil)
-    --
-    --     -- keep in mind... curl errors will show as text in STDERR
-    --     -- FYI just show individual parts here since the full error message is needed to print one final message, accumulate that for on_exit to print
-    --     local message = "Curl.spawn.on_stderr data=" .. vim.inspect(data) -- info level log for parts
-    --     log:info(message)
-    --     -- TODO see if any errors, if it is useful to see explain_error on each chunk instead of just at end in on_exit... I suspect cumulative_stderr is sufficient for most errors
-    --     -- frontend.explain_error(message)
-    -- end
-    -- stderr:read_start(on_stderr)
+    ---@param code integer
+    ---@param signal integer
+    local function on_exit(code, signal)
+        log:trace_on_exit_always(code, signal)
+        -- log:trace_on_exit_errors(code, signal) -- less verbose
+        local cumulative_stderr = table.concat(_stderr_data_parts, "")
+        if is_not_empty(cumulative_stderr) then
+            log:error("Curl.spawn.on_exit cumulative_stderr=", cumulative_stderr)
+            -- FYI stderr output has "curl (7)" with exit code == 7 in this case, so don't duplicate those in the message:
+            frontend.explain_error(cumulative_stderr)
+        end
+
+        -- close before check dregs (b/c might still be data unflushed in STDOUT/ERR)
+        stdout:close()
+        stderr:close()
+
+        request.handle = nil
+        request.pid = nil
+
+        -- flush dregs before on_curl_exited_successfully
+        -- - which may depend on, for example, a tool_call in dregs
+        local error_text = parser:flush_dregs()
+        if error_text then
+            local message = "Curl.spawn.on_exit -> flush_dregs -> error_text=" .. vim.inspect(error_text)
+            log:error(message)
+            frontend.explain_error(message)
+        end
+
+        if code == 0 then
+            -- FYI this has to come after dregs which may have data used by exit handler!
+            --  i.e. triggering tool_calls
+            frontend.on_curl_exited_successfully()
+        end
+
+        -- FYI review proper uv.spawn cleanup LATER:
+        -- - review:   vim.loop.walk(function(handle) print(handle) end)
+        --   - I am seeing alot after I just startup nvim... I wonder if some are from my MCP tool comms?
+        --   - and what about my timer/schduling for debounced keyboard events to trigger predictions?
+        -- - REVIEW OTHER uses of uv.spawn (and timers)... for missing cleanup logic!
+    end
+
+    request.handle, request.pid = uv_spawn(options.command, {
+        args = options.args,
+        stdio = { nil, stdout, stderr },
+    }, on_exit)
+
+    ---@param read_error any
+    ---@param data? string
+    local function on_stdout(read_error, data)
+        log:log_if_stdio_read_error("on_stdout", read_error, data)
+        -- log:trace_stdio_read_always("on_stdout", read_error, data)
+
+        local no_data = data == nil or data == ""
+        if read_error or no_data then
+            return
+        end
+        assert(data ~= nil)
+
+        parser:write(data)
+    end
+    stdout:read_start(on_stdout)
+
+    ---@param read_error? string
+    ---@param data? string
+    local function on_stderr(read_error, data)
+        log:log_if_stdio_read_error("on_stderr", read_error, data)
+        -- log:trace_stdio_read_always("on_stderr", read_error, data)
+        if data then
+            table.insert(_stderr_data_parts, data)
+        end
+
+        local no_data = data == nil or data == ""
+        if read_error or no_data then
+            return
+        end
+        assert(data ~= nil)
+
+        -- keep in mind... curl errors will show as text in STDERR
+        -- FYI just show individual parts here since the full error message is needed to print one final message, accumulate that for on_exit to print
+        local message = "Curl.spawn.on_stderr data=" .. vim.inspect(data) -- info level log for parts
+        log:info(message)
+        -- TODO see if any errors, if it is useful to see explain_error on each chunk instead of just at end in on_exit... I suspect cumulative_stderr is sufficient for most errors
+        -- frontend.explain_error(message)
+    end
+    stderr:read_start(on_stderr)
 end
 
 ---@param data_value string
