@@ -46,10 +46,19 @@ function CurlRequest:get_url()
     return self.base_url .. self.endpoint
 end
 
+---@param request CurlRequest
 function CurlRequest.terminate(request)
     if request ~= nil and request.tcp_handle ~= nil then
         log:info("close tcp_handle", request.tcp_handle)
         -- request.tcp_handle.is_closing -- TODO check is_closing first?
+        local closing, err, err_name = request.tcp_handle:is_closing()
+        if err then
+            log:warn("failed to check if tcp_handle:is_closing()", err, err_name)
+        end
+        if closing then
+            -- warn if already closing
+            log:error("ummm tcp_handle.is_closing() is true?!", request.tcp_handle)
+        end
 
         request.tcp_handle:close()
         request.tcp_handle = nil
