@@ -48,7 +48,8 @@ end
 
 function CurlRequest.terminate(request)
     if request ~= nil and request.tcp_handle ~= nil then
-        log:info("close tcp_handle")
+        log:info("close tcp_handle", request.tcp_handle)
+        -- request.tcp_handle.is_closing -- TODO check is_closing first?
 
         request.tcp_handle:close()
         request.tcp_handle = nil

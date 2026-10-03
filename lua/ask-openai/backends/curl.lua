@@ -129,6 +129,10 @@ function Curl.spawn(request, frontend)
 
     local USE_RAW_TCP = true
     if USE_RAW_TCP then
+        -- TODO find what is causing old FIM prediction after typing a character (sometimes at random)
+        --   I did notice the tcp_handle x124 value matched one a few back so I am wondering about reusing sockets? or?
+        --   is it possible new_tcp is not always new? and would that have any impact?
+        --   or is it a pooling mechanism because a prior connection was canceled and now the connection is avail?
         local start_ns = perf.get_time_in_ns()
         ---@param data_value string
         function on_raw_data_value(data_value)
