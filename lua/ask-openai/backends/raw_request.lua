@@ -12,14 +12,23 @@ local perf = require("devtools.performance")
 
 
 local M = {}
+
+local host_address_cache = {}
+
 function M.query_inet_addy(host, on_first_ip_address)
+    -- for my use case, I will restart neovim if I change DNS which I do almost NEVER
+    local cached_address = host_address_cache[host]
+    if cached_address then
+        on_first_ip_address(cached_address)
+        return
+    end
+
     vim.uv.getaddrinfo(host, nil, {}, function(err, addresses)
         assert(not err, err)
-        -- log:info(addresses)
         for _, addr in ipairs(addresses) do
             if addr.family:gmatch("^inet") and addr.protocol == "tcp" then
                 local first_address = addr.addr
-                -- log:info("first address", first_address)
+                host_address_cache[host] = first_address
                 on_first_ip_address(first_address)
                 return
             end
