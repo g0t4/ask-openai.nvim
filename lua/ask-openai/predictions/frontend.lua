@@ -225,7 +225,7 @@ function PredictionsFrontend.ask_for_prediction(params)
             get_flags_wrapper = get_flags,
         }
 
-        log:info("Curl.spawn(fim)")
+        -- log:info("Curl.spawn(fim)")
         Curl.spawn(fim_request, frontend)
     end
 
@@ -249,7 +249,7 @@ function PredictionsFrontend.ask_for_prediction(params)
             --  (or it was canceled), so these results are stale and must be skipped.
             --  object identity is sufficient here since each keystroke creates a fresh Prediction instance
             if PredictionsFrontend._get_current_prediction(this_prediction.bufnr) ~= this_prediction then
-                log:warn("possibly stale rag results, skipping...")
+                -- log:warn("possibly stale rag results, skipping...")
                 return
             end
             -- ** DO NOT LOOK AT A RESPONSE (neither isError nor matches) IF IT IS NOT FOR THE LATEST REQUEST!
@@ -344,7 +344,7 @@ function PredictionsFrontend.cancel_current_prediction(bufnr)
     -- PRN stdout/stderr:read_stop() to halt on_stdout/stderr callbacks from firing again (before handle:close())?!
     local this_prediction = PredictionsFrontend._get_current_prediction(bufnr)
     if not this_prediction then
-        log:info("no prediction to cancel")
+        -- log:info("no prediction to cancel")
         return
     end
     if this_prediction.rag_cancel then
@@ -367,7 +367,7 @@ local rx = require('rx')
 local input_events = rx.Subject.create()
 local input_events_subscription = input_events:subscribe(function(event)
     --- @cast event ObservableInputEvent
-    log:info("input_event", event.bufnr)
+    -- log:info("input_event", event.bufnr)
 
     -- immediately clear/hide prediction, else slides as you type
     PredictionsFrontend.cancel_current_prediction(event.bufnr)
@@ -389,7 +389,7 @@ function PredictionsFrontend.start_predicting(params)
         log:info("cannot predict outside insert mode")
         return
     end
-    log:info("start predict")
+    -- log:info("start predict")
 
     PredictionsFrontend.ask_for_prediction({ bufnr = params.bufnr })
 end
@@ -411,7 +411,7 @@ end
 
 ---@param event vim.api.keyset.create_autocmd.callback_args
 function PredictionsFrontend.leaving_insert_mode(event)
-    log:info("leaving_insert_mode", event.buf)
+    -- log:info("leaving_insert_mode", event.buf)
     PredictionsFrontend.cancel_current_prediction(event.buf)
     -- PRN I could trigger a clear of the debounced signal? that said leaving insert mode means it won't run anyways
 end
@@ -423,13 +423,13 @@ function PredictionsFrontend.entering_insert_mode(event)
     --   -  if you use "i" then it will be the prediction that runs
     --   - if you use "o"/"O" then this one will be canceled (cheap) and a new one started
     --     PRN would be maybe nice to withhold a new prediction if there are subsquent commands pending or running so I don't waste any time (i.e. no pred until that new line added which becomes part of prediction)
-    log:info("entering_insert_mode, bufnr: ", event.buf)
+    -- log:info("entering_insert_mode, bufnr: ", event.buf)
     PredictionsFrontend.ask_for_prediction({ bufnr = event.buf })
 end
 
 function PredictionsFrontend.accept_all_invoked()
     local bufnr = vim.fn.bufnr()
-    log:info("accept_all_invoked", bufnr)
+    -- log:info("accept_all_invoked", bufnr)
     local current_prediction = PredictionsFrontend._get_current_prediction(bufnr)
     if not current_prediction then
         return
@@ -439,7 +439,7 @@ end
 
 function PredictionsFrontend.accept_line_invoked()
     local bufnr = vim.fn.bufnr()
-    log:info("accept_line_invoked", bufnr)
+    -- log:info("accept_line_invoked", bufnr)
     local current_prediction = PredictionsFrontend._get_current_prediction(bufnr)
     if not current_prediction then
         return
@@ -449,7 +449,7 @@ end
 
 function PredictionsFrontend.accept_word_invoked(event)
     local bufnr = vim.fn.bufnr()
-    log:info("accept_word_invoked", bufnr)
+    -- log:info("accept_word_invoked", bufnr)
     local current_prediction = PredictionsFrontend._get_current_prediction(bufnr)
     if not current_prediction then
         return

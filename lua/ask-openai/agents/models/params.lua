@@ -135,7 +135,7 @@ function M.body_for_deepseek4flash(request_body, effort)
         local message = "PSM is for FIM only, aborting deepseek agent"
         error(message)
     end
-    log:info("recommended", recommended)
+    -- log:info("recommended", recommended)
 
     return default_to_recommended(request_body, recommended)
 end
@@ -264,7 +264,7 @@ function M.body_for_muse_glimmer(request_body, effort)
         log:white_on_red("TODO verify reasoning_strength works: " .. effort)
         recommended.chat_template_kwargs.reasoning_strength = effort
     end
-    log:info("recommended", recommended)
+    -- log:info("recommended", recommended)
 
     return default_to_recommended(request_body, recommended)
 end
