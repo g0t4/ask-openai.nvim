@@ -6,6 +6,7 @@ local safely = require("ask-openai.helpers.safely")
 local json = require('dkjson')
 local uv_spawn = require("ask-openai.helpers.uv_spawn").uv_spawn
 local raw_request = require("ask-openai.backends.raw_request")
+local perf = require("devtools.performance")
 
 local Curl = {}
 
@@ -126,10 +127,22 @@ _G.CompletionsEndpoints = {
 function Curl.spawn(request, frontend)
     request.body.stream = true
 
-    local USE_RAW_TCP = false
+    local USE_RAW_TCP = true
     if USE_RAW_TCP then
+        local only_once = true
+        local start_ns = perf.get_time_in_ns()
         ---@param data_value string
         function on_raw_data_value(data_value)
+            if only_once then
+                only_once = false
+
+                -- 61ms to 88ms - with alt+tab on line right before this, also 65ms often (so prompt is fully cached) => put cursor above this line
+                local now_ns = perf.get_time_in_ns()
+                local duration_ns = now_ns - start_ns
+                local duration_ms = duration_ns / 1e6
+                log:info(string.format("duration_ms =%f", duration_ms))
+            end
+
             if request.tcp_handle == nil then
                 return
             end
