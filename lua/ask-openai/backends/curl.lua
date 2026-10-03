@@ -127,7 +127,8 @@ _G.CompletionsEndpoints = {
 function Curl.spawn(request, frontend)
     request.body.stream = true
 
-    local USE_RAW_TCP = true
+
+    local USE_RAW_TCP = false
     if USE_RAW_TCP then
         local start_ns = perf.get_time_in_ns()
         ---@param data_value string
@@ -193,6 +194,7 @@ function Curl.spawn(request, frontend)
     local options = {
         command = "curl",
         args = {
+            "-i", -- use to include headers in STDOUT so I am closer to apples:apples with raw tcp perf testing
             "--fail-with-body",
             "-sSL",
             "--no-buffer", -- w/o this curl batches (test w/ `curl *` vs `curl * | cat` and you will see difference)
@@ -279,16 +281,18 @@ function Curl.spawn(request, frontend)
         stdio = { nil, stdout, stderr },
     }, on_exit)
 
+    local first_n = 10
+
     ---@param read_error any
     ---@param data? string
     local function on_stdout(read_error, data)
-        if start_ns ~= nil then
+        if first_n > 0 then
+            first_n = first_n - 1
             local now_ns = perf.get_time_in_ns()
             local duration_ns = now_ns - start_ns
             local duration_ms = duration_ns / 1e6
             log:info(string.format("curl time_to_first_data_value =%f", duration_ms))
             log:info("CHUNK", data)
-            start_ns = nil
         end
         log:log_if_stdio_read_error("on_stdout", read_error, data)
         -- log:trace_stdio_read_always("on_stdout", read_error, data)

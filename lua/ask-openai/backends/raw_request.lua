@@ -128,15 +128,17 @@ function M.http(request)
 
             local buffer = ""
 
+            local first_n = 10
+
             tcp_handle:read_start(function(read_err, chunk)
-                if request.start_ns ~= nil then
+                if first_n > 0 then
+                    first_n = first_n - 1
                     -- 61ms to 88ms - with alt+tab on line right before this, also 65ms often (so prompt is fully cached) => put cursor above this line
                     local now_ns = perf.get_time_in_ns()
                     local duration_ns = now_ns - request.start_ns
                     local duration_ms = duration_ns / 1e6
                     log:info(string.format("tcp time_to_first_data_value =%f", duration_ms))
                     log:info("CHUNK", chunk)
-                    request.start_ns = nil
                 end
 
                 -- here is same as curl
