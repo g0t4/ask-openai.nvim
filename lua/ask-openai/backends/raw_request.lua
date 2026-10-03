@@ -128,18 +128,18 @@ function M.http(request)
 
             local buffer = ""
 
-            local first_n = 10
+            -- local first_n = 10
 
             tcp_handle:read_start(function(read_err, chunk)
-                if first_n > 0 then
-                    first_n = first_n - 1
-                    -- 61ms to 88ms - with alt+tab on line right before this, also 65ms often (so prompt is fully cached) => put cursor above this line
-                    local now_ns = perf.get_time_in_ns()
-                    local duration_ns = now_ns - request.start_ns
-                    local duration_ms = duration_ns / 1e6
-                    log:info(string.format("tcp time_to_first_data_value =%f", duration_ms))
-                    log:info("CHUNK", chunk)
-                end
+                -- if first_n > 0 then
+                --     first_n = first_n - 1
+                --     -- 61ms to 88ms - with alt+tab on line right before this, also 65ms often (so prompt is fully cached) => put cursor above this line
+                --     local now_ns = perf.get_time_in_ns()
+                --     local duration_ns = now_ns - request.start_ns
+                --     local duration_ms = duration_ns / 1e6
+                --     -- log:info(string.format("tcp time_to_first_data_value =%f", duration_ms))
+                --     -- log:info("CHUNK", chunk)
+                -- end
 
                 -- here is same as curl
                 if read_err then
@@ -195,7 +195,6 @@ end
 ---@field body? table
 ---@field on_data_value fun(data_value: string)
 ---@field on_done fun(err: string)
----@field start_ns integer?
 
 ---@param request HttpRawRequestForEvents
 ---@return uv.uv_tcp_t tcp_handle
@@ -206,7 +205,7 @@ function M.http_events(request)
     end)
 
     local raw = {
-        start_ns = request.start_ns,
+        -- start_ns = request.start_ns, -- FYI just for perf testing, nuke when done with that
         host = request.host,
         port = request.port,
         path = request.path,

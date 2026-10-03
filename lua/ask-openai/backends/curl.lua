@@ -133,7 +133,7 @@ function Curl.spawn(request, frontend)
         --   I did notice the tcp_handle x124 value matched one a few back so I am wondering about reusing sockets? or?
         --   is it possible new_tcp is not always new? and would that have any impact?
         --   or is it a pooling mechanism because a prior connection was canceled and now the connection is avail?
-        local start_ns = perf.get_time_in_ns()
+        -- local start_ns = perf.get_time_in_ns()
         ---@param data_value string
         function on_raw_data_value(data_value)
 
@@ -184,7 +184,7 @@ function Curl.spawn(request, frontend)
             body = request.body,
             on_data_value = on_raw_data_value,
             on_done = on_raw_done,
-            start_ns = start_ns,
+            -- start_ns = start_ns,
         }
         request.tcp_handle = raw_request.http_events(the_raw_request)
 
@@ -192,7 +192,7 @@ function Curl.spawn(request, frontend)
     end
 
     -- * legacy curl
-    local start_ns = perf.get_time_in_ns()
+    -- local start_ns = perf.get_time_in_ns()
     local json_body = vim.json.encode(request.body)
     local options = {
         command = "curl",
@@ -284,19 +284,19 @@ function Curl.spawn(request, frontend)
         stdio = { nil, stdout, stderr },
     }, on_exit)
 
-    local first_n = 10
+    -- local first_n = 10
 
     ---@param read_error any
     ---@param data? string
     local function on_stdout(read_error, data)
-        if first_n > 0 then
-            first_n = first_n - 1
-            local now_ns = perf.get_time_in_ns()
-            local duration_ns = now_ns - start_ns
-            local duration_ms = duration_ns / 1e6
-            log:info(string.format("curl time_to_first_data_value =%f", duration_ms))
-            log:info("CHUNK", data)
-        end
+        -- if first_n > 0 then
+        --     first_n = first_n - 1
+        --     local now_ns = perf.get_time_in_ns()
+        --     local duration_ns = now_ns - start_ns
+        --     local duration_ms = duration_ns / 1e6
+        --     log:info(string.format("curl time_to_first_data_value =%f", duration_ms))
+        --     log:info("CHUNK", data)
+        -- end
         log:log_if_stdio_read_error("on_stdout", read_error, data)
         -- log:trace_stdio_read_always("on_stdout", read_error, data)
 
