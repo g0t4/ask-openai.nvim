@@ -4,6 +4,7 @@ from pygls.lsp.server import LanguageServer
 from language_server.stoppers import create_stopper, remove_stopper
 from logs import get_logger
 
+logger = get_logger(__name__)
 
 def setup(server: LanguageServer):
 
