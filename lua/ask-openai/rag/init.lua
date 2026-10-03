@@ -166,7 +166,16 @@ function M.setup_lsp()
                 --     client._asked_openai_capabilities_logged = true
                 -- end
 
-                -- TODO keymaps for slash commands
+                ---@type lsp.Handler
+                function window_showMessage(err, result, ctx, config)
+                    log:info("ask_ls window/showMessage", result)
+                    vim.notify(result)
+                end
+
+                ---@type lsp.Handler
+                function window_logMessage(err, result, ctx, config)
+                    log:info("ask_ls window/logMessage", result)
+                end
 
                 client.handlers = {
                     ["fuu/no_dot_rag__do_the_right_thing_wink"] = function(err, result, ctx, config)
@@ -174,20 +183,13 @@ function M.setup_lsp()
                         -- ask server to shutdown, so I don't ask for more stuff it cannot do!
                         -- WHY THE F does this not request SHUTDOWN!?
                         -- vim.lsp.stop_client(client)
-                        -- vim.lsp.stop_client(client)
                     end,
-                    -- ["window/showMessage"] = function(err, result, ctx, config)
-                    --     log:info("client handler window/showMessage")
-                    --     log:info(vim.inspect(result))
-                    -- end,
+                    ["window/showMessage"] = window_showMessage,
                     -- ["window/showMessageRequest"] = function(err, result, ctx, config)
                     --     log:info("client handler window/showMessageRequest")
                     --     log:info(vim.inspect(result))
                     -- end,
-                    -- ["window/logMessage"] = function(err, result, ctx, config)
-                    --     log:info("client handler window/logMessage")
-                    --     log:info(vim.inspect(result))
-                    -- end,
+                    ["window/logMessage"] = window_logMessage,
                 }
 
                 -- vim.defer_fn(function()
