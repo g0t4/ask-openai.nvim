@@ -81,6 +81,8 @@ function M.http(request)
     on_headers = request.on_headers or function() end
     -- FYI https://docs.libuv.org/en/v1.x/tcp.html for uv_tcp_t
     local tcp_handle, err, err_name = uv.new_tcp()
+    log:info("new tcp_handle", tcp_handle)
+
     assert(tcp_handle ~= nil)
     if err ~= nil then
         log:error("uv.new_tcp failed", err, err_name)

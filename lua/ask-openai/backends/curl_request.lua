@@ -9,6 +9,7 @@ local log = require("devtools.logs.logger").universal()
 ---@field start_time integer -- unix timestamp when request was sent (for timing)
 ---@field marks_ns_id integer
 ---@field type string
+---@field tcp_handle uv.uv_tcp_t?
 local CurlRequest = {}
 local request_counter = 1
 
@@ -54,7 +55,8 @@ function CurlRequest.terminate(request)
         return
     end
 
-    -- legacy curl -- TODO strip once I am happy with new approach (low level in-process)
+    -- *** legacy curl
+    -- TODO! strip once I am happy with new approach (low level in-process)
     if request == nil or request.handle == nil then
         -- FYI prefer CurlRequest.terminate(request) b/c no error if request is nil
         --   NOT request:terminate() -- get an error if request is nil
