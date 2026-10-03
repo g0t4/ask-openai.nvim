@@ -11,20 +11,14 @@ function M.setup()
 end
 
 function M.setup_vim_lsp()
-    -- TMP disable, i.e. when working on lsp itself :)
-    --  HRMm wont be easy to enable/disable this though, will have to restart if LSP wasn't started and rag is toggled?
     if not config.is_rag_enabled() then
-        log:trace("NOT starting LSP (b/c RAG is toggled off)")
+        log:trace("NOT starting LSP - RAG is OFF")
         return
     end
     if not rag_client.is_rag_supported() then
-        log:error("NOT starting LSP for RAG")
+        log:error("NOT starting LSP - RAG is NOT SUPPORTED")
         return
     end
-
-    -- TODO detect initial failure to start LSP => stop trying... so when embeddings server is down
-    --  FYI see rag_client.is_rag_supported_in_current_file() for ideas
-    --  maybe even set some failure flag from initial setup here (or in a callback)
 
     --- @param bufnr number
     --- @param on_dir fun(string)
