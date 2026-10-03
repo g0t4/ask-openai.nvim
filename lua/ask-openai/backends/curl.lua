@@ -126,20 +126,6 @@ _G.CompletionsEndpoints = {
 function Curl.spawn(request, frontend)
     request.body.stream = true
 
-    -- local json_body = vim.json.encode(request.body)
-    -- local options = {
-    --     command = "curl",
-    --     args = {
-    --         "--fail-with-body",
-    --         "-sSL",
-    --         "--no-buffer", -- w/o this curl batches (test w/ `curl *` vs `curl * | cat` and you will see difference)
-    --         "-X", "POST",
-    --         request:get_url(),
-    --         "-H", "Content-Type: application/json",
-    --         "-d", json_body
-    --     },
-    -- }
-
     ---@param data_value string
     function on_raw_data_value(data_value)
         if request.tcp_handle == nil then
@@ -158,6 +144,36 @@ function Curl.spawn(request, frontend)
         log:error(message)
         frontend.explain_error(message)
     end
+
+    local host, port, path = request:get_url():match("^https?://([^/:]+):?(%d*)(/.*)")
+    ---@type HttpRawRequestForEvents raw
+    the_raw_request = {
+        host = host,
+        port = port,
+        path = path,
+        method = "POST",
+        body = request.body,
+        on_data_value = on_raw_data_value,
+        on_done = on_raw_done,
+    }
+    request.tcp_handle = raw_request.http_events(the_raw_request)
+
+    do return end
+    -- * legacy curl
+
+    local json_body = vim.json.encode(request.body)
+    local options = {
+        command = "curl",
+        args = {
+            "--fail-with-body",
+            "-sSL",
+            "--no-buffer", -- w/o this curl batches (test w/ `curl *` vs `curl * | cat` and you will see difference)
+            "-X", "POST",
+            request:get_url(),
+            "-H", "Content-Type: application/json",
+            "-d", json_body
+        },
+    }
 
     -- local stdout = vim.uv.new_pipe(false)
     -- local stderr = vim.uv.new_pipe(false)
@@ -254,20 +270,6 @@ function Curl.spawn(request, frontend)
     --     parser:write(data)
     -- end
     -- stdout:read_start(on_stdout)
-
-    local host, port, path = request:get_url():match("^https?://([^/:]+):?(%d*)(/.*)")
-    ---@type HttpRawRequestForEvents raw
-    the_raw_request = {
-        host = host,
-        port = port,
-        path = path,
-        method = "POST",
-        body = request.body,
-        on_data_value = on_raw_data_value,
-        on_done = on_raw_done,
-    }
-    request.tcp_handle = raw_request.http_events(the_raw_request)
-
 
     -- ---@param read_error? string
     -- ---@param data? string
