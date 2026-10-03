@@ -287,6 +287,7 @@ function Curl.spawn(request, frontend)
             local duration_ns = now_ns - start_ns
             local duration_ms = duration_ns / 1e6
             log:info(string.format("curl time_to_first_data_value =%f", duration_ms))
+            log:info("CHUNK", data)
             start_ns = nil
         end
         log:log_if_stdio_read_error("on_stdout", read_error, data)

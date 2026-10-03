@@ -135,6 +135,7 @@ function M.http(request)
                     local duration_ns = now_ns - request.start_ns
                     local duration_ms = duration_ns / 1e6
                     log:info(string.format("tcp time_to_first_data_value =%f", duration_ms))
+                    log:info("CHUNK", chunk)
                     request.start_ns = nil
                 end
 
