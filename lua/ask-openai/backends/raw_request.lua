@@ -22,12 +22,10 @@ function M.query_inet_addy(host, on_first_ip_address)
         on_first_ip_address(cached_address)
         return
     end
-
-    local start_ns = perf.get_time_in_ns()
-
+    -- local start_ns = perf.get_time_in_ns()
     vim.uv.getaddrinfo(host, nil, {}, function(err, addresses)
-        local duration_ns = perf.get_time_in_ns() - start_ns
-        log:info(string.format("DNS lookup for %s took %.2f ms", host, duration_ns / 1e6))
+        -- local duration_ns = perf.get_time_in_ns() - start_ns
+        -- log:info(string.format("DNS lookup for %s took %.2f ms", host, duration_ns / 1e6))
 
         assert(not err, err)
         for _, addr in ipairs(addresses) do
