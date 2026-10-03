@@ -127,7 +127,7 @@ _G.CompletionsEndpoints = {
 function Curl.spawn(request, frontend)
     request.body.stream = true
 
-    local USE_RAW_TCP = true
+    local USE_RAW_TCP = false
     if USE_RAW_TCP then
         local only_once = true
         local start_ns = perf.get_time_in_ns()
@@ -140,7 +140,7 @@ function Curl.spawn(request, frontend)
                 local now_ns = perf.get_time_in_ns()
                 local duration_ns = now_ns - start_ns
                 local duration_ms = duration_ns / 1e6
-                log:info(string.format("duration_ms =%f", duration_ms))
+                log:info(string.format("tcp time_to_first_data_value =%f", duration_ms))
             end
 
             if request.tcp_handle == nil then
@@ -197,6 +197,8 @@ function Curl.spawn(request, frontend)
     end
 
     -- * legacy curl
+    local only_once_curl = true -- json encode is part of it
+    local start_ns = perf.get_time_in_ns()
     local json_body = vim.json.encode(request.body)
     local options = {
         command = "curl",
@@ -290,6 +292,14 @@ function Curl.spawn(request, frontend)
     ---@param read_error any
     ---@param data? string
     local function on_stdout(read_error, data)
+        if only_once_curl then
+            only_once_curl = false
+
+            local now_ns = perf.get_time_in_ns()
+            local duration_ns = now_ns - start_ns
+            local duration_ms = duration_ns / 1e6
+            log:info(string.format("curl time_to_first_data_value =%f", duration_ms))
+        end
         log:log_if_stdio_read_error("on_stdout", read_error, data)
         -- log:trace_stdio_read_always("on_stdout", read_error, data)
 
