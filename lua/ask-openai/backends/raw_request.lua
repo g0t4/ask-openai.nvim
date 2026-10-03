@@ -110,6 +110,9 @@ function M.http(request)
         end
         local conn, err, err_name = tcp_handle:connect(host_ip, request.port, function(err)
             if err then
+                if err_name == "ECANCELED" then
+                    log:info("ECANCELED detected, turn this into an ignore if it is tied to close, BTW tcp_handle:is_closing():", tcp_handle:is_closing())
+                end
                 log:error('tcp_handle:connect failed', err, request)
                 tcp_handle:close()
                 return request.on_done('tcp_handle:connect failed: ' .. err)
