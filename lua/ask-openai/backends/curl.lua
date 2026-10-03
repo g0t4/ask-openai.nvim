@@ -126,41 +126,44 @@ _G.CompletionsEndpoints = {
 function Curl.spawn(request, frontend)
     request.body.stream = true
 
-    ---@param data_value string
-    function on_raw_data_value(data_value)
-        if request.tcp_handle == nil then
-            return
+    local USE_RAW_TCP = true
+    if USE_RAW_TCP then
+        ---@param data_value string
+        function on_raw_data_value(data_value)
+            if request.tcp_handle == nil then
+                return
+            end
+
+            -- FYI right now this function exists to catch unhandled errors and terminate
+            local success, error_message = safely.call(Curl.on_one_data_value, data_value, frontend, request)
+            if success then
+                return
+            end
+
+            -- request stops ASAP, but not immediately
+            CurlRequest.terminate(request) -- TODO! update for raw request
+            local message = "Curl.spawn.on_data_sse error_message=" .. vim.inspect(error_message)
+            log:error(message)
+            frontend.explain_error(message)
         end
 
-        -- FYI right now this function exists to catch unhandled errors and terminate
-        local success, error_message = safely.call(Curl.on_one_data_value, data_value, frontend, request)
-        if success then
-            return
-        end
+        local host, port, path = request:get_url():match("^https?://([^/:]+):?(%d*)(/.*)")
+        ---@type HttpRawRequestForEvents raw
+        the_raw_request = {
+            host = host,
+            port = port,
+            path = path,
+            method = "POST",
+            body = request.body,
+            on_data_value = on_raw_data_value,
+            on_done = on_raw_done,
+        }
+        request.tcp_handle = raw_request.http_events(the_raw_request)
 
-        -- request stops ASAP, but not immediately
-        CurlRequest.terminate(request) -- TODO! update for raw request
-        local message = "Curl.spawn.on_data_sse error_message=" .. vim.inspect(error_message)
-        log:error(message)
-        frontend.explain_error(message)
+        return
     end
 
-    local host, port, path = request:get_url():match("^https?://([^/:]+):?(%d*)(/.*)")
-    ---@type HttpRawRequestForEvents raw
-    the_raw_request = {
-        host = host,
-        port = port,
-        path = path,
-        method = "POST",
-        body = request.body,
-        on_data_value = on_raw_data_value,
-        on_done = on_raw_done,
-    }
-    request.tcp_handle = raw_request.http_events(the_raw_request)
-
-    do return end
     -- * legacy curl
-
     local json_body = vim.json.encode(request.body)
     local options = {
         command = "curl",
