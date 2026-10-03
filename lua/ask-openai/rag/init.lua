@@ -88,25 +88,8 @@ function M.setup_lsp()
 
         root_dir = root_dir
     })
-    -- log:info(vim.inspect(vim.lsp.config))
-    vim.lsp.enable("ask_ls")
-    -- FYI :checkhealth vim.lsp  " shows enabled vs active (buffer #s too)
 
-    -- ---@param result { message: string, type: number }  -- Language Server MessageType
-    -- local function map_lsp_level_to_vim_level(result)
-    --     local level_map = {
-    --         [1] = vim.log.levels.ERROR, -- MessageType.Error
-    --         [2] = vim.log.levels.WARN, -- MessageType.Warning
-    --         [3] = vim.log.levels.INFO, -- MessageType.Info
-    --         [5] = vim.log.levels.DEBUG, -- MessageType.Debug
-    --         [4] = vim.log.levels.TRACE, -- MessageType.Log => not sure Log == Trace but meh!
-    --     }
-    --     return level_map[result.type] or vim.log.levels.INFO
-    -- end
-    -- vim.lsp.handlers["window/showMessage"] = function(err, result, ctx, config)
-    --     log:info("global handler window/showMessage", vim.inspect(result))
-    --     vim.notify(result.message, map_lsp_level_to_vim_level(result))
-    -- end
+    vim.lsp.enable("ask_ls")
 
     --- @alias EventArgs { id:number, event: string, group: number|nil, file: string, match: string, buf:number, data: table }
 
