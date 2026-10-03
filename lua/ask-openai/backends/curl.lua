@@ -127,8 +127,7 @@ _G.CompletionsEndpoints = {
 function Curl.spawn(request, frontend)
     request.body.stream = true
 
-
-    local USE_RAW_TCP = false
+    local USE_RAW_TCP = true
     if USE_RAW_TCP then
         local start_ns = perf.get_time_in_ns()
         ---@param data_value string
