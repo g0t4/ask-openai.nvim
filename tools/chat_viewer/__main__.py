@@ -282,6 +282,68 @@ def find_fim_diff(messages: list[dict]) -> tuple[str, str] | None:
     return None
 
 
+REWRITE_SELECTION_MARKER = "Here is the code I selected:"
+
+
+def _extract_first_code_block(text: str) -> str | None:
+    """Extract the first fenced code block from text (returns None if absent)."""
+    match = re.search(r"```[^\n]*\n([\s\S]+?)```", text)
+    if match:
+        return match.group(1)
+    return None
+
+
+def find_rewrite_diff(messages: list[dict]) -> tuple[str, str] | None:
+    """Find the user-selected code + assistant rewrite pair for the diff summary."""
+    if not messages:
+        return None
+
+    # Find the last user message carrying the rewrite selection marker
+    last_user_idx = -1
+    for idx, msg in enumerate(messages):
+        if msg.get("role") == "user" and REWRITE_SELECTION_MARKER in _extract_content(msg):
+            last_user_idx = idx
+    if last_user_idx < 0:
+        return None
+
+    # Extract the selected code from the user message
+    user_content = _extract_content(messages[last_user_idx])
+    selection_match = re.search(
+        r"Here is the code I selected:\s*```[^\n]*\n([\s\S]+?)```",
+        user_content,
+    )
+    if not selection_match:
+        return None
+    old_text = selection_match.group(1)
+
+    # Find the assistant's rewrite after the user message
+    for msg in messages[last_user_idx + 1:]:
+        if msg.get("role") == "assistant":
+            assistant_content = _extract_content(msg)
+            # Prefer the first code block, else treat the whole response as the rewrite
+            new_text = _extract_first_code_block(assistant_content) or assistant_content
+            return old_text, new_text
+    return None
+
+
+def print_rewrite_diff(old_text: str, new_text: str) -> None:
+    """Print a rewrite diff (red = removed, green = added)."""
+    _console.rule(style="magenta")
+    _console.print("[bold magenta]REWRITE DIFF[/]")
+    _console.rule(style="magenta")
+    root = TreeWrapper.hidden_root()
+
+    for line in difflib.ndiff(old_text.splitlines(), new_text.splitlines()):
+        if line.startswith("+ "):
+            root.add(Text(line[2:], style="green"))
+        elif line.startswith("- "):
+            root.add(Text(line[2:], style="red"))
+        else:
+            root.add(Text(line[2:]))
+    root.blank_line()
+    _console.print(root)
+
+
 def is_raw_completion_trace(data: dict) -> bool:
     """Check if this is a raw completion trace (llamacpp /completions endpoint).
 
@@ -1128,6 +1190,11 @@ def render_trace_to_console(console, messages, model_name, timings) -> None:
     if fim_diff:
         prompt, completion = fim_diff
         print_fim_diff(prompt, completion)
+
+    rewrite_diff = find_rewrite_diff(messages)
+    if rewrite_diff:
+        old_text, new_text = rewrite_diff
+        print_rewrite_diff(old_text, new_text)
 
 
 def main() -> None:
