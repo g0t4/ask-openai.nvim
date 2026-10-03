@@ -198,6 +198,21 @@ function Curl.spawn(request, frontend)
         },
     }
 
+    ---@param data_value string
+    function on_data_sse(data_value)
+        -- FYI right now this function exists to catch unhandled errors and terminate
+        local success, error_message = safely.call(Curl.on_one_data_value, data_value, frontend, request)
+        if success then
+            return
+        end
+
+        -- request stops ASAP, but not immediately
+        CurlRequest.terminate(request)
+        local message = "Curl.spawn.on_data_sse error_message=" .. vim.inspect(error_message)
+        log:error(message)
+        frontend.explain_error(message)
+    end
+
     local stdout = vim.uv.new_pipe(false)
     local stderr = vim.uv.new_pipe(false)
 
