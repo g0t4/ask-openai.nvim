@@ -51,9 +51,10 @@ function CurlRequest.terminate(request)
     if request ~= nil and request.tcp_handle ~= nil then
         log:info("close tcp_handle", request.tcp_handle)
         -- request.tcp_handle.is_closing -- TODO check is_closing first?
-        local closing, err, err_name = request.tcp_handle:is_closing()
-        if err then
-            log:warn("failed to check if tcp_handle:is_closing()", err, err_name)
+        local closing, isclosing_err, isclosing_err_name = request.tcp_handle:is_closing()
+        if isclosing_err then
+            -- TODO do I care about this? when would checking fail?
+            log:warn("failed to check if tcp_handle:is_closing()", isclosing_err, isclosing_err_name)
         end
         if closing then
             -- warn if already closing
