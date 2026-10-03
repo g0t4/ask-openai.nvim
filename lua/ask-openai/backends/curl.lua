@@ -147,6 +147,26 @@ function Curl.spawn(request, frontend)
             frontend.explain_error(message)
         end
 
+        local function on_raw_done(err)
+            log:info("on_raw_done", err)
+            if request.tcp_handle == nil then
+                return -- nothing to do
+            end
+
+            request.tcp_handle = nil
+
+            -- flush dregs before on_curl_exited_successfully
+            -- - which may depend on, for example, a tool_call in dregs
+            if err then
+                local message = "on_done -> err =" .. vim.inspect(err)
+                log:error(message)
+                frontend.explain_error(message)
+                return
+            end
+
+            frontend.on_curl_exited_successfully() -- TODO rename later on
+        end
+
         local host, port, path = request:get_url():match("^https?://([^/:]+):?(%d*)(/.*)")
         ---@type HttpRawRequestForEvents raw
         the_raw_request = {
@@ -233,25 +253,6 @@ function Curl.spawn(request, frontend)
     --     --   - and what about my timer/schduling for debounced keyboard events to trigger predictions?
     --     -- - REVIEW OTHER uses of uv.spawn (and timers)... for missing cleanup logic!
     -- end
-    local function on_raw_done(err)
-        log:info("on_raw_done", err)
-        if request.tcp_handle == nil then
-            return -- nothing to do
-        end
-
-        request.tcp_handle = nil
-
-        -- flush dregs before on_curl_exited_successfully
-        -- - which may depend on, for example, a tool_call in dregs
-        if err then
-            local message = "on_done -> err =" .. vim.inspect(err)
-            log:error(message)
-            frontend.explain_error(message)
-            return
-        end
-
-        frontend.on_curl_exited_successfully() -- TODO rename later on
-    end
 
     -- request.handle, request.pid = uv_spawn(options.command, {
     --     args = options.args,
