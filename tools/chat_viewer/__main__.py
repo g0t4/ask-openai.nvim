@@ -27,6 +27,12 @@ from tools.chat_viewer.run_process_formatter import commandline_equivalent_for_a
 from tools.chat_viewer.xonsh_formatter import parse_run_xonsh_arguments
 from tools.chat_viewer.timings import ModelTimings, parse_timings, format_stats_line, format_timings_display, _humanize_float, _humanize_int
 from tools.chat_viewer.timing_utils import parse_tool_call_timings
+from tools.chat_viewer.theme import (
+    header_bar,
+    role_color,
+    role_icon,
+    tool_icon,
+)
 
 # Enable recording so that ``save_html`` can export the rendered output.
 _console = Console(color_system="truecolor")
@@ -237,9 +243,7 @@ def print_fim_diff(prompt: str, completion: str) -> None:
     old_text = prefix + suffix
     new_text = prefix + completion + suffix
 
-    _console.rule(style="cyan")
-    _console.print("[bold cyan]FIM DIFF[/]")
-    _console.rule(style="cyan")
+    _console.print(header_bar("TLDR - FIM DIFF", "cyan", _console.width))
     # FYI not a fan of both tree + console.print/rule uses... usually I like trees when I defer print until full output is built... meh for now
     root = TreeWrapper.hidden_root()
     if before_omitted or after_omitted:
@@ -328,9 +332,7 @@ def find_rewrite_diff(messages: list[dict]) -> tuple[str, str] | None:
 
 def print_rewrite_diff(old_text: str, new_text: str) -> None:
     """Print a rewrite diff (red = removed, green = added)."""
-    _console.rule(style="magenta")
-    _console.print("[bold magenta]REWRITE DIFF[/]")
-    _console.rule(style="magenta")
+    _console.print(header_bar("TLDR - REWRITE DIFF", "magenta", _console.width))
     root = TreeWrapper.hidden_root()
 
     for line in difflib.ndiff(old_text.splitlines(), new_text.splitlines()):
@@ -443,10 +445,10 @@ class SectionDTO:
             None,
         )
         if override_header_style:
-            return Group(Text(header_line, style=override_header_style), _syntax(body, "markdown"))
+            return Group(Text(header_line, style=override_header_style), _markdown(body))
 
         # else treat header as markdown too:
-        return _syntax(self.content, "markdown")
+        return _markdown(self.content)
 
 
 def _split_content_into_sections(content: str) -> list[SectionDTO]:
@@ -464,7 +466,9 @@ def show_unapproved_auto_rag_matches(content: str) -> bool:
 
     # FYI no indentation with RAG matches so just use a root tree and everything is top level (headers differentiate sections)
     root = TreeWrapper.hidden_root()
-    root.add_with_markup("[italic]Detected Semantic Grep matches... excluding based on file path[/]")
+    root.add_with_markup(
+        "[dim]Detected Semantic Grep matches… excluding based on file path[/]"
+    )
 
     for section in split_h2_markdown_sections(content):
         lines = section.splitlines()
@@ -485,7 +489,7 @@ def show_unapproved_auto_rag_matches(content: str) -> bool:
         start_line = match.group(2)
         end_line = match.group(3)
 
-        root.add_with_markup(f"## MATCH [bold]{file_path}[/]:{start_line}-{end_line}")
+        root.add_with_markup(f"🔍 MATCH [bold]{file_path}[/]:{start_line}-{end_line}")
 
         ext = os.path.splitext(file_path)[1].lstrip('.').lower()
         root.add(_syntax(snippet, ext or "text"))
@@ -701,7 +705,7 @@ def _add_rag_matches(root: TreeWrapper, content: Any):
         if skip:
             continue
 
-        header = f"## MATCH {counter}"
+        header = f"🔍 MATCH {counter}"
         if file:
             header += f": [bold]{file}[/]"
             if isinstance(start_line_base0, int) and isinstance(end_line_base0, int):
@@ -728,7 +732,7 @@ def _add_rag_matches(root: TreeWrapper, content: Any):
 
 def _add_unrecognized(root: TreeWrapper, content: Any) -> None:
     # FYI this is just a warning to consider adding handlers for it
-    root.add("[yellow bold]UNRECOGNIZED RESULT TYPE:[/]") \
+    root.add("[yellow bold]⚠️ UNRECOGNIZED RESULT TYPE:[/]") \
         .add(_pretty_no_truncate(content))
 
 
@@ -801,6 +805,10 @@ def _syntax(source: str, lexer: str) -> Syntax:
         lexer,  # i.e. bash/json/etc
         theme="ansi_dark",  # effectively sets default theme which is why I want a _syntax helper
         line_numbers=False)
+
+
+def _markdown(source: str):
+    return _syntax(source, "markdown")
 
 
 def _bash(source: str):
@@ -933,7 +941,7 @@ def _add_run_xonsh(arguments: str, tree: TreeWrapper):
 
 
 def format_call_title(title):
-    return f"- {title}"
+    return f"- {tool_icon(title)} [bold]{title}[/]"
 
 
 def _add_generic_tool(func_name: str, args_json_str: str, tree: TreeWrapper):
@@ -1002,7 +1010,11 @@ def print_assistant_message(msg: dict, color: str):
 
     reasoning = msg.get("reasoning_content")
     if reasoning:
-        root.add_no_markup(
+        reasoning_text = Text.from_markup(
+            "[dim bright_black italic]💭 reasoning[/]"
+        )
+        reasoning_node = root.add(reasoning_text)
+        reasoning_node.add_no_markup(
             insert_newlines(reasoning),
             style="bright_black italic",
         )
@@ -1050,53 +1062,26 @@ def get_display_role(role: str) -> str:
 
 
 def get_color(role: str) -> str:
-    role_lower = role.lower()
-    if role_lower == "system":
-        return "magenta"
-    if role_lower == "developer":
-        return "cyan"
-    if role_lower == "user" or role_lower == "user_raw":
-        return "green"
-    if role_lower == "assistant" or role_lower == "assistant_raw":
-        return "yellow"
-    if role_lower == "tool":
-        return "red"
-    return "white"
+    """Return the accent color for a message role."""
+    return role_color(role)
 
 
 def get_font_color_for_bg(bg_color: str) -> str:
     """Pick black or white text for best contrast on the given background."""
-    from rich.color import Color
+    from tools.chat_viewer.theme import contrast_color_for
 
-    r, g, b = Color.parse(bg_color).get_truecolor()
-
-    # relative luminance (WCAG): 0 = black, 1 = white
-    def linearize(channel: int) -> float:
-        channel /= 255
-        return channel / 12.92 if channel <= 0.03928 else ((channel + 0.055) / 1.055)**2.4
-
-    luminance = 0.2126 * linearize(r) + 0.7152 * linearize(g) + 0.0722 * linearize(b)
-    return "black" if luminance > 0.4 else "white"
+    return contrast_color_for(bg_color)
 
 
 def print_section_header(title, color):
-    from rich.color import Color
-
-    # rich 14.3.3 mangles named on_* markup, so use an explicit hex background.
-    r, g, b = Color.parse(color).get_truecolor()
-    bg_hex = f"#{r:02x}{g:02x}{b:02x}"
-    font_color = get_font_color_for_bg(color)
-    # Solid full-width bar: background fills every cell, including trailing spaces,
-    # so messages are cleanly separated without consuming three full lines.
-    bar = Text(f" {title} ", style=Style(bgcolor=bg_hex, color=font_color, bold=True))
-    bar.pad_right(max(0, _console.width - len(bar)))
-    _console.print(bar)
+    _console.print(header_bar(title, color, _console.width))
 
 
 def print_message(msg: dict, idx: int):
     role = msg.get("role", "").lower()
     display_role = get_display_role(role)
-    title = f"{idx}: {display_role}"
+    icon = role_icon(role) # TODO! decide if keep icon or not
+    title = f"{idx}: {icon} {display_role}"
     if "output.json" in msg:
         title = f"{title} (output.json)"
     color = get_color(role)
