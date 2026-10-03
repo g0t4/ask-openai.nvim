@@ -7,6 +7,10 @@ from logs import get_logger
 logger = get_logger(__name__)
 
 def setup(server: LanguageServer):
+    """
+    Used for poking around and learning about cooperative cancelation in pygls...
+    Leaving this for now to refer to if I have issues later.
+    """
 
     @server.command("SLEEPY")
     async def sleepy(_ls: LanguageServer, args: dict):
