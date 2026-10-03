@@ -15,6 +15,9 @@
 
     "workspace": {
         "library": [
+            // TODO measure startup performance based on scanned files...
+            //   TODO any issues with TOO many startup files for this project (dotfiles repo had that issue)
+
             "$VIMRUNTIME",
             // https://github.com/LuaLS/LuaLS.github.io/issues/49
             // check what VIMRUNTIME is set to on your machine:
@@ -26,11 +29,8 @@
             "${3rd}/luv/library", // vim.uv
             "${3rd}/luassert/library",
 
-            // TODO look into using 3rd with rxlua? at least this doesn't change with version bumps... and not between mac/linux
             "~/.local/share/nvim/lazy/rxlua",
             "~/.local/share/nvim/lazy/telescope.nvim",
-            "~/.local/share/nvim/lazy/nvim-lspconfig",
-            "~/.local/share/nvim/lazy/nvim-notify",
             "~/.local/share/nvim/lazy/plenary.nvim", // adds globals for describe, it, before_each, etc
             "~/repos/github/g0t4/devtools.nvim",
 
