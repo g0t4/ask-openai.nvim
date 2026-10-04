@@ -88,6 +88,6 @@ def header_bar(title: str, color: str, width: int) -> Text:
     font_color = contrast_color_for(color)
 
     pill = Text(f" {title} ", style=Style(bgcolor=bg_hex, color=font_color, bold=True))
-    rule_width = max(0, width - len(pill))
-    rule = Text("─" * rule_width, style="dim")
+    rule_width = max(0, width - len(pill) - 1) # -1 for icons (some overflow a char and wrap the header)
+    rule = Text(" " * rule_width, style="dim")
     return pill + rule
