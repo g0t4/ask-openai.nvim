@@ -1080,10 +1080,14 @@ def print_section_header(title, color):
     _console.print(header_bar(title, color, _console.width))
 
 
-def is_user_message(role: str) -> bool:
-    """Return True for roles that should hug the right edge (chat style)."""
-    return role in ("user", "user_raw")
+def is_model_input(role: str) -> bool:
+    """Return True for messages that flow *into* the model (right-aligned).
 
+    User, tool results, system and developer directives all come from the user
+    side, so they hug the right edge like a chat app. Assistant output (and raw
+    completions) are the model speaking, so they stay on the left.
+    """
+    return role in ("user", "user_raw", "tool", "system", "developer")
 
 def print_message_panel(title: str, color: str, content: TreeWrapper, align: str) -> None:
     """Render a single message as an aligned panel for a chat-like layout.
@@ -1128,7 +1132,7 @@ def print_message(msg: dict, idx: int):
     if root is None:
         return
 
-    align = "right" if is_user_message(role) else "left"
+    align = "right" if is_model_input(role) else "left"
     print_message_panel(title, color, root, align)
 
 
