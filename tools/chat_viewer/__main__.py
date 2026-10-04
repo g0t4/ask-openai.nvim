@@ -1022,6 +1022,9 @@ def print_assistant_message(msg: dict, color: str):
 
     content = msg.get("content", "")
     if content:
+        # TODO if markdown causes issues, get rid of it here...
+        # TODO perhaps look for ## or ``` before applying markdown? and even then if it confuses me to review what was generated then go back to no markdown in content
+        #   mostly I am worried about FIM/Rewrites, when this might obscure the changes the agent applied... but lets wait to see that before we worry about it...
         root.add(_markdown(insert_newlines(content)))
         root.blank_line()
 
