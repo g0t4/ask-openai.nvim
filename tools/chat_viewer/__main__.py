@@ -1022,7 +1022,7 @@ def print_assistant_message(msg: dict, color: str):
 
     content = msg.get("content", "")
     if content:
-        root.add_no_markup(insert_newlines(content))
+        root.add(_markdown(insert_newlines(content)))
         root.blank_line()
 
     requests = yank(msg, "tool_calls", [])
