@@ -8,6 +8,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from rich.console import Console, Group
 from rich.align import Align
+from rich import box
 from rich.style import Style
 from rich.markdown import Markdown
 from rich.padding import Padding
@@ -37,6 +38,31 @@ from tools.chat_viewer.theme import (
 
 # Enable recording so that ``save_html`` can export the rendered output.
 _console = Console(color_system="truecolor")
+
+# Chat-style panel boxes: only a top border plus the border on the aligned edge,
+# so messages read as open speech bubbles flowing toward the aligned side.
+# User (right-aligned) -> top + right border.
+CHAT_BOX_RIGHT = box.Box(
+    " ──╮\n"
+    "   │\n"
+    "   │\n"
+    "   │\n"
+    "   │\n"
+    "   │\n"
+    "   │\n"
+    "    "
+)
+# Assistant (left-aligned) -> top + left border.
+CHAT_BOX_LEFT = box.Box(
+    "╭── \n"
+    "│   \n"
+    "│   \n"
+    "│   \n"
+    "│   \n"
+    "│   \n"
+    "│   \n"
+    "    "
+)
 
 
 def _parse_timings_from_dict(timings_dict: dict[str, Any] | None) -> ModelTimings | None:
@@ -1097,6 +1123,8 @@ def print_message_panel(title: str, color: str, content: TreeWrapper, align: str
     spanning the full terminal width.
     """
     max_width = max(20, min(_console.width - 4, 100))
+    # Open speech-bubble look: keep the border on the side the message hugs.
+    chat_box = CHAT_BOX_RIGHT if align == "right" else CHAT_BOX_LEFT
     panel = Panel(
         content,
         title=f"[{color}]{title}[/]",
@@ -1105,6 +1133,7 @@ def print_message_panel(title: str, color: str, content: TreeWrapper, align: str
         padding=(0, 1),
         width=max_width,
         expand=False,
+        box=chat_box,
     )
     _console.print(Align(panel, align=align))
     _console.print()  # blank line between messages
