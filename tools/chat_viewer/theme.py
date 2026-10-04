@@ -24,11 +24,11 @@ ROLE_COLORS = {
 
 # Role -> icon shown next to the message header.
 ROLE_ICONS = {
-    "system": "🛠",
+    "system": "📢",
     "developer": "💻",
     "user": "👤",
     "user_raw": "⌨️",
-    "assistant": "🤖",
+    "assistant": "🧠",
     "assistant_raw": "⚙️",
     "tool": "🔧",
 }
