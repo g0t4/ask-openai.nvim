@@ -7,6 +7,7 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 from rich.console import Console, Group
+from rich.align import Align
 from rich.style import Style
 from rich.markdown import Markdown
 from rich.padding import Padding
@@ -651,17 +652,17 @@ def _extract_content(msg: dict) -> str:
     return content  # type: ignore
 
 
-def print_markdown_message(msg: dict):
+def build_markdown_message(msg: dict) -> TreeWrapper | None:
     raw_content = _extract_content(msg)
     if not raw_content:
-        return
+        return None
 
     if show_unapproved_auto_rag_matches(raw_content):
-        return
+        return None
 
     sections = _split_content_into_sections(raw_content)
     if not sections:
-        return
+        return None
 
     root = TreeWrapper.hidden_root()
     for sec in sections:
@@ -671,7 +672,7 @@ def print_markdown_message(msg: dict):
         root.add(f'[dim]"{sec.content_hash}",  # {header_line}[/]')
         root.add(sec.get_renderable())
 
-    _console.print(root)
+    return root
 
 
 def decode_if_json(content):
@@ -736,7 +737,7 @@ def _add_unrecognized(root: TreeWrapper, content: Any) -> None:
         .add(_pretty_no_truncate(content))
 
 
-def print_tool_result_message(msg: Dict[str, Any], color: str) -> None:
+def build_tool_result_message(msg: Dict[str, Any], color: str) -> TreeWrapper:
     root = TreeWrapper.hidden_root()
 
     # * show duration if available (for after-the-fact review)
@@ -749,7 +750,7 @@ def print_tool_result_message(msg: Dict[str, Any], color: str) -> None:
     if not handled:
         _add_unrecognized(root, content)
 
-    _console.print(root)
+    return root
 
 
 def _add_mcp_result(root: TreeWrapper, content: Any) -> bool:
@@ -981,18 +982,18 @@ def print_if_missing_keys(obj, name, tree: TreeWrapper):
             .add(_json(obj))
 
 
-def print_raw_completion_message(msg: dict):
+def build_raw_completion_message(msg: dict) -> TreeWrapper | None:
     """Print raw completion message (prompt or completion) verbatim."""
     raw_content = _extract_content(msg)
     if not raw_content:
-        return
+        return None
 
     root = TreeWrapper.hidden_root()
     root.add_no_markup(raw_content)
-    _console.print(root)
+    return root
 
 
-def print_assistant_message(msg: dict, color: str):
+def build_assistant_message(msg: dict, color: str) -> TreeWrapper:
     root = TreeWrapper.hidden_root()
 
     # Show per-message timings if present
@@ -1048,8 +1049,7 @@ def print_assistant_message(msg: dict, color: str):
 
             add_tool_call_request(func_name, arguments, root)
 
-    _console.print(root)
-    _console.print()  # blank line
+    return root
 
 
 def get_display_role(role: str) -> str:
@@ -1080,6 +1080,32 @@ def print_section_header(title, color):
     _console.print(header_bar(title, color, _console.width))
 
 
+def is_user_message(role: str) -> bool:
+    """Return True for roles that should hug the right edge (chat style)."""
+    return role in ("user", "user_raw")
+
+
+def print_message_panel(title: str, color: str, content: TreeWrapper, align: str) -> None:
+    """Render a single message as an aligned panel for a chat-like layout.
+
+    User messages are right-aligned, everything else left-aligned. The panel is
+    capped at a readable width so short messages read as bubbles instead of
+    spanning the full terminal width.
+    """
+    max_width = max(20, min(_console.width - 4, 100))
+    panel = Panel(
+        content,
+        title=f"[{color}]{title}[/]",
+        title_align="right" if align == "right" else "left",
+        border_style=color,
+        padding=(0, 1),
+        width=max_width,
+        expand=False,
+    )
+    _console.print(Align(panel, align=align))
+    _console.print()  # blank line between messages
+
+
 def print_message(msg: dict, idx: int):
     role = msg.get("role", "").lower()
     display_role = get_display_role(role)
@@ -1088,17 +1114,22 @@ def print_message(msg: dict, idx: int):
     if "output.json" in msg:
         title = f"{title} (output.json)"
     color = get_color(role)
-    print_section_header(title, color)
 
     match role:
         case "tool":
-            print_tool_result_message(msg, color)
+            root = build_tool_result_message(msg, color)
         case "assistant_raw" | "user_raw":
-            print_raw_completion_message(msg)
+            root = build_raw_completion_message(msg)
         case "assistant":
-            print_assistant_message(msg, color)
+            root = build_assistant_message(msg, color)
         case "system" | "developer" | "user" | _:
-            print_markdown_message(msg)
+            root = build_markdown_message(msg)
+
+    if root is None:
+        return
+
+    align = "right" if is_user_message(role) else "left"
+    print_message_panel(title, color, root, align)
 
 
 def render_trace_to_console(console, messages, model_name, timings) -> None:
