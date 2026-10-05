@@ -855,7 +855,9 @@ def _syntax(source: str, lexer: str) -> Syntax:
         source,
         lexer,  # i.e. bash/json/etc
         theme="ansi_dark",  # effectively sets default theme which is why I want a _syntax helper
-        line_numbers=False)
+        line_numbers=False,
+        # word_wrap=True, # TODO! add always or just sometimes?
+    )
 
 
 def _markdown(source: str):
