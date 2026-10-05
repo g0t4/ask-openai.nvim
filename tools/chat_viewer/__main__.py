@@ -718,8 +718,9 @@ def build_default_user_message(raw_content: str) -> Optional[TreeWrapper]:
     for sec in sections:
         if sec.is_excluded:
             continue
-        header_line = sec.content.splitlines()[0]
-        root.add(f'[dim]"{sec.content_hash}",  # {header_line}[/]')
+        if SHOW_ALL:
+            header_line = sec.content.splitlines()[0]
+            root.add(f'[dim]"{sec.content_hash}",  # {header_line}[/]')
         root.add(sec.get_renderable())
 
     if not root.children:
