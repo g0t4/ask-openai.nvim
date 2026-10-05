@@ -719,6 +719,9 @@ def build_default_user_message(raw_content: str) -> TreeWrapper | None:
         root.add(f'[dim]"{sec.content_hash}",  # {header_line}[/]')
         root.add(sec.get_renderable())
 
+    if not root.children:
+        # hide the message entirely, the number in the chat viewer will signal hidden messages
+        return None
     return root
 
 
