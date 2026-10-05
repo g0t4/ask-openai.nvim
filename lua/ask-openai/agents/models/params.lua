@@ -261,7 +261,15 @@ function M.body_for_muse_glimmer(request_body, effort)
         --   that way it is very clear this is intentional vs maybe thinking later on .. if I move the reasoning_strength out to one set across all cases... then later maybe I would think it was a mistake to do it for "off" case.. now that is obviously not the case
         recommended.chat_template_kwargs.reasoning_strength = "off" -- intentionally set it off still so it shows as off in the system message to model (after template renders)...
     else
-        log:white_on_red("TODO verify reasoning_strength works: " .. effort)
+        -- -- FYI adding the level myself didn't change jack shit (btw the template will skip adding it if I add it)
+        -- sys_message = request_body.messages[1].content
+        -- --  low is just not fucking low with Muse... FUCK... 8 seconds of thinking 800 tokens is not goddamn low for a fucking `return a - b` case
+        -- sys_message = "Reasoning strength: " .. effort .. "\n" .. sys_message
+        -- sys_message = "REASONING STRENGTH: " .. effort .. "\n" .. sys_message
+        -- sys_message = "Do not overthink this, the user is only asking for a code prediction, pick whatever comes to mind."
+        -- request_body.messages[1].content = sys_message
+
+        -- FYI this is working with template to add the level
         recommended.chat_template_kwargs.reasoning_strength = effort
     end
     -- log:info("recommended", recommended)
