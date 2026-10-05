@@ -700,6 +700,12 @@ def build_user_message(msg: dict) -> TreeWrapper | None:
     if is_auto_rag:
         return message
 
+    # FYI intent is to add other custom message handlers here and then fall through to a default display otherwise
+
+    return build_default_user_message(msg)
+
+
+def build_default_user_message(msg: dict) -> TreeWrapper | None:
     sections = _split_content_into_sections(raw_content)
     if not sections:
         return None
