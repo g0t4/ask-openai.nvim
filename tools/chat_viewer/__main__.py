@@ -737,7 +737,7 @@ def decode_if_json(content):
     return content
 
 
-def _add_rag_matches(root: TreeWrapper, content: Any):
+def build_semantic_grep_tool_result_message(root: TreeWrapper, content: Any):
     has_rag_matches = isinstance(content, dict) \
         and "matches" in content \
         and isinstance(content["matches"], list)
@@ -781,7 +781,7 @@ def _add_rag_matches(root: TreeWrapper, content: Any):
     return True
 
 
-def _add_unrecognized(root: TreeWrapper, content: Any) -> None:
+def build_unrecognized_tool_result_message(root: TreeWrapper, content: Any) -> None:
     # FYI this is just a warning to consider adding handlers for it
     root.add("[yellow bold]⚠️ UNRECOGNIZED RESULT TYPE:[/]") \
         .add(_pretty_no_truncate(content))
@@ -797,15 +797,16 @@ def build_tool_result_message(msg: Dict[str, Any], color: str) -> Optional[TreeW
 
     content = decode_if_json(msg.get("content", ""))
 
-    handled = _add_rag_matches(root, content) or _add_mcp_result(root, content)
+    handled = build_semantic_grep_tool_result_message(root, content) \
+             or build_mcp_tool_result_message(root, content)
     if handled:
         return root
 
-    _add_unrecognized(root, content)
+    build_unrecognized_tool_result_message(root, content)
     return None # TODO return here too?
 
 
-def _add_mcp_result(root: TreeWrapper, content: Any) -> bool:
+def build_mcp_tool_result_message(root: TreeWrapper, content: Any) -> bool:
     has_mcp_content_list = isinstance(content, dict) \
         and ("content" in content) \
         and isinstance(content["content"], list)
