@@ -797,7 +797,7 @@ def build_tool_result_message(msg: Dict[str, Any], color: str) -> Optional[TreeW
     root = TreeWrapper.hidden_root()
 
     timings = parse_tool_call_timings(msg)
-    if timings:
+    if SHOW_ALL and timings:
         root.add(Align.right((f"[dim {color}]⏱️  {timings.formatted_duration}[/]")))
 
     content = decode_if_json(msg.get("content", ""))
@@ -808,7 +808,7 @@ def build_tool_result_message(msg: Dict[str, Any], color: str) -> Optional[TreeW
         return root
 
     build_unrecognized_tool_result_message(root, content)
-    return None # TODO return here too?
+    return None  # TODO return here too?
 
 
 def build_mcp_tool_result_message(root: TreeWrapper, content: Any) -> bool:
@@ -1066,7 +1066,7 @@ def build_assistant_message(msg: dict, color: str) -> TreeWrapper:
 
     # Show per-message timings if present
     msg_timings_dict = msg.get("timings")
-    if msg_timings_dict:
+    if SHOW_ALL and msg_timings_dict:
         msg_timings = _parse_timings_from_dict(msg_timings_dict)
         if msg_timings:
             # Skip the compact one-liner (format_timings_display); the verbose
