@@ -487,15 +487,21 @@ def _split_content_into_sections(content: str) -> list[SectionDTO]:
     return [SectionDTO(content=sec) for sec in split_h2_markdown_sections(content)]
 
 
-def show_unapproved_auto_rag_matches(content: str) -> bool:
+def build_unapproved_auto_rag_matches(content: str) -> (bool, TreeWrapper | None):
+    """Build Semantic Grep matches into a tree, or None if nothing is visible.
+
+    Returns None when the content isn't a Semantic Grep block, or when every
+    match is excluded (e.g. public files) so the parent message can be hidden.
+    """
     if not content.strip().startswith('# Semantic Grep matches:'):
-        return False
+        return False, None
 
     # FYI no indentation with RAG matches so just use a root tree and everything is top level (headers differentiate sections)
     root = TreeWrapper.hidden_root()
     root.add_with_markup(
         "[dim]Detected Semantic Grep matches… excluding based on file path[/]"
     )
+    has_visible_match = False
 
     for section in split_h2_markdown_sections(content):
         lines = section.splitlines()
@@ -522,9 +528,11 @@ def show_unapproved_auto_rag_matches(content: str) -> bool:
         root.add(_syntax(snippet, ext or "text"))
 
         root.blank_line()
+        has_visible_match = True
 
-    _console.print(root)
-    return True
+    if has_visible_match:
+        return True, root
+    return True, None
 
 
 def pprint_no_truncate(what):
@@ -683,8 +691,9 @@ def build_markdown_message(msg: dict) -> TreeWrapper | None:
     if not raw_content:
         return None
 
-    if show_unapproved_auto_rag_matches(raw_content):
-        return None
+    is_auto_rag, rag_matches = build_unapproved_auto_rag_matches(raw_content)
+    if is_auto_rag:
+        return rag_matches
 
     sections = _split_content_into_sections(raw_content)
     if not sections:
