@@ -18,7 +18,7 @@ from rich.pretty import Pretty, pprint
 from rich.text import Text
 from rich.progress_bar import ProgressBar
 from rich.tree import Tree
-from typing import Any, Iterable, Iterator, Dict
+from typing import Any, Iterable, Iterator, Dict, Optional
 import hashlib
 import argparse
 import argcomplete
@@ -787,7 +787,7 @@ def _add_unrecognized(root: TreeWrapper, content: Any) -> None:
         .add(_pretty_no_truncate(content))
 
 
-def build_tool_result_message(msg: Dict[str, Any], color: str) -> TreeWrapper:
+def build_tool_result_message(msg: Dict[str, Any], color: str) -> Optional[TreeWrapper]:
     root = TreeWrapper.hidden_root()
 
     # * show duration if available (for after-the-fact review)
