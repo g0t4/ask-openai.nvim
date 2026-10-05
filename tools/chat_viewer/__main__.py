@@ -873,13 +873,8 @@ def _syntax(source: str, lexer: str) -> Syntax:
 
 
 def _markdown(source: str):
-    return Syntax(
-        source,
-        "markdown",
-        theme=SYNTAX_THEME,
-        line_numbers=False,
-        word_wrap=True,
-    )
+    # FYI markdown must use word_wrap=True (often has really long paragraphs that must wrap)
+    return _syntax(source, "markdown")
 
 
 def _bash(source: str):
