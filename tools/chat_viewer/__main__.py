@@ -499,7 +499,7 @@ def build_user_auto_rag_matches_message(raw_content: str) -> (bool, TreeWrapper 
     # FYI no indentation with RAG matches so just use a root tree and everything is top level (headers differentiate sections)
     root = TreeWrapper.hidden_root()
     root.add_with_markup(
-        "[dim]Detected Semantic Grep matches… excluding based on file path[/]"
+        "[dim]Semantic Grep matches:[/]"
     )
     has_visible_match = False
 
