@@ -487,7 +487,7 @@ def _split_content_into_sections(content: str) -> list[SectionDTO]:
     return [SectionDTO(content=sec) for sec in split_h2_markdown_sections(content)]
 
 
-def build_auto_rag_matches_message(content: str) -> (bool, TreeWrapper | None):
+def build_user_auto_rag_matches_message(content: str) -> (bool, TreeWrapper | None):
     """Build Semantic Grep matches into a tree, or None if nothing is visible.
 
     Returns None when the content isn't a Semantic Grep block, or when every
@@ -696,7 +696,7 @@ def build_user_message(msg: dict) -> TreeWrapper | None:
         return None
 
     # * short-circuit for user message that contains auto RAG matches
-    is_auto_rag, message = build_auto_rag_matches_message(raw_content)
+    is_auto_rag, message = build_user_auto_rag_matches_message(raw_content)
     if is_auto_rag:
         return message
 
