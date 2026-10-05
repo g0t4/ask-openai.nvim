@@ -686,11 +686,16 @@ def _extract_content(msg: dict) -> str:
     return content  # type: ignore
 
 
-def build_markdown_message(msg: dict) -> TreeWrapper | None:
+def build_user_message(msg: dict) -> TreeWrapper | None:
+    """
+    Build messages from a user: user message or system/developer instructions message.
+    Assume content may be markdown
+    """
     raw_content = _extract_content(msg)
     if not raw_content:
         return None
 
+    # * short-circuit for user message that contains auto RAG matches
     is_auto_rag, rag_matches = build_unapproved_auto_rag_matches(raw_content)
     if is_auto_rag:
         return rag_matches
@@ -1165,7 +1170,7 @@ def print_message(msg: dict, idx: int):
         case "assistant":
             root = build_assistant_message(msg, color)
         case "system" | "developer" | "user" | _:
-            root = build_markdown_message(msg)
+            root = build_user_message(msg)
 
     if root is None:
         return
