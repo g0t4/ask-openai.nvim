@@ -962,7 +962,15 @@ def _add_run_command_and_run_process(arguments: str, call_tree: TreeWrapper):
                 return command
             raise ValueError("No command found")
 
-        call_tree.add(_bash(get_display_command()))
+        cmds = get_display_command()
+
+        # # TODO capture the max line length and return that somehow? so we can use it to negotitate splits?
+        # # TODO lets just make assistant messages (tool calls at least) allow to span as much left to right as needed?
+        # #    TODO and then do not wrap (+ warn if overflow) ... or allow wrap and indicate it? or is wrap ever an issue for understanding the commands?
+        # lines = cmds.split("\n")
+        # longest_line = max(len(line) for line in lines)
+        # print(f'{longest_line=}')
+        # call_tree.add(_bash(cmds))
 
         # remove fields with special handling
         stdin_text = yank(obj, "stdin_text")
