@@ -507,8 +507,6 @@ def show_unapproved_auto_rag_matches(content: str) -> bool:
             continue
 
         file_path = match.group(1)
-        # Remaining lines after the header constitute the snippet.
-        snippet = "\n".join(lines[1:]).strip("\n")
 
         if not SHOW_ALL and is_preapproved(str(file_path)):
             continue
@@ -519,6 +517,8 @@ def show_unapproved_auto_rag_matches(content: str) -> bool:
         root.add_with_markup(f"🔍 MATCH [bold]{file_path}[/]:{start_line}-{end_line}")
 
         ext = os.path.splitext(file_path)[1].lstrip('.').lower()
+        # Remaining lines after the header constitute the snippet.
+        snippet = "\n".join(lines[1:]).strip("\n") # TODO why strip \n? leave it in case it matters?
         root.add(_syntax(snippet, ext or "text"))
 
         root.blank_line()
