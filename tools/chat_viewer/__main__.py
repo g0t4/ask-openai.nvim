@@ -796,11 +796,13 @@ def build_tool_result_message(msg: Dict[str, Any], color: str) -> TreeWrapper:
         root.add(f"[dim {color}]⏱️  {timings.formatted_duration}[/]")
 
     content = decode_if_json(msg.get("content", ""))
-    handled = _add_rag_matches(root, content) or _add_mcp_result(root, content)
-    if not handled:
-        _add_unrecognized(root, content)
 
-    return root
+    handled = _add_rag_matches(root, content) or _add_mcp_result(root, content)
+    if handled:
+        return root
+
+    _add_unrecognized(root, content)
+    return None # TODO return here too?
 
 
 def _add_mcp_result(root: TreeWrapper, content: Any) -> bool:
