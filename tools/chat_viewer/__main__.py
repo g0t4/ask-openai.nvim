@@ -27,7 +27,7 @@ from tools.chat_viewer.markdown_utils import split_h2_markdown_sections
 from tools.chat_viewer.tree_wrapper import TreeWrapper
 from tools.chat_viewer.run_process_formatter import commandline_equivalent_for_argv, format_heredoc_stdin
 from tools.chat_viewer.xonsh_formatter import parse_run_xonsh_arguments
-from tools.chat_viewer.timings import ModelTimings, parse_timings, format_stats_line, format_timings_display, _humanize_float, _humanize_int
+from tools.chat_viewer.timings import ModelTimings, parse_timings, format_stats_line, format_timings_display, _humanize_float, _humanize_int, detect_cache_misses
 from tools.chat_viewer.timing_utils import parse_tool_call_timings
 from tools.chat_viewer.theme import (
     header_bar,
@@ -1238,6 +1238,7 @@ def render_trace_to_console(console, messages, model_name, timings) -> None:
             assistant_timings.append((msg, timings))
     if assistant_timings:
         print_section_header('Assistant Generation Speed', 'blue')
+        cache_states = detect_cache_misses([t for _, t in assistant_timings])
         assistant_out_speeds = [(msg, t.predicted_tokens_per_second) for msg, t in assistant_timings]
         max_out_speed = max(s for _, s in assistant_out_speeds)
         assistant_in_speeds = [(msg, t.prompt_tokens_per_second) for msg, t in assistant_timings]
@@ -1250,14 +1251,23 @@ def render_trace_to_console(console, messages, model_name, timings) -> None:
         table.add_column(justify='right', header="in speed")
         table.add_column(justify='right', header="out speed")
         table.add_column(justify='right', header="total tokens")
+        table.add_column(justify='right', header="cached")
+        table.add_column(justify='left', header="cache miss")
         has_draft = any(t.draft_tokens for _, t in assistant_timings if t.draft_tokens)
         if has_draft:
             table.add_column(justify='right', header='draft accept')
             table.add_column(justify='left', header='draft ratio')
-        for i, (msg, timings) in enumerate(assistant_timings, start=1):
+        for i, ((msg, timings), cache_state) in enumerate(zip(assistant_timings, cache_states), start=1):
             in_speed = ProgressBar(total=max_in_speed, completed=timings.prompt_tokens_per_second, width=40)
             out_speed = ProgressBar(total=max_out_speed, completed=timings.predicted_tokens_per_second, width=40)
             total_tokens = f"{_humanize_int(timings.cached_tokens + timings.prompt_tokens + timings.predicted_tokens)}"
+            cached_tokens = _humanize_int(timings.cached_tokens) if timings.cached_tokens is not None else ''
+            if cache_state is None:
+                cache_miss = ''
+            elif cache_state.is_cache_miss:
+                cache_miss = f"[red]MISS {cache_state.formatted_missing_tokens}[/]"
+            else:
+                cache_miss = "[green]ok[/]"
             label = f'[dim]Assistant #{i}[/]'
             in_label = f'{timings.prompt_tokens_per_second:.1f} tok/s'
             out_label = f'{timings.predicted_tokens_per_second:.1f} tok/s'
@@ -1268,9 +1278,9 @@ def render_trace_to_console(console, messages, model_name, timings) -> None:
                     ratio = f"{accepted} / {timings.draft_tokens}"
                 else:
                     ratio = ''
-                table.add_row(in_speed, out_speed, label, in_label, out_label, total_tokens, draft_accept, ratio)
+                table.add_row(in_speed, out_speed, label, in_label, out_label, total_tokens, cached_tokens, cache_miss, draft_accept, ratio)
             else:
-                table.add_row(in_speed, out_speed, label, in_label, out_label, total_tokens)
+                table.add_row(in_speed, out_speed, label, in_label, out_label, total_tokens, cached_tokens, cache_miss)
         _console.print(table)
         _console.print()
     # show summaries at end since command line the last part shows first (unlike web viewer where summary is best at top)

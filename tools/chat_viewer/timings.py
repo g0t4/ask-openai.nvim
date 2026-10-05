@@ -66,6 +66,80 @@ class ModelTimings:
         return f"{rate:.1f}%"
 
 
+@dataclass
+class CacheState:
+    """Cache continuity between two consecutive assistant generations.
+
+    The cache is expected to carry forward every token from the prior
+    generation: the previously cached prefix plus the newly processed prompt
+    plus the newly generated output. If the next generation's ``cache_n``
+    differs, some cached context was dropped (or a cache miss occurred).
+    """
+
+    expected_cache_tokens: int | None
+    actual_cache_tokens: int | None
+    is_cache_miss: bool
+    missing_tokens: int | None
+
+    @property
+    def formatted_missing_tokens(self) -> str | None:
+        """Human-readable cache delta, e.g. '-680' or '+1'."""
+        if self.missing_tokens is None:
+            return None
+        if self.missing_tokens >= 0:
+            return f"+{_humanize_int(self.missing_tokens)}"
+        return _humanize_int(self.missing_tokens)
+
+
+def expected_next_cache(prev: ModelTimings) -> int | None:
+    """Expected ``cache_n`` for the request following ``prev``'s generation.
+
+    Every token the model saw or produced in the prior generation should be
+    available in the prompt cache for the next one:
+
+        expected_next_cache = prev.cache_n + prev.prompt_n + prev.predicted_n
+
+    Returns None if the prior generation has no cache data to carry forward.
+    """
+    if prev.cached_tokens is None:
+        return None
+    return prev.cached_tokens + prev.prompt_tokens + prev.predicted_tokens
+
+
+def detect_cache_misses(timings_list: list[ModelTimings]) -> list[CacheState | None]:
+    """Compare each generation's cache against the prior generation's state.
+
+    Args:
+        timings_list: Assistant generations in trace order.
+
+    Returns:
+        A list with one entry per generation. The first entry is always None
+        (no prior state to compare against). Entries may also be None when
+        cache data is unavailable on either side.
+    """
+    states: list[CacheState | None] = []
+    prev: ModelTimings | None = None
+    for timings in timings_list:
+        if prev is None:
+            states.append(None)
+        else:
+            expected = expected_next_cache(prev)
+            actual = timings.cached_tokens
+            if expected is None or actual is None:
+                states.append(None)
+            else:
+                states.append(
+                    CacheState(
+                        expected_cache_tokens=expected,
+                        actual_cache_tokens=actual,
+                        is_cache_miss=expected != actual,
+                        missing_tokens=actual - expected,
+                    )
+                )
+        prev = timings
+    return states
+
+
 def parse_timings(last_sse: dict[str, Any] | None) -> ModelTimings | None:
     """Extract timing information from the last SSE response.
     

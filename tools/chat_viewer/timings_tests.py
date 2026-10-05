@@ -12,6 +12,8 @@ from tools.chat_viewer.timings import (
     format_stats_line,
     _humanize_int,
     _humanize_float,
+    expected_next_cache,
+    detect_cache_misses,
 )
 
 
@@ -383,7 +385,142 @@ def test_formatted_acceptance_rate_perfect_rate() -> None:
         draft_tokens=100,
         draft_tokens_accepted=100,
     )
-    
+
     formatted = timings.formatted_acceptance_rate
     assert formatted is not None
     assert formatted == "100.0%"
+
+
+def test_expected_next_cache() -> None:
+    """Expected next cache is prior cache + prompt + predicted."""
+    prev = ModelTimings(
+        prompt_tokens=4505,
+        predicted_tokens=213,
+        cached_tokens=0,
+    )
+    assert expected_next_cache(prev) == 4505 + 213 + 0
+
+
+def test_expected_next_cache_no_prior_cache() -> None:
+    """When the prior generation has no cache data, there is no expectation."""
+    prev = ModelTimings(prompt_tokens=100, predicted_tokens=50)
+    assert expected_next_cache(prev) is None
+
+
+def _timings(prompt_n: int, predicted_n: int, cache_n: int) -> ModelTimings:
+    return ModelTimings(
+        prompt_tokens=prompt_n,
+        predicted_tokens=predicted_n,
+        cached_tokens=cache_n,
+    )
+
+
+def test_detect_cache_misses_perfect_sequence() -> None:
+    """A contiguous sequence where each cache carries forward is all hits."""
+    # 0 -> 1 carries 4505+213+0 = 4718? No: use a clean sequence.
+    seq = [
+        _timings(100, 50, 0),
+        _timings(200, 60, 150),  # expected = 0+100+50 = 150 -> hit
+        _timings(300, 70, 410),  # expected = 150+200+60 = 410 -> hit
+    ]
+    states = detect_cache_misses(seq)
+    assert states[0] is None
+    assert states[1] is not None and not states[1].is_cache_miss
+    assert states[1].missing_tokens == 0
+    assert states[2] is not None and not states[2].is_cache_miss
+
+
+def test_detect_cache_misses_off_by_one() -> None:
+    """A -1 delta (off-by-one) is still a strict cache miss."""
+    seq = [
+        _timings(6937, 0, 0),
+        _timings(1400, 89, 6937 - 1),  # expected 6937, actual 6936
+    ]
+    states = detect_cache_misses(seq)
+    assert states[1] is not None
+    assert states[1].is_cache_miss
+    assert states[1].missing_tokens == -1
+    assert states[1].formatted_missing_tokens == "-1"
+
+
+def test_detect_cache_misses_big_drop() -> None:
+    """A large cache drop (real cache miss) is flagged with its delta."""
+    # assistant 7: cache 13638, prompt 1801, predicted 676
+    # expected next = 13638 + 1801 + 676 = 16115
+    # assistant 8 actual cache = 15435 -> dropped 680
+    seq = [
+        _timings(1801, 676, 13638),
+        _timings(1064, 1355, 15435),
+    ]
+    states = detect_cache_misses(seq)
+    assert states[1] is not None
+    assert states[1].is_cache_miss
+    assert states[1].expected_cache_tokens == 16115
+    assert states[1].actual_cache_tokens == 15435
+    assert states[1].missing_tokens == -680
+    assert states[1].formatted_missing_tokens == "-680"
+
+
+def test_detect_cache_misses_real_trace() -> None:
+    """Validate against a real agent trace (2026-10-03_002).
+
+    The sequence of (cache_n, prompt_n, predicted_n) from the trace should
+    produce exactly the observed misses, including several off-by-one deltas
+    and three large drops (cache 7->8, 16->17, 23->24).
+    """
+    trace_seq = [
+        (0, 4505, 213),
+        (4501, 2334, 102),
+        (6937, 1400, 89),
+        (8425, 1426, 206),
+        (10056, 940, 75),
+        (11071, 73, 90),
+        (11234, 756, 1649),
+        (13638, 1801, 676),
+        (15435, 1064, 1355),
+        (17853, 321, 1344),
+        (19518, 173, 255),
+        (19946, 64, 565),
+        (20574, 65, 650),
+        (21288, 65, 85),
+        (21437, 47, 267),
+        (21750, 1000, 765),
+        (23514, 528, 322),
+        (24038, 1995, 273),
+        (26306, 60, 90),
+        (26455, 70, 135),
+        (26659, 91, 405),
+        (27154, 41, 833),
+        (28028, 64, 283),
+        (28374, 797, 211),
+        (29167, 330, 158),
+    ]
+    seq = [_timings(prompt_n, predicted_n, cache_n) for cache_n, prompt_n, predicted_n in trace_seq]
+    states = detect_cache_misses(seq)
+
+    # First generation has no prior state.
+    assert states[0] is None
+
+    # Large drops must be flagged with the expected deltas.
+    assert states[1] is not None and states[1].is_cache_miss
+    assert states[1].missing_tokens == -217
+    assert states[8] is not None and states[8].is_cache_miss
+    assert states[8].missing_tokens == -680
+    assert states[17] is not None and states[17].is_cache_miss
+    assert states[17].missing_tokens == -326
+    assert states[24] is not None and states[24].is_cache_miss
+    assert states[24].missing_tokens == -215
+
+    # The clean carries (exact matches) are not flagged.
+    for idx in (2, 5, 6, 10, 11, 18, 22):
+        assert states[idx] is not None
+        assert not states[idx].is_cache_miss
+
+    # The off-by-one deltas are all exactly -1.
+    for idx in (3, 4, 7, 9, 12, 13, 14, 15, 16, 19, 20, 21, 23):
+        assert states[idx] is not None
+        assert states[idx].is_cache_miss
+        assert states[idx].missing_tokens == -1
+
+    # Every generation has an expected/actual cache value available.
+    assert all(state is not None for state in states[1:])
