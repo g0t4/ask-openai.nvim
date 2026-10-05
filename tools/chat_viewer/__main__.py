@@ -847,7 +847,7 @@ def _add_apply_patch(arguments: str, tree: TreeWrapper):
     if isinstance(parsed, dict) and "patch" in parsed:
         patch_content = str(parsed["patch"])
         try:
-            syntax = _syntax(patch_content, "diff")
+            syntax = _diff(patch_content)
             return child.add(syntax)
         except Exception as err:
             return child.add_error("Failed adding patch", err, patch_content)
@@ -876,12 +876,16 @@ def _markdown(source: str):
     # FYI markdown must use word_wrap=True (often has really long paragraphs that must wrap)
     return _syntax(source, "markdown")
 
+def _lua(source: str) -> Syntax:
+    return _syntax(source, "lua")
 
 def _bash(source: str):
     # FYI pygments bash lexer sucks at coloring bash, basically only builtins seem styled... i.e. echo
     # return _syntax(source, "bash")
     return _bash_via_bat_high_contrast(source, language="bash")
 
+def _diff(source: str) -> Syntax:
+    return _syntax(source, "diff")
 
 def _bash_via_bat_high_contrast(
     content: str,
@@ -991,7 +995,7 @@ def _add_run_in_neovim(arguments: str, tree: TreeWrapper):
         return tree.add_error("Missing or invalid lua argument", Exception("lua must be a string"), arguments)
 
     try:
-        syntax = _syntax(code, "lua")
+        syntax = _lua(code)
         return tree.add(syntax)
     except Exception as err:
         return tree.add_error("Failed adding Lua code", err, code)
