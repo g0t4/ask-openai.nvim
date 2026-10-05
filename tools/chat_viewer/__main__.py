@@ -868,7 +868,7 @@ def _syntax(source: str, lexer: str) -> Syntax:
         lexer,  # i.e. bash/json/etc
         theme=SYNTAX_THEME,
         line_numbers=False,
-        # word_wrap=True, # TODO! add always or just sometimes?
+        word_wrap=True,
     )
 
 
