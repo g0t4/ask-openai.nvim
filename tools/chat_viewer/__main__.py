@@ -487,13 +487,13 @@ def _split_content_into_sections(content: str) -> list[SectionDTO]:
     return [SectionDTO(content=sec) for sec in split_h2_markdown_sections(content)]
 
 
-def build_user_auto_rag_matches_message(content: str) -> (bool, TreeWrapper | None):
+def build_user_auto_rag_matches_message(raw_content: str) -> (bool, TreeWrapper | None):
     """Build Semantic Grep matches into a tree, or None if nothing is visible.
 
     Returns None when the content isn't a Semantic Grep block, or when every
     match is excluded (e.g. public files) so the parent message can be hidden.
     """
-    if not content.strip().startswith('# Semantic Grep matches:'):
+    if not raw_content.strip().startswith('# Semantic Grep matches:'):
         return False, None
 
     # FYI no indentation with RAG matches so just use a root tree and everything is top level (headers differentiate sections)
@@ -503,7 +503,7 @@ def build_user_auto_rag_matches_message(content: str) -> (bool, TreeWrapper | No
     )
     has_visible_match = False
 
-    for section in split_h2_markdown_sections(content):
+    for section in split_h2_markdown_sections(raw_content):
         lines = section.splitlines()
         if not lines:
             continue
