@@ -796,7 +796,6 @@ def build_unrecognized_tool_result_message(root: TreeWrapper, content: Any) -> N
 def build_tool_result_message(msg: Dict[str, Any], color: str) -> Optional[TreeWrapper]:
     root = TreeWrapper.hidden_root()
 
-    # * show duration if available (for after-the-fact review)
     timings = parse_tool_call_timings(msg)
     if timings:
         root.add(f"[dim {color}]⏱️  {timings.formatted_duration}[/]")
