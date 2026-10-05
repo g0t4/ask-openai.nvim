@@ -718,7 +718,7 @@ def build_empty_user_message(msg):
     return root
 
 
-def build_default_user_message(raw_content: str) -> TreeWrapper | None:
+def build_default_user_message(raw_content: str) -> Optional[TreeWrapper]:
     sections = _split_content_into_sections(raw_content)
     if not sections:
         return None
