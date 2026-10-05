@@ -692,8 +692,10 @@ def build_user_message(msg: dict) -> TreeWrapper | None:
     Assume content may be markdown
     """
     raw_content = _extract_content(msg)
+
+    # ? maybe add HiddenMessage type that replaces None so I can use None to decide if a given matcher applied or not?
     if not raw_content:
-        return None
+        return build_empty_user_message(msg)
 
     # this method exists to make explicit there are two builders for user messages by dispatching one here)
     # FYI can add more if they arise in future (special user message types)
@@ -704,6 +706,16 @@ def build_user_message(msg: dict) -> TreeWrapper | None:
         return message
 
     return build_default_user_message(raw_content)
+
+
+def build_empty_user_message(msg):
+    root = TreeWrapper.hidden_root()
+    # FYI you can remove this warning entirely and return None if you want... just leave this until you see how often you encounter this...
+    # only thing I can think of would be submitting an empty message but even then my tooling would prepend interrupt and/or other automatic guidance, so I don't think this would ever happen
+    # but I wanna know about it when it does
+    root.add_with_markup("[dim italic]empty content (was this intentional? does this ever happen?)[/]")
+    # root.add(_syntax(_format_json(msg), "json"))
+    return root
 
 
 def build_default_user_message(raw_content: str) -> TreeWrapper | None:
