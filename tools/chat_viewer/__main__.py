@@ -695,12 +695,13 @@ def build_user_message(msg: dict) -> TreeWrapper | None:
     if not raw_content:
         return None
 
+    # this method exists to make explicit there are two builders for user messages by dispatching one here)
+    # FYI can add more if they arise in future (special user message types)
+
     # * short-circuit for user message that contains auto RAG matches
     is_auto_rag, message = build_user_auto_rag_matches_message(raw_content)
     if is_auto_rag:
         return message
-
-    # FYI intent is to add other custom message handlers here and then fall through to a default display otherwise
 
     return build_default_user_message(msg)
 
