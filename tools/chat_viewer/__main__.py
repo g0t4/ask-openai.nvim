@@ -703,10 +703,10 @@ def build_user_message(msg: dict) -> TreeWrapper | None:
     if is_auto_rag:
         return message
 
-    return build_default_user_message(msg)
+    return build_default_user_message(raw_content)
 
 
-def build_default_user_message(msg: dict) -> TreeWrapper | None:
+def build_default_user_message(raw_content: str) -> TreeWrapper | None:
     sections = _split_content_into_sections(raw_content)
     if not sections:
         return None
