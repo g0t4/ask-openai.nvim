@@ -769,7 +769,7 @@ def build_tool_result_message(msg: Dict[str, Any], color: str) -> TreeWrapper:
     # * show duration if available (for after-the-fact review)
     timings = parse_tool_call_timings(msg)
     if timings:
-        root.add(f"[{color}]⏱️  {timings.formatted_duration}[/]")
+        root.add(f"[dim {color}]⏱️  {timings.formatted_duration}[/]")
 
     content = decode_if_json(msg.get("content", ""))
     handled = _add_rag_matches(root, content) or _add_mcp_result(root, content)
@@ -968,7 +968,7 @@ def _add_run_xonsh(arguments: str, tree: TreeWrapper):
 
 
 def format_call_title(title):
-    return f"- {tool_icon(title)} [bold]{title}[/]"
+    return f"{tool_icon(title)} [bold]{title}[/]"
 
 
 def _add_generic_tool(func_name: str, args_json_str: str, tree: TreeWrapper):
@@ -1029,7 +1029,7 @@ def build_assistant_message(msg: dict, color: str) -> TreeWrapper:
         if msg_timings:
             # Skip the compact one-liner (format_timings_display); the verbose
             # per-second stats + draft acceptance lines below are more useful.
-            stats = format_stats_line(msg_timings, color)
+            stats = format_stats_line(msg_timings, f"dim {color}")
             if stats:
                 # stats already contains markup, add as is
                 root.add(stats)
@@ -1182,12 +1182,6 @@ def render_trace_to_console(console, messages, model_name, timings) -> None:
         if model_name:
             _console.print(f"[dim]Model:[/] [bold]{model_name}[/]")
             _console.print()
-        # Show aggregated timings overview (mirrors per-message stats format)
-        summary = summarize_message_timings(messages)
-        if summary:
-            _console.print(f"[dim]Timings overview:[/]")
-            _console.print(summary)
-            _console.print()
     else:
         print_model_info(model_name, timings)
 
@@ -1297,49 +1291,6 @@ def main() -> None:
             _console.save_html(html_path)
         except Exception as e:
             _console.print(f"[red]Failed to write HTML output to {html_path}: {e}[/]")
-
-
-def summarize_message_timings(messages: list[dict[str, Any]]) -> str | None:
-    """Aggregate timings from assistant messages into a single ModelTimings.
-
-    Mirrors the per-message assistant stats format (label + value per line)
-    so the upfront overview reads consistently with each message.
-    """
-    timings_list = []
-    for msg in messages:
-        if msg.get("role") == "assistant" and msg.get("timings"):
-            t = _parse_timings_from_dict(msg.get("timings"))
-            if t:
-                timings_list.append(t)
-    if not timings_list:
-        return None
-
-    total_prompt_tokens = sum(t.prompt_tokens for t in timings_list)
-    total_predicted_tokens = sum(t.predicted_tokens for t in timings_list)
-    total_cached = sum(t.cached_tokens or 0 for t in timings_list)
-    total_draft = sum(t.draft_tokens or 0 for t in timings_list)
-    total_draft_accepted = sum(t.draft_tokens_accepted or 0 for t in timings_list)
-    total_prompt_ms = sum(t.prompt_ms for t in timings_list)
-    total_predicted_ms = sum(t.predicted_ms for t in timings_list)
-
-    # weighted per-second aggregates (avoid div zero)
-    total_prompt_sec = total_prompt_ms / 1000 if total_prompt_ms else 0
-    total_predicted_sec = total_predicted_ms / 1000 if total_predicted_ms else 0
-    prompt_tps = total_prompt_tokens / total_prompt_sec if total_prompt_sec else 0.0
-    predicted_tps = total_predicted_tokens / total_predicted_sec if total_predicted_sec else 0.0
-
-    aggregate = ModelTimings(
-        prompt_tokens=total_prompt_tokens,
-        predicted_tokens=total_predicted_tokens,
-        cached_tokens=total_cached if total_cached else None,
-        draft_tokens=total_draft if total_draft else None,
-        draft_tokens_accepted=total_draft_accepted if total_draft_accepted else None,
-        prompt_ms=total_prompt_ms,
-        predicted_ms=total_predicted_ms,
-        prompt_tokens_per_second=prompt_tps,
-        predicted_tokens_per_second=predicted_tps,
-    )
-    return format_stats_line(aggregate)
 
 
 if __name__ == "__main__":
