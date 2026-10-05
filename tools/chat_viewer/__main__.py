@@ -864,19 +864,28 @@ def _add_apply_patch(arguments: str, tree: TreeWrapper):
     return child.add(str(parsed))
 
 
+SYNTAX_THEME = "ansi_dark"
+
+
 def _syntax(source: str, lexer: str) -> Syntax:
     # is_multi_line = "\n" in source
     return Syntax(
         source,
         lexer,  # i.e. bash/json/etc
-        theme="ansi_dark",  # effectively sets default theme which is why I want a _syntax helper
+        theme=SYNTAX_THEME,
         line_numbers=False,
         # word_wrap=True, # TODO! add always or just sometimes?
     )
 
 
 def _markdown(source: str):
-    return _syntax(source, "markdown")
+    return Syntax(
+        source,
+        "markdown",
+        theme=SYNTAX_THEME,
+        line_numbers=False,
+        word_wrap=True,
+    )
 
 
 def _bash(source: str):
