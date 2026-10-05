@@ -798,7 +798,7 @@ def build_tool_result_message(msg: Dict[str, Any], color: str) -> Optional[TreeW
 
     timings = parse_tool_call_timings(msg)
     if timings:
-        root.add(f"[dim {color}]⏱️  {timings.formatted_duration}[/]")
+        root.add(Align.right((f"[dim {color}]⏱️  {timings.formatted_duration}[/]")))
 
     content = decode_if_json(msg.get("content", ""))
 
