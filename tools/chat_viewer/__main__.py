@@ -412,15 +412,6 @@ def create_raw_completion_messages(data: dict) -> list[dict]:
     return messages
 
 
-def _content_hash(msg: dict[str, Any]) -> str:
-    """Return SHA‑256 hash (hex) of the message's raw ``content``."""
-    content = msg.get("content", "")
-    if not isinstance(content, str):
-        # ignore non-string values, when I wanna ignore those I can come in here and add support
-        return ""
-    return hashlib.sha256(content.encode("utf-8")).hexdigest()
-
-
 def load_preapproved_files() -> None:
     # Use the user‑level configuration location instead of the repository copy.
     preapproved_path = Path.home() / ".config" / "ask-openai" / "preapproved.txt"
