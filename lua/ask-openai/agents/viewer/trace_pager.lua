@@ -1,9 +1,9 @@
 local M = {}
 
 -- * Regex patterns for trace navigation (Vim regex syntax)
-local PATTERN_ALL_MESSAGES = "^\\d\\+:\\s"
-local PATTERN_USER = "^\\d\\+:\\s*USER"
-local PATTERN_ASSISTANT = "^\\d\\+:\\s*ASSISTANT"
+local PATTERN_ALL_MESSAGES = "─ \\d\\+: . [A-Z\\s]*"
+local PATTERN_USER = "─ \\d\\+: 👤 USER" -- single dot in middle is "." for icon
+local PATTERN_ASSISTANT = "─ \\d\\+: 🧠 ASSISTANT"
 
 --- Close NvimTree sidebar if it's open
 local function close_nvim_tree_if_open()
@@ -51,6 +51,35 @@ local function setup_trace_keymaps(bufnr)
     vim.keymap.set("n", "pm", "", vim.tbl_extend("force", base_opts, {
         callback = function()
             vim.cmd("?" .. PATTERN_ALL_MESSAGES)
+        end,
+    }))
+
+    vim.keymap.set("n", "fu", "", vim.tbl_extend("force", base_opts, {
+        callback = function()
+            -- jump to first user, also b/c we use search to find it, I can then hit `n` for next user!
+            vim.cmd("normal! gg")
+            vim.cmd("/" .. PATTERN_USER)
+        end,
+    }))
+
+    vim.keymap.set("n", "fa", "", vim.tbl_extend("force", base_opts, {
+        callback = function()
+            vim.cmd("normal! gg")
+            vim.cmd("/" .. PATTERN_ASSISTANT)
+        end,
+    }))
+
+    vim.keymap.set("n", "lu", "", vim.tbl_extend("force", base_opts, {
+        callback = function()
+            vim.cmd("normal! G")
+            vim.cmd("?" .. PATTERN_USER)
+        end,
+    }))
+
+    vim.keymap.set("n", "la", "", vim.tbl_extend("force", base_opts, {
+        callback = function()
+            vim.cmd("normal! G")
+            vim.cmd("?" .. PATTERN_ASSISTANT)
         end,
     }))
 
