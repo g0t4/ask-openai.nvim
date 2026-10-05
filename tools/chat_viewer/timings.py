@@ -183,4 +183,8 @@ def format_stats_line(timings: ModelTimings | None, color: str = "dim") -> str:
         else:
             lines.append(f"[{color}]  draft: {_humanize_int(draft_accepted)} accepted ({_humanize_int(draft_accepted)} / {_humanize_int(timings.draft_tokens)} tokens)[/]")
 
+    duration = timings.prompt_ms + timings.predicted_ms
+    if duration > 0:
+        lines.append(f"[dim {color}]⏱️ {_humanize_float(duration, 0)}ms[/]")
+
     return "\n".join(lines)
