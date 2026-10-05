@@ -719,8 +719,10 @@ def build_default_user_message(raw_content: str) -> Optional[TreeWrapper]:
         if sec.is_excluded:
             continue
         if SHOW_ALL:
-            header_line = (sec.content.splitlines()[0] or "")[0:30] # limit # of characters
-            root.add(f'[dim]"{sec.content_hash}",  # {header_line}[/]')
+            hash_comment = (sec.content.splitlines()[0] or "")[0:30]  # limit # of characters
+            if not hash_comment.startswith("#"):
+                hash_comment = ""
+            root.add(f'[dim]"{sec.content_hash}",  # {hash_comment}[/]')
         root.add(sec.get_renderable())
 
     if not root.children:
