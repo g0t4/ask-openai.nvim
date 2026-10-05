@@ -106,11 +106,16 @@ def expected_next_cache(prev: ModelTimings) -> int | None:
     return prev.cached_tokens + prev.prompt_tokens + prev.predicted_tokens
 
 
-def detect_cache_misses(timings_list: list[ModelTimings]) -> list[CacheState | None]:
+def detect_cache_misses(
+    timings_list: list[ModelTimings], tolerance: int = 1
+) -> list[CacheState | None]:
     """Compare each generation's cache against the prior generation's state.
 
     Args:
         timings_list: Assistant generations in trace order.
+        tolerance: Absolute delta at or below this value is treated as a
+            cache hit. The default of 1 absorbs benign off-by-one token
+            counting artifacts while still flagging real cache drops.
 
     Returns:
         A list with one entry per generation. The first entry is always None
@@ -132,7 +137,7 @@ def detect_cache_misses(timings_list: list[ModelTimings]) -> list[CacheState | N
                     CacheState(
                         expected_cache_tokens=expected,
                         actual_cache_tokens=actual,
-                        is_cache_miss=expected != actual,
+                        is_cache_miss=abs(actual - expected) > tolerance,
                         missing_tokens=actual - expected,
                     )
                 )

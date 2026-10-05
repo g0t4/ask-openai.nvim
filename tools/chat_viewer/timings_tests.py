@@ -430,17 +430,28 @@ def test_detect_cache_misses_perfect_sequence() -> None:
     assert states[2] is not None and not states[2].is_cache_miss
 
 
-def test_detect_cache_misses_off_by_one() -> None:
-    """A -1 delta (off-by-one) is still a strict cache miss."""
+def test_detect_cache_misses_off_by_one_is_hit() -> None:
+    """A -1 delta (off-by-one) is treated as a hit with the default tolerance."""
     seq = [
         _timings(6937, 0, 0),
         _timings(1400, 89, 6937 - 1),  # expected 6937, actual 6936
     ]
     states = detect_cache_misses(seq)
     assert states[1] is not None
-    assert states[1].is_cache_miss
+    assert not states[1].is_cache_miss
     assert states[1].missing_tokens == -1
     assert states[1].formatted_missing_tokens == "-1"
+
+
+def test_detect_cache_misses_zero_tolerance() -> None:
+    """With tolerance=0 a -1 delta is a strict cache miss."""
+    seq = [
+        _timings(6937, 0, 0),
+        _timings(1400, 89, 6937 - 1),
+    ]
+    states = detect_cache_misses(seq, tolerance=0)
+    assert states[1] is not None
+    assert states[1].is_cache_miss
 
 
 def test_detect_cache_misses_big_drop() -> None:
@@ -465,8 +476,9 @@ def test_detect_cache_misses_real_trace() -> None:
     """Validate against a real agent trace (2026-10-03_002).
 
     The sequence of (cache_n, prompt_n, predicted_n) from the trace should
-    produce exactly the observed misses, including several off-by-one deltas
-    and three large drops (cache 7->8, 16->17, 23->24).
+    produce exactly the observed misses: the four large cache drops
+    (generations 1, 8, 17, 24) while the many off-by-one deltas stay hits
+    under the default 1-token tolerance.
     """
     trace_seq = [
         (0, 4505, 213),
@@ -501,7 +513,7 @@ def test_detect_cache_misses_real_trace() -> None:
     # First generation has no prior state.
     assert states[0] is None
 
-    # Large drops must be flagged with the expected deltas.
+    # The four large cache drops must be flagged with the expected deltas.
     assert states[1] is not None and states[1].is_cache_miss
     assert states[1].missing_tokens == -217
     assert states[8] is not None and states[8].is_cache_miss
@@ -511,16 +523,12 @@ def test_detect_cache_misses_real_trace() -> None:
     assert states[24] is not None and states[24].is_cache_miss
     assert states[24].missing_tokens == -215
 
-    # The clean carries (exact matches) are not flagged.
-    for idx in (2, 5, 6, 10, 11, 18, 22):
+    # Exact matches and off-by-one deltas are all treated as hits.
+    for idx in range(1, len(states)):
+        if idx in (1, 8, 17, 24):
+            continue
         assert states[idx] is not None
         assert not states[idx].is_cache_miss
-
-    # The off-by-one deltas are all exactly -1.
-    for idx in (3, 4, 7, 9, 12, 13, 14, 15, 16, 19, 20, 21, 23):
-        assert states[idx] is not None
-        assert states[idx].is_cache_miss
-        assert states[idx].missing_tokens == -1
 
     # Every generation has an expected/actual cache value available.
     assert all(state is not None for state in states[1:])
