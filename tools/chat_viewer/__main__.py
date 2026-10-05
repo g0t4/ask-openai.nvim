@@ -696,9 +696,9 @@ def build_user_message(msg: dict) -> TreeWrapper | None:
         return None
 
     # * short-circuit for user message that contains auto RAG matches
-    is_auto_rag, rag_matches = build_unapproved_auto_rag_matches(raw_content)
+    is_auto_rag, message = build_unapproved_auto_rag_matches(raw_content)
     if is_auto_rag:
-        return rag_matches
+        return message
 
     sections = _split_content_into_sections(raw_content)
     if not sections:
