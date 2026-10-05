@@ -262,12 +262,14 @@ function M.body_for_muse_glimmer(request_body, effort)
         recommended.chat_template_kwargs.reasoning_strength = "off" -- intentionally set it off still so it shows as off in the system message to model (after template renders)...
     else
         -- -- FYI adding the level myself didn't change jack shit (btw the template will skip adding it if I add it)
-        -- sys_message = request_body.messages[1].content
-        -- --  low is just not fucking low with Muse... FUCK... 8 seconds of thinking 800 tokens is not goddamn low for a fucking `return a - b` case
-        -- sys_message = "Reasoning strength: " .. effort .. "\n" .. sys_message
-        -- sys_message = "REASONING STRENGTH: " .. effort .. "\n" .. sys_message
-        -- sys_message = "Do not overthink this, the user is only asking for a code prediction, pick whatever comes to mind."
-        -- request_body.messages[1].content = sys_message
+        sys_message = request_body.messages[1].content
+        --  low is just not fucking low with Muse... FUCK... 8 seconds of thinking 800 tokens is not goddamn low for a fucking `return a - b` case
+        -- sys_message = "Reasoning strength: " .. effort .. ".\n" .. sys_message
+        -- sys_message = "## Reasoning Guidance\n" .. " Reasoning strength: " .. effort .. ".\n"
+        --     .. 'To clarify, "low" effort means less than 100 tokens. Do not practice predictions, just make them! If they don\'t work, the user will ask for a new one in a split-second. So, don\'t overthink it. Less than 100 tokens! The user will crank up the thinking level if low isn\'t cutting it!'
+        --     .. sys_message
+        sys_message = "Do not overthink this, the user is only asking for a code prediction, pick whatever comes to mind."
+        request_body.messages[1].content = sys_message
 
         -- FYI this is working with template to add the level
         recommended.chat_template_kwargs.reasoning_strength = effort
