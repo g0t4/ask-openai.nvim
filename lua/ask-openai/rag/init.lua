@@ -78,6 +78,8 @@ function M.setup_vim_lsp()
         -- old values from lspconfig setup => these might need adjusted if filetypes differs in vim.lsp.config
         -- filetypes = rag_client.get_filetypes_for_workspace(),
         -- not set == all filetypes
+        -- TODO! REMOVE THIS WHEN DONE WITH BUG in xonsh-lsp
+        filetypes = {"lua"}, -- add to limit issue with xonsh-lsp to just lua for testing (if you  drop this then other file types will subject to same issue  with xonsh-lsp scanning non-python code
         -- DO NOT SET filetypes = { '*' }, -- doesn't work
 
         root_dir = root_dir
