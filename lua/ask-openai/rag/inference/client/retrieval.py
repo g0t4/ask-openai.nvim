@@ -118,6 +118,8 @@ async def semantic_grep(
 
             # return {"failed": True, "error": f"No dataset for {current_file_abs}"} # TODO return failure?
             raise Exception(f"No dataset for {args.currentFileAbsolutePath}")
+            # TODO! show warning in client so I don't have to see logs for this! => window/showMessage IIRC?
+            #  to test this, just delete the .rag/xyz domain dir and try to edit an xyz file
 
         scores, ids = dataset.index.search(query_vector, query_embed_top_k)
         ids = ids[0]
