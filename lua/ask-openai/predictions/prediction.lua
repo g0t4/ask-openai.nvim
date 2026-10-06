@@ -135,6 +135,9 @@ function Prediction:fim_fixes()
         return
     end
 
+    -- TODO strip markdown wrappers using tests
+    -- PRN strip out markdown ```language from first and last line ```
+    -- PRN strip `...` too unless in a markdown file
     local first_line = table.remove(lines, 1)
     local cursor_prefix = self.cursor_prefix
     local has_duplicate_prefix = cursor_prefix ~= ""
