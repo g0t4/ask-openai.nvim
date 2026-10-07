@@ -80,7 +80,18 @@ function M.setup_vim_lsp()
         -- not set == all filetypes
         -- DO NOT SET filetypes = { '*' }, -- doesn't work
 
-        root_dir = root_dir
+        root_dir = root_dir,
+
+        -- Force utf-16 so ask_ls shares a change-tracking group with other
+        -- clients (e.g. lua-language-server). By default Neovim advertises
+        -- { "utf-8", "utf-16", "utf-32" }; pygls picks the first it supports
+        -- (utf-8), which splits ask_ls into its own sync group. Advertising
+        -- only utf-16 makes pygls negotiate utf-16 for both sides.
+        capabilities = {
+            general = {
+                positionEncodings = { "utf-16" },
+            },
+        },
     })
 
     vim.lsp.enable("ask_ls")
