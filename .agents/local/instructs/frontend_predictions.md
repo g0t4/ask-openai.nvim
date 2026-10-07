@@ -24,5 +24,10 @@ Uses llama-server on the backend
     albeit chat completions are less "precise" vs qwen2.5-coder's native FIM
     - i.e. indentation, duplicating cursorline prefix
       mostly can be mitigated with tooling (i.e. strip duplicate cursorline prefix)
+    - chat models often wrap their completion in markdown fences (```language ... ``` or `...`)
+      => strip the leading ```language (and trailing ```) fence in `Prediction:fim_fixes`
+      via `lua/ask-openai/predictions/markdown_strip.lua` (streaming-safe: a leading
+      fence is only stripped once newline-terminated; single backticks only when both ends
+      wrap; skipped entirely in markdown files where fences are the intended content)
   Config includes a setting to disable reasoning or adjust its effort level.
 - in mid 2026 a plethora of capable models emerged that all do very well with the Chat based completions format, notably: Muse Glimmer 30B

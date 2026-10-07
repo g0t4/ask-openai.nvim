@@ -3,6 +3,7 @@ local HLGroups = require("ask-openai.hlgroups")
 local log = require("devtools.logs.logger").universal()
 local CursorController = require "ask-openai.predictions.cursor_controller"
 local FIMPerformance = require("ask-openai.predictions.fim_performance")
+local markdown_strip = require("ask-openai.predictions.markdown_strip")
 
 ---@class Prediction
 ---@field id integer
@@ -22,6 +23,7 @@ local FIMPerformance = require("ask-openai.predictions.fim_performance")
 ---
 ---@field has_reasoning boolean
 ---@field private reasoning_chunks string[]
+---@field private started_content boolean # once content is shown, don't regress back to reasoning
 ---
 ---@field start_time number
 ---@field performance FIMPerformance   # timing/lifecycle state for this prediction
@@ -59,6 +61,7 @@ function Prediction.new(params)
     self.skip_text_changed_from_accept_suggestion = false
     self.has_reasoning = false
     self.reasoning_chunks = {}
+    self.started_content = false
     self.start_time = os.time()
     self.performance = FIMPerformance:new()
     self.prediction = ""
@@ -77,7 +80,13 @@ end
 
 function Prediction:finalize_prediction()
     self.done = true
-    if self.prediction == "" then
+    -- A completion that is only a markdown fence (e.g. an empty code block)
+    -- has no real content, so clear the ghost extmarks (and any reasoning).
+    local is_empty = self.prediction == ""
+    if not Prediction._is_markdown_buffer(self.bufnr) then
+        is_empty = is_empty or markdown_strip.strip(self.prediction) == ""
+    end
+    if is_empty then
         -- hide reasoning... BTW this should probably be put into fix_fim_and_redraw_extmarks() so we have one way to handle all updates?
         self:clear_extmarks()
         -- ? should I add a visual cue to signal that there wasn't a failure?
@@ -116,6 +125,12 @@ local function split_lines(text)
     return lines
 end
 
+---@param bufnr integer
+---@return boolean
+function Prediction._is_markdown_buffer(bufnr)
+    return vim.bo[bufnr].filetype == "markdown"
+end
+
 function Prediction:fim_fixes()
     -- * get cursor prefix one time
     if self.cursor_prefix == nil then
@@ -128,16 +143,24 @@ function Prediction:fim_fixes()
 
     -- TODO suffix duplication? find traces for this first... and make sure it is common enough and then test it well
 
+    -- * Strip markdown code fences models sometimes wrap completions in
+    --   (```language ... ``` or `...`). Not in markdown files, where the
+    --   fences are the intended content.
+    local prediction_text = self.prediction
+    if not Prediction._is_markdown_buffer(self.bufnr) then
+        prediction_text = markdown_strip.strip(prediction_text)
+    end
+
     -- * Check if prediction's first line starts with the cursor prefix (FIM duplication)
-    local lines = split_lines(self.prediction)
+    local lines = split_lines(prediction_text)
     self.has_prediction = #lines > 0
+    if self.has_prediction then
+        self.started_content = true
+    end
     if not self.has_prediction then
         return
     end
 
-    -- TODO strip markdown wrappers using tests
-    -- PRN strip out markdown ```language from first and last line ```
-    -- PRN strip `...` too unless in a markdown file
     local first_line = table.remove(lines, 1)
     local cursor_prefix = self.cursor_prefix
     local has_duplicate_prefix = cursor_prefix ~= ""
@@ -201,6 +224,11 @@ function Prediction:fix_fim_and_redraw_extmarks()
             -- quick hack to make sure we don't go back to showing reasoning after full accept
             --  TODO fix this to not be so hacky (name wise)
             --     TODO differentiate when fully accepted and just reset at that point!
+            return
+        end
+        if self.started_content then
+            -- content was shown already; don't regress back to reasoning when
+            -- a streaming fence-strip momentarily empties the prediction
             return
         end
         if not self.has_reasoning then
