@@ -174,3 +174,48 @@ def test_markdown_multiline_preserves_structure() -> None:
     source = "Line one\n1. item\nLine three"
     styled = style_markdown_text(source)
     assert styled.plain == source
+
+
+def test_triple_backticks_on_one_line_not_styled() -> None:
+    # Two fence runs on the same line are not inline code; leave them literal.
+    source = (
+        "first line is ``` with optional language... and strip ``` on last line"
+    )
+    styled = style_markdown_text(source)
+    assert styled.plain == source
+    assert bold_spans(styled) == []
+
+
+def test_double_backtick_escaping() -> None:
+    # `` `code` `` uses double backticks to escape a literal backtick inside.
+    source = "like `` `code` ``."
+    styled = style_markdown_text(source)
+    assert styled.plain == source
+    # The content (including the literal single backticks) is bolded verbatim.
+    assert bold_spans(styled) == [" `code` "]
+    # The double backtick delimiters are dimmed.
+    assert "``" in dim_spans(styled)
+
+
+def test_unbalanced_single_backticks_not_styled() -> None:
+    # A lone backtick with no matching close is not a code span.
+    styled = style_markdown_text("or single `")
+    assert styled.plain == "or single `"
+    assert bold_spans(styled) == []
+
+
+def test_triple_backtick_run_does_not_pair_with_single() -> None:
+    # A 3-backtick run is not a valid single-backtick delimiter, so it never
+    # pairs with a lone backtick to form a span.
+    source = "text ``` then `x`"
+    styled = style_markdown_text(source)
+    assert styled.plain == source
+    # Only the isolated `` `x` `` pair forms a span.
+    assert bold_spans(styled) == ["x"]
+
+
+def test_escaping_example_from_trace() -> None:
+    source = "the model wraps the whole completion in single backticks like `` `code` ``."
+    styled = style_markdown_text(source)
+    assert styled.plain == source
+    assert bold_spans(styled) == [" `code` "]

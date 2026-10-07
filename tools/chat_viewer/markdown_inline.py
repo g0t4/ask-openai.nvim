@@ -13,11 +13,86 @@ import re
 from rich.text import Text
 
 
-# Single-backtick inline code spans: ```text```, or bold ``**text**``.
-_INLINE_SPAN = re.compile(r"`([^`]+)`|\*\*([^*]+)\*\*")
+# A maximal run of backticks (e.g. `` ` ``, ```` `` ````, ```` ``` ````).
+_BACKTICK_RUN = re.compile(r"`+")
+
+# Bold spans: ``**text**``.
+_BOLD_SPAN = re.compile(r"\*\*([^*]+)\*\*")
+
+# Only runs of 1 or 2 backticks are valid *inline* code delimiters. A run of 3+
+# is a fenced code block marker, not inline code, so it is left literal.
+_MAX_INLINE_BACKTICKS = 2
 
 # A list marker at the start of a line, e.g. ``- ``, ``* ``, ``1. ``.
 _LIST_MARKER = re.compile(r"^(\s*(?:[-*+]|\d+\.)\s+)")
+
+
+def _collect_code_spans(source: str) -> list[dict]:
+    """Find inline code spans using the CommonMark backtick-run algorithm.
+
+    A code span is delimited by a maximal backtick run of length ``N`` (1 or 2)
+    on each side, with the content between them. This correctly handles:
+
+    * `` `code` `` → single backtick delimiters.
+    * `` `` `code` `` `` → double backtick delimiters, so a literal backtick
+      inside the content (`` ` ``) is escaped and shown verbatim.
+
+    A run of 3+ backticks is a fenced block marker, not inline code, so it is
+    never treated as a delimiter. Unbalanced backticks naturally produce no
+    span (the delimiter needs a matching close run).
+    """
+    spans: list[dict] = []
+    pos = 0
+    while True:
+        run = _BACKTICK_RUN.search(source, pos)
+        if not run:
+            break
+        n = len(run.group(0))
+        if n > _MAX_INLINE_BACKTICKS:
+            pos = run.end()
+            continue
+
+        # Find the next maximal backtick run of exactly length ``n``.
+        search_pos = run.end()
+        close = None
+        while True:
+            next_run = _BACKTICK_RUN.search(source, search_pos)
+            if not next_run:
+                break
+            if len(next_run.group(0)) == n:
+                close = next_run
+                break
+            search_pos = next_run.end()
+
+        if close is None:
+            pos = run.end()
+            continue
+
+        spans.append({
+            "start": run.start(),
+            "end": close.end(),
+            "kind": "code",
+            "content": source[run.end():close.start()],
+            "open": run.group(0),
+            "close": close.group(0),
+        })
+        pos = close.end()
+    return spans
+
+
+def _collect_bold_spans(source: str) -> list[dict]:
+    """Find bold ``**text**`` spans."""
+    return [
+        {
+            "start": match.start(),
+            "end": match.end(),
+            "kind": "bold",
+            "content": match.group(1),
+            "open": "**",
+            "close": "**",
+        }
+        for match in _BOLD_SPAN.finditer(source)
+    ]
 
 
 def _style_inline(
@@ -34,25 +109,31 @@ def _style_inline(
     ``bold_style`` with dimmed ``**`` delimiters. When ``bold_style`` is ``None``
     bold spans are left literal (for callers that only want inline code).
     """
+    spans = _collect_code_spans(source) + _collect_bold_spans(source)
+    spans.sort(key=lambda span: span["start"])
+
     result = Text()
     pos = 0
-    for match in _INLINE_SPAN.finditer(source):
-        if match.start() > pos:
-            result.append(source[pos:match.start()], style=base_style)
-        if match.group(1) is not None:
+    for span in spans:
+        if span["start"] < pos:
+            # Overlapping (e.g. bold inside a code span) - the earlier span wins.
+            continue
+        if span["start"] > pos:
+            result.append(source[pos:span["start"]], style=base_style)
+        if span["kind"] == "code":
             # Inline code: keep dimmed backticks, pop the code.
-            result.append("`", style=backtick_style)
-            result.append(match.group(1), style=code_style)
-            result.append("`", style=backtick_style)
+            result.append(span["open"], style=backtick_style)
+            result.append(span["content"], style=code_style)
+            result.append(span["close"], style=backtick_style)
         elif bold_style is not None:
             # Bold: keep dimmed ``**``, pop the text.
-            result.append("**", style=backtick_style)
-            result.append(match.group(2), style=bold_style)
-            result.append("**", style=backtick_style)
+            result.append(span["open"], style=backtick_style)
+            result.append(span["content"], style=bold_style)
+            result.append(span["close"], style=backtick_style)
         else:
             # Bold disabled: leave the span verbatim.
-            result.append(match.group(0), style=base_style)
-        pos = match.end()
+            result.append(source[span["start"]:span["end"]], style=base_style)
+        pos = span["end"]
     if pos < len(source):
         result.append(source[pos:], style=base_style)
     return result
