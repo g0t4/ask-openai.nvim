@@ -3,7 +3,7 @@
 from rich.text import Text
 from rich.style import Style
 
-from tools.chat_viewer.markdown_inline import style_inline_code
+from tools.chat_viewer.markdown_inline import style_inline_code, style_markdown_text
 
 
 def bold_spans(text: Text) -> list[str]:
@@ -111,3 +111,66 @@ def test_custom_backtick_style() -> None:
     backtick_span = next(s for s in styled.spans if _span_style(s).dim)
     assert styled.plain[backtick_span.start:backtick_span.end] == "`"
     assert _span_style(backtick_span).italic is True
+
+
+def test_markdown_bold_is_bolded_with_dimmed_delimiters() -> None:
+    styled = style_markdown_text("**Important** step")
+    assert styled.plain == "**Important** step"
+    assert bold_spans(styled) == ["Important"]
+    assert dim_spans(styled) == ["**", "**"]
+
+
+def test_markdown_combines_inline_code_and_bold() -> None:
+    styled = style_markdown_text("Use `run` then **go**")
+    assert styled.plain == "Use `run` then **go**"
+    assert bold_spans(styled) == ["run", "go"]
+
+
+def test_markdown_inline_code_only_keeps_bold_literal() -> None:
+    # style_inline_code does not process ``**bold**``.
+    styled = style_inline_code("**keep** `code`")
+    assert styled.plain == "**keep** `code`"
+    assert bold_spans(styled) == ["code"]
+
+
+def test_markdown_fence_markers_are_dimmed_content_verbatim() -> None:
+    source = "before\n```lua\nlocal x = 1\n```\nafter"
+    styled = style_markdown_text(source)
+    assert styled.plain == source
+    # The two fence lines are dimmed.
+    assert dim_spans(styled) == ["```lua", "```"]
+    # Code content is not styled (no bold/code spans inside the fence).
+    assert bold_spans(styled) == []
+
+
+def test_markdown_fence_content_not_inline_styled() -> None:
+    source = "```\n`not_inline` and **not_bold**\n```"
+    styled = style_markdown_text(source)
+    assert styled.plain == source
+    assert bold_spans(styled) == []
+
+
+def test_markdown_list_markers_are_dimmed() -> None:
+    source = "- first item\n1. second item\n* third item"
+    styled = style_markdown_text(source)
+    assert styled.plain == source
+    assert dim_spans(styled) == ["- ", "1. ", "* "]
+
+
+def test_markdown_list_content_still_inline_styled() -> None:
+    styled = style_markdown_text("- run `apply_patch`")
+    assert styled.plain == "- run `apply_patch`"
+    assert "- " in dim_spans(styled)
+    assert bold_spans(styled) == ["apply_patch"]
+
+
+def test_markdown_does_not_treat_star_args_as_list() -> None:
+    styled = style_markdown_text("*args unpacked")
+    assert styled.plain == "*args unpacked"
+    assert dim_spans(styled) == []
+
+
+def test_markdown_multiline_preserves_structure() -> None:
+    source = "Line one\n1. item\nLine three"
+    styled = style_markdown_text(source)
+    assert styled.plain == source

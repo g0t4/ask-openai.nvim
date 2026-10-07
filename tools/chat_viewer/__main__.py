@@ -24,7 +24,7 @@ import argparse
 import argcomplete
 
 from tools.chat_viewer.markdown_utils import split_h2_markdown_sections
-from tools.chat_viewer.markdown_inline import style_inline_code
+from tools.chat_viewer.markdown_inline import style_markdown_text
 from tools.chat_viewer.tree_wrapper import TreeWrapper
 from tools.chat_viewer.run_process_formatter import commandline_equivalent_for_argv, format_heredoc_stdin
 from tools.chat_viewer.xonsh_formatter import parse_run_xonsh_arguments
@@ -1092,15 +1092,16 @@ def build_assistant_message(msg: dict, color: str) -> TreeWrapper:
             "[dim bright_black italic]💭 reasoning[/]"
         )
         reasoning_node = root.add(reasoning_text)
-        # Minimal inline markdown: backtick-wrapped expressions are bolded,
-        # the backticks kept but dimmed so they recede. Rest shown verbatim
-        # (no rich markup interpretation).
+        # Subtle markdown emphasis: inline code + bold pop, while backticks,
+        # fence markers and list markers are dimmed so they recede. The rest is
+        # shown verbatim (no rich markup interpretation).
         reasoning_node.add(
-            style_inline_code(
+            style_markdown_text(
                 insert_newlines(reasoning),
                 base_style="bright_black italic",
                 code_style="bold bright_black italic",
                 backtick_style="dim bright_black italic",
+                bold_style="bold bright_black italic",
             )
         )
         root.blank_line()
