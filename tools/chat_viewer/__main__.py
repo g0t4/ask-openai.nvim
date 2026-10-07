@@ -970,7 +970,7 @@ def _add_run_command_and_run_process(arguments: str, call_tree: TreeWrapper):
         # lines = cmds.split("\n")
         # longest_line = max(len(line) for line in lines)
         # print(f'{longest_line=}')
-        # call_tree.add(_bash(cmds))
+        call_tree.add(_bash(cmds))
 
         # remove fields with special handling
         stdin_text = yank(obj, "stdin_text")
