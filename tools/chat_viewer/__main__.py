@@ -1092,13 +1092,15 @@ def build_assistant_message(msg: dict, color: str) -> TreeWrapper:
             "[dim bright_black italic]💭 reasoning[/]"
         )
         reasoning_node = root.add(reasoning_text)
-        # Minimal inline markdown: backtick-wrapped expressions are bolded and
-        # the backticks dropped. The rest is shown verbatim (no rich markup).
+        # Minimal inline markdown: backtick-wrapped expressions are bolded,
+        # the backticks kept but dimmed so they recede. Rest shown verbatim
+        # (no rich markup interpretation).
         reasoning_node.add(
             style_inline_code(
                 insert_newlines(reasoning),
                 base_style="bright_black italic",
                 code_style="bold bright_black italic",
+                backtick_style="dim bright_black italic",
             )
         )
         root.blank_line()
