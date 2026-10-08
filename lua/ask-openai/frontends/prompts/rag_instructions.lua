@@ -40,29 +40,21 @@ function M.matches_to_markdown(matches, explanation)
     end
 
     for _, match in ipairs(matches) do
-        local position = (match.start_line_base0 + 1) .. "-" .. (match.end_line_base0 + 1)
-        if match.start_column_base0 or match.end_column_base0 then
-            position =
-                (match.start_line_base0 + 1) .. ":" .. (match.start_column_base0 + 1)
-                .. "-" ..
-                (match.end_line_base0 + 1) .. ":" .. (match.end_column_base0 + 1)
+        local parts = { match.start_line_base0 + 1 }
+        if match.start_column_base0 and match.start_column_base0 > 0 then
+            table.insert(parts, ":" .. (match.start_column_base0 + 1))
         end
+        table.insert(parts, "-")
+        table.insert(parts, match.end_line_base0 + 1)
+        if match.end_column_base0 and match.end_column_base0 > 0 then
+            table.insert(parts, ":" .. (match.end_column_base0 + 1))
+        end
+        local position = table.concat(parts, "")
+
         local file = match.file .. ":" .. position
         local text = match.text
 
         -- * add leading whitespace for non-zero start columns (ts chunks only, so far)
-        local start_col0 = match.start_column_base0
-        if start_col0 and start_col0 > 0 then
-            -- I noticed in some cases a treesitter matched function has non-zero start column and that shows as incorrectly indented in trace RAG matches
-            --   mostly wanted to avoid model being confused, especialy if multiple matches are from same file and the de-indented func signature (often all that is off like this)... is just slightly wrong but could it confuse the generated code?
-            --      could this be partially why I get poorly indented suggestions at times?
-            --   so, I am adding whitespace for now
-            --   FYI it would be fine to roll this back, most of the time it would just be incorrectly indented function signature, which isn't even invalid in python
-            -- TODO any material cases where the leading chars aren't actually whitespace?
-            local visible_ws = " "
-            text = string.rep(visible_ws, start_col0) .. text
-            -- TODO consider is col offset in bytes or chars? (see RAG preview for more on this)... i.e. with emoji or other unicode chars?
-        end
 
         -- table.insert(lines, "## " .. file .. "\n" .. text .. "\n")
 
