@@ -6,13 +6,9 @@ local M = {}
 
 ---@type ToolCallFormatter
 function M.format(lines, tool_call, message)
+    base.add_generic_header(lines, tool_call)
 
     local func = tool_call["function"]
-    local header = func.name or "run_in_neovim"
-    local output = tool_call.call_output
-
-    base.add_generic_header(lines, output)
-
     local args = func.arguments
     if args then
         local ok, decoded = safely.decode_json(args)
@@ -32,7 +28,7 @@ function M.format(lines, tool_call, message)
     end
 
     -- currently expression result is the only item in the content list, using an MCP like output though with type/name... ignore that and just get the value to display
-    local first_content = output.result.content[1]
+    local first_content = tool_call.call_output.result.content[1]
     lines:append_text(first_content.text)
 end
 

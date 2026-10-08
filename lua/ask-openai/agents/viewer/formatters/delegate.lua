@@ -47,8 +47,6 @@ end
 
 ---@type ToolCallFormatter
 function M.format(lines, tool_call, message)
-    local header = tool_call["function"].name or "delegate"
-
     -- * decode args to get agent_type for title
     local decoded_args = decode_delegate_args(tool_call["function"].arguments, message)
     if decoded_args and decoded_args.agent_type then
@@ -56,8 +54,7 @@ function M.format(lines, tool_call, message)
     end
 
     -- * status indicator
-    local output = tool_call.call_output
-    base.add_generic_header(lines, output)
+    base.add_generic_header(lines, tool_call)
 
     -- * decode and display arguments
     decoded_args = decoded_args or decode_delegate_args(tool_call["function"].arguments, message)
@@ -92,6 +89,7 @@ function M.format(lines, tool_call, message)
     end
 
     -- * tool result
+    local output = tool_call.call_output
     local is_mcp = output and output.result and output.result.content
     if is_mcp then
         ---@type MCP_ContentBlock[]

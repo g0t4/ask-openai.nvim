@@ -109,9 +109,11 @@ function M.render_progress(lines, tool_call, is_done)
     end
 end
 
-function M.add_generic_header(lines, output)
+function M.add_generic_header(lines, tool_call)
+    local func = tool_call["function"]
     local header = func.name or ""
     local hl_group = HLGroups.TOOL_SUCCESS
+    local output = tool_call.call_output
     if output then
         local has_error = output.error ~= nil
         local result_has_error = output.result and output.result.isError

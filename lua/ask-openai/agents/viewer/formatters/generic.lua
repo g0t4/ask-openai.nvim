@@ -64,12 +64,11 @@ end
 
 ---@type ToolCallFormatter
 function M.format(lines, tool_call, message)
-    local output = tool_call.call_output
-    local func = tool_call["function"]
 
-    base.add_generic_header(lines, output)
+    base.add_generic_header(lines, tool_call)
 
     -- * tool args
+    local func = tool_call["function"]
     local args = func.arguments
     if args then
         if func.name == "apply_patch" then
@@ -92,6 +91,7 @@ function M.format(lines, tool_call, message)
     --  allow agent to continue even if formatters are FUUUUU
 
     -- * show error if the tool call failed
+    local output = tool_call.call_output
     if output and output.error then
         local error_message = output.error.message
         if error_message then

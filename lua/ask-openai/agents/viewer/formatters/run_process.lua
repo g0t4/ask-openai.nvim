@@ -50,8 +50,7 @@ end
 ---@type ToolCallFormatter
 local function add_tool_header(lines, tool_call, message)
     local header, decoded_args = get_tool_header_text(tool_call["function"].arguments, message)
-    local output = tool_call.call_output
-    base.add_generic_header(lines, output)
+    base.add_generic_header(lines, tool_call)
     return decoded_args
 end
 
