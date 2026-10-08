@@ -59,10 +59,10 @@ function M.format(lines, tool_call, message)
     -- * status indicator
     if tool_call.call_output then
         if tool_call.call_output.result and tool_call.call_output.result.isError then
-            header = "❌ " .. header
+            header = HLGroups.TOOL_FAILED_GLYPH .. header
             hl_group = HLGroups.TOOL_FAILED
         else
-            header = "✅ " .. header
+            header = HLGroups.TOOL_SUCCESS_GLYPH .. header
         end
     end
 
