@@ -59,13 +59,18 @@ function M.matches_to_markdown(matches, explanation)
 
         -- table.insert(lines, "## " .. file .. "\n" .. text .. "\n")
 
+        extension = vim.fn.fnamemodify(match.file, ":e")
+
         -- try formatting as fenced markdown code blocks inside of an h2 header with match counter...
         -- which means we can syntax highlight the inline code!
         -- otherwise I'd say lets leave it without formatting which would be fine too
         vim.list_extend(lines, {
-            "## Match " .. tostring(index) .. "",
+            -- "## Match " .. tostring(index) .. "",
+            "## " .. file ..
             "",
-            "```" .. file,
+            -- benefit of using valid fence indicator with only the file extension => inline formatting is working now in my nvim live trace viewer!
+            --  and I keep the header with the full file name + positions (start line + start col)
+            "```" .. extension,
             text,
             "```",
             "",
