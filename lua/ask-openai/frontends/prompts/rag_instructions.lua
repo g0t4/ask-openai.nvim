@@ -41,15 +41,25 @@ function M.matches_to_markdown(matches, explanation)
 
     for _, match in ipairs(matches) do
         local function build_position_string(match)
+            -- weird to have start or end column but not both... so either show both or show none... symmetry
+            -- also FTR I think I always have the end column b/c it is the length of the last line, easy to compute even if I didn't have it...
+            -- it's start that is only set when it is non-zero and from a treesitter chunk that cut into the middle of the first line
+            local both_columns_are_nonzero = match.start_column_base0 and match.start_column_base0 > 0 and match.end_column_base0 and match.end_column_base0 > 0
+
+            -- * start position
             local parts = { match.start_line_base0 + 1 }
-            if match.start_column_base0 and match.start_column_base0 > 0 then
+            if both_columns_are_nonzero then
                 table.insert(parts, ":" .. (match.start_column_base0 + 1))
             end
+
             table.insert(parts, "-")
+
+            -- * end position
             table.insert(parts, match.end_line_base0 + 1)
-            if match.end_column_base0 and match.end_column_base0 > 0 then
+            if both_columns_are_nonzero then
                 table.insert(parts, ":" .. (match.end_column_base0 + 1))
             end
+
             return table.concat(parts, "")
         end
 
