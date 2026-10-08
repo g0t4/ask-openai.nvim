@@ -65,7 +65,8 @@ end
 ---@type ToolCallFormatter
 function M.format(lines, tool_call, message)
     local output = tool_call.call_output
-    local func_name = tool_call["function"].name
+    local func = tool_call["function"]
+    local func_name = func.name
 
     local function add_header()
         local tool_header = func_name or ""
@@ -85,7 +86,7 @@ function M.format(lines, tool_call, message)
     add_header()
 
     -- * tool args
-    local args = tool_call["function"].arguments
+    local args = func.arguments
     if args then
         if func_name == "apply_patch" then
             lines:append_text(handle_apply_patch_args(args, message))
