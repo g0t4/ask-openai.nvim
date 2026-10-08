@@ -45,9 +45,22 @@ function M.strip_fences(lines)
     if #stripped > 1 and stripped[1]:match("^```%S*$") then
         table.remove(stripped, 1)
     end
-    -- trailing fence: last line is exactly "```" with content before it
-    if #stripped > 1 and stripped[#stripped] == "```" then
+
+    -- trailing fence: last line is exactly "```", possibly followed by blank
+    -- lines (e.g. a trailing "\n" after the closing fence). Peek past them.
+    local trailing_blanks = 0
+    while #stripped > 0 and stripped[#stripped] == "" do
+        trailing_blanks = trailing_blanks + 1
         table.remove(stripped, #stripped)
+    end
+    if #stripped > 0 and stripped[#stripped] == "```" then
+        -- remove the fence and discard the trailing blank lines (wrapper noise)
+        table.remove(stripped, #stripped)
+    else
+        -- no trailing fence; restore the blank lines (they may be real content)
+        for _ = 1, trailing_blanks do
+            table.insert(stripped, "")
+        end
     end
     return stripped
 end
@@ -98,28 +111,44 @@ function M.find_anchor(completion_lines, buffer_lines, cursor_line_base0, search
     return nil, nil
 end
 
---- Drop trailing delta lines that verbatim repeat the anchor line or the buffer
---- lines that follow it. This removes an echo of unchanged context so it is not
---- re-inserted.
+--- Trim delta lines that verbatim repeat the buffer lines immediately following
+--- the anchor, both at the start (model echoed context before the change) and at
+--- the end (model echoed context after the change). The middle lines are the
+--- genuinely-new edit.
 --- @param delta_lines string[]
 --- @param buffer_lines string[]
 --- @param anchor_buffer_line_base0 integer
 --- @return string[]
-function M.trim_repeated_suffix(delta_lines, buffer_lines, anchor_buffer_line_base0)
-    local trimmed = {}
-    for _, line in ipairs(delta_lines) do
-        table.insert(trimmed, line)
-    end
-    -- Candidate lines the model may have echoed: the anchor line itself plus
-    -- every buffer line after it.
-    local echoable = { buffer_lines[anchor_buffer_line_base0 + 1] }
+--- @return integer leading_echoes -- how many leading lines were echoes
+function M.trim_repeated_context(delta_lines, buffer_lines, anchor_buffer_line_base0)
+    -- buffer lines immediately following the anchor
+    local buffer_tail = {}
     for i = anchor_buffer_line_base0 + 2, #buffer_lines do
-        table.insert(echoable, buffer_lines[i])
+        table.insert(buffer_tail, buffer_lines[i])
     end
-    while #trimmed > 0 and vim.tbl_contains(echoable, trimmed[#trimmed]) do
-        table.remove(trimmed, #trimmed)
+    -- trim leading echoes (model repeated unchanged context before the change)
+    local leading_echoes = 0
+    while leading_echoes < #delta_lines and leading_echoes < #buffer_tail
+        and delta_lines[leading_echoes + 1] == buffer_tail[leading_echoes + 1] do
+        leading_echoes = leading_echoes + 1
     end
-    return trimmed
+    -- trim trailing echoes (model repeated the anchor line or buffer lines after
+    -- it as unchanged context after the change)
+    local trailing_echoable = { buffer_lines[anchor_buffer_line_base0 + 1] } -- anchor line
+    for i = anchor_buffer_line_base0 + 2, #buffer_lines do
+        table.insert(trailing_echoable, buffer_lines[i])
+    end
+    local trailing_echoes = 0
+    while trailing_echoes < #delta_lines - leading_echoes
+        and trailing_echoes < #trailing_echoable
+        and delta_lines[#delta_lines - trailing_echoes] == trailing_echoable[#trailing_echoable - trailing_echoes] do
+        trailing_echoes = trailing_echoes + 1
+    end
+    local trimmed = {}
+    for i = leading_echoes + 1, #delta_lines - trailing_echoes do
+        table.insert(trimmed, delta_lines[i])
+    end
+    return trimmed, leading_echoes
 end
 
 --- Align a completion against the buffer near the cursor.
@@ -144,16 +173,21 @@ function M.align(completion_text, buffer_lines, cursor_line_base0, cursor_col_ba
         table.insert(delta_lines, completion_lines[i])
     end
 
-    delta_lines = M.trim_repeated_suffix(delta_lines, buffer_lines, anchor_buffer_line_base0)
+    local leading_echoes
+    delta_lines, leading_echoes = M.trim_repeated_context(delta_lines, buffer_lines, anchor_buffer_line_base0)
 
-    -- Position: if the anchor is the cursor line, insert at the cursor column;
-    -- otherwise insert a new line right after the anchor.
+    -- Position: if the anchor is the cursor line, insert at the cursor column
+    -- (mid-line completion). Otherwise insert at the line right after the last
+    -- echoed context line (i.e. where the change begins), using the cursor column
+    -- when that happens to be the cursor line.
     local insertion_line_base0 = anchor_buffer_line_base0
-    local insertion_col_base0 = 0
-    if anchor_buffer_line_base0 == cursor_line_base0 then
-        insertion_col_base0 = cursor_col_base0
-    else
-        insertion_line_base0 = anchor_buffer_line_base0 + 1
+    local insertion_col_base0 = cursor_col_base0
+    if anchor_buffer_line_base0 ~= cursor_line_base0 then
+        insertion_line_base0 = anchor_buffer_line_base0 + 1 + leading_echoes
+        insertion_col_base0 = 0
+        if insertion_line_base0 == cursor_line_base0 then
+            insertion_col_base0 = cursor_col_base0
+        end
     end
 
     return {

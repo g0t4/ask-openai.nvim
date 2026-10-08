@@ -165,12 +165,11 @@ function HarmonyFimPromptBuilder.fim_prompt(request)
     end
 
     local fim_user_message =
-        "Please suggest text to replace "
-        --
-        -- TODO try diff cursor markers? with evals to evaluate each model... TODO check FIM trace of messages to make sure no other references to FIM_MIDDLE when I change this...
-        .. FIM_CHAT_STYLE_CURSOR_MARKER
-        --
-        .. ":\n\n```"
+        "Please suggest an edit to the code. Repeat at least one line of the existing code "
+        ..
+        "verbatim (a context anchor) immediately before the lines you want to change; the "
+        ..
+        "plugin uses that anchor to locate your edit. The edit may be at the cursor or nearby.\n\n```"
         .. current_file_relative_path .. "\n"
         .. request.ps_chunk.prefix
         .. FIM_CHAT_STYLE_CURSOR_MARKER
@@ -212,14 +211,14 @@ end
 -- vim.trim - strip leading/trailing whitespace so I can format my [[ ]] literal as I see fit
 -- - also harmony has no \n between messages, \n should only come within a message text field
 HarmonyFimPromptBuilder.deep_thoughts_about_fim = vim.trim([[
-The user is asking for a code completion.
-They provided the existing code with a ]] .. qwen.FIM_MIDDLE .. [[ tag where their cursor is currently located. Whatever I provide will replace ]] .. qwen.FIM_MIDDLE .. [[
-To clarify, the code before ]] .. qwen.FIM_MIDDLE .. [[ is the prefix. The code after is the suffix.
-I am not changing the prefix nor the suffix.
+The user is asking for an edit prediction.
+They provided the existing code with a ]] .. qwen.FIM_MIDDLE .. [[ tag where their cursor is currently located. My response is aligned against the existing code to locate the edit.
+To make alignment reliable, I will repeat at least one line of the existing code VERBATIM (a context anchor) immediately before the lines I want to change. The plugin finds that repeated line in the file to position my edit.
+I will not change the anchor line — it is only context to position the edit.
 I will NOT wrap my response in ``` markdown blocks.
 I will not explain anything.
-They also carefully preserved indentation, so I need to carefully consider indentation in my response.
-I will fill-in-the-middles in the most awesome way!
+They carefully preserved indentation, so I need to carefully consider indentation in my response.
+I will edit the code in the most awesome way!
 ]])
 -- FYI adding blurb about no ``` and markdown worked well to stop that!
 -- TODO! detect line break before/after (qwen.FIM_MIDDLE) and adjust the thought about modifying an existing line of code accordingly?

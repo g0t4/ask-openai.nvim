@@ -105,4 +105,41 @@ describe("edit_alignment.align", function()
             buffer_lines(), 3, 0)
         assert.is_nil(edit)
     end)
+
+    it("handles a noisy completion: fence + prefix echo + trailing newline", function()
+        local lines = {
+            "def foo():",
+            "    result = x + y",
+            "    return result",
+        }
+        -- cursor at the start of the last line; the model echoes the line above
+        -- as an anchor, wraps everything in a fence, and adds a trailing newline
+        local edit = edit_alignment.align(
+            "```python\n    result = x + y\n    result = x * y\n```\n",
+            lines, 2, 0)
+        assert.is_not_nil(edit)
+        assert.equal(1, edit.anchor_line_base0)
+        assert.equal(2, edit.insertion_line_base0)
+        assert.equal(0, edit.insertion_col_base0)
+        assert.are_same({ "    result = x * y" }, edit.insertion_lines)
+    end)
+
+    it("trims leading echoes of unchanged context before the change", function()
+        local lines = {
+            "function print_sign(number):",
+            "    if number > 0 then",
+            "        print(\"Positive\")",
+            "    ",
+            "    end",
+        }
+        -- cursor on the indented blank line (base0 3), after the 4-space indent
+        local edit = edit_alignment.align(
+            "    if number > 0 then\n        print(\"Positive\")\n    else\n        print(\"Non-positive\")",
+            lines, 3, 4)
+        assert.is_not_nil(edit)
+        assert.equal(1, edit.anchor_line_base0)
+        assert.equal(3, edit.insertion_line_base0)
+        assert.equal(4, edit.insertion_col_base0)
+        assert.are_same({ "    else", "        print(\"Non-positive\")" }, edit.insertion_lines)
+    end)
 end)

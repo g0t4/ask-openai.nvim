@@ -4,15 +4,17 @@ local log = require("devtools.logs.logger").universal()
 local CursorController = require "ask-openai.predictions.cursor_controller"
 local FIMPerformance = require("ask-openai.predictions.fim_performance")
 local markdown_strip = require("ask-openai.predictions.markdown_strip")
+local edit_alignment = require("ask-openai.predictions.edit_alignment")
 
 ---@class Prediction
 ---@field id integer
 ---@field bufnr integer
 ---@field prediction string
 ---@field all_sses SseFieldsResult[]
----@field cursor_prefix: string,
 ---@field first_line: string
 ---@field rest_of_lines: string[]
+---@field insertion_line_base0: integer? -- where the delta inserts (buffer line, 0-indexed)
+---@field insertion_col_base0: integer?  -- where the delta inserts (buffer col, 0-indexed)
 ---@field has_duplicate_prefix: boolean
 ---@field has_prediction: boolean
 ---@field extmarks table
@@ -132,52 +134,62 @@ function Prediction._is_markdown_buffer(bufnr)
 end
 
 function Prediction:fim_fixes()
-    -- * get cursor prefix one time
-    if self.cursor_prefix == nil then
-        local controller = CursorController:new()
-        local cursor = controller:get_cursor_position()
-        local cursor_line_text = vim.api.nvim_buf_get_lines(self.bufnr, cursor.line_base0, cursor.line_base0 + 1, false)[1] or ""
-        local prefix = cursor_line_text:sub(1, cursor.col_base0)
-        self.cursor_prefix = prefix
-    end
-
-    -- TODO suffix duplication? find traces for this first... and make sure it is common enough and then test it well
+    local controller = CursorController:new()
+    local cursor = controller:get_cursor_position()
 
     -- * Strip markdown code fences models sometimes wrap completions in
     --   (```language ... ``` or `...`). Not in markdown files, where the
     --   fences are the intended content.
+    local is_markdown = Prediction._is_markdown_buffer(self.bufnr)
     local prediction_text = self.prediction
-    if not Prediction._is_markdown_buffer(self.bufnr) then
+    if not is_markdown then
         prediction_text = markdown_strip.strip(prediction_text)
     end
 
-    -- * Check if prediction's first line starts with the cursor prefix (FIM duplication)
-    local lines = split_lines(prediction_text)
-    self.has_prediction = #lines > 0
+    -- * Align the completion against the buffer using the verbatim-anchor
+    --   contract, extracting the delta and where it inserts. After a partial
+    --   accept the remaining prediction is the raw delta (no anchor), so show
+    --   it directly instead of re-aligning.
+    local edit = nil
+    if not is_markdown and not self.has_accepts then
+        local buffer_lines = vim.api.nvim_buf_get_lines(self.bufnr, 0, -1, false)
+        edit = edit_alignment.align(prediction_text, buffer_lines, cursor.line_base0, cursor.col_base0)
+    end
+
+    if edit then
+        -- Aligned: use the extracted delta and its insertion position.
+        self.insertion_line_base0 = edit.insertion_line_base0
+        self.insertion_col_base0 = edit.insertion_col_base0
+        self.first_line = edit.insertion_lines[1] or ""
+        self.rest_of_lines = {}
+        for i = 2, #edit.insertion_lines do
+            table.insert(self.rest_of_lines, edit.insertion_lines[i])
+        end
+        self.has_prediction = #edit.insertion_lines > 0
+    elseif is_markdown or self.has_accepts then
+        -- Show the prediction directly (markdown content, or the remaining delta
+        -- after a partial accept).
+        local lines = edit_alignment.split_lines(prediction_text)
+        self.insertion_line_base0 = nil
+        self.insertion_col_base0 = nil
+        self.first_line = lines[1] or ""
+        self.rest_of_lines = {}
+        for i = 2, #lines do
+            table.insert(self.rest_of_lines, lines[i])
+        end
+        self.has_prediction = prediction_text ~= "" and #lines > 0
+    else
+        -- Streaming and not yet aligned (the anchor line has not arrived): wait.
+        self.insertion_line_base0 = nil
+        self.insertion_col_base0 = nil
+        self.first_line = ""
+        self.rest_of_lines = {}
+        self.has_prediction = false
+    end
+
     if self.has_prediction then
         self.started_content = true
     end
-    if not self.has_prediction then
-        return
-    end
-
-    local first_line = table.remove(lines, 1)
-    local cursor_prefix = self.cursor_prefix
-    local has_duplicate_prefix = cursor_prefix ~= ""
-        and #first_line >= #cursor_prefix
-        and first_line:sub(1, #cursor_prefix) == cursor_prefix
-    -- ? partial prefix duplicate match (end of prefix matches start of completion? i.e.. one tab when there are two?)
-
-    if has_duplicate_prefix then
-        -- ? store duplicated part of prefix too (if not all of it)
-        first_line = first_line:sub(#cursor_prefix + 1)
-        self._trace_only_duplicate_prefix = cursor_prefix
-    end
-
-    -- cache:
-    self.has_duplicate_prefix = has_duplicate_prefix
-    self.first_line = first_line
-    self.rest_of_lines = lines
     return
 end
 
@@ -284,8 +296,17 @@ function Prediction:fix_fim_and_redraw_extmarks()
         table.insert(virt_lines, { { line, HLGroups.PREDICTION_TEXT } })
     end
 
+    -- * Draw the delta at its insertion position (falls back to the cursor when
+    --   no aligned position is known, e.g. after a partial accept).
+    local display_line_base0 = cursor.line_base0
+    local display_col_base0 = cursor.col_base0
+    if self.insertion_line_base0 ~= nil then
+        display_line_base0 = self.insertion_line_base0
+        display_col_base0 = self.insertion_col_base0 or 0
+    end
+
     local first_line_virt_text = { { self.first_line, HLGroups.PREDICTION_TEXT } }
-    vim.api.nvim_buf_set_extmark(self.bufnr, extmarks_ns_id, cursor.line_base0, cursor.col_base0, -- 0-indexed
+    vim.api.nvim_buf_set_extmark(self.bufnr, extmarks_ns_id, display_line_base0, display_col_base0, -- 0-indexed
         {
             virt_text = first_line_virt_text,
             virt_lines = virt_lines,
@@ -319,15 +340,31 @@ end
 function Prediction:insert_accepted(insert_lines)
     self.skip_text_changed_from_accept_suggestion = true
     local controller = CursorController:new()
-    local cursor = controller:get_cursor_position()
 
-    -- * insert accepted text
+    -- * insert accepted text at the aligned position (fall back to cursor when
+    --   no position is known, e.g. after a partial accept).
+    local insert_line_base0 = self.insertion_line_base0
+    local insert_col_base0 = self.insertion_col_base0
+    if insert_line_base0 == nil then
+        local cursor = controller:get_cursor_position()
+        insert_line_base0 = cursor.line_base0
+        insert_col_base0 = cursor.col_base0
+    end
+
     -- INSERT b/c start == end == cursor position! (nothing to replace)
-    vim.api.nvim_buf_set_text(self.bufnr, cursor.line_base0, cursor.col_base0, cursor.line_base0, cursor.col_base0, insert_lines)
+    vim.api.nvim_buf_set_text(
+        self.bufnr, insert_line_base0, insert_col_base0,
+        insert_line_base0, insert_col_base0, insert_lines)
 
     -- * move cursor
-    local new_cursor = controller:calc_new_position(cursor, insert_lines)
+    local new_cursor = controller:calc_new_position(
+        { line_base0 = insert_line_base0, col_base0 = insert_col_base0 },
+        insert_lines)
     vim.api.nvim_win_set_cursor(controller.window_id, { new_cursor.line_base1, new_cursor.col_base0 }) -- (1,0)-indexed
+
+    -- after accepting, subsequent accepts insert at the (moved) cursor
+    self.insertion_line_base0 = nil
+    self.insertion_col_base0 = nil
 end
 
 local BLANK_LINE = ""
@@ -357,7 +394,6 @@ function Prediction:accept_first_line()
     -- * update prediction
     self.prediction = table.concat(self.rest_of_lines, "\n")
     self.has_accepts = true
-    self.cursor_prefix = nil -- force lookup
     self:fix_fim_and_redraw_extmarks()
 end
 
@@ -415,7 +451,6 @@ function Prediction:accept_first_word()
     self.prediction = first_line .. "\n" .. table.concat(self.rest_of_lines, "\n")
     self.has_accepts = true
     -- FYI I don't need to update the cached values for first_line/rest_of_lines b/c they'll be recomputed in fix_fim_and_redraw_extmarks
-    self.cursor_prefix = nil -- force lookup
     self:fix_fim_and_redraw_extmarks()
 end
 
@@ -436,7 +471,6 @@ function Prediction:accept_all()
     -- * clear prediction
     self.prediction = "" -- strip all lines from the prediction (and update it)
     self.has_accepts = true
-    self.cursor_prefix = nil -- force lookup
     self:fix_fim_and_redraw_extmarks()
 
     -- TODO SIGNAL next prediction when accept all? (and then consider this for other accept types if they are accepting remainder of prediction too (finishing accepting current prediction)
