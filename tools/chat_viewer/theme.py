@@ -27,24 +27,36 @@ ROLE_ICONS = {
     "system": "📢",
     "developer": "💻",
     "user": "👤",
-    "user_raw": "⌨️",
-    "assistant": "🧠",
-    "assistant_raw": "⚙️",
+    "user_raw": "👤",
+
+    "assistant": "✨",
+    #   nf-oct-sparkle_fill \u
+    #   nf-cod-sparkle \uec10
+    "assistant_raw": "✨",
+
     "tool": "🔧",
 }
 
 # Tool name -> icon shown in the call title.
 TOOL_ICONS = {
     "apply_patch": "📝",
-    "run_command": "⚡",
-    "run_process": "⚡",
+    # "apply_patch": "󰷉 ",
+    # "apply_patch": " ",
+
+    #       
+    # "run_command": "⚡", # I liked this too "zap"
+    "run_command": " ", #   \uf489
+    # "run_process": "⚡",
+    "run_process": " ", #   \uf489
+
     "run_xonsh": "🐚",
-    "run_in_neovim": "📟",
-    "semantic_grep": "🔍",
-    "fetch": "🌐",
+    "run_in_neovim": " ", # \uf36f
+    "semantic_grep": "󰕡 ",
+    # "fetch": "󰜏",
+    "fetch": "󰖟 ",
     "delegate": "🤝",
     "locate_anything": "🖼️",
-    "screencap": "📸",
+    "screencap": "󰹑 ",
 }
 
 
