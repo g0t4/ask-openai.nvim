@@ -1,5 +1,6 @@
 require("ask-openai.helpers.test_setup").modify_package_path()
 local config = require("ask-openai.config")
+local HLGroups = require("ask-openai.hlgroups")
 
 -- * Register only the AskAgent user command without loading the full plugin.
 --   The full init loads telescope (via rag) which isn't available in headless mode.
@@ -153,12 +154,10 @@ describe("E2E - AskAgent /tools with date question", function()
         print(full_buffer)
         print("========================================\n")
 
-        -- * Assert: check for green checkmark (✅) indicating successful tool execution
-        -- The run_process formatter adds "✅ " prefix to successful tool calls
-        local has_green_checkmark = full_buffer:match("✅")
+        local has_success_icon = full_buffer:match(HLGroups.TOOL_SUCCESS_GLYPH)
         assert.is_not_nil(
-            has_green_checkmark,
-            "Response should contain green checkmark (✅) for successful tool execution. Full buffer:\n" .. full_buffer
+            has_success_icon,
+            "Response should contain success icon. Full buffer:\n" .. full_buffer
         )
 
         -- * Assert: response should contain date-related content from tool output
