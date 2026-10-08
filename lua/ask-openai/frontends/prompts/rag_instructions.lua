@@ -42,8 +42,12 @@ function M.matches_to_markdown(matches, explanation)
     for _, match in ipairs(matches) do
         local start_line_base1 = match.start_line_base0 + 1
         local end_line_base1 = match.end_line_base0 + 1
-        local line_range = start_line_base1 .. "-" .. end_line_base1
-        local file = match.file .. ":" .. line_range
+        local position = start_line_base1 .. "-" .. end_line_base1
+        if match.start_column_base0 or match.end_column_base0 then
+            position = start_line_base1 .. ":" .. (match.start_column_base0 + 1) .. "-" .. end_line_base1 .. ":" .. (match.end_column_base0 + 1)
+
+        end
+        local file = match.file .. ":" .. position
         local text = match.text
 
         -- * add leading whitespace for non-zero start columns (ts chunks only, so far)
