@@ -84,6 +84,9 @@ def _parse_timings_from_dict(timings_dict: dict[str, Any] | None) -> ModelTiming
 
 preapproved_file_patterns: list[re.Pattern] = []
 SHOW_ALL = False
+# When False, agent reasoning is rendered verbatim (no inline markdown styling)
+# for the rare case where a long/ambiguous block is easier to read as-is.
+STYLE_REASONING = True
 
 EXCLUDED_CONTENT_HASHES: list[str] = [
     # FYI careful w/ trailing \n when computing by hand
@@ -1092,18 +1095,24 @@ def build_assistant_message(msg: dict, color: str) -> TreeWrapper:
             "[dim bright_black italic]💭 reasoning[/]"
         )
         reasoning_node = root.add(reasoning_text)
-        # Subtle markdown emphasis: inline code + bold pop, while backticks,
-        # fence markers and list markers are dimmed so they recede. The rest is
-        # shown verbatim (no rich markup interpretation).
-        reasoning_node.add(
-            style_markdown_text(
-                insert_newlines(reasoning),
-                base_style="bright_black italic",
-                code_style="bold bright_black italic",
-                backtick_style="dim bright_black italic",
-                bold_style="bold bright_black italic",
+        if STYLE_REASONING:
+            # Subtle markdown emphasis: inline code + bold pop, while backticks,
+            # fence markers and list markers are dimmed so they recede. The rest
+            # is shown verbatim (no rich markup interpretation).
+            reasoning_node.add(
+                style_markdown_text(
+                    insert_newlines(reasoning),
+                    base_style="bright_black italic",
+                    code_style="bold bright_black italic",
+                    backtick_style="dim bright_black italic",
+                    bold_style="bold bright_black italic",
+                )
             )
-        )
+        else:
+            reasoning_node.add_no_markup(
+                insert_newlines(reasoning),
+                style="bright_black italic",
+            )
         root.blank_line()
 
     content = msg.get("content", "")
@@ -1314,6 +1323,7 @@ def render_trace_to_console(console, messages, model_name, timings) -> None:
 
 def main() -> None:
     global SHOW_ALL
+    global STYLE_REASONING
 
     parser = argparse.ArgumentParser(description="View chat traces")
     parser.add_argument(
@@ -1324,12 +1334,19 @@ def main() -> None:
     )
     parser.add_argument("--all", action="store_true", help="show all content (no exclusions)")
     parser.add_argument("--html", action="store_true", help="export rendered output as HTML")
+    parser.add_argument(
+        "--no-reasoning-style",
+        action="store_true",
+        help="render agent reasoning verbatim (no inline markdown styling)",
+    )
 
     argcomplete.autocomplete(parser)
     args = parser.parse_args()
 
     if args.all:
         SHOW_ALL = True
+    if args.no_reasoning_style:
+        STYLE_REASONING = False
 
     export_html = args.html
     if export_html:

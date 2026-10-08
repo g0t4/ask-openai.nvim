@@ -107,10 +107,11 @@ class TraceViewerApp(App):
     """Textual app for interactively browsing a chat trace."""
 
     TITLE = "Ask Trace Viewer"
-    SUB_TITLE = "a: toggle all · q: quit"
+    SUB_TITLE = "a: toggle all · r: toggle reasoning style · q: quit"
 
     BINDINGS = [
         Binding("a", "toggle_all", "Toggle all content", show=True),
+        Binding("r", "toggle_reasoning_style", "Toggle reasoning style", show=True),
         Binding("q", "quit", "Quit", show=False),
     ]
 
@@ -168,6 +169,7 @@ class TraceViewerApp(App):
 
     def on_mount(self) -> None:
         viewer.SHOW_ALL = False
+        viewer.STYLE_REASONING = True
         self._render()
 
     def on_resize(self) -> None:
@@ -176,6 +178,10 @@ class TraceViewerApp(App):
 
     def action_toggle_all(self) -> None:
         viewer.SHOW_ALL = not viewer.SHOW_ALL
+        self._render()
+
+    def action_toggle_reasoning_style(self) -> None:
+        viewer.STYLE_REASONING = not viewer.STYLE_REASONING
         self._render()
 
 
