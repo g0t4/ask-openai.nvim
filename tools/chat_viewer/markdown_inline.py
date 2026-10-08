@@ -39,7 +39,9 @@ def _collect_code_spans(source: str) -> list[dict]:
 
     A run of 3+ backticks is a fenced block marker, not inline code, so it is
     never treated as a delimiter. Unbalanced backticks naturally produce no
-    span (the delimiter needs a matching close run).
+    span (the delimiter needs a matching close run). Per CommonMark, a single
+    leading and trailing space is stripped from the content when both are
+    present (but not if it is entirely spaces).
     """
     spans: list[dict] = []
     pos = 0
@@ -68,11 +70,23 @@ def _collect_code_spans(source: str) -> list[dict]:
             pos = run.end()
             continue
 
+        content = source[run.end():close.start()]
+        # CommonMark: if the content begins and ends with a space but isn't
+        # all spaces, strip a single space from each end (e.g. `` ` code` ``
+        # collapses to `` `code` ``).
+        if (
+            len(content) >= 2
+            and content.startswith(" ")
+            and content.endswith(" ")
+            and content.strip(" ")
+        ):
+            content = content[1:-1]
+
         spans.append({
             "start": run.start(),
             "end": close.end(),
             "kind": "code",
-            "content": source[run.end():close.start()],
+            "content": content,
             "open": run.group(0),
             "close": close.group(0),
         })
@@ -199,6 +213,8 @@ def style_markdown_text(
     * List markers (``- ``, ``1. ``) → dimmed, content verbatim.
 
     Nothing is interpreted as rich markup; things like ``[dim]`` stay literal.
+    Inline code follows CommonMark, including stripping a single surrounding
+    space from `` ` code ` `` → `` `code` ``.
     """
     result = Text()
     in_fence = False

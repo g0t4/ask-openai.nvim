@@ -190,9 +190,11 @@ def test_double_backtick_escaping() -> None:
     # `` `code` `` uses double backticks to escape a literal backtick inside.
     source = "like `` `code` ``."
     styled = style_markdown_text(source)
-    assert styled.plain == source
-    # The content (including the literal single backticks) is bolded verbatim.
-    assert bold_spans(styled) == [" `code` "]
+    # CommonMark strips the single padding space on each side of the content,
+    # so the dimmed delimiters sit flush against the inner backticks.
+    assert styled.plain == "like ```code```."
+    # The content (including the literal single backticks) is bolded.
+    assert bold_spans(styled) == ["`code`"]
     # The double backtick delimiters are dimmed.
     assert "``" in dim_spans(styled)
 
@@ -217,5 +219,21 @@ def test_triple_backtick_run_does_not_pair_with_single() -> None:
 def test_escaping_example_from_trace() -> None:
     source = "the model wraps the whole completion in single backticks like `` `code` ``."
     styled = style_markdown_text(source)
-    assert styled.plain == source
-    assert bold_spans(styled) == [" `code` "]
+    # Padding spaces are stripped per CommonMark.
+    assert styled.plain == (
+        "the model wraps the whole completion in single backticks like ```code```."
+    )
+    assert bold_spans(styled) == ["`code`"]
+
+
+def test_commonmark_strips_surrounding_spaces() -> None:
+    styled = style_markdown_text("a `` `code` `` b")
+    assert styled.plain == "a ```code``` b"
+    assert bold_spans(styled) == ["`code`"]
+
+
+def test_commonmark_keeps_all_spaces_content() -> None:
+    # Content that is entirely spaces is not stripped.
+    styled = style_markdown_text("`   `")
+    assert styled.plain == "`   `"
+    assert bold_spans(styled) == ["   "]
