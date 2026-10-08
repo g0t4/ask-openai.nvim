@@ -70,6 +70,15 @@ function M.text_content(value, name)
     return { type = "text", text = value, }
 end
 
+---@param block MCP_ContentBlock
+local function flatten_text_block(block)
+    local text = block.text or ""
+    if block.name == nil or block.name == "" then
+        return text
+    end
+    return block.name .. ":\n" .. text
+end
+
 ---@param result MCP_CallToolResult
 ---@return string
 function M.tool_result_to_text(result)
@@ -85,12 +94,8 @@ function M.tool_result_to_text(result)
         for _, block in ipairs(content) do
             if type(block) == "table" then
                 if block.type == "text" then
-                    local text = block.text or ""
-                    if block.name and block.name ~= "" then
-                        parts[#parts + 1] = block.name .. ":\n" .. text
-                    else
-                        parts[#parts + 1] = text
-                    end
+                    local text = flatten_text_block(block)
+                    parts[#parts + 1] = text
                 elseif block.type == "image" then
                     parts[#parts + 1] = "[image: " .. tostring(block.mimeType or "?") .. "]"
                 elseif block.type == "audio" then
@@ -99,6 +104,10 @@ function M.tool_result_to_text(result)
                     local uri = block.resource and block.resource.uri or "?"
                     parts[#parts + 1] = "[resource: " .. tostring(uri) .. "]"
                 end
+            else
+                vim.notify("oops... unexpected tool result content has an entry that is not a table/object, this should not happen, investigate!")
+                log:error("tool result content has an entry that is not a table/object", block)
+                parts[#parts + 1] = vim.inspect(block)
             end
         end
     end
