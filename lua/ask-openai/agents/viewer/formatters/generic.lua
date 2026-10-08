@@ -72,8 +72,8 @@ function M.format(lines, tool_call, message)
         local hl_group = HLGroups.TOOL_SUCCESS
         if output then
             local has_error = output.error ~= nil
-            local result_is_error = output.result and output.result.isError
-            if has_error or result_is_error then
+            local result_has_error = output.result and output.result.isError
+            if has_error or result_has_error then
                 tool_header = "❌ " .. tool_header
                 hl_group = HLGroups.TOOL_FAILED
             else
