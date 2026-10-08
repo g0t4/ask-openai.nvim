@@ -39,7 +39,7 @@ function M.matches_to_markdown(matches, explanation)
         table.insert(lines, "")
     end
 
-    for _, match in ipairs(matches) do
+    for index, match in ipairs(matches) do
         local file = match.file .. ":" .. match.start_line_base0 .. "-" .. match.end_line_base0
         local text = match.text
 

@@ -26,7 +26,7 @@ local last_rag_request_id, last_rag_cancel_request
 ---@param entry_maker fun(match: LSPRankedMatch): SemanticGrepTelescopeEntryMatch
 function _semantic_grep(semantic_grep_request, lsp_buffer_number, process_result, process_complete, entry_maker)
     if last_rag_cancel_request then
-        log:info("canceling semantic_grep request, last_client_request_ids: " .. vim.inspect(last_rag_request_id))
+        log:info("canceling semantic_grep request, last_client_request_id: " .. vim.inspect(last_rag_request_id))
         last_rag_cancel_request()
         last_rag_cancel_request = nil
     end
@@ -51,7 +51,7 @@ function _semantic_grep(semantic_grep_request, lsp_buffer_number, process_result
             end
 
             local matches = (rag_response.result and rag_response.result.rag_matches) or {}
-            for i, match in ipairs(matches) do
+            for _, match in ipairs(matches) do
                 local entry = entry_maker(match)
                 process_result(entry)
             end
