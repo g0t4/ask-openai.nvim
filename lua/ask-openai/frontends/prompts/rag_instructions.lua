@@ -40,16 +40,22 @@ function M.matches_to_markdown(matches, explanation)
     end
 
     for _, match in ipairs(matches) do
-        local parts = { match.start_line_base0 + 1 }
-        if match.start_column_base0 and match.start_column_base0 > 0 then
-            table.insert(parts, ":" .. (match.start_column_base0 + 1))
+        local function build_position_string(match)
+            local parts = { match.start_line_base0 + 1 }
+            if match.start_column_base0 and match.start_column_base0 > 0 then
+                table.insert(parts, ":" .. (match.start_column_base0 + 1))
+            end
+            table.insert(parts, "-")
+            table.insert(parts, match.end_line_base0 + 1)
+            if match.end_column_base0 and match.end_column_base0 > 0 then
+                table.insert(parts, ":" .. (match.end_column_base0 + 1))
+            end
+            return table.concat(parts, "")
         end
-        table.insert(parts, "-")
-        table.insert(parts, match.end_line_base0 + 1)
-        if match.end_column_base0 and match.end_column_base0 > 0 then
-            table.insert(parts, ":" .. (match.end_column_base0 + 1))
-        end
-        local position = table.concat(parts, "")
+
+        local position = build_position_string(match)
+
+
 
         local file = match.file .. ":" .. position
         local text = match.text
