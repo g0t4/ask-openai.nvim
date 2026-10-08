@@ -7,7 +7,7 @@ local TxChatMessage = require("ask-openai.agents.messages.tx")
 ---@param rag_matches LSPRankedMatch[]
 ---@return string?
 function M.explain_rag_auto_context(rag_matches)
-    if #rag_matches == 0 then return end
+    if rag_matches == nil or #rag_matches == 0 then return end
     return M.matches_to_markdown(rag_matches, "This is automatic context based on my request. These may not be relevant to my request.")
 end
 
