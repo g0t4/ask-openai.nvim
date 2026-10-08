@@ -1,5 +1,5 @@
 local HLGroups = require("ask-openai.hlgroups")
-local base = {}
+local M = {}
 
 --- Format a duration in milliseconds into a human-readable string.
 ---
@@ -10,7 +10,7 @@ local base = {}
 ---
 ---@param duration_ms integer
 ---@return string
-function base.format_duration_ms(duration_ms)
+function M.format_duration_ms(duration_ms)
     if duration_ms < 1000 then
         return duration_ms .. "ms"
     end
@@ -36,13 +36,13 @@ end
 ---
 ---@param start_time_ms integer
 ---@return string
-function base.format_elapsed_time(start_time_ms)
+function M.format_elapsed_time(start_time_ms)
     local now_ms = math.floor(vim.uv.hrtime() / 1e6)
     local elapsed_ms = now_ms - start_time_ms
     if elapsed_ms < 0 then
         return "?ms"
     end
-    return base.format_duration_ms(elapsed_ms)
+    return M.format_duration_ms(elapsed_ms)
 end
 
 --- Render progress notifications for an in-progress tool call.
@@ -54,11 +54,11 @@ end
 ---@param lines LinesBuilder
 ---@param tool_call ToolCall
 ---@param is_done boolean
-function base.render_progress(lines, tool_call, is_done)
+function M.render_progress(lines, tool_call, is_done)
     if is_done then
         -- * tool is done - show duration
         if tool_call.call_output and tool_call.call_output.duration_ms then
-            local duration_str = base.format_duration_ms(tool_call.call_output.duration_ms)
+            local duration_str = M.format_duration_ms(tool_call.call_output.duration_ms)
             lines:append_line(duration_str)
         end
         return
@@ -75,7 +75,7 @@ function base.render_progress(lines, tool_call, is_done)
     local start_time_ms = tool_call.start_time_ms
     local elapsed_str = ""
     if start_time_ms then
-        elapsed_str = base.format_elapsed_time(start_time_ms)
+        elapsed_str = M.format_elapsed_time(start_time_ms)
     end
 
     lines:append_line(string.format("%s ⏳ Running: %s (%s)", spinner_char, func_name, elapsed_str))
@@ -109,4 +109,20 @@ function base.render_progress(lines, tool_call, is_done)
     end
 end
 
-return base
+function M.add_generic_header(lines, output)
+    local header = func.name or ""
+    local hl_group = HLGroups.TOOL_SUCCESS
+    if output then
+        local has_error = output.error ~= nil
+        local result_has_error = output.result and output.result.isError
+        if has_error or result_has_error then
+            header = HLGroups.TOOL_FAILED_GLYPH .. header
+            hl_group = HLGroups.TOOL_FAILED
+        else
+            header = HLGroups.TOOL_SUCCESS_GLYPH .. header
+        end
+    end
+    lines:append_styled_text(header, hl_group)
+end
+
+return M
