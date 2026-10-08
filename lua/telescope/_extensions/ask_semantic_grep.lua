@@ -47,7 +47,7 @@ function _semantic_grep(semantic_grep_request, lsp_buffer_number, process_result
             if rag_response.result and rag_response.result.isError then
                 log:error("semantic_grep failed: " .. (rag_response.result.error or "unknown"))
                 vim.notify("semantic_grep failed: " .. (rag_response.result.error or "unknown"))
-                return {}
+                return
             end
 
             local matches = (rag_response.result and rag_response.result.rag_matches) or {}
