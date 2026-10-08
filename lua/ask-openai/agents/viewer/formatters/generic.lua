@@ -64,23 +64,22 @@ end
 
 ---@type ToolCallFormatter
 function M.format(lines, tool_call, message)
-    local func_name = tool_call["function"].name
-    local tool_header = func_name or ""
-
-    local hl_group = HLGroups.TOOL_SUCCESS
     local output = tool_call.call_output
-    if output then
-        local has_error = output.error ~= nil
-        local result_is_error = output.result and output.result.isError
+    local func_name = tool_call["function"].name
 
-        if has_error or result_is_error then
-            tool_header = "❌ " .. tool_header
-            hl_group = HLGroups.TOOL_FAILED
-        else
-            tool_header = "✅ " .. tool_header
+        local tool_header = func_name or ""
+        local hl_group = HLGroups.TOOL_SUCCESS
+        if output then
+            local has_error = output.error ~= nil
+            local result_is_error = output.result and output.result.isError
+            if has_error or result_is_error then
+                tool_header = "❌ " .. tool_header
+                hl_group = HLGroups.TOOL_FAILED
+            else
+                tool_header = "✅ " .. tool_header
+            end
         end
-    end
-    lines:append_styled_text(tool_header, hl_group)
+        lines:append_styled_text(tool_header, hl_group)
 
     -- * tool args
     local args = tool_call["function"].arguments
