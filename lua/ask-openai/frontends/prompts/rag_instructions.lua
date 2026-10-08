@@ -42,7 +42,10 @@ function M.matches_to_markdown(matches, explanation)
     for _, match in ipairs(matches) do
         local position = (match.start_line_base0 + 1) .. "-" .. (match.end_line_base0 + 1)
         if match.start_column_base0 or match.end_column_base0 then
-            position = (match.start_line_base0 + 1) .. ":" .. (match.start_column_base0 + 1) .. "-" .. (match.end_line_base0 + 1) .. ":" .. (match.end_column_base0 + 1)
+            position =
+                (match.start_line_base0 + 1) .. ":" .. (match.start_column_base0 + 1)
+                .. "-" ..
+                (match.end_line_base0 + 1) .. ":" .. (match.end_column_base0 + 1)
         end
         local file = match.file .. ":" .. position
         local text = match.text
