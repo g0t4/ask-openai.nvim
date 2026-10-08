@@ -67,7 +67,7 @@ function M.format(lines, tool_call, message)
     local output = tool_call.call_output
     local func = tool_call["function"]
 
-    local function add_header()
+    local function add_generic_header()
         local header = func.name or ""
         local hl_group = HLGroups.TOOL_SUCCESS
         if output then
@@ -82,7 +82,7 @@ function M.format(lines, tool_call, message)
         end
         lines:append_styled_text(header, hl_group)
     end
-    add_header()
+    add_generic_header()
 
     -- * tool args
     local args = func.arguments
