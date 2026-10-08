@@ -105,8 +105,8 @@ function M.flatten_tool_result_to_text(result)
     local content = result.content
     if type(content) == "table" then
         for _, block in ipairs(content) do
+            local text
             if type(block) == "table" then
-                local text
                 if block.type == "text" then
                     text = flatten_text_block(block)
                 elseif block.type == "image" then
@@ -121,12 +121,12 @@ function M.flatten_tool_result_to_text(result)
                     log:warn("unexpected MCP content block type", block)
                     text = "[unknown block type: " .. tostring(block.type or "?") .. "]"
                 end
-                parts[#parts + 1] = text
             else
                 vim.notify("oops... unexpected tool result content has an entry that is not a table/object, this should not happen, investigate!")
                 log:error("tool result content has an entry that is not a table/object", block)
-                parts[#parts + 1] = vim.inspect(block)
+                text = vim.inspect(block)
             end
+            parts[#parts + 1] = text
         end
     end
 
