@@ -40,7 +40,6 @@ function M.matches_to_markdown(matches, explanation)
     end
 
     for _, match in ipairs(matches) do
-        ---@cast chunk LSPRankedMatch
         local file = match.file .. ":" .. match.start_line_base0 .. "-" .. match.end_line_base0
         local code_chunk = match.text
 
