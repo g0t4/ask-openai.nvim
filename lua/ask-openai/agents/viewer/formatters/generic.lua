@@ -66,10 +66,9 @@ end
 function M.format(lines, tool_call, message)
     local output = tool_call.call_output
     local func = tool_call["function"]
-    local func_name = func.name
 
     local function add_header()
-        local tool_header = func_name or ""
+        local tool_header = func.name or ""
         local hl_group = HLGroups.TOOL_SUCCESS
         if output then
             local has_error = output.error ~= nil
@@ -88,7 +87,7 @@ function M.format(lines, tool_call, message)
     -- * tool args
     local args = func.arguments
     if args then
-        if func_name == "apply_patch" then
+        if func.name == "apply_patch" then
             lines:append_text(handle_apply_patch_args(args, message))
         else
             lines:append_text(try_decode_json_string(args, message))
