@@ -103,7 +103,9 @@ function M.flatten_tool_result_to_text(result)
     end
 
     local content = result.content
-    if type(content) == "table" then
+    if type(content) == "string" then
+        parts[#parts + 1] = content
+    elseif type(content) == "table" then
         for _, block in ipairs(content) do
             local text
             if type(block) == "table" then
