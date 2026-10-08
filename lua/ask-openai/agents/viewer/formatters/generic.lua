@@ -68,19 +68,19 @@ function M.format(lines, tool_call, message)
     local func = tool_call["function"]
 
     local function add_header()
-        local tool_header = func.name or ""
+        local header = func.name or ""
         local hl_group = HLGroups.TOOL_SUCCESS
         if output then
             local has_error = output.error ~= nil
             local result_has_error = output.result and output.result.isError
             if has_error or result_has_error then
-                tool_header = "❌ " .. tool_header
+                header = HLGroups.TOOL_FAILED_GLYPH .. header
                 hl_group = HLGroups.TOOL_FAILED
             else
-                tool_header = "✅ " .. tool_header
+                header = HLGroups.TOOL_SUCCESS_GLYPH .. header
             end
         end
-        lines:append_styled_text(tool_header, hl_group)
+        lines:append_styled_text(header, hl_group)
     end
     add_header()
 

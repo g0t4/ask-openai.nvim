@@ -53,10 +53,10 @@ local function add_tool_header(lines, tool_call, message)
     local hl_group = HLGroups.TOOL_SUCCESS
     if tool_call.call_output then
         if tool_call.call_output.result.isError then
-            header = "❌ " .. header
+            header = HLGroups.TOOL_FAILED_GLYPH .. header
             hl_group = HLGroups.TOOL_FAILED
         else
-            header = "✅ " .. header
+            header = HLGroups.TOOL_SUCCESS_GLYPH .. header
         end
     end
     -- gptoss sometimes uses a heredoc for a python script

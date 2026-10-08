@@ -11,6 +11,8 @@ vim.api.nvim_set_hl(0, HLGroups.SYSTEM_PROMPT, { fg = "#D9C27A", italic = true, 
 -- * Tools
 HLGroups.TOOL_SUCCESS = "AskToolSuccess"
 HLGroups.TOOL_FAILED = "AskToolFailed"
+TOOL_SUCCESS_GLYPH = " " -- alternatives: ✅ ✔️ 
+TOOL_FAILED_GLYPH = " " -- alternatives: ❌ 
 HLGroups.TOOL_PROGRESS = "AskToolProgress"
 vim.api.nvim_set_hl(0, HLGroups.TOOL_SUCCESS, { fg = "#92E2AC", bg = "NONE" })
 vim.api.nvim_set_hl(0, HLGroups.TOOL_FAILED, { fg = "#e06c75", bg = "NONE", bold = true })
