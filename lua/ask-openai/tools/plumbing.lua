@@ -77,6 +77,9 @@ local function flatten_text_block(block)
     if name == nil or name == "" then
         return text
     end
+    if name == "EXIT_CODE" then
+        return name .. ": " .. text
+    end
     return name .. ":\n" .. text
 end
 
