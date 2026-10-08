@@ -62,27 +62,28 @@ local function handle_apply_patch_args(args, message)
     end
 end
 
+local function add_generic_header(lines, output)
+    local header = func.name or ""
+    local hl_group = HLGroups.TOOL_SUCCESS
+    if output then
+        local has_error = output.error ~= nil
+        local result_has_error = output.result and output.result.isError
+        if has_error or result_has_error then
+            header = HLGroups.TOOL_FAILED_GLYPH .. header
+            hl_group = HLGroups.TOOL_FAILED
+        else
+            header = HLGroups.TOOL_SUCCESS_GLYPH .. header
+        end
+    end
+    lines:append_styled_text(header, hl_group)
+end
+
 ---@type ToolCallFormatter
 function M.format(lines, tool_call, message)
     local output = tool_call.call_output
     local func = tool_call["function"]
 
-    local function add_generic_header()
-        local header = func.name or ""
-        local hl_group = HLGroups.TOOL_SUCCESS
-        if output then
-            local has_error = output.error ~= nil
-            local result_has_error = output.result and output.result.isError
-            if has_error or result_has_error then
-                header = HLGroups.TOOL_FAILED_GLYPH .. header
-                hl_group = HLGroups.TOOL_FAILED
-            else
-                header = HLGroups.TOOL_SUCCESS_GLYPH .. header
-            end
-        end
-        lines:append_styled_text(header, hl_group)
-    end
-    add_generic_header()
+    add_generic_header(lines, output)
 
     -- * tool args
     local args = func.arguments
