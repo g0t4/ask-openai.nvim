@@ -98,6 +98,10 @@ function M.flatten_tool_result_to_text(result)
     -- Unwrap MCP content blocks into plain text so the model sees raw output
     -- instead of a JSON string containing JSON-escaped strings (JSON-in-JSON).
     local parts = {}
+    if result.isError then
+        parts[1] = "ERROR"
+    end
+
     local content = result.content
     if type(content) == "table" then
         for _, block in ipairs(content) do
@@ -126,11 +130,7 @@ function M.flatten_tool_result_to_text(result)
         end
     end
 
-    local text = table.concat(parts, "\n\n")
-    if result.isError then
-        text = "[ERROR]\n" .. text
-    end
-    return text
+    return table.concat(parts, "\n\n")
 end
 
 return M
