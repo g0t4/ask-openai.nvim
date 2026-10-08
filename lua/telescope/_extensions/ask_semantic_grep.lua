@@ -50,7 +50,7 @@ function _semantic_grep(semantic_grep_request, lsp_buffer_number, process_result
                 return {}
             end
 
-            local matches = (rag_response.result and rag_response.result.matches) or {}
+            local matches = (rag_response.result and rag_response.result.rag_matches) or {}
             for i, match in ipairs(matches) do
                 local entry = entry_maker(match)
                 process_result(entry)
