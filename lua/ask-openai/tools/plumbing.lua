@@ -73,8 +73,8 @@ end
 ---@param block MCP_ContentBlock
 local function flatten_text_block(block)
     local text = block.text or ""
-    local name = block.name
-    if name == nil or name == "" then
+    local name = block.name or ""
+    if name == "" then
         return text
     end
     if name == "EXIT_CODE" then
