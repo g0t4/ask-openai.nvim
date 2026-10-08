@@ -10,8 +10,10 @@ function M.format(lines, tool_call, message)
     local func = tool_call["function"]
     local header = func.name or "run_in_neovim"
     local hl_group = HLGroups.TOOL_SUCCESS
-    if tool_call.call_output then
-        if tool_call.call_output.result.isError then
+    local output = tool_call.call_output
+    if output then
+        local result_has_error = output.result and output.result.isError
+        if result_has_error then
             header = HLGroups.TOOL_FAILED_GLYPH .. header
             hl_group = HLGroups.TOOL_FAILED
         else
@@ -39,7 +41,7 @@ function M.format(lines, tool_call, message)
     end
 
     -- currently expression result is the only item in the content list, using an MCP like output though with type/name... ignore that and just get the value to display
-    local first_content = tool_call.call_output.result.content[1]
+    local first_content = output.result.content[1]
     lines:append_text(first_content.text)
 end
 

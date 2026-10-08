@@ -51,18 +51,16 @@ end
 local function add_tool_header(lines, tool_call, message)
     local header, decoded_args = get_tool_header_text(tool_call["function"].arguments, message)
     local hl_group = HLGroups.TOOL_SUCCESS
-    if tool_call.call_output then
-        if tool_call.call_output.result.isError then
+    local output = tool_call.call_output
+    if output then
+        local result_has_error = output.result and output.result.isError
+        if result_has_error then
             header = HLGroups.TOOL_FAILED_GLYPH .. header
             hl_group = HLGroups.TOOL_FAILED
         else
             header = HLGroups.TOOL_SUCCESS_GLYPH .. header
         end
     end
-    -- gptoss sometimes uses a heredoc for a python script
-    --   with \n between python statements
-    --   stuffed in the command field!
-    --   (anything to not use the stdin arg, lol)
     lines:append_styled_text(header, hl_group)
     return decoded_args
 end

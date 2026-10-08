@@ -57,15 +57,16 @@ function M.format(lines, tool_call, message)
     end
 
     -- * status indicator
-    if tool_call.call_output then
-        if tool_call.call_output.result and tool_call.call_output.result.isError then
+    local output = tool_call.call_output
+    if output then
+        local result_has_error = output.result and output.result.isError
+        if result_has_error then
             header = HLGroups.TOOL_FAILED_GLYPH .. header
             hl_group = HLGroups.TOOL_FAILED
         else
             header = HLGroups.TOOL_SUCCESS_GLYPH .. header
         end
     end
-
     lines:append_styled_text(header, hl_group)
 
     -- * decode and display arguments
@@ -101,10 +102,10 @@ function M.format(lines, tool_call, message)
     end
 
     -- * tool result
-    local is_mcp = tool_call.call_output and tool_call.call_output.result and tool_call.call_output.result.content
+    local is_mcp = output and output.result and output.result.content
     if is_mcp then
         ---@type MCP_ContentBlock[]
-        local content = tool_call.call_output.result.content
+        local content = output.result.content
 
         local multiple_outputs = #content > 1
         for _, output in ipairs(content) do
