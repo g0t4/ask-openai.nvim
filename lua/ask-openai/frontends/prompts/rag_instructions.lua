@@ -39,7 +39,7 @@ function M.matches_to_markdown(matches, explanation)
         table.insert(lines, "")
     end
 
-    for index, match in ipairs(matches) do
+    for _, match in ipairs(matches) do
         local file = match.file .. ":" .. match.start_line_base0 .. "-" .. match.end_line_base0
         local text = match.text
 
@@ -65,7 +65,6 @@ function M.matches_to_markdown(matches, explanation)
         -- which means we can syntax highlight the inline code!
         -- otherwise I'd say lets leave it without formatting which would be fine too
         vim.list_extend(lines, {
-            -- "## Match " .. tostring(index) .. "",
             "## " .. file ..
             "",
             -- benefit of using valid fence indicator with only the file extension => inline formatting is working now in my nvim live trace viewer!
