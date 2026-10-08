@@ -68,9 +68,10 @@ function M.format(lines, tool_call, message)
     local tool_header = func_name or ""
 
     local hl_group = HLGroups.TOOL_SUCCESS
-    if tool_call.call_output then
-        local has_error = tool_call.call_output.error ~= nil
-        local result_is_error = tool_call.call_output.result and tool_call.call_output.result.isError
+    local output = tool_call.call_output
+    if output then
+        local has_error = output.error ~= nil
+        local result_is_error = output.result and output.result.isError
 
         if has_error or result_is_error then
             tool_header = "❌ " .. tool_header
@@ -104,10 +105,10 @@ function M.format(lines, tool_call, message)
     --  allow agent to continue even if formatters are FUUUUU
 
     -- * show error if the tool call failed
-    if tool_call.call_output and tool_call.call_output.error then
-        local error_message = tool_call.call_output.error.message
+    if output and output.error then
+        local error_message = output.error.message
         if error_message then
-            local is_mcp_like_output = tool_call.call_output:is_mcp()
+            local is_mcp_like_output = output:is_mcp()
             if is_mcp_like_output then
                 lines:append_unexpected_text("ERROR: " .. error_message)
             else
@@ -117,10 +118,10 @@ function M.format(lines, tool_call, message)
         return
     end
 
-    local is_mcp_like_output = tool_call.call_output and tool_call.call_output:is_mcp()
+    local is_mcp_like_output = output and output:is_mcp()
     if is_mcp_like_output then
         ---@type MCP_ContentBlock[]
-        local content = tool_call.call_output.result.content
+        local content = output.result.content
         if type(content) == "string" then
             -- TODO add generic formatter that reverse parses flattened content (i.e. after restore, perhaps eventually we'll flatten ahead of formatting entirely even on initial request's response?)
             lines:append_text_fold_if_long("", content)
@@ -169,7 +170,7 @@ function M.format(lines, tool_call, message)
         end
     else
         lines:append_unexpected_text("TODO NON-MCP tool result generic formatting"
-            .. "\n" .. vim.inspect(tool_call.call_output))
+            .. "\n" .. vim.inspect(output))
     end
 end
 
