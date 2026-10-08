@@ -41,13 +41,26 @@ end
 --- e.g. "`local x = 1`" -> "local x = 1".
 --- Only strips when each end is exactly one backtick (not part of a longer
 --- run), so a partially-streamed triple fence is never consumed.
+--- Also handles a trailing newline after the closing backtick (e.g.
+--- "`local x = 1`\n" -> "local x = 1"): models sometimes emit the newline as
+--- part of the wrapper, so it is stripped along with the backticks.
 --- @param text string
 --- @return string
 function M.strip_inline_backticks(text)
     local starts_single = text:sub(1, 1) == "`" and text:sub(1, 2) ~= "``"
-    local ends_single = text:sub(-1) == "`" and text:sub(-2) ~= "``"
-    if starts_single and ends_single and #text > 2 then
-        return text:sub(2, -2)
+
+    -- Peek past a trailing newline (e.g. "`code`\n") when checking for the
+    -- closing backtick; the newline is part of the model's wrapper, not the
+    -- completion content.
+    local has_trailing_newline = text:sub(-1) == "\n"
+    local body = text
+    if has_trailing_newline then
+        body = text:sub(1, -2)
+    end
+
+    local ends_single = body:sub(-1) == "`" and body:sub(-2) ~= "``"
+    if starts_single and ends_single and #body > 2 then
+        return body:sub(2, -2)
     end
     return text
 end

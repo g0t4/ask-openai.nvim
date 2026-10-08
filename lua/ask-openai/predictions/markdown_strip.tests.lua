@@ -54,6 +54,10 @@ describe("markdown_strip.strip_inline_backticks", function()
         assert.equal("code", markdown_strip.strip_inline_backticks("`code`"))
     end)
 
+    it("strips an inline wrapper followed by a trailing newline", function()
+        assert.equal("code", markdown_strip.strip_inline_backticks("`code`\n"))
+    end)
+
     it("does NOT strip a partial inline wrapper (no trailing backtick yet)", function()
         assert.equal("`code", markdown_strip.strip_inline_backticks("`code"))
     end)
@@ -74,6 +78,10 @@ describe("markdown_strip.strip", function()
 
     it("strips inline backticks", function()
         assert.equal("code", markdown_strip.strip("`code`"))
+    end)
+
+    it("strips inline backticks followed by a trailing newline", function()
+        assert.equal("code", markdown_strip.strip("`code`\n"))
     end)
 
     it("leaves plain code untouched", function()
@@ -118,6 +126,12 @@ describe("Prediction:fim_fixes markdown fence stripping", function()
 
     it("strips inline single backticks", function()
         local prediction = new_prediction_with_content({ "def foo():", "" }, "`return x`")
+        assert.is_true(prediction.has_prediction)
+        assert.equal("return x", prediction.first_line)
+    end)
+
+    it("strips inline single backticks followed by a trailing newline", function()
+        local prediction = new_prediction_with_content({ "def foo():", "" }, "`return x`\n")
         assert.is_true(prediction.has_prediction)
         assert.equal("return x", prediction.first_line)
     end)
