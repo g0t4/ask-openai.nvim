@@ -24,13 +24,13 @@ function M.add_user_message(messages, rag_matches_markdown)
     table.insert(messages, TxChatMessage:user_context(rag_matches_markdown))
 end
 
----@param rag_matches LSPRankedMatch[]
+---@param matches LSPRankedMatch[]
 ---@param explanation string? -- extra details to insert after header with count of matches
 ---@return string
-function M.matches_to_markdown(rag_matches, explanation)
+function M.matches_to_markdown(matches, explanation)
     -- TODO! dedupe matches that overlap/touch dedupe.merge_contiguous_rag_chunks()
     local lines = {
-        "# Semantic Grep matches: " .. #rag_matches,
+        "# Semantic Grep matches: " .. #matches,
         "",
     }
 
@@ -39,13 +39,13 @@ function M.matches_to_markdown(rag_matches, explanation)
         table.insert(lines, "")
     end
 
-    for _, chunk in ipairs(rag_matches) do
+    for _, match in ipairs(matches) do
         ---@cast chunk LSPRankedMatch
-        local file = chunk.file .. ":" .. chunk.start_line_base0 .. "-" .. chunk.end_line_base0
-        local code_chunk = chunk.text
+        local file = match.file .. ":" .. match.start_line_base0 .. "-" .. match.end_line_base0
+        local code_chunk = match.text
 
         -- * add leading whitespace for non-zero start columns (ts chunks only, so far)
-        local start_col0 = chunk.start_column_base0
+        local start_col0 = match.start_column_base0
         if start_col0 and start_col0 > 0 then
             -- I noticed in some cases a treesitter matched function has non-zero start column and that shows as incorrectly indented in trace RAG matches
             --   mostly wanted to avoid model being confused, especialy if multiple matches are from same file and the de-indented func signature (often all that is off like this)... is just slightly wrong but could it confuse the generated code?
