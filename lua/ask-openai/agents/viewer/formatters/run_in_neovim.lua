@@ -10,18 +10,8 @@ function M.format(lines, tool_call, message)
     local func = tool_call["function"]
     local header = func.name or "run_in_neovim"
     local output = tool_call.call_output
-    local hl_group = HLGroups.TOOL_SUCCESS
-    if output then
-        local has_error = output.error ~= nil
-        local result_has_error = output.result and output.result.isError
-        if has_error or result_has_error then
-            header = HLGroups.TOOL_FAILED_GLYPH .. header
-            hl_group = HLGroups.TOOL_FAILED
-        else
-            header = HLGroups.TOOL_SUCCESS_GLYPH .. header
-        end
-    end
-    lines:append_styled_text(header, hl_group)
+
+    base.add_generic_header(lines, output)
 
     local args = func.arguments
     if args then
