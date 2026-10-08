@@ -97,17 +97,22 @@ function M.tool_result_to_text(result)
     if type(content) == "table" then
         for _, block in ipairs(content) do
             if type(block) == "table" then
+                local text
                 if block.type == "text" then
-                    local text = flatten_text_block(block)
-                    parts[#parts + 1] = text
+                    text = flatten_text_block(block)
                 elseif block.type == "image" then
-                    parts[#parts + 1] = "[image: " .. tostring(block.mimeType or "?") .. "]"
+                    text = "[image: " .. tostring(block.mimeType or "?") .. "]"
                 elseif block.type == "audio" then
-                    parts[#parts + 1] = "[audio: " .. tostring(block.mimeType or "?") .. "]"
+                    text = "[audio: " .. tostring(block.mimeType or "?") .. "]"
                 elseif block.type == "resource" then
                     local uri = block.resource and block.resource.uri or "?"
-                    parts[#parts + 1] = "[resource: " .. tostring(uri) .. "]"
+                    text = "[resource: " .. tostring(uri) .. "]"
+                else
+                    vim.notify("unexpected MCP content block type: " .. tostring(block), vim.log.levels.WARN)
+                    log:warn("unexpected MCP content block type", block)
+                    text = "[unknown block type: " .. tostring(block.type or "?") .. "]"
                 end
+                parts[#parts + 1] = text
             else
                 vim.notify("oops... unexpected tool result content has an entry that is not a table/object, this should not happen, investigate!")
                 log:error("tool result content has an entry that is not a table/object", block)
