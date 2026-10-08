@@ -53,8 +53,9 @@ local function add_tool_header(lines, tool_call, message)
     local hl_group = HLGroups.TOOL_SUCCESS
     local output = tool_call.call_output
     if output then
+        local has_error = output.error ~= nil
         local result_has_error = output.result and output.result.isError
-        if result_has_error then
+        if has_error or result_has_error then
             header = HLGroups.TOOL_FAILED_GLYPH .. header
             hl_group = HLGroups.TOOL_FAILED
         else
