@@ -50,8 +50,8 @@ end
 ---@type ToolCallFormatter
 local function add_tool_header(lines, tool_call, message)
     local header, decoded_args = get_tool_header_text(tool_call["function"].arguments, message)
-    local hl_group = HLGroups.TOOL_SUCCESS
     local output = tool_call.call_output
+    local hl_group = HLGroups.TOOL_SUCCESS
     if output then
         local has_error = output.error ~= nil
         local result_has_error = output.result and output.result.isError

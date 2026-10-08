@@ -48,7 +48,6 @@ end
 ---@type ToolCallFormatter
 function M.format(lines, tool_call, message)
     local header = tool_call["function"].name or "delegate"
-    local hl_group = HLGroups.TOOL_SUCCESS
 
     -- * decode args to get agent_type for title
     local decoded_args = decode_delegate_args(tool_call["function"].arguments, message)
@@ -58,6 +57,7 @@ function M.format(lines, tool_call, message)
 
     -- * status indicator
     local output = tool_call.call_output
+    local hl_group = HLGroups.TOOL_SUCCESS
     if output then
         local has_error = output.error ~= nil
         local result_has_error = output.result and output.result.isError
