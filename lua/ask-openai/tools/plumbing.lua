@@ -94,7 +94,7 @@ function M.flatten_tool_result_to_text(result)
         return tostring(result)
     end
 
-    log:info("flatten_tool_result_to_text, original result:", result)
+    -- log:info("flatten_tool_result_to_text, original result:", result)
     -- Unwrap MCP content blocks into plain text so the model sees raw output
     -- instead of a JSON string containing JSON-escaped strings (JSON-in-JSON).
     local parts = {}
@@ -137,7 +137,9 @@ function M.flatten_tool_result_to_text(result)
         return vim.inspect(result)
     end
 
-    return table.concat(parts, "\n\n")
+    local flat = table.concat(parts, "\n\n")
+    -- log:info("flat", flat)
+    return flat
 end
 
 return M

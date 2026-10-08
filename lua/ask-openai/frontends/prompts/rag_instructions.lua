@@ -55,8 +55,6 @@ function M.matches_to_markdown(matches, explanation)
 
         local position = build_position_string(match)
 
-
-
         local file = match.file .. ":" .. position
         local text = match.text
 
