@@ -70,4 +70,44 @@ function M.text_content(value, name)
     return { type = "text", text = value, }
 end
 
+---@param result MCP_CallToolResult
+---@return string
+function M.tool_result_to_text(result)
+    if type(result) ~= "table" then
+        return tostring(result)
+    end
+
+    -- Unwrap MCP content blocks into plain text so the model sees raw output
+    -- instead of a JSON string containing JSON-escaped strings (JSON-in-JSON).
+    local parts = {}
+    local content = result.content
+    if type(content) == "table" then
+        for _, block in ipairs(content) do
+            if type(block) == "table" then
+                if block.type == "text" then
+                    local text = block.text or ""
+                    if block.name and block.name ~= "" then
+                        parts[#parts + 1] = block.name .. ":\n" .. text
+                    else
+                        parts[#parts + 1] = text
+                    end
+                elseif block.type == "image" then
+                    parts[#parts + 1] = "[image: " .. tostring(block.mimeType or "?") .. "]"
+                elseif block.type == "audio" then
+                    parts[#parts + 1] = "[audio: " .. tostring(block.mimeType or "?") .. "]"
+                elseif block.type == "resource" then
+                    local uri = block.resource and block.resource.uri or "?"
+                    parts[#parts + 1] = "[resource: " .. tostring(uri) .. "]"
+                end
+            end
+        end
+    end
+
+    local text = table.concat(parts, "\n\n")
+    if result.isError then
+        text = "ERROR:\n" .. text
+    end
+    return text
+end
+
 return M

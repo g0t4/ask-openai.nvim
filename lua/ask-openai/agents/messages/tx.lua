@@ -1,5 +1,6 @@
 local log = require('devtools.logs.logger').universal()
 local ansi = require('devtools.ansi')
+local plumbing = require('ask-openai.tools.plumbing')
 
 ---@class TxChatMessage : OpenAIChatCompletion_TxChatMessage
 local TxChatMessage = {}
@@ -37,7 +38,9 @@ function TxChatMessage:tool_result(tool_call)
     -- FYI see NOTES.md for "fix" => removed `|tojson` from jinja template for message.content
 
     -- * required: role, content, tool_call_id - docs https://platform.openai.com/docs/api-reference/chat/create#chat_create-messages-tool_message
-    local content = vim.json.encode(tool_call.call_output.result)
+    -- * Unwrap the MCP result into plain text so the model sees raw output
+    --   instead of a JSON string wrapping JSON-escaped text (JSON-in-JSON).
+    local content = plumbing.tool_result_to_text(tool_call.call_output.result)
     self = TxChatMessage:new(TX_MESSAGE_ROLES.TOOL, content) --[[@as OpenAIChatCompletion_ToolResult_TxChatMessage]]
 
     self.tool_call_id = tool_call.id
