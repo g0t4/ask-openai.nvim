@@ -74,11 +74,15 @@ function M.matches_to_markdown(matches, explanation)
 
         extension = vim.fn.fnamemodify(match.file, ":e")
 
+        local rerank_score = match.rerank_score ~= nil
+            and string.format(" [rerank: %.1f%%]", match.rerank_score * 100) or ""
+
         -- try formatting as fenced markdown code blocks inside of an h2 header with match counter...
         -- which means we can syntax highlight the inline code!
         -- otherwise I'd say lets leave it without formatting which would be fine too
         vim.list_extend(lines, {
             "## " .. file ..
+            rerank_score,
             "",
             -- benefit of using valid fence indicator with only the file extension => inline formatting is working now in my nvim live trace viewer!
             --  and I keep the header with the full file name + positions (start line + start col)
