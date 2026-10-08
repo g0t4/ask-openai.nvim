@@ -57,7 +57,19 @@ function M.matches_to_markdown(matches, explanation)
             -- TODO consider is col offset in bytes or chars? (see RAG preview for more on this)... i.e. with emoji or other unicode chars?
         end
 
-        table.insert(lines, "## " .. file .. "\n" .. text .. "\n")
+        -- table.insert(lines, "## " .. file .. "\n" .. text .. "\n")
+
+        -- try formatting as fenced markdown code blocks inside of an h2 header with match counter...
+        -- which means we can syntax highlight the inline code!
+        -- otherwise I'd say lets leave it without formatting which would be fine too
+        vim.list_extend(lines, {
+            "## Match " .. tostring(index) .. "",
+            "",
+            "```" .. file,
+            text,
+            "```",
+            "",
+        })
     end
     local markdown = table.concat(lines, "\n")
     return markdown
