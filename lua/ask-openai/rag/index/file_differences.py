@@ -16,12 +16,18 @@ logger = logging.getLogger(__name__)
 
 def format_age(age_seconds: float) -> str:
     """Format age in days with color coding."""
-    days = 24 * 60 * 60
-    if age_seconds > 7 * days:
-        return f"[red]{age_seconds / days:.1f}d[/]"
-    if age_seconds > 2 * days:
-        return f"[yellow]{age_seconds / days:.1f}d[/]"
-    return f"[green]{age_seconds / days:.1f}d[/]"
+    seconds_per_minute = 60
+    seconds_per_hour = 60 * seconds_per_minute
+    seconds_per_day = 24 * seconds_per_hour
+    if age_seconds > 7 * seconds_per_day:
+        return f"[red]{age_seconds / seconds_per_day:.1f}d[/]"
+    if age_seconds > 2 * seconds_per_day:
+        return f"[yellow]{age_seconds / seconds_per_day:.1f}d[/]"
+    if age_seconds > seconds_per_day:
+        return f"[green]{age_seconds / seconds_per_day:.1f}d[/]"
+    if age_seconds > seconds_per_hour:
+        return f"[green]{age_seconds / seconds_per_hour:.1f}h[/]"
+    return f"[green]{age_seconds / seconds_per_minute:.1f}min[/]"
 
 
 @dataclass(frozen=True)
