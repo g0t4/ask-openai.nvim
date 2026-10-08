@@ -128,6 +128,11 @@ function M.flatten_tool_result_to_text(result)
             end
             parts[#parts + 1] = text
         end
+    else
+        vim.notify("oops... unexpected tool result content is missing")
+        log:error("tool result has no content", result)
+        -- not intended as long term solution hence notify
+        return vim.inspect(result)
     end
 
     return table.concat(parts, "\n\n")
