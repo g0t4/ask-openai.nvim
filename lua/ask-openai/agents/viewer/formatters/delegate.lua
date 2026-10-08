@@ -54,7 +54,7 @@ function M.format(lines, tool_call, message)
     end
 
     -- * status indicator
-    base.add_generic_header(lines, tool_call)
+    base.add_generic_header(lines, tool_call, header)
 
     -- * decode and display arguments
     decoded_args = decoded_args or decode_delegate_args(tool_call["function"].arguments, message)

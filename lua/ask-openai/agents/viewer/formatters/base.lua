@@ -109,9 +109,9 @@ function M.render_progress(lines, tool_call, is_done)
     end
 end
 
-function M.add_generic_header(lines, tool_call)
+function M.add_generic_header(lines, tool_call, header)
     local func = tool_call["function"]
-    local header = func.name or ""
+    local header = header or func.name or ""
     local hl_group = HLGroups.TOOL_SUCCESS
     local output = tool_call.call_output
     if output then
