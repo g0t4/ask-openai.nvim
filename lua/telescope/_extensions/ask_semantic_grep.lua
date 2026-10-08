@@ -34,8 +34,8 @@ function _semantic_grep(semantic_grep_request, lsp_buffer_number, process_result
     local _rag_request_id, _rag_cancel_request
     _rag_request_id, _rag_cancel_request = client.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number,
 
-        ---@param obj SemanticGrepWithTimeoutResponseObj -- FYI I call this obj in several spots, stick with it or rename all of them
-        function(obj)
+        ---@param rag_response SemanticGrepWithTimeoutResponseObj -- FYI I call this obj in several spots, stick with it or rename all of them
+        function(rag_response)
             -- Ensure this is the most recent request before processing results.
             if last_rag_request_id ~= _rag_request_id then
                 return
@@ -44,13 +44,13 @@ function _semantic_grep(semantic_grep_request, lsp_buffer_number, process_result
             -- No longer need a cancel handler after the response.
             last_rag_cancel_request = nil
 
-            if obj.result and obj.result.isError then
-                log:error("semantic_grep failed: " .. (obj.result.error or "unknown"))
-                vim.notify("semantic_grep failed: " .. (obj.result.error or "unknown"))
+            if rag_response.result and rag_response.result.isError then
+                log:error("semantic_grep failed: " .. (rag_response.result.error or "unknown"))
+                vim.notify("semantic_grep failed: " .. (rag_response.result.error or "unknown"))
                 return {}
             end
 
-            local matches = (obj.result and obj.result.matches) or {}
+            local matches = (rag_response.result and rag_response.result.matches) or {}
             for i, match in ipairs(matches) do
                 local entry = entry_maker(match)
                 process_result(entry)
