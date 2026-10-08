@@ -73,10 +73,11 @@ end
 ---@param block MCP_ContentBlock
 local function flatten_text_block(block)
     local text = block.text or ""
-    if block.name == nil or block.name == "" then
+    local name = block.name
+    if name == nil or name == "" then
         return text
     end
-    return block.name .. ":\n" .. text
+    return name .. ":\n" .. text
 end
 
 ---@param result MCP_CallToolResult
