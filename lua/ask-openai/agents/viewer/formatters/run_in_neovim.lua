@@ -8,17 +8,17 @@ local M = {}
 function M.format(lines, tool_call, message)
 
     local func = tool_call["function"]
-    local name = func.name or "run_in_neovim"
+    local header = func.name or "run_in_neovim"
     local hl_group = HLGroups.TOOL_SUCCESS
     if tool_call.call_output then
         if tool_call.call_output.result.isError then
-            name = "❌ " .. name
+            header = "❌ " .. header
             hl_group = HLGroups.TOOL_FAILED
         else
-            name = "✅ " .. name
+            header = "✅ " .. header
         end
     end
-    lines:append_styled_text(name, hl_group)
+    lines:append_styled_text(header, hl_group)
 
     local args = func.arguments
     if args then
