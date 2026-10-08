@@ -182,13 +182,9 @@ end
 
 --- user message (harmony spec):
 --- - Typically representing the input to the model
----@param message? string|{content:string}|TxChatMessage -- nil/empty so consumers can always call (and it won't be added), TxChatMessage will extract message.content
+---@param message? string -- nil/empty so consumers can always call
 ---@return HarmonyFimPromptBuilder self
 function HarmonyFimPromptBuilder:user(message)
-    if message.content then
-        -- for TxChatMessage
-        message = message.content
-    end
     if message == nil or message == "" then
         -- don't add an empty message
         return self
@@ -285,7 +281,7 @@ function HarmonyFimPromptBuilder.gptoss.RETIRED_get_fim_raw_prompt_no_thinking(r
         --   but that won't happen here! as there is no template!
         :developer()
         :user(HarmonyFimPromptBuilder.context_user_msg(request))
-        :user(rag_instructions.semantic_grep_user_message(request.rag_matches))
+        :user(rag_instructions.explain_rag_auto_context(request.rag_matches))
         :user(HarmonyFimPromptBuilder.fim_prompt(request))
         :set_thinking()
         :start_assistant_final_response() -- this forces the model to respond w/o any further thinking
@@ -302,10 +298,7 @@ function HarmonyFimPromptBuilder.gptoss.get_fim_chat_messages(request, level, mo
         TxChatMessage:system(HarmonyFimPromptBuilder.developer_message),
         TxChatMessage:user(HarmonyFimPromptBuilder.context_user_msg(request)),
     }
-    local rag_message = rag_instructions.semantic_grep_user_message(request.rag_matches)
-    if rag_message then
-        table.insert(messages, rag_message)
-    end
+    rag_instructions.add_auto_user_message(messages, request.rag_matches)
     table.insert(messages, TxChatMessage:user(HarmonyFimPromptBuilder.fim_prompt(request)))
     if level == "off" and model == "gptoss" then
         -- TODO get rid of raw prompt approach above? or just keep it around as "RETIRED" ??

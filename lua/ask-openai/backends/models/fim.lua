@@ -816,10 +816,7 @@ function M.deepseek_v4_flash.get_fim_chat_messages(request, level)
         TxChatMessage:user_context(deepseek_fim_context_user_msg(request)),
     }
 
-    local rag_message = rag_instructions.semantic_grep_user_message(request.rag_matches)
-    if rag_message then
-        table.insert(messages, rag_message)
-    end
+    rag_instructions.add_auto_user_message(messages, request.rag_matches)
 
     table.insert(messages, TxChatMessage:user(deepseek_fim_user_message(request)))
 

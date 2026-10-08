@@ -1,6 +1,7 @@
 local log = require("devtools.logs.logger").universal()
 local ansi = require("devtools.ansi")
 local client = require("ask-openai.rag.client.client")
+local rag_instructions = require("ask-openai.frontends.prompts.rag_instructions")
 
 local M = {
     ---@type OpenAITool;
@@ -65,7 +66,23 @@ function M.call(parsed_args, callback)
         embedTopK = parsed_args.embed_top_k or 18,
     }
 
-    local _, cancel_request = client.semantic_grep_with_timeout(semantic_grep_request, nil, callback, "agent-tool")
+    ---@param rag_response SemanticGrepWithTimeoutResponseObj
+    local function map_to_mcp_result_with_markdown_content(rag_response)
+        local mcp_result = {
+            isError = rag_response.result.isError,
+            error = rag_response.result.error,
+        }
+        local matches = rag_response.result.rag_matches
+        rag_response.result.rag_matches = nil -- remove just to be safe
+        if matches == nil or #matches == 0 then
+            mcp_result.content = ""
+            return
+        end
+        mcp_result.content = rag_instructions.matches_to_markdown(matches)
+        callback({ result = mcp_result })
+    end
+
+    local _, cancel_request = client.semantic_grep_with_timeout(semantic_grep_request, nil, map_to_mcp_result_with_markdown_content, "agent-tool")
     return cancel_request -- FYI rag client already gracefull deals with cancel handling so no need to duplicate that here
 end
 

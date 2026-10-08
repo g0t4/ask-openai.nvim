@@ -242,8 +242,8 @@ function PredictionsFrontend.ask_for_prediction(params)
         local this_request_ids, cancel -- declare in advance so closure can access
         this_prediction.performance:rag_started()
 
-        ---@param obj SemanticGrepWithTimeoutResponseObj
-        local function on_rag_response(obj)
+        ---@param rag_response SemanticGrepWithTimeoutResponseObj
+        local function on_rag_response(rag_response)
             -- * make sure prior (canceled) rag request doesn't still respond
             -- if this prediction is no longer the current one for its buffer, a newer keystroke replaced it
             --  (or it was canceled), so these results are stale and must be skipped.
@@ -255,10 +255,10 @@ function PredictionsFrontend.ask_for_prediction(params)
             -- ** DO NOT LOOK AT A RESPONSE (neither isError nor matches) IF IT IS NOT FOR THE LATEST REQUEST!
             -- FYI DO NOT TOUCH this_prediction before checking that it is still most recent
 
-            if obj.result.isError then
-                local msg = "skipping RAG " .. vim.inspect(obj.result.error)
+            if rag_response.result.isError then
+                local msg = "skipping RAG " .. vim.inspect(rag_response.result.error)
                 table.insert(this_prediction.failures, msg)
-                log:error("RAG failed in PredictionsFrontend, skipping RAG " .. vim.inspect(obj))
+                log:error("RAG failed in PredictionsFrontend, skipping RAG " .. vim.inspect(rag_response))
                 this_prediction:fix_fim_and_redraw_extmarks()
                 -- vim.notify(message)
             end
@@ -278,7 +278,7 @@ function PredictionsFrontend.ask_for_prediction(params)
             -- clear cancel so not getting cancel message after retrieval (on next keystroke)
             this_prediction.rag_cancel = nil
 
-            then_send_fim(obj.result.matches or {})
+            then_send_fim(rag_response.result.rag_matches)
         end
 
         this_prediction.rag_cancel = function()

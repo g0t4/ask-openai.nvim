@@ -4,22 +4,41 @@ local M = {}
 -- TxChatMessage is used to wrap the generated semantic grep content as a user context message
 local TxChatMessage = require("ask-openai.agents.messages.tx")
 
-local function semantic_grep_header_lines(rag_matches)
-    return {
-        "# Semantic Grep matches: " .. #rag_matches .. "\n",
-        "This is automatic context based on my request. These may or may not be relevant."
-    }
+---@param rag_matches LSPRankedMatch[]
+---@return string?
+function M.explain_rag_auto_context(rag_matches)
+    if #rag_matches == 0 then return end
+    return M.matches_to_markdown(rag_matches, "This is automatic context based on my request. These may not be relevant to my request.")
+end
+
+---@param messages {}
+---@param rag_matches LSPRankedMatch[]
+function M.add_auto_user_message(messages, rag_matches)
+    M.add_user_message(messages, M.explain_rag_auto_context(rag_matches))
+end
+
+---@param messages {}
+---@param rag_matches_markdown? string
+function M.add_user_message(messages, rag_matches_markdown)
+    if rag_matches_markdown == nil then return end
+    table.insert(messages, TxChatMessage:user_context(rag_matches_markdown))
 end
 
 ---@param rag_matches LSPRankedMatch[]
----@return TxChatMessage|nil
-function M.semantic_grep_user_message(rag_matches)
-    if rag_matches == nil or #rag_matches == 0 then
-        return nil
+---@param explanation string? -- extra details to insert after header with count of matches
+---@return string
+function M.matches_to_markdown(rag_matches, explanation)
+    -- TODO! dedupe matches that overlap/touch dedupe.merge_contiguous_rag_chunks()
+    local lines = {
+        "# Semantic Grep matches: " .. #rag_matches,
+        "",
+    }
+
+    if explanation ~= nil and explanation ~= "" then
+        table.insert(lines, explanation)
+        table.insert(lines, "")
     end
 
-    local lines = semantic_grep_header_lines(rag_matches)
-    -- TODO! dedupe matches that overlap/touch dedupe.merge_contiguous_rag_chunks()
     vim.iter(rag_matches)
         :each(function(chunk)
             ---@cast chunk LSPRankedMatch
@@ -40,13 +59,10 @@ function M.semantic_grep_user_message(rag_matches)
                 -- TODO consider is col offset in bytes or chars? (see RAG preview for more on this)... i.e. with emoji or other unicode chars?
             end
 
-            table.insert(lines,
-                "## " .. file .. "\n"
-                .. code_chunk .. "\n"
-            )
+            table.insert(lines, "## " .. file .. "\n" .. code_chunk .. "\n")
         end)
-    local content = table.concat(lines, "\n")
-    return TxChatMessage:user_context(content)
+    local markdown = table.concat(lines, "\n")
+    return markdown
 end
 
 return M

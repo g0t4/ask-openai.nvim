@@ -437,10 +437,7 @@ local function ask_rewrite_command(opts)
                     table.insert(messages, TxChatMessage:user_context(value.content))
                 end)
         end
-        local rag_message = rag_instructions.semantic_grep_user_message(rag_matches)
-        if rag_message then
-            table.insert(messages, rag_message)
-        end
+        rag_instructions.add_auto_user_message(messages, rag_matches)
 
         local user_message = explainer .. "\n" .. user_prompt .. "\n\n" .. code_context .. code_caveat
         table.insert(messages, TxChatMessage:user(user_message))
@@ -468,8 +465,8 @@ local function ask_rewrite_command(opts)
     if config.is_rag_enabled() and rag_client.is_rag_supported_in_current_file() then
         local this_rag_request_id, rag_cancel -- declare in advance for closure
 
-        ---@param obj SemanticGrepWithTimeoutResponseObj
-        function on_rag_response(obj)
+        ---@param rag_response SemanticGrepWithTimeoutResponseObj
+        function on_rag_response(rag_response)
             -- * make sure prior (canceled) rag request doesn't still respond
             if RewriteFrontend.rag_request_id ~= this_rag_request_id then
                 log:trace("possibly stale rag results, skipping: " .. vim.inspect({
@@ -480,9 +477,9 @@ local function ask_rewrite_command(opts)
             end
             -- ** DO NOT LOOK AT A RESPONSE (neither isError nor matches) IF IT IS NOT FOR THE LATEST REQUEST!
 
-            if obj.result.isError then
+            if rag_response.result.isError then
                 log:error("RAG failed in RewriteFrontend")
-                vim.notify("RAG failed in RewriteFrontend, skipping RAG " .. vim.inspect(obj))
+                vim.notify("RAG failed in RewriteFrontend, skipping RAG " .. vim.inspect(rag_response))
             end
 
             if RewriteFrontend.rag_cancel == nil then
@@ -491,7 +488,7 @@ local function ask_rewrite_command(opts)
             end
 
             RewriteFrontend.response.performance:rag_done()
-            then_send_rewrite(obj.result.matches or {})
+            then_send_rewrite(rag_response.result.rag_matches)
         end
 
         RewriteFrontend.response.performance:rag_started()

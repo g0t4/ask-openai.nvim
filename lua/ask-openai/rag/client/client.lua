@@ -102,7 +102,7 @@ end
 ---@class SemanticGrepWithTimeoutResult
 ---@field isError? boolean
 ---@field error? string
----@field matches? LSPRankedMatch[]
+---@field rag_matches LSPRankedMatch[]
 
 function NOOP() end
 
@@ -111,10 +111,10 @@ function NOOP() end
 --- - supports timeout
 ---@param semantic_grep_request LSPSemanticGrepRequest
 --- @param lsp_buffer_number? integer
----@param callback_like_mcp_tool fun(response_obj: SemanticGrepWithTimeoutResponseObj) -- called with the result or error
+---@param callback fun(response_obj: SemanticGrepWithTimeoutResponseObj) -- called with the result or error
 ---@param trace_source? string identifies the retrieval surface in saved traces
 ---@return integer? request_id, fun() cancel_request
-function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, callback_like_mcp_tool, trace_source)
+function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, callback, trace_source)
     lsp_buffer_number = lsp_buffer_number or 0
     trace_source = trace_source or "unknown"
     local trace = rag_trace.start(trace_source, semantic_grep_request)
@@ -142,7 +142,7 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
             },
         }
         save_trace(response)
-        callback_like_mcp_tool(response)
+        callback(response)
     end
 
     ---@param lsp_error? lsp.ResponseError
@@ -214,14 +214,15 @@ function M.semantic_grep_with_timeout(semantic_grep_request, lsp_buffer_number, 
 
         -- log_semantic_grep_matches(lsp_result)
 
+
         local response = {
-            result = {
+            result = { -- PRN since this is not MCP lets just get rid of result?
                 -- do not mark isError = false here... that is assumed, might also cause issues if mis-interpreted as an error!
-                matches = lsp_result.matches
+                rag_matches = lsp_result.matches,
             }
         }
         save_trace(response)
-        callback_like_mcp_tool(response)
+        callback(response)
     end
 
     local params = {

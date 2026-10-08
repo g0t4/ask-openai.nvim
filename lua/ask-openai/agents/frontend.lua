@@ -231,11 +231,9 @@ local function ask_agent_command(opts)
             end)
     end
 
+    ---@param rag_matches LSPRankedMatch[]
     local function then_add_seed_user_messages(rag_matches)
-        local rag_message = rag_instructions.semantic_grep_user_message(rag_matches)
-        if rag_message then
-            table.insert(messages, rag_message)
-        end
+        rag_instructions.add_auto_user_message(messages, rag_matches)
 
         -- FYI user request works well regardless if it is first or last user message
         table.insert(messages, TxChatMessage:user(user_message))
@@ -261,8 +259,8 @@ local function ask_agent_command(opts)
     if config.is_rag_enabled() and not context.includes.norag and rag_client.is_rag_supported_in_current_file(code_bufnr) then
         local this_rag_request_id, rag_cancel -- declare in advance for closure
 
-        ---@param obj SemanticGrepWithTimeoutResponseObj -- for lack of better name, stick with it
-        function on_rag_response(obj)
+        ---@param rag_response SemanticGrepWithTimeoutResponseObj -- for lack of better name, stick with it
+        function on_rag_response(rag_response)
             -- * make sure prior (canceled) rag request doesn't still respond
             if AgentsFrontend.rag_request_id ~= this_rag_request_id then
                 log:trace("possibly stale rag results, skipping: " .. vim.inspect({
@@ -273,9 +271,9 @@ local function ask_agent_command(opts)
             end
             -- ** DO NOT LOOK AT A RESPONSE (neither isError nor matches) IF IT IS NOT FOR THE LATEST REQUEST!
 
-            if obj.result.isError then
+            if rag_response.result.isError then
                 log:error("RAG failed in AgentsFrontend")
-                vim.notify("RAG failed in AgentsFrontend, skipping RAG " .. vim.inspect(obj))
+                vim.notify("RAG failed in AgentsFrontend, skipping RAG " .. vim.inspect(rag_response))
             end
 
             if AgentsFrontend.rag_cancel == nil then
@@ -283,7 +281,7 @@ local function ask_agent_command(opts)
                 return
             end
 
-            then_add_seed_user_messages(obj.result.matches or {})
+            then_add_seed_user_messages(rag_response.result.rag_matches) -- FYI do not pass full rag_response object to avoid confusion about where error handling belongs!
         end
 
         this_rag_request_id, rag_cancel = rag_client.context_query_for_agents(code_bufnr, cleaned_prompt, code_context, nil, on_rag_response)

@@ -121,6 +121,11 @@ function M.format(lines, tool_call, message)
     if is_mcp_like_output then
         ---@type MCP_ContentBlock[]
         local content = tool_call.call_output.result.content
+        if type(content) == "string" then
+            -- TODO add generic formatter that reverse parses flattened content (i.e. after restore, perhaps eventually we'll flatten ahead of formatting entirely even on initial request's response?)
+            lines:append_text_fold_if_long("", content)
+            return
+        end
 
         local multiple_outputs = #content > 1
         for _, output in ipairs(content) do
@@ -163,8 +168,8 @@ function M.format(lines, tool_call, message)
             end
         end
     else
-        -- TODO NON-MCP tool responses
-        --  i.e. in-process tools: rag_query, apply_patch
+        lines:append_unexpected_text("TODO NON-MCP tool result generic formatting"
+            .. "\n" .. vim.inspect(tool_call.call_output))
     end
 end
 
