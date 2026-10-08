@@ -85,7 +85,7 @@ end
 
 ---@param result MCP_CallToolResult
 ---@return string
-function M.tool_result_to_text(result)
+function M.flatten_tool_result_to_text(result)
     if type(result) ~= "table" then
         return tostring(result)
     end

@@ -40,7 +40,7 @@ function TxChatMessage:tool_result(tool_call)
     -- * required: role, content, tool_call_id - docs https://platform.openai.com/docs/api-reference/chat/create#chat_create-messages-tool_message
     -- * Unwrap the MCP result into plain text so the model sees raw output
     --   instead of a JSON string wrapping JSON-escaped text (JSON-in-JSON).
-    local content = plumbing.tool_result_to_text(tool_call.call_output.result)
+    local content = plumbing.flatten_tool_result_to_text(tool_call.call_output.result)
     self = TxChatMessage:new(TX_MESSAGE_ROLES.TOOL, content) --[[@as OpenAIChatCompletion_ToolResult_TxChatMessage]]
 
     self.tool_call_id = tool_call.id
