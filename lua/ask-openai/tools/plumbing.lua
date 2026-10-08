@@ -73,6 +73,10 @@ end
 ---@param block MCP_ContentBlock
 local function flatten_text_block(block)
     local text = block.text or ""
+    if text == "" then
+        log:warn("skipping empty text block", block)
+        return nil
+    end
     local name = block.name or ""
     if name == "" then
         return text
@@ -90,6 +94,7 @@ function M.flatten_tool_result_to_text(result)
         return tostring(result)
     end
 
+    log:info("flatten_tool_result_to_text, original result:", result)
     -- Unwrap MCP content blocks into plain text so the model sees raw output
     -- instead of a JSON string containing JSON-escaped strings (JSON-in-JSON).
     local parts = {}
@@ -123,7 +128,7 @@ function M.flatten_tool_result_to_text(result)
 
     local text = table.concat(parts, "\n\n")
     if result.isError then
-        text = "ERROR:\n" .. text
+        text = "[ERROR]\n" .. text
     end
     return text
 end
