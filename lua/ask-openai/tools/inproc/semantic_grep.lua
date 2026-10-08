@@ -68,12 +68,13 @@ function M.call(parsed_args, callback)
 
     ---@param rag_response SemanticGrepWithTimeoutResponseObj
     local function map_to_mcp_result_with_markdown_content(rag_response)
+        local result = rag_response.result
         local mcp_result = {
-            isError = rag_response.result.isError,
-            error = rag_response.result.error,
+            isError = result.isError,
+            error = result.error,
         }
-        local matches = rag_response.result.rag_matches
-        rag_response.result.rag_matches = nil -- remove just to be safe
+        local matches = result.rag_matches
+        result.rag_matches = nil -- remove just to be safe
         if matches == nil or #matches == 0 then
             mcp_result.content = ""
             return
