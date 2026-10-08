@@ -47,26 +47,26 @@ end
 
 ---@type ToolCallFormatter
 function M.format(lines, tool_call, message)
-    local func_name = tool_call["function"].name or "delegate"
+    local header = tool_call["function"].name or "delegate"
     local hl_group = HLGroups.TOOL_SUCCESS
 
     -- * decode args to get agent_type for title
     local decoded_args = decode_delegate_args(tool_call["function"].arguments, message)
     if decoded_args and decoded_args.agent_type then
-        func_name = string.format("%s (%s)", func_name, decoded_args.agent_type)
+        header = string.format("%s (%s)", header, decoded_args.agent_type)
     end
 
     -- * status indicator
     if tool_call.call_output then
         if tool_call.call_output.result and tool_call.call_output.result.isError then
-            func_name = "❌ " .. func_name
+            header = "❌ " .. header
             hl_group = HLGroups.TOOL_FAILED
         else
-            func_name = "✅ " .. func_name
+            header = "✅ " .. header
         end
     end
 
-    lines:append_styled_text(func_name, hl_group)
+    lines:append_styled_text(header, hl_group)
 
     -- * decode and display arguments
     decoded_args = decoded_args or decode_delegate_args(tool_call["function"].arguments, message)
