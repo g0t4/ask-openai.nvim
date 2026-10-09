@@ -503,7 +503,10 @@ def build_user_auto_rag_matches_message(raw_content: str) -> (bool, TreeWrapper 
         if not lines:
             continue
         header = lines[0]
-        match = re.match(r"^##\s+(.+?):(\d+)-(\d+)", header)
+
+        # TODO extract and add tests, return DTO
+        match = re.match(r"^##\s+(.+?):(\d+)(:\d+)?-(\d+)(:\d+)?", header)
+
         if not match:
             continue
 
@@ -512,10 +515,12 @@ def build_user_auto_rag_matches_message(raw_content: str) -> (bool, TreeWrapper 
         if not SHOW_ALL and is_preapproved(str(file_path)):
             continue
 
-        start_line = match.group(2)
-        end_line = match.group(3)
+        start_line_base1 = match.group(2)
+        start_col_base1 = match.group(3)
+        end_line_base1 = match.group(4)
+        end_col_base1 = match.group(5)
 
-        root.add_with_markup(f"🔍 MATCH [bold]{file_path}[/]:{start_line}-{end_line}")
+        root.add_with_markup(f"🔍 MATCH [bold]{file_path}[/]:{start_line_base1}-{end_line_base1}")
 
         ext = os.path.splitext(file_path)[1].lstrip('.').lower()
         # Remaining lines after the header constitute the snippet.
