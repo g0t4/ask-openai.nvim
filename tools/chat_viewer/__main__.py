@@ -763,6 +763,9 @@ def decode_if_json(content):
 
 def build_semantic_grep_markdown_result(root: TreeWrapper, content: str, request: dict[str, Any] | None = None) -> bool:
     """Render the flattened markdown format (``## file:loc`` + fenced code block)."""
+    if not isinstance(content, str):
+        return False
+
     query = _extract_semantic_grep_query(request)
     if query:
         root.add_with_markup(f"🔎 [bold]query:[/] {query}")
@@ -784,18 +787,14 @@ def build_semantic_grep_result(root: TreeWrapper, content: Any, request: dict[st
       - str  => the flattened markdown format (## file:loc + fenced code block)
       - dict with "matches" => the legacy Language Server matches objects format
     """
-    if isinstance(content, str):
-        return build_semantic_grep_markdown_result(root, content, request)
 
-    has_lsp_matches = isinstance(content, dict) \
-        and "matches" in content \
-        and isinstance(content["matches"], list)
+    def _unhandled():
+        rich.print(f"[bold white on red]Unsupported semantic_grep content type, should be str or dict, but was {type(content)}[/]")
+        return False
 
-    if has_lsp_matches:
-        return build_semantic_grep_lsp_matches_result(root, content, request)
-
-    print(f"unsupported semantic_grep content type, should be str or dict, but was {type(content)}")
-    return False
+    return build_semantic_grep_markdown_result(root, content, request) \
+        or build_semantic_grep_lsp_matches_result(root, content, request) \
+        or _unhandled()
 
 
 def _extract_semantic_grep_query(request: dict[str, Any] | None) -> str | None:
@@ -817,6 +816,12 @@ def _extract_semantic_grep_query(request: dict[str, Any] | None) -> str | None:
 
 
 def build_semantic_grep_lsp_matches_result(root: TreeWrapper, content: Any, request: dict[str, Any] | None = None):
+    has_lsp_matches = isinstance(content, dict) \
+        and "matches" in content \
+        and isinstance(content["matches"], list)
+    if not has_lsp_matches:
+        return False
+
     # * use the tool call request (query) to give the results context
     query = _extract_semantic_grep_query(request)
     if query:
