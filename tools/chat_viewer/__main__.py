@@ -496,26 +496,33 @@ def build_user_auto_rag_matches_message(raw_content: str) -> (bool, TreeWrapper 
     root.add_with_markup(
         "[dim]Semantic Grep matches:[/]"
     )
-    has_visible_match = False
+    has_visible_match = add_semantic_grep_markdown_sections(root, raw_content)
 
-    for section in split_h2_markdown_sections(raw_content):
+    if has_visible_match:
+        return True, root
+    return True, None
+
+
+def add_semantic_grep_markdown_sections(root: TreeWrapper, markdown: str) -> bool:
+    """Render Semantic Grep markdown sections into ``root``.
+
+    Each ``## <file>:<start>-<end>`` section becomes a MATCH header plus a
+    syntax-highlighted snippet (language inferred from the file extension).
+    Returns True if at least one section was rendered.
+    """
+    has_visible_match = False
+    for section in split_h2_markdown_sections(markdown):
         lines = section.splitlines()
         if not lines:
             continue
         header = lines[0]
 
-        # just strip leading `## ` and keep the rest, which is the file with its poisition
+        # just strip leading `## ` and keep the rest, which is the file with its position
         #   /foo/bar.json:1-10 or /foo/boo.js:10:4-20:8 (latter includes column offsets too)
         file_location = re.sub(r"^##\s+", "", header)
 
         # TODO extract and add tests, return DTO
         match = re.match(r"^(.+?):(\d+)(:\d+)?-(\d+)(:\d+)?", file_location)
-        # FYI right now just match all the offsets even though I don't need them... it becomes a pattern to extract file path only which give sme the file extension => for fenced code block
-        # start_line_base2 = match.group(2)
-        # start_col_base1 = match.group(3)
-        # end_line_base1 = match.group(4)
-        # end_col_base1 = match.group(5)
-
         if not match:
             continue
 
@@ -524,19 +531,16 @@ def build_user_auto_rag_matches_message(raw_content: str) -> (bool, TreeWrapper 
         if not SHOW_ALL and is_preapproved(str(file_path)):
             continue
 
-        root.add_with_markup(f"🔍 MATCH {file_location}") # don't recreate the format! that's dumb!
+        root.add_with_markup(f"🔍 MATCH {file_location}")  # keep the original format!
 
         ext = os.path.splitext(file_path)[1].lstrip('.').lower()
         # Remaining lines after the header constitute the snippet.
-        snippet = "\n".join(lines[1:]).strip("\n") # TODO why strip \n? leave it in case it matters?
+        snippet = "\n".join(lines[1:]).strip("\n")
         root.add(_syntax(snippet, ext or "text"))
 
         root.blank_line()
         has_visible_match = True
-
-    if has_visible_match:
-        return True, root
-    return True, None
+    return has_visible_match
 
 
 def pprint_no_truncate(what):
@@ -755,13 +759,31 @@ def decode_if_json(content):
     # keep w/e type (dict, list, etc... don't care)
     return content
 
-def build_semantic_grep_tool_result_from_new_markdown_string_format(root: TreeWrapper, content: Any, request: dict[str, Any] | None = None):
-    # TODO w/o tool names (from tool call request)... then we can only reverse engineer the tool type OR handle all of a given content type in one handler...
-    print(content)
+def build_semantic_grep_message_from_new_markdown_format(root: TreeWrapper, content: str, request: dict[str, Any] | None = None) -> bool:
+    """Render the flattened markdown format (``## file:loc`` + fenced code block)."""
+    query = _extract_semantic_grep_query(request)
+    if query:
+        root.add_with_markup(f"🔎 [bold]query:[/] {query}")
+        root.blank_line()
 
-def build_semantic_grep_tool_result_message(root: TreeWrapper, content: Any, request: dict[str, Any] | None = None):
+    if add_semantic_grep_markdown_sections(root, content):
+        return True
+
+    # not the expected H2-section format; fall back to plain markdown rendering
+    root.add(_markdown(content))
+    return True
+
+
+def build_semantic_grep_tool_result_message(root: TreeWrapper, content: Any, request: dict[str, Any] | None = None) -> bool:
+    """Dispatch a semantic_grep result to the builder matching its content format.
+
+    We only reach this for literal ``semantic_grep`` requests, so the format can
+    be inferred from the content type alone:
+      - str  => the flattened markdown format (## file:loc + fenced code block)
+      - dict with "matches" => the legacy Language Server matches objects format
+    """
     if isinstance(content, str):
-        return build_semantic_grep_tool_result_from_new_markdown_string_format(root, content, request)
+        return build_semantic_grep_message_from_new_markdown_format(root, content, request)
 
     has_lsp_matches = isinstance(content, dict) \
         and "matches" in content \
@@ -771,7 +793,7 @@ def build_semantic_grep_tool_result_message(root: TreeWrapper, content: Any, req
         return build_semantic_grep_message_from_lsp_matches_format(root, content, request)
 
     print(f"unsupported semantic_grep content type, should be str or dict, but was {type(content)}")
-    return None
+    return False
 
 
 def _extract_semantic_grep_query(request: dict[str, Any] | None) -> str | None:
@@ -878,6 +900,20 @@ def get_tool_call_name(request: dict[str, Any] | None) -> str | None:
     return function.get("name")
 
 
+def dispatch_tool_result_message(
+    func_name: str | None,
+    root: TreeWrapper,
+    content: Any,
+    request: dict[str, Any] | None,
+) -> bool:
+    """Route a tool result to the builder for the tool that produced it."""
+    if func_name == "semantic_grep":
+        return build_semantic_grep_tool_result_message(root, content, request)
+
+    # default: generic MCP content-block handling
+    return build_mcp_tool_result_message(root, content)
+
+
 def build_tool_result_message(
     msg: Dict[str, Any],
     color: str,
@@ -891,17 +927,17 @@ def build_tool_result_message(
 
     content = decode_if_json(msg.get("content", ""))
 
-    # * resolve the tool call request (function name + arguments) so formatting is
-    #   driven by the request, not reverse-engineered from the result content
+    # * always resolve the tool call request so formatting is driven by the
+    #   request (function.name), never reverse-engineered from the result content
     request = get_tool_call_request(msg, requests_by_id)
+    if request is None:
+        print(
+            f"WARNING: no tool call request found for tool result tool_call_id={msg.get('tool_call_id')!r}",
+            file=sys.stderr,
+        )
     func_name = get_tool_call_name(request)
 
-    if func_name == "semantic_grep":
-        handled = build_semantic_grep_tool_result_message(root, content, request)
-    else:
-        # fall back to content-based detection (covers missing tool_call_id / unknown names)
-        handled = build_semantic_grep_tool_result_message(root, content, request) \
-                 or build_mcp_tool_result_message(root, content)
+    handled = dispatch_tool_result_message(func_name, root, content, request)
     if handled:
         return root
 
