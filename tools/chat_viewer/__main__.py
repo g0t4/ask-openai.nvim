@@ -755,26 +755,50 @@ def decode_if_json(content):
     # keep w/e type (dict, list, etc... don't care)
     return content
 
-def build_semantic_grep_tool_result_from_new_markdown_string_format (root: TreeWrapper, content: Any):
+def build_semantic_grep_tool_result_from_new_markdown_string_format(root: TreeWrapper, content: Any, request: dict[str, Any] | None = None):
     # TODO w/o tool names (from tool call request)... then we can only reverse engineer the tool type OR handle all of a given content type in one handler...
     print(content)
 
-def build_semantic_grep_tool_result_message(root: TreeWrapper, content: Any):
+def build_semantic_grep_tool_result_message(root: TreeWrapper, content: Any, request: dict[str, Any] | None = None):
     if isinstance(content, str):
-        return build_semantic_grep_tool_result_from_new_markdown_string_format(root, content)
+        return build_semantic_grep_tool_result_from_new_markdown_string_format(root, content, request)
 
     has_lsp_matches = isinstance(content, dict) \
         and "matches" in content \
         and isinstance(content["matches"], list)
 
     if has_lsp_matches:
-        return build_semantic_grep_message_from_lsp_matches_format(root, content)
+        return build_semantic_grep_message_from_lsp_matches_format(root, content, request)
 
     print(f"unsupported semantic_grep content type, should be str or dict, but was {type(content)}")
     return None
 
 
-def build_semantic_grep_message_from_lsp_matches_format(root: TreeWrapper, content: Any):
+def _extract_semantic_grep_query(request: dict[str, Any] | None) -> str | None:
+    """Pull the ``query`` argument out of a semantic_grep tool call request."""
+    if not request:
+        return None
+    arguments = (request.get("function") or {}).get("arguments")
+    if not arguments:
+        return None
+    try:
+        parsed = json.loads(arguments) if isinstance(arguments, str) else arguments
+    except Exception:
+        return None
+    if isinstance(parsed, dict):
+        query = parsed.get("query")
+        if isinstance(query, str) and query:
+            return query
+    return None
+
+
+def build_semantic_grep_message_from_lsp_matches_format(root: TreeWrapper, content: Any, request: dict[str, Any] | None = None):
+    # * use the tool call request (query) to give the results context
+    query = _extract_semantic_grep_query(request)
+    if query:
+        root.add_with_markup(f"🔎 [bold]query:[/] {query}")
+        root.blank_line()
+
     matches = content["matches"]
     counter = 1  # show counter for easily tracking where I am at in the list
     for match in matches:
@@ -818,7 +842,47 @@ def build_unrecognized_tool_result_message(root: TreeWrapper, content: Any) -> N
         .add(_pretty_no_truncate(content))
 
 
-def build_tool_result_message(msg: Dict[str, Any], color: str) -> Optional[TreeWrapper]:
+def build_tool_call_requests_by_id(messages: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+    """Map each assistant tool_call id -> its request dict (function name + arguments).
+
+    A tool *result* message only carries ``tool_call_id``; looking up the matching
+    assistant tool call here lets the result renderer make formatting decisions
+    based on the *request* (e.g. dispatch on ``function.name``, show the query).
+    """
+    requests_by_id: dict[str, dict[str, Any]] = {}
+    for msg in messages:
+        if msg.get("role") != "assistant":
+            continue
+        for call in msg.get("tool_calls", []) or []:
+            call_id = call.get("id")
+            if call_id:
+                requests_by_id[call_id] = call
+    return requests_by_id
+
+
+def get_tool_call_request(
+    msg: dict[str, Any],
+    requests_by_id: dict[str, dict[str, Any]],
+) -> dict[str, Any] | None:
+    """Resolve the tool call request that produced ``msg`` via ``tool_call_id``."""
+    call_id = msg.get("tool_call_id")
+    if not call_id:
+        return None
+    return requests_by_id.get(call_id)
+
+
+def get_tool_call_name(request: dict[str, Any] | None) -> str | None:
+    if not request:
+        return None
+    function = request.get("function") or {}
+    return function.get("name")
+
+
+def build_tool_result_message(
+    msg: Dict[str, Any],
+    color: str,
+    requests_by_id: dict[str, dict[str, Any]],
+) -> Optional[TreeWrapper]:
     root = TreeWrapper.hidden_root()
 
     timings = parse_tool_call_timings(msg)
@@ -827,8 +891,17 @@ def build_tool_result_message(msg: Dict[str, Any], color: str) -> Optional[TreeW
 
     content = decode_if_json(msg.get("content", ""))
 
-    handled = build_semantic_grep_tool_result_message(root, content) \
-             or build_mcp_tool_result_message(root, content)
+    # * resolve the tool call request (function name + arguments) so formatting is
+    #   driven by the request, not reverse-engineered from the result content
+    request = get_tool_call_request(msg, requests_by_id)
+    func_name = get_tool_call_name(request)
+
+    if func_name == "semantic_grep":
+        handled = build_semantic_grep_tool_result_message(root, content, request)
+    else:
+        # fall back to content-based detection (covers missing tool_call_id / unknown names)
+        handled = build_semantic_grep_tool_result_message(root, content, request) \
+                 or build_mcp_tool_result_message(root, content)
     if handled:
         return root
 
@@ -1223,7 +1296,7 @@ def print_message_panel(title: str, color: str, content: TreeWrapper, align: str
     _console.print()  # blank line between messages
 
 
-def print_message(msg: dict, idx: int):
+def print_message(msg: dict, idx: int, requests_by_id: dict[str, dict[str, Any]]):
     role = msg.get("role", "").lower()
     display_role = get_display_role(role)
     icon = role_icon(role) # TODO! decide if keep icon or not
@@ -1234,7 +1307,7 @@ def print_message(msg: dict, idx: int):
 
     match role:
         case "tool":
-            root = build_tool_result_message(msg, color)
+            root = build_tool_result_message(msg, color, requests_by_id)
         case "assistant_raw" | "user_raw":
             root = build_raw_completion_message(msg)
         case "assistant":
@@ -1269,8 +1342,11 @@ def render_trace_to_console(console, messages, model_name, timings) -> None:
     else:
         print_model_info(model_name, timings)
 
+    # * precompute the tool_call_id -> request lookup so tool result messages can
+    #   reference their request (function name + arguments) for formatting
+    requests_by_id = build_tool_call_requests_by_id(messages)
     for idx, message in enumerate(messages, start=1):
-        print_message(message, idx)
+        print_message(message, idx, requests_by_id)
 
     # ProgressBar speed summary for assistant responses
     assistant_timings = []
