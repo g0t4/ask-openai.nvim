@@ -22,6 +22,7 @@ from typing import Any, Iterable, Iterator, Dict, Optional
 import hashlib
 import argparse
 import argcomplete
+from copy import deepcopy
 
 from tools.chat_viewer.markdown_utils import split_h2_markdown_sections
 from tools.chat_viewer.markdown_inline import style_markdown_text
@@ -878,7 +879,7 @@ def build_tool_call_requests_by_id(messages: list[dict[str, Any]]) -> dict[str, 
         for call in msg.get("tool_calls", []) or []:
             call_id = call.get("id")
             if call_id:
-                requests_by_id[call_id] = call
+                requests_by_id[call_id] = deepcopy(call)
     return requests_by_id
 
 
