@@ -914,7 +914,7 @@ def dispatch_tool_result_message(
     # TODO as needed, dispatch other tool types based on func_name too!
 
     # default: generic MCP content-block handling
-    return build_mcp_tool_result_message(root, content)
+    return build_mcp_tool_result(root, content)
 
 
 def build_tool_result_message(
@@ -948,7 +948,7 @@ def build_tool_result_message(
     return None  # TODO return here too?
 
 
-def build_mcp_tool_result_message(root: TreeWrapper, content: Any) -> bool:
+def build_mcp_tool_result(root: TreeWrapper, content: Any) -> bool:
     has_mcp_content_list = isinstance(content, dict) \
         and ("content" in content) \
         and isinstance(content["content"], list)
