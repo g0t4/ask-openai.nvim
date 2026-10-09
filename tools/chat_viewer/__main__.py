@@ -1335,6 +1335,7 @@ def print_message_panel(title: str, color: str, content: TreeWrapper, align: str
 
 
 def print_message(msg: dict, idx: int, requests_by_id: dict[str, dict[str, Any]]):
+    msg = deepcopy(msg)
     role = msg.get("role", "").lower()
     display_role = get_display_role(role)
     icon = role_icon(role) # TODO! decide if keep icon or not
