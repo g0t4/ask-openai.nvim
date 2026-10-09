@@ -793,8 +793,8 @@ def build_semantic_grep_result(root: TreeWrapper, content: Any, request: dict[st
         return False
 
     return build_semantic_grep_markdown_result(root, content, request) \
-        or build_semantic_grep_lsp_matches_result(root, content, request) \
         or _unhandled()
+        # or build_semantic_grep_lsp_matches_result(root, content, request) \
 
 
 def _extract_semantic_grep_query(request: dict[str, Any] | None) -> str | None:
