@@ -861,7 +861,8 @@ def _add_apply_patch(arguments: str, tree: TreeWrapper):
     return child.add(str(parsed))
 
 
-SYNTAX_THEME = "ansi_dark"
+# SYNTAX_THEME = "ansi_dark"
+SYNTAX_THEME = "one-dark" # also try: material, github-dark, night-owl
 
 
 def _syntax(source: str, lexer: str) -> Syntax:
