@@ -879,7 +879,7 @@ def build_tool_call_requests_by_id(messages: list[dict[str, Any]]) -> dict[str, 
         for call in msg.get("tool_calls", []) or []:
             call_id = call.get("id")
             if call_id:
-                requests_by_id[call_id] = deepcopy(call)
+                requests_by_id[call_id] = deepcopy(call) # copy so other mods to original don't affect this copy
     return requests_by_id
 
 
