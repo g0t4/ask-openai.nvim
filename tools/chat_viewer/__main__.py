@@ -504,8 +504,13 @@ def build_user_auto_rag_matches_message(raw_content: str) -> (bool, TreeWrapper 
             continue
         header = lines[0]
 
+        # just strip leading `## ` and keep the rest, which is the file with its poisition
+        #   /foo/bar.json:1-10 or /foo/boo.js:10:4-20:8 (latter includes column offsets too)
+        file_location = re.sub(r"^##\s+", "", header)
+
         # TODO extract and add tests, return DTO
-        match = re.match(r"^##\s+(.+?):(\d+)(:\d+)?-(\d+)(:\d+)?", header)
+        match = re.match(r"^(.+?):(\d+)(:\d+)?-(\d+)(:\d+)?", file_location)
+        # FYI right now just match all the offsets even though I don't need them... it becomes a pattern to extract file path only which give sme the file extension => for fenced code block
         # start_line_base2 = match.group(2)
         # start_col_base1 = match.group(3)
         # end_line_base1 = match.group(4)
@@ -519,7 +524,7 @@ def build_user_auto_rag_matches_message(raw_content: str) -> (bool, TreeWrapper 
         if not SHOW_ALL and is_preapproved(str(file_path)):
             continue
 
-        root.add_with_markup(f"🔍 MATCH {match}")
+        root.add_with_markup(f"🔍 MATCH {file_location}") # don't recreate the format! that's dumb!
 
         ext = os.path.splitext(file_path)[1].lstrip('.').lower()
         # Remaining lines after the header constitute the snippet.
