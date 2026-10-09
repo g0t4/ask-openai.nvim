@@ -885,16 +885,16 @@ def _lua(source: str) -> Syntax:
 def _bash(source: str):
     # FYI pygments bash lexer sucks at coloring bash, basically only builtins seem styled... i.e. echo
     # return _syntax(source, "bash")
-    return _bash_via_bat_high_contrast(source, language="bash")
+    return _commandline_via_bat_high_contrast(source, language="bash")
 
 def _diff(source: str) -> Syntax:
     return _syntax(source, "diff")
 
-def _bash_via_bat_high_contrast(
+def _commandline_via_bat_high_contrast(
     content: str,
     language: str | None = None,
     *,
-    theme: str = "GitHub",  # bat theme
+    theme: str = "GitHub",  # use bat
     plain: bool = True,
 ):
     # material overhead like 20ms per call to bat... fine for now as the thread viewer loads super fast for now
@@ -1009,7 +1009,7 @@ def _add_run_in_neovim(arguments: str, tree: TreeWrapper):
 def _add_run_xonsh(arguments: str, tree: TreeWrapper):
     try:
         code, remaining_arguments = parse_run_xonsh_arguments(arguments)
-        tree.add(_bash_via_bat_high_contrast(code, language="xsh"))
+        tree.add(_commandline_via_bat_high_contrast(code, language="xsh"))
         tree.list_key_value_pairs(remaining_arguments)
     except Exception as err:
         tree.add_error("Failed parsing run_xonsh arguments", err, arguments)
