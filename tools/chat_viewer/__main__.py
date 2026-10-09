@@ -18,6 +18,7 @@ from rich.pretty import Pretty, pprint
 from rich.text import Text
 from rich.progress_bar import ProgressBar
 from rich.tree import Tree
+import rich
 from typing import Any, Iterable, Iterator, Dict, Optional
 import hashlib
 import argparse
@@ -933,8 +934,8 @@ def build_tool_result_message(
     #   request (function.name), never reverse-engineered from the result content
     request = get_tool_call_request(msg, requests_by_id)
     if request is None:
-        print(
-            f"WARNING: no tool call request found for tool result tool_call_id={msg.get('tool_call_id')!r}",
+        rich.print(
+            f"[red]WARNING: no tool call request found for tool result tool_call_id={msg.get('tool_call_id')!r}",
             file=sys.stderr,
         )
     func_name = get_tool_call_name(request)
