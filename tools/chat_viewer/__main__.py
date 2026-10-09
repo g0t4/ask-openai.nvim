@@ -909,6 +909,7 @@ def dispatch_tool_result_message(
     """Route a tool result to the builder for the tool that produced it."""
     if func_name == "semantic_grep":
         return build_semantic_grep_tool_result_message(root, content, request)
+    # TODO as needed, dispatch other tool types based on func_name too!
 
     # default: generic MCP content-block handling
     return build_mcp_tool_result_message(root, content)
