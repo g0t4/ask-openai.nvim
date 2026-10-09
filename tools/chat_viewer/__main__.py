@@ -755,14 +755,26 @@ def decode_if_json(content):
     # keep w/e type (dict, list, etc... don't care)
     return content
 
+def build_semantic_grep_tool_result_from_new_markdown_string_format (root: TreeWrapper, content: Any):
+    # TODO w/o tool names (from tool call request)... then we can only reverse engineer the tool type OR handle all of a given content type in one handler...
+    print(content)
 
 def build_semantic_grep_tool_result_message(root: TreeWrapper, content: Any):
-    has_rag_matches = isinstance(content, dict) \
+    if isinstance(content, str):
+        return build_semantic_grep_tool_result_from_new_markdown_string_format(root, content)
+
+    has_lsp_matches = isinstance(content, dict) \
         and "matches" in content \
         and isinstance(content["matches"], list)
-    if not has_rag_matches:
-        return False
 
+    if has_lsp_matches:
+        return build_semantic_grep_message_from_lsp_matches_format(root, content)
+
+    print(f"unsupported semantic_grep content type, should be str or dict, but was {type(content)}")
+    return None
+
+
+def build_semantic_grep_message_from_lsp_matches_format(root: TreeWrapper, content: Any):
     matches = content["matches"]
     counter = 1  # show counter for easily tracking where I am at in the list
     for match in matches:
