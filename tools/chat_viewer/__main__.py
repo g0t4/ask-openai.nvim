@@ -933,13 +933,7 @@ def _bash_via_bat_high_contrast(
 def _json(data: dict) -> Syntax:
     # PRN add _pprint_syntax?
     pretty = json.dumps(data, ensure_ascii=False, indent=2)
-    return Syntax(
-        pretty,
-        "json",
-        theme="ansi_dark",
-        # indent_guides=True,
-        # line_numbers=True,
-    )
+    return _syntax(pretty, "json")
 
 
 def _add_run_command_and_run_process(arguments: str, call_tree: TreeWrapper):
