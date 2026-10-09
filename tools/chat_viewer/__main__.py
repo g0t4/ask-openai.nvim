@@ -761,7 +761,7 @@ def decode_if_json(content):
     # keep w/e type (dict, list, etc... don't care)
     return content
 
-def build_semantic_grep_message_from_new_markdown_format(root: TreeWrapper, content: str, request: dict[str, Any] | None = None) -> bool:
+def build_semantic_grep_markdown_result(root: TreeWrapper, content: str, request: dict[str, Any] | None = None) -> bool:
     """Render the flattened markdown format (``## file:loc`` + fenced code block)."""
     query = _extract_semantic_grep_query(request)
     if query:
@@ -785,14 +785,14 @@ def build_semantic_grep_result(root: TreeWrapper, content: Any, request: dict[st
       - dict with "matches" => the legacy Language Server matches objects format
     """
     if isinstance(content, str):
-        return build_semantic_grep_message_from_new_markdown_format(root, content, request)
+        return build_semantic_grep_markdown_result(root, content, request)
 
     has_lsp_matches = isinstance(content, dict) \
         and "matches" in content \
         and isinstance(content["matches"], list)
 
     if has_lsp_matches:
-        return build_semantic_grep_message_from_lsp_matches_format(root, content, request)
+        return build_semantic_grep_lsp_matches_result(root, content, request)
 
     print(f"unsupported semantic_grep content type, should be str or dict, but was {type(content)}")
     return False
@@ -816,7 +816,7 @@ def _extract_semantic_grep_query(request: dict[str, Any] | None) -> str | None:
     return None
 
 
-def build_semantic_grep_message_from_lsp_matches_format(root: TreeWrapper, content: Any, request: dict[str, Any] | None = None):
+def build_semantic_grep_lsp_matches_result(root: TreeWrapper, content: Any, request: dict[str, Any] | None = None):
     # * use the tool call request (query) to give the results context
     query = _extract_semantic_grep_query(request)
     if query:
