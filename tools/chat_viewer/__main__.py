@@ -776,7 +776,7 @@ def build_semantic_grep_message_from_new_markdown_format(root: TreeWrapper, cont
     return True
 
 
-def build_semantic_grep_tool_result_message(root: TreeWrapper, content: Any, request: dict[str, Any] | None = None) -> bool:
+def build_semantic_grep_result(root: TreeWrapper, content: Any, request: dict[str, Any] | None = None) -> bool:
     """Dispatch a semantic_grep result to the builder matching its content format.
 
     We only reach this for literal ``semantic_grep`` requests, so the format can
@@ -910,7 +910,7 @@ def dispatch_tool_result_message(
 ) -> bool:
     """Route a tool result to the builder for the tool that produced it."""
     if func_name == "semantic_grep":
-        return build_semantic_grep_tool_result_message(root, content, request)
+        return build_semantic_grep_result(root, content, request)
     # TODO as needed, dispatch other tool types based on func_name too!
 
     # default: generic MCP content-block handling
