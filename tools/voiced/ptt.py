@@ -27,15 +27,22 @@ except ImportError:  # pragma: no cover - macOS only
 def _event_tap_callback(proxy, event_type, event, refcon):
     """Quartz CGEventTap callback; ``refcon`` is the owning PushToTalk."""
     ptt = refcon
-    if event_type in (Quartz.kCGEventKeyDown, Quartz.kCGEventKeyUp):
-        keycode = Quartz.CGEventGetIntegerValueField(
-            event, Quartz.kCGKeyboardEventKeycode
-        )
-        if keycode == FN_KEYCODE:
-            if event_type == Quartz.kCGEventKeyDown:
-                ptt.press()
-            else:
-                ptt.release()
+    # The fn key does not produce ordinary keyDown/keyUp events; it fires a
+    # flagsChanged event whose SecondaryFn flag reflects press/release.
+    if event_type != Quartz.kCGEventFlagsChanged:
+        return event
+
+    keycode = Quartz.CGEventGetIntegerValueField(
+        event, Quartz.kCGKeyboardEventKeycode
+    )
+    if keycode != FN_KEYCODE:
+        return event
+
+    flags = Quartz.CGEventGetFlags(event)
+    if flags & Quartz.kCGEventFlagMaskSecondaryFn:
+        ptt.press()
+    else:
+        ptt.release()
     return event
 
 
@@ -89,8 +96,7 @@ class PushToTalk:
             Quartz.kCGSessionEventTap,
             Quartz.kCGHeadInsertEventTap,
             Quartz.kCGEventTapOptionDefault,
-            Quartz.CGEventMaskBit(Quartz.kCGEventKeyDown)
-            | Quartz.CGEventMaskBit(Quartz.kCGEventKeyUp),
+            Quartz.CGEventMaskBit(Quartz.kCGEventFlagsChanged),
             _event_tap_callback,
             self,
         )
@@ -110,4 +116,3 @@ class PushToTalk:
         Quartz.CGEventTapEnable(tap, True)
         logger.info("fn key PTT listener active (keycode %d)", FN_KEYCODE)
         Quartz.CFRunLoopRun()
-
