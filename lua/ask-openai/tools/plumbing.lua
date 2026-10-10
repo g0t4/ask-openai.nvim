@@ -112,9 +112,11 @@ function M.flatten_tool_result_to_text(result)
                 if block.type == "text" then
                     text = flatten_text_block(block)
                 elseif block.type == "image" then
-                    text = "[image: " .. tostring(block.mimeType or "?") .. "]"
+                    text = ""
+                    -- text = "[image: " .. tostring(block.mimeType or "?") .. "]"
                 elseif block.type == "audio" then
-                    text = "[audio: " .. tostring(block.mimeType or "?") .. "]"
+                    text = ""
+                    -- text = "[audio: " .. tostring(block.mimeType or "?") .. "]"
                 elseif block.type == "resource" then
                     local uri = block.resource and block.resource.uri or "?"
                     text = "[resource: " .. tostring(uri) .. "]"
@@ -128,7 +130,9 @@ function M.flatten_tool_result_to_text(result)
                 log:error("tool result content has an entry that is not a table/object", block)
                 text = vim.inspect(block)
             end
-            parts[#parts + 1] = text
+            if text ~= "" then
+                parts[#parts + 1] = text
+            end
         end
     else
         vim.notify("oops... unexpected tool result content is missing")
