@@ -153,11 +153,17 @@ function MCPClient:dispatch_message(message)
     if message.method == "notifications/progress" then
         ---@cast message MCP_ProgressNotification
         local progress_token = message.params.progressToken
-        local on_progress = self.progress_callbacks_by_token[progress_token] or function(params)
-            log:info(string.format("MCP %s progress (NO CALLBACK): %s", self.server_log_name, vim.inspect(params)))
+        local callback = self.progress_callbacks_by_token[progress_token]
+
+        if callback then
+            log:info(string.format("MCP %s rx: %s", self.server_log_name, message)) -- FYI message has message.method for type to show to user, don't duplicate that
+            callback(message.params)
+            return
         end
-        on_progress(message.params)
-        return
+
+        local log_message = string.format("MCP %s rx - MISSING CALLBACK: %s", self.server_log_name, message)
+        log:error(log_message)
+        vim.notify(log_message)
     end
 
     -- Background process completion (run_process with notify_on_completion).
@@ -165,12 +171,17 @@ function MCPClient:dispatch_message(message)
     if message.method == "notifications/process_completed" then
         local pid = message.params and message.params.pid
         local callback = M._process_completed_callbacks[pid]
+
         if callback then
             M._process_completed_callbacks[pid] = nil
+            log:info(string.format("MCP %s rx: %s", self.server_log_name, message))
             callback(message.params)
-        else
-            log:info(string.format("MCP %s process_completed (NO callback): %s", self.server_log_name, vim.inspect(message.params)))
+            return
         end
+
+        local log_message = string.format("MCP %s rx - MISSING CALLBACK: %s", self.server_log_name, message)
+        log:error(log_message)
+        vim.notify(log_message)
     end
 end
 
