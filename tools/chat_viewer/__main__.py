@@ -1015,15 +1015,14 @@ def _add_mcp_image_item(root: TreeWrapper, item: dict[str, Any]) -> None:
         return
     url = image_url["url"]
 
-    image_node = root.add(f"[bold magenta]image[/]")
     if not url:
-        image_node.add_with_markup("[red]missing image data[/]")
+        root.add_with_markup("[red]missing image data[/]")
         return
 
     base64 = url.split(",", 1)[1] if "," in url else url
 
     escape_sequence = f"\x1b]1337;File=inline=1:{base64}\x07"
-    image_node.add(RawEscape(escape_sequence))
+    root.add(RawEscape(escape_sequence))
 
 
 def _add_apply_patch(arguments: str, tree: TreeWrapper):
