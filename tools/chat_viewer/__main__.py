@@ -1395,17 +1395,17 @@ def render_trace_to_console(console, messages, model_name, timings) -> None:
 
     # ProgressBar speed summary for assistant responses
     assistant_timings = []
-    for msg in messages:
+    for idx, msg in enumerate(messages, start=1):
         if msg.get('role') == 'assistant' and msg.get('timings'):
             timings = _parse_timings_from_dict(msg.get('timings'))
-            assistant_timings.append((msg, timings))
+            assistant_timings.append((idx, msg, timings))
     if assistant_timings:
         print_section_header('Assistant Generation Speed', 'blue')
-        cache_states = detect_cache_misses([t for _, t in assistant_timings])
-        assistant_out_speeds = [(msg, t.predicted_tokens_per_second) for msg, t in assistant_timings]
-        max_out_speed = max(s for _, s in assistant_out_speeds)
-        assistant_in_speeds = [(msg, t.prompt_tokens_per_second) for msg, t in assistant_timings]
-        max_in_speed = max(s for _, s in assistant_in_speeds)
+        cache_states = detect_cache_misses([t for _, _, t in assistant_timings])
+        assistant_out_speeds = [t.predicted_tokens_per_second for _, _, t in assistant_timings]
+        max_out_speed = max(s for s in assistant_out_speeds)
+        assistant_in_speeds = [t.prompt_tokens_per_second for _, _, t in assistant_timings]
+        max_in_speed = max(s for s in assistant_in_speeds)
         from rich.table import Table
         table = Table(show_header=True, box=None, padding=(0, 1))
         table.add_column(justify='left', header='in speed')
@@ -1413,14 +1413,16 @@ def render_trace_to_console(console, messages, model_name, timings) -> None:
         table.add_column(justify='left')
         table.add_column(justify='right', header="in speed")
         table.add_column(justify='right', header="out speed")
+        table.add_column(justify='right', header="in time")
+        table.add_column(justify='right', header="out time")
         table.add_column(justify='right', header="total tokens")
         table.add_column(justify='right', header="cached")
         table.add_column(justify='left', header="cache miss")
-        has_draft = any(t.draft_tokens for _, t in assistant_timings if t.draft_tokens)
+        has_draft = any(t.draft_tokens for _, _, t in assistant_timings if t.draft_tokens)
         if has_draft:
             table.add_column(justify='right', header='draft accept')
             table.add_column(justify='left', header='draft ratio')
-        for i, ((msg, timings), cache_state) in enumerate(zip(assistant_timings, cache_states), start=1):
+        for (idx, msg, timings), cache_state in zip(assistant_timings, cache_states):
             in_speed = ProgressBar(total=max_in_speed, completed=timings.prompt_tokens_per_second, width=40)
             out_speed = ProgressBar(total=max_out_speed, completed=timings.predicted_tokens_per_second, width=40)
             total_tokens = f"{_humanize_int(timings.cached_tokens + timings.prompt_tokens + timings.predicted_tokens)}"
@@ -1431,9 +1433,11 @@ def render_trace_to_console(console, messages, model_name, timings) -> None:
                 cache_miss = f"[red]MISS {cache_state.formatted_missing_tokens}[/]"
             else:
                 cache_miss = "[green]ok[/]"
-            label = f'[dim]Assistant #{i}[/]'
+            label = f'[dim]msg #{idx}[/]'
             in_label = f'{timings.prompt_tokens_per_second:.1f} tok/s'
             out_label = f'{timings.predicted_tokens_per_second:.1f} tok/s'
+            in_time = f'{_humanize_float(timings.prompt_ms, 0)}ms'
+            out_time = f'{_humanize_float(timings.predicted_ms, 0)}ms'
             if has_draft:
                 draft_accept = timings.formatted_acceptance_rate or ''
                 if timings.draft_tokens:
@@ -1441,9 +1445,9 @@ def render_trace_to_console(console, messages, model_name, timings) -> None:
                     ratio = f"{accepted} / {timings.draft_tokens}"
                 else:
                     ratio = ''
-                table.add_row(in_speed, out_speed, label, in_label, out_label, total_tokens, cached_tokens, cache_miss, draft_accept, ratio)
+                table.add_row(in_speed, out_speed, label, in_label, out_label, in_time, out_time, total_tokens, cached_tokens, cache_miss, draft_accept, ratio)
             else:
-                table.add_row(in_speed, out_speed, label, in_label, out_label, total_tokens, cached_tokens, cache_miss)
+                table.add_row(in_speed, out_speed, label, in_label, out_label, in_time, out_time, total_tokens, cached_tokens, cache_miss)
         _console.print(table)
         _console.print()
     # show summaries at end since command line the last part shows first (unlike web viewer where summary is best at top)
