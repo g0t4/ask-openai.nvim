@@ -12,6 +12,7 @@ dependencies = [
     "httpx>=0.28.1",
     "humanize>=4.15.0",
     "ipykernel>=6.29.5",
+    "langchain-llama-server",
     "matplotlib>=3.10.3",
     "mcp>=1.28.0",
     "msgpack>=1.1.1",
@@ -42,6 +43,9 @@ dependencies = [
     "whoosh>=2.7.4",
     "yapf>=0.43.0",
 ]
+
+[tool.uv.sources]
+langchain-llama-server = { path = "../langchain-llama-server" }
 
 # [tool.pyright]
 # reportUnusedVariable = false
