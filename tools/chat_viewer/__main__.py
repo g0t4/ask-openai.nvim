@@ -44,7 +44,10 @@ from tools.chat_viewer.theme import (
 )
 
 # Enable recording so that ``save_html`` can export the rendered output.
-_console = Console(color_system="truecolor")
+# ``force_terminal=True`` keeps rich from dropping control segments (the iTerm2
+# inline-image escape) when the console's file is not a real TTY; otherwise
+# ``Console._render_buffer`` strips ``control=True`` segments entirely.
+_console = Console(color_system="truecolor", force_terminal=True)
 
 # Chat-style panel boxes: only a top border plus the border on the aligned edge,
 # so messages read as open speech bubbles flowing toward the aligned side.
@@ -988,6 +991,14 @@ def _image_temp_dir() -> Path:
 
 
 class RawEscape:
+    """Render a raw terminal escape sequence (e.g. an iTerm2 inline image).
+
+    Yields a ``control`` segment so rich never line-wraps/crops it (control
+    segments have ``cell_length == 0``). Combined with the console's
+    ``force_terminal=True`` this survives ``Console._render_buffer``'s
+    control-segment filtering even when the file is not a real TTY.
+    """
+
     def __init__(self, value: str):
         self.value = value
 
@@ -1016,36 +1027,7 @@ def _add_mcp_image_item(root: TreeWrapper, item: dict[str, Any]) -> None:
     base64 = url.split(",", 1)[1] if "," in url else url
 
     escape_sequence = f"\x1b]1337;File=inline=1:{base64}\x07"
-
-    # TODO FIX WHY former works but latter does not???
-    print(escape_sequence) # works
-    # image_node.add(RawEscape(escape_sequence)) # does not work, yet the same code in xonsh works so FUCK ME ask deep seek to look into it
-    #
-    # FYI I tried to strip down what I am doing with Tree/TreeWrapper/rich's _console/ etc and nothing helped... I can print it to command line in tree using the following just fine in xonsh so it is possible:
-    #
-    # url = $(cat 1791632704-trace.json    | jq '.request_body.messages[6].content[1].image_url.url' --raw-output)
-    # base64 = re.sub('^[^,]*,','',url)
-    # escape_sequence = f"\x1b]1337;File=inline=1:{base64}\x07"
-    #
-    #
-    # from rich.segment import Segment
-    # from rich.tree import Tree
-    #
-    # tree = Tree("Root")
-    #
-    # class RawEscape:
-    #     def __init__(self, value: str):
-    #         self.value = value
-    #
-    #     def __rich_console__(self, console, options):
-    #         yield Segment(self.value, control=True)
-    # tree2 = Tree("2")
-    # tree2.add(RawEscape(escape_sequence))
-    # tree.add(tree2)
-    # import rich
-    # from rich.console import Console
-    # _console = Console()
-    # _console.print(tree)
+    image_node.add(RawEscape(escape_sequence))
 
 
 def _add_apply_patch(arguments: str, tree: TreeWrapper):
