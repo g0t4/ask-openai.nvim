@@ -4,6 +4,7 @@ local models = require("ask-openai.config.models")
 local log = require("devtools.logs.logger").universal()
 local completion_logger = require("ask-openai.logs.completion_logger")
 local tool_router = require("ask-openai.tools.router")
+local mcp = require("ask-openai.tools.mcp")
 local curl = require("ask-openai.backends.curl")
 local AgentWindow = require("ask-openai.agents.viewer.window")
 local UserInputWindow = require("ask-openai.agents.viewer.user_input_window")
@@ -796,6 +797,68 @@ function AgentsFrontend.on_curl_exited_successfully()
     end)
 end
 
+--- Extract the PID from a run_process result (content is a list of {name,type,text}).
+---@param result any
+---@return integer|nil
+local function extract_pid_from_result(result)
+    if not (type(result) == "table" and type(result.content) == "table") then
+        return nil
+    end
+    for _, block in ipairs(result.content) do
+        if block and block.name == "PID" and block.type == "text" then
+            local pid = tonumber(block.text)
+            if pid and pid > 0 then
+                return pid
+            end
+        end
+    end
+    return nil
+end
+
+--- Decode OpenAI tool call arguments (JSON string or table).
+---@param arguments any
+---@return table|nil
+local function decode_tool_args(arguments)
+    if type(arguments) == "string" then
+        local ok, decoded = pcall(vim.json.decode, arguments)
+        if ok and type(decoded) == "table" then
+            return decoded
+        end
+    elseif type(arguments) == "table" then
+        return arguments
+    end
+    return nil
+end
+
+--- Inject a background-process completion notice into the current trace and
+--- resume the agent so it can call process_status for the output/exit code.
+---@param pid integer
+---@param tool_call_id string
+---@param trace AgentTrace
+function AgentsFrontend.inject_background_process_completion(pid, tool_call_id, trace)
+    -- Only act if this is still the active trace and the agent is idle.
+    if AgentsFrontend.trace ~= trace then
+        log:warn("background process " .. pid .. " completed but trace changed; ignoring")
+        return
+    end
+    if not AgentsFrontend.chat_window then
+        log:warn("background process " .. pid .. " completed but chat window is closed; ignoring")
+        return
+    end
+    if AgentsFrontend.chat_window and AgentsFrontend.chat_window._agent_is_running then
+        log:warn("background process " .. pid .. " completed while agent is running; skipping resume")
+        return
+    end
+
+    local done_message = TxChatMessage:tool_completion(
+        tool_call_id,
+        "Background process (pid " .. pid .. ") has completed. Call process_status with pid "
+            .. pid .. " to retrieve its STDOUT/STDERR and exit code."
+    )
+    trace:add_message(done_message)
+    AgentsFrontend.then_get_assistant_response(trace)
+end
+
 ---@param trace AgentTrace
 function AgentsFrontend.run_tools_and_send_results_back_to_the_model(trace)
     local request = trace.last_request
@@ -821,6 +884,22 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(trace)
                 tool_call.call_output.start_time_ms = tool_call.start_time_ms
                 tool_call.call_output.duration_ms = tool_call_duration_ms
                 log:trace("tool_call_output", vim.inspect(tool_call_output))
+
+                -- * If this tool started a background process with notify_on_completion,
+                --   register a handler so we can tell the agent when it finishes
+                --   (instead of the agent polling/sleeping).
+                local tool_name = tool_call["function"] and tool_call["function"].name
+                if tool_name == "run_process" then
+                    local pid = extract_pid_from_result(tool_call.call_output.result)
+                    local tool_args = decode_tool_args(tool_call["function"].arguments)
+                    if pid and tool_args and tool_args.background and tool_args.notify_on_completion then
+                        mcp.register_process_completed(pid, function()
+                            vim.schedule(function()
+                                AgentsFrontend.inject_background_process_completion(pid, tool_call.id, trace)
+                            end)
+                        end)
+                    end
+                end
 
                 -- * triggers UI updates to show tool results
                 update_ui_chat_viewer(trace)

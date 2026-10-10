@@ -157,6 +157,20 @@ function MCPClient:dispatch_message(message)
             log:info(string.format("MCP %s progress (NO CALLBACK): %s", self.server_log_name, vim.inspect(params)))
         end
         on_progress(message.params)
+        return
+    end
+
+    -- Background process completion (run_process with notify_on_completion).
+    -- Carries the PID; the frontend registers a callback to tell the agent.
+    if message.method == "notifications/process_completed" then
+        local pid = message.params and message.params.pid
+        local callback = M._process_completed_callbacks[pid]
+        if callback then
+            M._process_completed_callbacks[pid] = nil
+            callback(message.params)
+        else
+            log:info(string.format("MCP %s process_completed (NO callback): %s", self.server_log_name, vim.inspect(message.params)))
+        end
     end
 end
 
@@ -555,6 +569,25 @@ end
 
 ---@type table<string, MCP_Tool>
 M.tools_available = {}
+
+--- Map of background process PID -> completion callback (pid => fun(params)).
+--- Registered when a background run_process result is received, so the frontend
+--- can tell the agent when the process finishes.
+---@type table<integer, fun(params: table)>
+M._process_completed_callbacks = {}
+
+--- Register a callback to fire when a background process (by PID) completes.
+---@param pid integer
+---@param callback fun(params: table)
+function M.register_process_completed(pid, callback)
+    M._process_completed_callbacks[pid] = callback
+end
+
+--- Remove a registered completion callback for a PID.
+---@param pid integer
+function M.unregister_process_completed(pid)
+    M._process_completed_callbacks[pid] = nil
+end
 
 ---@type boolean
 M.ready = false

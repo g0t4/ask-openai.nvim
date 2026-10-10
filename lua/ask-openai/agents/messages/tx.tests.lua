@@ -1,0 +1,12 @@
+require("ask-openai.helpers.test_setup").modify_package_path()
+local assert = require("luassert")
+local TxChatMessage = require("ask-openai.agents.messages.tx")
+
+describe("TxChatMessage:tool_completion", function()
+    it("builds a tool-role message with the given tool_call_id", function()
+        local msg = TxChatMessage:tool_completion("call_123", "Background process (pid 42) has completed.")
+        assert.are.same("tool", msg.role)
+        assert.are.same("call_123", msg.tool_call_id)
+        assert.are.same("Background process (pid 42) has completed.", msg.content)
+    end)
+end)
