@@ -41,6 +41,20 @@ function TxChatMessage:tool_result(tool_call)
     -- * Unwrap the MCP result into plain text so the model sees raw output
     --   instead of a JSON string wrapping JSON-escaped text (JSON-in-JSON).
     local content = plumbing.flatten_tool_result_to_text(tool_call.call_output.result)
+
+    -- If the MCP result carried image(s), forward them to a vision-capable
+    -- model as image_url content blocks. Tool messages accept a content array
+    -- (verified against llama-server), so the image stays attached to its
+    -- tool result instead of being collapsed to a "[image: image/png]" string.
+    local image_urls = plumbing.extract_image_data_urls(tool_call.call_output.result)
+    if #image_urls > 0 then
+        local content_blocks = { { type = "text", text = content } }
+        for _, url in ipairs(image_urls) do
+            content_blocks[#content_blocks + 1] = { type = "image_url", image_url = { url = url } }
+        end
+        content = content_blocks
+    end
+
     self = TxChatMessage:new(TX_MESSAGE_ROLES.TOOL, content) --[[@as OpenAIChatCompletion_ToolResult_TxChatMessage]]
 
     self.tool_call_id = tool_call.id

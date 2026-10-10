@@ -142,4 +142,26 @@ function M.flatten_tool_result_to_text(result)
     return flat
 end
 
+---@param result MCP_CallToolResult
+---@return string[] -- data URLs for every image content block in the result
+function M.extract_image_data_urls(result)
+    local urls = {}
+    if type(result) ~= "table" then
+        return urls
+    end
+
+    local content = result.content
+    if type(content) ~= "table" then
+        return urls
+    end
+
+    for _, block in ipairs(content) do
+        if type(block) == "table" and block.type == "image" and block.data then
+            local mime = block.mimeType or "image/png"
+            urls[#urls + 1] = "data:" .. mime .. ";base64," .. block.data
+        end
+    end
+    return urls
+end
+
 return M
