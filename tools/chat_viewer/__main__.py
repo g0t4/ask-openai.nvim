@@ -874,8 +874,13 @@ def build_semantic_grep_lsp_matches_result(root: TreeWrapper, content: Any, requ
 
 def build_unrecognized_tool_result_message(root: TreeWrapper, content: Any) -> None:
     # FYI this is just a warning to consider adding handlers for it
-    root.add("[yellow bold]⚠️ UNRECOGNIZED RESULT TYPE:[/]") \
-        .add(_pretty_no_truncate(content))
+    node = root.add("[yellow bold]⚠️ UNRECOGNIZED RESULT TYPE:[/]")
+    if isinstance(content, str):
+        # Render the raw string verbatim (real newlines preserved) instead of a
+        # Pretty repr that shows literal ``\n`` escapes.
+        node.add_no_markup(content)
+    else:
+        node.add(_pretty_no_truncate(content))
 
 
 def build_tool_call_requests_by_id(messages: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
@@ -957,7 +962,7 @@ def build_tool_result_message(
         return root
 
     build_unrecognized_tool_result_message(root, content)
-    return None  # TODO return here too?
+    return root
 
 
 def build_mcp_tool_result(root: TreeWrapper, content: Any) -> bool:

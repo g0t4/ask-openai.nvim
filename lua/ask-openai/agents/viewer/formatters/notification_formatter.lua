@@ -74,16 +74,13 @@ end
 
 --- Format execute tool notification.
 --- Uses the `command` field to show the actual command.
+--- The command is shown as-is; wrapping the whole command in quotes would be
+--- misleading (a command is many words, not a single shell argument).
 ---
 ---@param args table: Tool arguments.
 ---@return string: Formatted command string.
 local function format_execute(args)
-    local command = args.command or ""
-    -- If command has spaces, wrap in quotes for clarity
-    if command:match("%s") then
-        command = '"' .. command:gsub('"', '\\"') .. '"'
-    end
-    return command
+    return args.command or ""
 end
 
 --- Format search tool notification.
@@ -151,16 +148,19 @@ function M.format_notification_message(msg)
         return msg
     end
 
+    -- run_process delegates to argv_formatter (it's not a simple single-arg tool,
+    -- so it isn't in tool_formatters; handle it before the formatter lookup bails).
+    if tool_name == "run_process" then
+        -- Pass the extracted args string (JSON), not the full "Running tool:" line;
+        -- argv_formatter.format_progress_message expects a bare JSON args string.
+        return argv_formatter.format_progress_message(args_str)
+    end
+
     -- Dispatch to tool-specific formatter
     local formatter_fn = tool_formatters[tool_name]
     if not formatter_fn then
         -- Unknown tool - return original message
         return msg
-    end
-
-    -- Special case: run_process delegates to argv_formatter
-    if tool_name == "run_process" then
-        return argv_formatter.format_progress_message(msg)
     end
 
     -- Parse args and format
