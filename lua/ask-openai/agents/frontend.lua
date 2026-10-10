@@ -830,6 +830,20 @@ local function decode_tool_args(arguments)
     return nil
 end
 
+--- Display a background-process completion notice as a styled "tool" section in
+--- the chat window. Appended before the agent resumes so it sits below the new
+--- turn start and is not wiped by the next viewer redraw.
+---@param pid integer
+local function display_background_completion_in_chat(pid)
+    local lines = LinesBuilder:new()
+    lines:create_marks_namespace()
+    lines:append_styled_lines({ "tool" }, HLGroups.TOOL_PROGRESS)
+    lines:append_text("Background process (pid " .. pid .. ") completed")
+    lines:append_text("Call process_status with pid " .. pid .. " to retrieve its STDOUT/STDERR and exit code.")
+    lines:append_blank_line()
+    AgentsFrontend.chat_window:append_styled_lines(lines)
+end
+
 --- Inject a background-process completion notice into the current trace and
 --- resume the agent so it can call process_status for the output/exit code.
 ---@param pid integer
@@ -849,6 +863,8 @@ function AgentsFrontend.inject_background_process_completion(pid, tool_call_id, 
         log:warn("background process " .. pid .. " completed while agent is running; skipping resume")
         return
     end
+
+    display_background_completion_in_chat(pid)
 
     local done_message = TxChatMessage:tool_completion(
         tool_call_id,
