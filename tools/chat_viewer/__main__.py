@@ -969,10 +969,13 @@ def build_mcp_tool_result(root: TreeWrapper, content: Any) -> bool:
         item_type = yank(item, "type")
         name = yank(item, "name")
         padding = None
-        if name:
-            root.add(f"[white]{name}:[/]")
+
         if item_type == "image_url":
             _add_mcp_image_item(root, item)
+            return True
+
+        if name:
+            root.add(f"[white]{name}:[/]")
         elif item_type == "text":
             item_text = yank(item, "text")
             item_text = insert_newlines(item_text)
