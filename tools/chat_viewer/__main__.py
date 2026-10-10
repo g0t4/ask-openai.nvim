@@ -983,13 +983,6 @@ def build_mcp_tool_result(root: TreeWrapper, content: Any) -> bool:
     return True
 
 
-def _image_temp_dir() -> Path:
-    """Stable temp dir for saving tool-result images."""
-    directory = Path(tempfile.gettempdir()) / "ask-openai-chat-images"
-    directory.mkdir(parents=True, exist_ok=True)
-    return directory
-
-
 class RawEscape:
     """Render a raw terminal escape sequence (e.g. an iTerm2 inline image).
 
