@@ -18,6 +18,7 @@ function M.setup(user_options)
     require("ask-openai.agents.frontend").setup()
     require("ask-openai.tools.mcp").setup()
     require("ask-openai.rag").setup()
+    require("ask-openai.voiced").setup()
 end
 
 return M
