@@ -4,6 +4,9 @@ import os
 import sys
 import subprocess
 import re
+import base64
+import tempfile
+import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from rich.console import Console, Group
@@ -18,6 +21,7 @@ from rich.pretty import Pretty, pprint
 from rich.text import Text
 from rich.progress_bar import ProgressBar
 from rich.tree import Tree
+from rich.segment import Segment
 import rich
 from typing import Any, Iterable, Iterator, Dict, Optional
 import hashlib
@@ -954,20 +958,19 @@ def build_tool_result_message(
 
 
 def build_mcp_tool_result(root: TreeWrapper, content: Any) -> bool:
-    has_mcp_content_list = isinstance(content, dict) \
-        and ("content" in content) \
-        and isinstance(content["content"], list)
+    has_mcp_content_list = isinstance(content, list)
     if not has_mcp_content_list:
         return False
 
-    content_list = content["content"]
-    for item in content_list:
+    for item in content:
         item_type = yank(item, "type")
         name = yank(item, "name")
         padding = None
         if name:
             root.add(f"[white]{name}:[/]")
-        if item_type == "text":
+        if item_type == "image_url":
+            _add_mcp_image_item(root, item)
+        elif item_type == "text":
             item_text = yank(item, "text")
             item_text = insert_newlines(item_text)
             # recognizing markup on tool output is a disaster! that output is never intended for rich printing!
@@ -975,6 +978,74 @@ def build_mcp_tool_result(root: TreeWrapper, content: Any) -> bool:
             root.add_no_markup(item_text)
 
     return True
+
+
+def _image_temp_dir() -> Path:
+    """Stable temp dir for saving tool-result images."""
+    directory = Path(tempfile.gettempdir()) / "ask-openai-chat-images"
+    directory.mkdir(parents=True, exist_ok=True)
+    return directory
+
+
+class RawEscape:
+    def __init__(self, value: str):
+        self.value = value
+
+    def __rich_console__(self, console, options):
+        yield Segment(self.value, control=True)
+
+
+def _add_mcp_image_item(root: TreeWrapper, item: dict[str, Any]) -> None:
+    """Render an MCP ``image`` content item inside a tool result.
+
+    The base64 image is decoded and saved to a temp file so it can be opened
+    outside the terminal, and (when running under iTerm.app) it is also
+    embedded inline via the iTerm2 image protocol.
+    """
+    image_url = yank(item, "image_url")
+    if image_url is None:
+        rich.print("image_url is missing")
+        return
+    url = image_url["url"]
+
+    image_node = root.add(f"[bold magenta]image[/]")
+    if not url:
+        image_node.add_with_markup("[red]missing image data[/]")
+        return
+
+    base64 = url.split(",", 1)[1] if "," in url else url
+
+    escape_sequence = f"\x1b]1337;File=inline=1:{base64}\x07"
+
+    # TODO FIX WHY former works but latter does not???
+    print(escape_sequence) # works
+    # image_node.add(RawEscape(escape_sequence)) # does not work, yet the same code in xonsh works so FUCK ME ask deep seek to look into it
+    #
+    # FYI I tried to strip down what I am doing with Tree/TreeWrapper/rich's _console/ etc and nothing helped... I can print it to command line in tree using the following just fine in xonsh so it is possible:
+    #
+    # url = $(cat 1791632704-trace.json    | jq '.request_body.messages[6].content[1].image_url.url' --raw-output)
+    # base64 = re.sub('^[^,]*,','',url)
+    # escape_sequence = f"\x1b]1337;File=inline=1:{base64}\x07"
+    #
+    #
+    # from rich.segment import Segment
+    # from rich.tree import Tree
+    #
+    # tree = Tree("Root")
+    #
+    # class RawEscape:
+    #     def __init__(self, value: str):
+    #         self.value = value
+    #
+    #     def __rich_console__(self, console, options):
+    #         yield Segment(self.value, control=True)
+    # tree2 = Tree("2")
+    # tree2.add(RawEscape(escape_sequence))
+    # tree.add(tree2)
+    # import rich
+    # from rich.console import Console
+    # _console = Console()
+    # _console.print(tree)
 
 
 def _add_apply_patch(arguments: str, tree: TreeWrapper):
