@@ -119,6 +119,11 @@ function M.format(lines, tool_call, message)
         for _, output in ipairs(content) do
             local name = output.name
             local text = tostring(output.text or "")
+            -- * skip binary media types (e.g. images) to avoid dumping base64 payloads
+            if output.type == "image" then
+                lines:append_text("[ image omitted ]")
+                goto continue
+            end
             if not text then
                 -- PRN log and/or skip?
                 if name then
@@ -154,6 +159,7 @@ function M.format(lines, tool_call, message)
                     lines:append_unexpected_text("  UNEXPECTED type: \n" .. vim.inspect(output))
                 end
             end
+            ::continue::
         end
     else
         lines:append_unexpected_text("TODO NON-MCP tool result generic formatting"
