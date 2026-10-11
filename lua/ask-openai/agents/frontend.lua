@@ -333,6 +333,16 @@ function AgentsFrontend.abort_and_close()
     end
 end
 
+--- Close every agent window (chat + user input) with one action.
+function AgentsFrontend.close_agent_windows()
+    if AgentsFrontend.chat_window ~= nil then
+        AgentsFrontend.chat_window:close()
+    end
+    if AgentsFrontend.user_input_window ~= nil then
+        AgentsFrontend.user_input_window:hide()
+    end
+end
+
 function AgentsFrontend.save_current_user_message()
     local start_line_base0 = AgentsFrontend.chat_window.followup_starts_at_line_0indexed or 0
     local user_message = AgentsFrontend.chat_window.buffer:get_lines_from(start_line_base0)
@@ -1235,8 +1245,8 @@ function AgentsFrontend.ensure_user_input_window_is_open(focus)
 
         -- * hide the input box
         vim.keymap.set({ "i", "n" }, "<C-c>", function()
-            AgentsFrontend.user_input_window:hide()
-        end, { buffer = bufnr, desc = "close the user message input box" })
+            AgentsFrontend.close_agent_windows()
+        end, { buffer = bufnr, desc = "close all agent windows" })
     end
 
     AgentsFrontend.user_input_window:open()

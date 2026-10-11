@@ -18,6 +18,7 @@ local SPINNER_FRAMES = { '⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧',
 ---@field _base_title string
 ---@field _agent_is_running boolean
 ---@field _token_badge? TokenBadge
+---@field _last_token_count? integer
 local AgentWindow = {}
 local class_mt = { __index = FloatWindow } -- inherit FloatWindow behavior too
 setmetatable(AgentWindow, class_mt)
@@ -104,7 +105,11 @@ function AgentWindow:set_token_count(total_tokens)
     if not self.win_id or not vim.api.nvim_win_is_valid(self.win_id) then
         return
     end
-    if not self._token_badge then
+    self._last_token_count = total_tokens
+    if not self._token_badge or self._token_badge.anchor_win_id ~= self.win_id then
+        if self._token_badge then
+            self._token_badge:hide()
+        end
         self._token_badge = TokenBadge:new(self.win_id)
     end
     self._token_badge:show_token_count(total_tokens)
@@ -223,9 +228,11 @@ function AgentWindow:close()
     -- stop the spinner animation before closing
     self:stop_spinner()
     self:hide_token_badge()
-    -- TODO still issues around closing window and re-open it... not showing the title + spinner until I close and reopen again
-    --   IOTW open window by running sleep 30s prompt... then F8 close.... esc ... <leader>ao ... (no spinner in title, no title actually)... then F8 close again ... <leader>ao .. this time title shows?!?!
-    vim.api.nvim_win_close(0, true)
+    -- close OUR window specifically (not `0`, which is whatever has focus, e.g. the input box)
+    if self.win_id and vim.api.nvim_win_is_valid(self.win_id) then
+        vim.api.nvim_win_close(self.win_id, true)
+        self.win_id = nil
+    end
 end
 
 function AgentWindow:open()
@@ -236,6 +243,10 @@ function AgentWindow:open()
         self.buffer.win_id = self.win_id
     end
     self:ensure_spinner_running() -- it will stop itself
+    -- * restore the token badge if we have a count from a prior session
+    if self._last_token_count then
+        self:set_token_count(self._last_token_count)
+    end
     return self
 end
 
