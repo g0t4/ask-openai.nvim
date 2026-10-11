@@ -25,6 +25,10 @@ vim.api.nvim_set_hl(0, HLGroups.CHAT_REASONING, { fg = "#808080", italic = true 
 HLGroups.USER_INPUT = "AskUserInput"
 vim.api.nvim_set_hl(0, HLGroups.USER_INPUT, { bg = "#2C3E50", fg = "#E6E6E6" })
 
+-- * Token badge (top-right overlay on the agent chat window)
+HLGroups.TOKEN_BADGE = "AskTokenBadge"
+vim.api.nvim_set_hl(0, HLGroups.TOKEN_BADGE, { fg = "#8A8A8A", bg = "NONE" })
+
 -- TODO rewrite with nvim_set_hl
 vim.api.nvim_command("highlight default " .. HLGroups.EXPLAIN_ERROR .. " guibg=#ff7777 guifg=#000000 ctermbg=red ctermfg=black")
 

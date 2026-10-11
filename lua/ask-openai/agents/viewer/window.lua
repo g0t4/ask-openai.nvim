@@ -2,6 +2,7 @@ local LinesBuilder = require("ask-openai.agents.viewer.lines_builder")
 local BufferController = require("ask-openai.agents.viewer.buffers")
 local HLGroups = require("ask-openai.hlgroups")
 local FloatWindow = require("ask-openai.helpers.float_window")
+local TokenBadge = require("ask-openai.agents.viewer.token_badge")
 local layout = require("ask-openai.agents.viewer.layout")
 
 --- Unicode spinner frames for smooth animation.
@@ -16,6 +17,7 @@ local SPINNER_FRAMES = { '⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧',
 ---@field _spinner_idx number
 ---@field _base_title string
 ---@field _agent_is_running boolean
+---@field _token_badge? TokenBadge
 local AgentWindow = {}
 local class_mt = { __index = FloatWindow } -- inherit FloatWindow behavior too
 setmetatable(AgentWindow, class_mt)
@@ -92,6 +94,27 @@ end
 function AgentWindow:update_model_name(model_name)
     self._model_name = model_name
     self:rebuild_title()
+end
+
+--- Display the live token count as a badge pinned to the top-right corner of the
+--- chat window. The badge follows the viewport (not a buffer line), so it stays
+--- visible regardless of scrolling.
+---@param total_tokens integer
+function AgentWindow:set_token_count(total_tokens)
+    if not self.win_id or not vim.api.nvim_win_is_valid(self.win_id) then
+        return
+    end
+    if not self._token_badge then
+        self._token_badge = TokenBadge:new(self.win_id)
+    end
+    self._token_badge:show_token_count(total_tokens)
+end
+
+--- Hide the token badge (e.g. on window close).
+function AgentWindow:hide_token_badge()
+    if self._token_badge then
+        self._token_badge:hide()
+    end
 end
 
 function AgentWindow:rebuild_title()
@@ -199,6 +222,7 @@ end
 function AgentWindow:close()
     -- stop the spinner animation before closing
     self:stop_spinner()
+    self:hide_token_badge()
     -- TODO still issues around closing window and re-open it... not showing the title + spinner until I close and reopen again
     --   IOTW open window by running sleep 30s prompt... then F8 close.... esc ... <leader>ao ... (no spinner in title, no title actually)... then F8 close again ... <leader>ao .. this time title shows?!?!
     vim.api.nvim_win_close(0, true)

@@ -547,20 +547,6 @@ local function update_ui_chat_viewer(trace)
         end
     end
 
-    local function _comma_separate(n)
-        local s = tostring(n)
-        local result = ""
-        local count = 0
-        for i = #s, 1, -1 do
-            count = count + 1
-            result = s:sub(i, i) .. result
-            if count % 3 == 0 and i > 1 then
-                result = "," .. result
-            end
-        end
-        return result
-    end
-
     vim.schedule(function()
         lines.marks_ns_id = request.marks_ns_id -- ?? generate namespace here in lines builder? lines:gen_mark_ns()? OR do it on first downstream use?
         AgentsFrontend.chat_window.buffer:replace_with_styled_lines_after(AgentsFrontend.this_turn_chat_start_line_base0, lines)
@@ -580,15 +566,11 @@ local function update_ui_chat_viewer(trace)
                 table.insert(footers, last_sse.model)
             end
             if timings then
-                local cache_token_count = timings.cache_n or 0
-                local prompt_token_count = timings.prompt_n or 0
-                local predicted_token_count = timings.predicted_n or 0
-                local total_token_count = cache_token_count + prompt_token_count + predicted_token_count
-                local token_footer = "tokens: " .. _comma_separate(total_token_count)
-                table.insert(footers, token_footer)
+                local total_token_count =
+                    (timings.cache_n or 0) + (timings.prompt_n or 0) + (timings.predicted_n or 0)
+                AgentsFrontend.chat_window:set_token_count(total_token_count)
             end
             local footer = table.concat(footers, " | ")
-            -- PRN? add AgentWindow:set_footer_parts() and have it call rebuild?
             AgentsFrontend.chat_window._footer = footer
             AgentsFrontend.chat_window:rebuild_title()
         end
