@@ -34,7 +34,6 @@ function TokenBadge:new(anchor_win_id)
     self.anchor_win_id = anchor_win_id
     self.win_id = nil
     self.buf = vim.api.nvim_create_buf(false, true)
-    vim.bo[self.buf].modifiable = false
     return self
 end
 
@@ -49,7 +48,9 @@ function TokenBadge:show(text)
     local anchor_width = vim.api.nvim_win_get_width(self.anchor_win_id)
     local col = math.max(0, anchor_width - text_width - 1)
 
+    vim.bo[self.buf].modifiable = true
     vim.api.nvim_buf_set_lines(self.buf, 0, -1, false, { text })
+    vim.bo[self.buf].modifiable = false
 
     local config = {
         relative = "win",
