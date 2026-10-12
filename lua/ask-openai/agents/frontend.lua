@@ -1057,7 +1057,7 @@ function AgentsFrontend.interrupt_agent()
         if #queued_messages > 0 then
             -- TODO add integration test with faked model responses and make sure sending queued messages works here (when we force an interruption an interruption when _the model is not running_)
             AgentsFrontend.redraw_queued_user_messages()
-            AgentsFrontend.submit_follow_up(table.concat(queued_messages, "\n"))
+            AgentsFrontend.submit_follow_up(build_queued_message(queued_messages))
         end
         return
     end
