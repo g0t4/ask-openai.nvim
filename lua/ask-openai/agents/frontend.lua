@@ -623,6 +623,7 @@ local function update_ui_chat_viewer(trace)
 
     vim.schedule(function()
         lines.marks_ns_id = request.marks_ns_id -- ?? generate namespace here in lines builder? lines:gen_mark_ns()? OR do it on first downstream use?
+        -- TODO! deepseek this is yours... how about we setup two virtual buffers within chat_window... and let it handle writing to the physical single window (or it can even use two, it doesn't matter to consumers then!)
         AgentsFrontend.chat_window.buffer:replace_with_styled_lines_after(AgentsFrontend.this_turn_chat_start_line_base0, lines)
 
         -- * re-pin any queued user messages to the bottom (the replace wiped the prior queued section)
