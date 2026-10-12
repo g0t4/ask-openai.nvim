@@ -55,7 +55,7 @@ local cached_files = {}
 --- to deliver one or more queued messages immediately (vs. waiting for completion).
 ---@param queued_messages string[]
 ---@return string
-local function build_interrupt_message(queued_messages)
+local function build_queued_message(queued_messages)
     local parts = {
         "FYI...", -- FYI alone is perfect to convey added context and to continue onward
         -- PRN? if I have agents that stop after my context, then I'll add more here ...
@@ -1101,7 +1101,7 @@ function AgentsFrontend.interrupt_agent()
     end
 
     -- * tell the agent we interrupted its work and pass along the queued message(s)
-    local interruption = TxChatMessage:user(build_interrupt_message(queued_messages))
+    local interruption = TxChatMessage:user(build_queued_message(queued_messages))
     trace:add_message(interruption)
 
     -- * render the interruption message, then immediately ask the agent to continue
