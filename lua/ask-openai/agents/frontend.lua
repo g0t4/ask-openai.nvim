@@ -524,6 +524,8 @@ local function update_ui_chat_viewer(trace)
     local request = trace.last_request
 
     local lines = LinesBuilder:new()
+    -- FYI this only updates the current message(s) from assistant completion (not prior completions and not user messages)
+    -- this is written to handle multiple assistant message responses in one completion (even though I've only really used models that return one message at a time)
     for _, rx_message in ipairs(request.accumulated_model_response_messages or {}) do
         -- FYI !! now it is obvious that this is only operating on accumulated message type!
 
