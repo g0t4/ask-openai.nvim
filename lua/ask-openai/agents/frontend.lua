@@ -1155,6 +1155,7 @@ function AgentsFrontend.redraw_queued_user_messages()
 
     -- * drop any previously rendered queued section (a viewer update wiped it, marker is stale)
     if AgentsFrontend.queued_section_start_line_base0 then
+        log:info("redraw_queued_user_messages -> clear queued display")
         local start_line_base0 = AgentsFrontend.queued_section_start_line_base0
         local line_count = vim.api.nvim_buf_line_count(bufnr)
         if start_line_base0 < line_count then
@@ -1167,6 +1168,7 @@ function AgentsFrontend.redraw_queued_user_messages()
         -- we were only clearing previously displayed queued messages (i.e. after send or cancel)
         return
     end
+    log:info("redraw_queued_user_messages -> redo anew user queued messages")
 
     -- * display queued section w/ current queued_messages
     local lines = LinesBuilder:new()
