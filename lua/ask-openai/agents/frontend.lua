@@ -346,7 +346,7 @@ function AgentsFrontend.then_get_assistant_response(trace)
     --   NOTE: don't force focus/reset cursor here -- this runs on every agent resume
     --   (e.g. after each tool call completes) and would yank the user's cursor to
     --   line 1 while they're typing a follow-up. Focus is set on first creation,
-    --   or by submit_from_input_window / the <leader>au keymap.
+    --   or by submit_user_message_from_user_input_window / the <leader>au keymap.
     AgentsFrontend.ensure_user_input_window_is_open()
 
     local next_request = CurlRequestForTrace:new({
@@ -1236,7 +1236,7 @@ function AgentsFrontend.ensure_user_input_window_is_open(focus)
 
         -- * submit on <CR> (insert & normal mode)
         vim.keymap.set({ "i", "n" }, "<CR>", function()
-            AgentsFrontend.submit_from_input_window()
+            AgentsFrontend.submit_user_message_from_user_input_window()
         end, { buffer = bufnr, desc = "submit the queued user message" })
 
         -- * Shift+Enter inserts a blank line (for multi-line messages) without submitting
@@ -1268,7 +1268,7 @@ function AgentsFrontend.ensure_user_input_window_is_open(focus)
 end
 
 --- Read the input box contents, clear it, and submit.
-function AgentsFrontend.submit_from_input_window()
+function AgentsFrontend.submit_user_message_from_user_input_window()
     if not AgentsFrontend.user_input_window then
         return
     end
