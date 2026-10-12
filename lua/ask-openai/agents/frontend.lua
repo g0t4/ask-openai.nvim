@@ -1232,7 +1232,7 @@ function AgentsFrontend.ensure_user_input_window_is_open(focus)
 
         -- * submit on <CR> (insert & normal mode)
         vim.keymap.set({ "i", "n" }, "<CR>", function()
-            AgentsFrontend.submit_user_message_from_user_input_window()
+            AgentsFrontend.user_sends_message_from_user_input_window()
         end, { buffer = bufnr, desc = "submit the queued user message" })
 
         -- * Shift+Enter inserts a blank line (for multi-line messages) without submitting
@@ -1264,7 +1264,7 @@ function AgentsFrontend.ensure_user_input_window_is_open(focus)
 end
 
 --- Read the input box contents, clear it, and submit.
-function AgentsFrontend.submit_user_message_from_user_input_window()
+function AgentsFrontend.user_sends_message_from_user_input_window()
     if not AgentsFrontend.user_input_window then
         return
     end
