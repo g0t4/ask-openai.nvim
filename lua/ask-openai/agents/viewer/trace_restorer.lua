@@ -536,7 +536,7 @@ local function setup_trace_for_followup(tx_messages)
     AgentsFrontend.chat_window:ensure_spinner_running("ready")
 
     -- * Set the follow-up start offset AFTER rendering.
-    --   If left stale/nil (e.g. from a prior session), follow_up_command falls back
+    --   If left stale/nil (e.g. from a prior session), user_sends_message_with_follow_up_command falls back
     --   to `or 0` and re-ingests the ENTIRE restored buffer as the user's next
     --   message, duplicating the whole conversation into one request (context blowup).
     AgentsFrontend.chat_window.followup_starts_at_line_0indexed = AgentsFrontend.chat_window.buffer:get_line_count() - 1

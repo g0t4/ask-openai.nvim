@@ -1281,17 +1281,17 @@ function AgentsFrontend.user_sends_message_from_user_input_window()
     end
 
     if AgentsFrontend.chat_window and AgentsFrontend.chat_window._agent_is_running then
+        -- * queue message if agent is running
         table.insert(AgentsFrontend.queued_user_messages, user_message)
         -- TODO add integration test with faked model responses and make sure queued messages shows right after user submits it
         AgentsFrontend.redraw_queued_user_messages()
         return
     end
 
-    -- if not running then we can submit as a normal user message
     AgentsFrontend.send_follow_up_user_message(user_message)
 end
 
-function AgentsFrontend.follow_up_command()
+function AgentsFrontend.user_sends_message_with_follow_up_command()
     -- take follow up after end of prior response message from assistant
     --  if already a M.trace then add to that with a new message
     --  leave content as is in the buffer, close enough to what it would be if redrawn
@@ -1461,7 +1461,7 @@ function AgentsFrontend.setup()
     vim.keymap.set('n', '<leader>ai', AgentsFrontend.interrupt_agent, { noremap = true, desc = 'interrupt the agent mid-completion and deliver queued messages' })
     vim.keymap.set('n', '<leader>ac', ':<C-u>:AskAgent /tools /norag /coordinator ', { noremap = true })
     vim.keymap.set('n', '<leader>al', AgentsFrontend.clear_chat_command, { noremap = true })
-    vim.keymap.set('n', '<leader>af', AgentsFrontend.follow_up_command, { noremap = true })
+    vim.keymap.set('n', '<leader>af', AgentsFrontend.user_sends_message_with_follow_up_command, { noremap = true })
     vim.keymap.set('n', '<leader>ao', AgentsFrontend.ensure_chat_window_is_open, { noremap = true })
     vim.keymap.set('n', '<leader>au', function() AgentsFrontend.ensure_user_input_window_is_open(true) end, { noremap = true, desc = 'open/focus the user message input box' })
     vim.keymap.set('n', '<leader>as', AgentsFrontend.check_model_command, { noremap = true, desc = 'Check model server /v1/models' })
