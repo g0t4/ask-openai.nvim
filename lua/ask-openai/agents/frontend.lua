@@ -1092,6 +1092,7 @@ function AgentsFrontend.interrupt_agent()
 
     -- * keep the partial agent response (reasoning/content) so the model can continue.
     --   Drop any in-flight tool_calls: they were interrupted and will have no tool result.
+    -- ?? perhaps drop the request as it could easily be malformed?!
     if interrupted_request and interrupted_request.accumulated_model_response_messages then
         for _, rx_message in ipairs(interrupted_request.accumulated_model_response_messages) do
             if rx_message.content and rx_message.content ~= "" then
@@ -1103,6 +1104,7 @@ function AgentsFrontend.interrupt_agent()
     end
 
     -- * tell the agent we interrupted its work and pass along the queued message(s)
+    -- ?? should I add blurb here about why I interrupted it? since this actually killed it mid generation?
     local interruption = TxChatMessage:user(build_queued_message(queued_messages))
     trace:add_message(interruption)
 
