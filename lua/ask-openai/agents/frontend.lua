@@ -1137,7 +1137,7 @@ end
 
 ---@param queued_messages string[]
 ---@return string
-local function build_interruption_message(queued_messages)
+local function build_fyi_message(queued_messages)
     -- don't add any prefix message, worse case if it stops I can instruct to "resume" and that's it!
     -- much better than blathering the same interruption boilerplate every time I send a queued message!
     return table.concat(queued_messages, "\n\n")
@@ -1214,7 +1214,7 @@ function AgentsFrontend.append_queued_user_messages(trace)
     AgentsFrontend.queued_user_messages = {}
     AgentsFrontend.queued_section_start_line_base0 = nil
 
-    local contents = build_interruption_message(queued)
+    local contents = build_fyi_message(queued)
     display_user_message_in_chat(contents)
 
     local message = TxChatMessage:user(contents)
