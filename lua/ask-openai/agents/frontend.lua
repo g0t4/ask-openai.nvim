@@ -1258,32 +1258,40 @@ function AgentsFrontend.ensure_user_input_window_is_open(focus)
     end
 end
 
---- Read the input box contents, clear it, and submit.
-function AgentsFrontend.user_sends_message_from_user_input_window()
-    if not AgentsFrontend.user_input_window then
+local function _get_user_input_window_text()
+    if AgentsFrontend.user_input_window == nil then
+        return ""
+    end
+
+    local bufnr = AgentsFrontend.user_input_window.buffer_number
+    return table.concat(vim.api.nvim_buf_get_lines(bufnr, 0, -1, false), "\n")
+        :gsub("^%s+", ""):gsub("%s+$", "")
+end
+
+local function _clear_user_input_winow()
+    if AgentsFrontend.user_input_window == nil then
         return
     end
-    local bufnr = AgentsFrontend.user_input_window.buffer_number
+    vim.api.nvim_buf_set_lines(AgentsFrontend.user_input_window.buffer_number, 0, -1, false, { "" })
+end
 
-    local user_message = table.concat(vim.api.nvim_buf_get_lines(bufnr, 0, -1, false), "\n")
-        :gsub("^%s+", ""):gsub("%s+$", "")
+function AgentsFrontend.user_sends_message_from_user_input_window()
+    local text = _get_user_input_window_text()
+    _clear_user_input_winow()
 
-    -- * clear the user input window's buffer after reading
-    vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { "" })
-
-    if user_message == "" then
+    if text == "" then
         return
     end
 
     if AgentsFrontend.chat_window and AgentsFrontend.chat_window._agent_is_running then
         -- * queue message if agent is running
-        table.insert(AgentsFrontend.queued_user_messages, user_message)
+        table.insert(AgentsFrontend.queued_user_messages, text)
         -- TODO add integration test with faked model responses and make sure queued messages shows right after user submits it
         AgentsFrontend.redraw_queued_user_messages()
         return
     end
 
-    AgentsFrontend.send_follow_up_user_message(user_message)
+    AgentsFrontend.send_follow_up_user_message(text)
 end
 
 function ask_dump_agent_trace_command()
