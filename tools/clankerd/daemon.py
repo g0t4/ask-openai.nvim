@@ -31,6 +31,7 @@ class ClankerDaemon:
         self._active_agent_task: Optional[asyncio.Task] = None
         self._thread_id = "clankerd"
         self._shutting_down = False
+        self._shutdown_event = asyncio.Event()
 
     async def run(self) -> None:
         """Start the daemon; connect to voiced, serve control socket, block."""
@@ -38,13 +39,17 @@ class ClankerDaemon:
 
         # Install signal handlers for graceful shutdown
         for sig in (signal.SIGINT, signal.SIGTERM):
-            self._loop.add_signal_handler(sig, self._shutdown)
+            self._loop.add_signal_handler(sig, self._request_shutdown)
 
         # Initialize the agent (MCP clients + model)
         try:
-            await self._agent.setup()
+            await asyncio.wait_for(self._agent.setup(), timeout=60)
             await self._set_status("ready")
             logger.info("agent initialized")
+        except asyncio.TimeoutError:
+            self._current_status = "agent_failed: setup timed out (60s)"
+            logger.error("agent setup timed out (60s)")
+            self._trace.event("agent_setup_failed", error="timeout")
         except Exception as error:
             self._current_status = f"agent_failed: {error}"
             logger.exception("agent init failed: %s", error)
@@ -59,7 +64,7 @@ class ClankerDaemon:
         logger.info("clankerd ready; socket=%s", socket_path())
 
         try:
-            await asyncio.Future()  # run forever
+            await self._shutdown_event.wait()
         finally:
             await self._shutdown_async()
 
@@ -151,6 +156,12 @@ class ClankerDaemon:
     async def _run_agent(self, text: str, *, is_final: bool) -> None:
         """Send a transcription to the agent and broadcast the response."""
         try:
+            if self._current_status.startswith("agent_failed"):
+                await self._broadcast({
+                    "type": "error",
+                    "message": "agent is not ready (setup failed)",
+                })
+                return
             response = await self._agent.run(
                 text,
                 is_final=is_final,
@@ -245,7 +256,7 @@ class ClankerDaemon:
             await self._send(writer, {"type": "status", "state": self._current_status})
         elif command_type == "shutdown":
             await self._broadcast({"type": "status", "state": "shutdown"})
-            self._loop.call_soon(self._shutdown)
+            self._request_shutdown()
         else:
             await self._send(
                 writer,
@@ -264,12 +275,12 @@ class ClankerDaemon:
         for writer in list(self._clients):
             await self._send(writer, event)
 
-    def _shutdown(self) -> None:
-        """Signal handler: stop the event loop."""
+    def _request_shutdown(self) -> None:
+        """Signal handler: set the shutdown event."""
         self._shutting_down = True
         logger.info("shutdown signal received")
         if self._loop:
-            self._loop.call_soon_threadsafe(self._loop.stop)
+            self._loop.call_soon_threadsafe(self._shutdown_event.set)
 
     async def _shutdown_async(self) -> None:
         logger.info("shutting down")
