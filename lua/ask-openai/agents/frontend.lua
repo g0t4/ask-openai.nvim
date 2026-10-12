@@ -1303,15 +1303,17 @@ function AgentsFrontend.submit_from_input_window()
 
     AgentsFrontend.submit_user_message(text)
 
-    -- * keep focus in the input window, ready for the next message
-    pcall(function()
-        local win = AgentsFrontend.user_input_window
-        if vim.api.nvim_win_is_valid(win.win_id) then
-            vim.api.nvim_set_current_win(win.win_id)
-            vim.api.nvim_win_set_cursor(win.win_id, { 1, 0 })
-            vim.cmd("startinsert")
-        end
-    end)
+    -- TODO get rid of this if things feel fine w/o it
+    -- -- * keep focus in the input window, ready for the next message
+    -- pcall(function()
+    --     local win = AgentsFrontend.user_input_window
+    --     -- TODO why do we even need this? this implies the submit window is already open?
+    --     if vim.api.nvim_win_is_valid(win.win_id) then
+    --         vim.api.nvim_set_current_win(win.win_id)
+    --         vim.api.nvim_win_set_cursor(win.win_id, { 1, 0 })
+    --         vim.cmd("startinsert")
+    --     end
+    -- end)
 end
 
 function AgentsFrontend.follow_up_command()
