@@ -535,13 +535,10 @@ local function setup_trace_for_followup(tx_messages)
     AgentsFrontend.chat_window:mark_agent_running(true)
     AgentsFrontend.chat_window:ensure_spinner_running("ready")
 
-    -- * Set the follow-up start offset AFTER rendering.
-    --   If left stale/nil (e.g. from a prior session), user_sends_message_with_follow_up_command falls back
-    --   to `or 0` and re-ingests the ENTIRE restored buffer as the user's next
-    --   message, duplicating the whole conversation into one request (context blowup).
-    AgentsFrontend.chat_window.followup_starts_at_line_0indexed = AgentsFrontend.chat_window.buffer:get_line_count() - 1
+    -- PRN on save, have it save the draft user message too!? instead of the save user input message crappy approach currently?
 
     -- Set the offset for where streaming messages will be drawn
+    -- TODO when I hide this behind chat_window, remove setting this here... this should be a chat_window only construct IMO (and it can handle one or more physical windows)
     AgentsFrontend.this_turn_chat_start_line_base0 = AgentsFrontend.chat_window.buffer:get_line_count() - 1
 
     log:info("Trace restored and ready for follow-up with " .. #tx_messages .. " messages")
