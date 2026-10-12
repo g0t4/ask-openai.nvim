@@ -230,9 +230,9 @@ function AgentWindow:close()
     self:hide_token_badge()
     -- close OUR window specifically (not `0`, which is whatever has focus, e.g. the input box)
     if self.win_id and vim.api.nvim_win_is_valid(self.win_id) then
-        vim.api.nvim_win_close(self.win_id, true)
-        self.win_id = nil
+        pcall(vim.api.nvim_win_close, self.win_id, true)
     end
+    self.win_id = nil
 end
 
 function AgentWindow:open()

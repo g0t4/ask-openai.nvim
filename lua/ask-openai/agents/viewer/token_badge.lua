@@ -83,7 +83,7 @@ end
 --- Close the badge window (if open).
 function TokenBadge:hide()
     if self.win_id and vim.api.nvim_win_is_valid(self.win_id) then
-        vim.api.nvim_win_close(self.win_id, false)
+        pcall(vim.api.nvim_win_close, self.win_id, false)
     end
     self.win_id = nil
 end
