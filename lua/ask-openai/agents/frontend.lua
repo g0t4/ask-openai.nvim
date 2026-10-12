@@ -1116,15 +1116,6 @@ function AgentsFrontend.interrupt_agent()
     AgentsFrontend.then_get_assistant_response(trace)
 end
 
---- Add a user message to the current trace and trigger the next agent response.
----@param user_message string
-local function send_trace_follow_up(user_message)
-    local trace = AgentsFrontend.trace
-    local message = TxChatMessage:user(user_message)
-    trace:add_message(message)
-    AgentsFrontend.then_get_assistant_response(trace)
-end
-
 ---@param queued_messages string[]
 ---@return string
 local function build_interruption_message(queued_messages)
@@ -1190,6 +1181,15 @@ function AgentsFrontend.send_follow_up_user_message(user_message)
     -- * display the user message in the chat window, then send it
     display_user_message_in_chat(user_message)
     send_trace_follow_up(user_message)
+end
+
+--- Add a user message to the current trace and trigger the next agent response.
+---@param user_message string
+local function send_trace_follow_up(user_message)
+    local trace = AgentsFrontend.trace
+    local message = TxChatMessage:user(user_message)
+    trace:add_message(message)
+    AgentsFrontend.then_get_assistant_response(trace)
 end
 
 ---@param trace AgentTrace
