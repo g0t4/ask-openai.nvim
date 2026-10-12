@@ -600,9 +600,9 @@ local function update_ui_chat_viewer(trace)
         AgentsFrontend.chat_window.buffer:replace_with_styled_lines_after(AgentsFrontend.this_turn_chat_start_line_base0, lines)
 
         -- * re-pin any queued user messages to the bottom (the replace wiped the prior queued section)
-        -- TODO add integration test with faked model responses and make sure queued messages show after updates from model
-        AgentsFrontend.queued_section_start_line_base0 = nil
+        AgentsFrontend.queued_section_start_line_base0 = nil -- replace above already wiped out previous display
         AgentsFrontend.redraw_queued_user_messages()
+        -- TODO add integration test with faked model responses and make sure queued messages show after updates from model
 
         -- * update window title with model name and token count
         local last_message = request.accumulated_model_response_messages[#request.accumulated_model_response_messages]
