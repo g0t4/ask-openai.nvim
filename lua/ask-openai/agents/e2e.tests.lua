@@ -236,5 +236,12 @@ describe("E2E - AskAgent queued user message in dedicated input window", functio
         -- * After delivery the queue should be drained
         assert.are.same({}, frontend.queued_user_messages,
             "Queued messages should be delivered (drained) after the agent finishes")
+
+        -- * Assert the queued message is still visible as a user message after delivery
+        local final_chat_text = table.concat(vim.api.nvim_buf_get_lines(chat_bufnr, 0, -1, false), "\n")
+        assert.is_true(
+            final_chat_text:find(queued_text, 1, true) ~= nil,
+            "Queued message should remain visible in the chat window after delivery. Buffer:\n" .. final_chat_text
+        )
     end)
 end)
