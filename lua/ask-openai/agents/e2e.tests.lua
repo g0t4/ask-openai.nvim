@@ -213,7 +213,7 @@ describe("E2E - AskAgent queued user message in dedicated input window", functio
         local input_bufnr = frontend.user_input_window.buffer_number
         local queued_text = "while you work, remember to mention the year in your final answer"
         vim.api.nvim_buf_set_lines(input_bufnr, 0, -1, false, { queued_text })
-        frontend.user_sends_message_from_user_input_window()
+        frontend.send_user_message_from_user_input_window()
 
         -- * Assert the message was queued (agent is still running)
         assert.are.same({ queued_text }, frontend.queued_user_messages,
