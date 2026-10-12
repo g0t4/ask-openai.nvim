@@ -1178,7 +1178,7 @@ function AgentsFrontend.redraw_queued_user_messages()
     if start_line_base0 == 1 and buffer:get_lines_from(0) == "" then
         start_line_base0 = 0
     end
-    AgentsFrontend.queued_section_strt_line_base0 = start_line_base0 -- store offset so we can clear/redo this section on an update
+    AgentsFrontend.queued_section_start_line_base0 = start_line_base0 -- store offset so we can clear/redo this section on an update
     buffer:append_styled_lines(lines)
 end
 
