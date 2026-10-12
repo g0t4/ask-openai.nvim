@@ -40,8 +40,13 @@ local AgentsFrontend = {}
 
 ---@type string[] -- user messages typed into the input box while the agent is running (awaiting delivery)
 AgentsFrontend.queued_user_messages = {}
+
+-- **** hacky hack hack to track where to update for last message updates only (so we don't redraw entire buffer on every token, just current message)
+---@type integer|nil -- 0-indexed line where the rendered queued-messages section begins in the chat window
+AgentsFrontend.this_turn_chat_start_line_base0 = nil
 ---@type integer|nil -- 0-indexed line where the rendered queued-messages section begins in the chat window
 AgentsFrontend.queued_section_start_line_base0 = nil
+
 ---@type UserInputWindow|nil
 AgentsFrontend.user_input_window = nil
 
