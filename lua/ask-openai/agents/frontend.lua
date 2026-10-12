@@ -394,8 +394,12 @@ local function _clear_user_input_winow()
 end
 
 function AgentsFrontend.save_current_user_message()
-    local start_line_base0 = AgentsFrontend.chat_window.followup_starts_at_line_0indexed or 0
-    local user_message = AgentsFrontend.chat_window.buffer:get_lines_from(start_line_base0)
+    local text = _get_user_input_window_text()
+    if text == "" then
+        return
+    end
+
+    local user_message = text
 
     -- * save it to a file in SHADA DIR for recovery
     local api = require('non-plugins.werkspaces.api')
@@ -410,11 +414,10 @@ function AgentsFrontend.save_current_user_message()
         file:write(user_message)
         file:close()
     end
-    print("saved to " .. file_path)
+    vim.notify("saved user input message to " .. file_path)
 end
 
 function AgentsFrontend.load_last_user_message()
-    -- TODO open chat if not already
     AgentsFrontend.ensure_chat_window_is_open()
 
     local api = require('non-plugins.werkspaces.api')
@@ -427,11 +430,9 @@ function AgentsFrontend.load_last_user_message()
     local user_message_lines = vim.split(file:read("*a"), "\n")
     table.insert(user_message_lines, "") -- add blank line after so cursor feels right (moves to end which s/b blank line) - remove this if I hate it later
     file:close()
-    -- FYI when we move to split user message input, can just load into that dedicated user message floating window
-    -- insert at end of buffer as the user's message
-    vim.api.nvim_buf_set_lines(AgentsFrontend.chat_window.buffer.buffer_number, -1, -1, false, user_message_lines)
-    -- move cursor to end
-    AgentsFrontend.chat_window.buffer:scroll_cursor_to_end_of_buffer()
+
+    -- replace text entirely now that we have a dedicated user input window:
+    vim.api.nvim_buf_set_lines(AgentsFrontend.user_input_window.buffer_number, 0, -1, false, user_message_lines)
 end
 
 ---@type ExplainError
@@ -528,8 +529,6 @@ function AgentsFrontend.ensure_chat_window_open()
 
         -- I already use this globally to close a window (:q) ... so just add stop to it:
         vim.keymap.set("n", "<F8>", AgentsFrontend.abort_and_close, { buffer = AgentsFrontend.chat_window.buffer_number })
-
-        vim.keymap.set({ "n", "i" }, "<C-s>", AgentsFrontend.save_current_user_message, { buffer = AgentsFrontend.chat_window.buffer_number })
     end
 
     AgentsFrontend.chat_window:open()
@@ -824,8 +823,6 @@ function AgentsFrontend.on_curl_exited_successfully()
                 AgentsFrontend.chat_window:mark_agent_running(false)
                 AgentsFrontend.chat_window:stop_spinner("Agent Finished")
             end
-            -- set offset after every assistant message, that way if anything goes awry the user can resume by typing below the last assistant message (i.e. "resume") and trigger follow up (even if say tool call was in progress and blew up)
-            AgentsFrontend.chat_window.followup_starts_at_line_0indexed = AgentsFrontend.chat_window.buffer:get_line_count() - 1
         end
         AgentsFrontend.clear_undos()
 
@@ -1251,6 +1248,8 @@ function AgentsFrontend.ensure_user_input_window_is_open(focus)
         vim.keymap.set("i", "<S-CR>", function()
             vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<CR>", true, false, true), "n", false)
         end, { buffer = bufnr, desc = "insert a blank line in user message" })
+
+        vim.keymap.set({ "n", "i" }, "<C-s>", AgentsFrontend.save_current_user_message, { buffer = bufnr })
     end
 
     AgentsFrontend.user_input_window:open()
