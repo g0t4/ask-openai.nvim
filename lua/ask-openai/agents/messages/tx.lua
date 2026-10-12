@@ -100,15 +100,15 @@ function TxChatMessage:system(content)
 end
 
 ---@param content string
----@return OpenAIChatCompletion_User_TxChatMessage
+---@return TxChatMessage
 function TxChatMessage:user(content)
     -- * content, role, name - https://platform.openai.com/docs/api-reference/chat/create#chat_create-messages-user_message
-    return TxChatMessage:new(TX_MESSAGE_ROLES.USER, content) --[[@as OpenAIChatCompletion_User_TxChatMessage]]
+    return TxChatMessage:new(TX_MESSAGE_ROLES.USER, content)
 end
 
 --- differentiate TxChatMessage usage by making explicit this provides context to another user request
 ---@param content string
----@return OpenAIChatCompletion_User_TxChatMessage
+---@return TxChatMessage
 function TxChatMessage:user_context(content)
     return TxChatMessage:user(content)
 end

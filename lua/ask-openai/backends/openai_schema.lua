@@ -88,9 +88,6 @@
 ---@class OpenAIChatCompletion_Developer_TxChatMessage : OpenAIChatCompletion_TxChatMessage
 ---@field role string - "developer"
 
----@class OpenAIChatCompletion_User_TxChatMessage : OpenAIChatCompletion_TxChatMessage
----@field role string - "user"
-
 --- For returning tool call results to the model (assistant)
 ---  FTR no `name` field
 ---@class OpenAIChatCompletion_ToolResult_TxChatMessage : OpenAIChatCompletion_TxChatMessage
