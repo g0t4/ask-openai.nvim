@@ -816,7 +816,7 @@ function AgentsFrontend.on_curl_exited_successfully()
             -- * drop the rendered queued section (submit_follow_up re-displays it as a normal user message)
             AgentsFrontend.redraw_queued_user_messages()
             AgentsFrontend.submit_follow_up(table.concat(queued, "\n"))
-            return
+            return -- b/c reached_final_message should only happen if no messages after it... perhaps we should be returning on reached_final_message regardless of queued messages to avoid ambiguity... turns out run_tools_and_send_results_back_to_the_model does nothing (loop over tool_calls) if there are no tool calls so it is safe to let run always (intersting)
         end
 
         AgentsFrontend.run_tools_and_send_results_back_to_the_model(trace)
