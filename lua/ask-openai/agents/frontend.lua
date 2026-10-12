@@ -51,7 +51,24 @@ local cached_files = {}
 
 -- * forward declarations so interrupt_agent (defined earlier in source) can capture
 --   these as upvalues (Lua binds names at parse time, before later `local function`s)
-local build_interrupt_message
+--- Build the interruption user message that explains the agent's work was cut short
+--- to deliver one or more queued messages immediately (vs. waiting for completion).
+---@param queued_messages string[]
+---@return string
+local function build_interrupt_message(queued_messages)
+    local parts = {
+        "[I interrupted your work before you finished]",
+        "I stopped you mid-completion so I could tell you this. Keep the work you had done so far, incorporate what I am telling you now, and continue/resume your prior request unless I instruct you to stop and/or change course.",
+    }
+    for index, message in ipairs(queued_messages) do
+        if #queued_messages > 1 then
+            table.insert(parts, string.format("-- queued message %d of %d --", index, #queued_messages))
+        end
+        table.insert(parts, message)
+    end
+    return table.concat(parts, "\n")
+end
+
 local display_user_message_in_chat
 
 local function get_file(path)
@@ -1093,24 +1110,6 @@ local function build_interruption_message(queued_messages)
     local parts = {
         "[Queued while you were completing the prior request]",
         "I wanted to add context while you were working. Please resume the prior request unless I instruct you to stop and/or change course.",
-    }
-    for index, message in ipairs(queued_messages) do
-        if #queued_messages > 1 then
-            table.insert(parts, string.format("-- queued message %d of %d --", index, #queued_messages))
-        end
-        table.insert(parts, message)
-    end
-    return table.concat(parts, "\n")
-end
-
---- Build the interruption user message that explains the agent's work was cut short
---- to deliver one or more queued messages immediately (vs. waiting for completion).
----@param queued_messages string[]
----@return string
-build_interrupt_message = function(queued_messages)
-    local parts = {
-        "[I interrupted your work before you finished]",
-        "I stopped you mid-completion so I could tell you this. Keep the work you had done so far, incorporate what I am telling you now, and continue/resume your prior request unless I instruct you to stop and/or change course.",
     }
     for index, message in ipairs(queued_messages) do
         if #queued_messages > 1 then
