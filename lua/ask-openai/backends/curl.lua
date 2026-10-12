@@ -155,7 +155,7 @@ function Curl.spawn(request, frontend)
         end
 
         local function on_raw_done(err)
-            log:info("on_raw_done", err)
+            -- log:info("on_raw_done", err)
             if request.tcp_handle == nil then
                 return -- nothing to do
             end
@@ -328,7 +328,7 @@ function Curl.spawn(request, frontend)
         -- keep in mind... curl errors will show as text in STDERR
         -- FYI just show individual parts here since the full error message is needed to print one final message, accumulate that for on_exit to print
         local message = "Curl.spawn.on_stderr data=" .. vim.inspect(data) -- info level log for parts
-        log:info(message)
+        log:warn(message)
         -- TODO see if any errors, if it is useful to see explain_error on each chunk instead of just at end in on_exit... I suspect cumulative_stderr is sufficient for most errors
         -- frontend.explain_error(message)
     end
