@@ -1292,6 +1292,7 @@ function AgentsFrontend.user_sends_message_from_user_input_window()
 end
 
 function AgentsFrontend.user_sends_message_with_follow_up_command()
+    -- TODO I will likely remove this now that I can send multi line initial messages from the user input window
     -- take follow up after end of prior response message from assistant
     --  if already a M.trace then add to that with a new message
     --  leave content as is in the buffer, close enough to what it would be if redrawn
