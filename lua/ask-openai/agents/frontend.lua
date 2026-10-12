@@ -812,6 +812,9 @@ function AgentsFrontend.on_curl_exited_successfully()
         local should_deliver_queued_as_followup = reached_final_message and #AgentsFrontend.queued_user_messages > 0
 
         if should_deliver_queued_as_followup then
+            -- FYI only send on final assistant message here b/c we handle queuing messages
+            -- when the model is already generating a request for tool calls
+            -- in run_tools_and_send_results_back_to_the_model (called below)
             local queued = AgentsFrontend.queued_user_messages
             AgentsFrontend.queued_user_messages = {}
             -- * drop the rendered queued section (submit_follow_up re-displays it as a normal user message)
