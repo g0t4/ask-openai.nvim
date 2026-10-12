@@ -74,7 +74,16 @@ local function build_queued_message(queued_messages)
     return table.concat(parts, "\n")
 end
 
-local display_user_message_in_chat
+--- Display a user message as a role-styled section at the end of the chat window.
+---@param text string
+local function display_user_message_in_chat(text)
+    local lines = LinesBuilder:new()
+    lines:create_marks_namespace()
+    lines:append_role_header("user")
+    lines:append_text(text)
+    lines:append_blank_line()
+    AgentsFrontend.chat_window:append_styled_lines(lines)
+end
 
 local function get_file(path)
     if cached_files[path] then
@@ -1128,17 +1137,6 @@ local function build_interruption_message(queued_messages)
     -- don't add any prefix message, worse case if it stops I can instruct to "resume" and that's it!
     -- much better than blathering the same interruption boilerplate every time I send a queued message!
     return table.concat(queued_messages, "\n\n")
-end
-
---- Display a user message as a role-styled section at the end of the chat window.
----@param text string
-display_user_message_in_chat = function(text)
-    local lines = LinesBuilder:new()
-    lines:create_marks_namespace()
-    lines:append_role_header("user")
-    lines:append_text(text)
-    lines:append_blank_line()
-    AgentsFrontend.chat_window:append_styled_lines(lines)
 end
 
 --- Re-render the queued user messages pinned to the bottom of the chat window.
