@@ -1278,13 +1278,6 @@ function AgentsFrontend.submit_from_input_window()
     -- * clear the input buffer after reading
     vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { "" })
 
-    AgentsFrontend.submit_user_message(user_message)
-end
-
---- Submit a user message. While the agent runs it is queued for later delivery;
---- otherwise it is submitted as a normal follow-up.
----@param user_message string
-function AgentsFrontend.submit_user_message(user_message)
     user_message = user_message:gsub("^%s+", ""):gsub("%s+$", "")
     if user_message == "" then
         return
