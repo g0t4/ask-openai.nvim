@@ -1120,16 +1120,13 @@ end
 ---@return string
 local function build_interruption_message(queued_messages)
     local parts = {
-        "[Queued while you were completing the prior request]",
-        "I wanted to add context while you were working. Please resume the prior request unless I instruct you to stop and/or change course.",
+        -- don't add any prefix message, worse case if it stops I can instruct to "resume" and that's it!
+        -- much better than blathering the same interruption boilerplate every time I send a queued message!
     }
     for index, message in ipairs(queued_messages) do
-        if #queued_messages > 1 then
-            table.insert(parts, string.format("-- queued message %d of %d --", index, #queued_messages))
-        end
         table.insert(parts, message)
     end
-    return table.concat(parts, "\n")
+    return table.concat(parts, "\n\n")
 end
 
 --- Display a user message as a role-styled section at the end of the chat window.
