@@ -335,7 +335,6 @@ end
 
 ---@param trace AgentTrace
 function AgentsFrontend.then_get_assistant_response(trace)
-
     -- * conversation turns (track start line for streaming chunks)
     AgentsFrontend.this_turn_chat_start_line_base0 = AgentsFrontend.chat_window.buffer:get_line_count()
 
@@ -1180,26 +1179,6 @@ function AgentsFrontend.redraw_queued_user_messages()
     buffer:append_styled_lines(lines)
 end
 
---- Submit a user message. While the agent runs it is queued for later delivery;
---- otherwise it is submitted as a normal follow-up.
----@param user_message string
-function AgentsFrontend.submit_user_message(user_message)
-    user_message = user_message:gsub("^%s+", ""):gsub("%s+$", "")
-    if user_message == "" then
-        return
-    end
-
-    if AgentsFrontend.chat_window and AgentsFrontend.chat_window._agent_is_running then
-        table.insert(AgentsFrontend.queued_user_messages, user_message)
-        -- TODO add integration test with faked model responses and make sure queued messages shows right after user submits it
-        AgentsFrontend.redraw_queued_user_messages()
-        return
-    end
-
-    -- if not running then we can submit as a normal user message
-    AgentsFrontend.submit_follow_up(user_message)
-end
-
 --- Submit a follow-up user message against the current trace (or start a new one).
 ---@param user_message string
 function AgentsFrontend.submit_follow_up(user_message)
@@ -1300,6 +1279,26 @@ function AgentsFrontend.submit_from_input_window()
     vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { "" })
 
     AgentsFrontend.submit_user_message(text)
+end
+
+--- Submit a user message. While the agent runs it is queued for later delivery;
+--- otherwise it is submitted as a normal follow-up.
+---@param user_message string
+function AgentsFrontend.submit_user_message(user_message)
+    user_message = user_message:gsub("^%s+", ""):gsub("%s+$", "")
+    if user_message == "" then
+        return
+    end
+
+    if AgentsFrontend.chat_window and AgentsFrontend.chat_window._agent_is_running then
+        table.insert(AgentsFrontend.queued_user_messages, user_message)
+        -- TODO add integration test with faked model responses and make sure queued messages shows right after user submits it
+        AgentsFrontend.redraw_queued_user_messages()
+        return
+    end
+
+    -- if not running then we can submit as a normal user message
+    AgentsFrontend.submit_follow_up(user_message)
 end
 
 function AgentsFrontend.follow_up_command()
