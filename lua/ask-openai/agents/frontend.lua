@@ -309,8 +309,12 @@ function AgentsFrontend.then_get_assistant_response(trace)
     AgentsFrontend.chat_window:mark_agent_running(true)
     AgentsFrontend.chat_window:ensure_spinner_running("agenting...")
 
-    -- * make the dedicated input box available (and focused) so the user can type while the agent works
-    AgentsFrontend.ensure_user_input_window_is_open(true)
+    -- * make the dedicated input box available so the user can type while the agent works.
+    --   NOTE: don't force focus/reset cursor here -- this runs on every agent resume
+    --   (e.g. after each tool call completes) and would yank the user's cursor to
+    --   line 1 while they're typing a follow-up. Focus is set on first creation,
+    --   or by submit_from_input_window / the <leader>au keymap.
+    AgentsFrontend.ensure_user_input_window_is_open()
 
     local next_request = CurlRequestForTrace:new({
         body = trace:next_curl_request_body(),
@@ -1266,7 +1270,7 @@ function AgentsFrontend.ensure_user_input_window_is_open(focus)
     vim.keymap.set("n", "<F8>", AgentsFrontend.close_agent_windows,
         { buffer = bufnr, desc = "close all agent windows" })
 
-    if focus then
+    if is_new or focus then
         pcall(function()
             local win = AgentsFrontend.user_input_window
             if vim.api.nvim_win_is_valid(win.win_id) then
