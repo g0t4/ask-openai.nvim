@@ -1291,38 +1291,6 @@ function AgentsFrontend.user_sends_message_from_user_input_window()
     AgentsFrontend.send_follow_up_user_message(user_message)
 end
 
-function AgentsFrontend.user_sends_message_with_follow_up_command()
-    -- TODO I will likely remove this now that I can send multi line initial messages from the user input window
-    -- take follow up after end of prior response message from assistant
-    --  if already a M.trace then add to that with a new message
-    --  leave content as is in the buffer, close enough to what it would be if redrawn
-    --  and I don't use the buffer contents for past messages
-    --  so, just copy it out into a new message from user
-    AgentsFrontend.ensure_chat_window_is_open()
-    local start_line_base0 = AgentsFrontend.chat_window.followup_starts_at_line_0indexed or 0
-    local user_message = AgentsFrontend.chat_window.buffer:get_lines_from(start_line_base0)
-    AgentsFrontend.chat_window.buffer:scroll_cursor_to_end_of_buffer()
-    vim.cmd("normal! o") -- move to end of buffer, add new line below to separate subsequent follow up response message
-
-    local trace = AgentsFrontend.trace
-    if not trace then
-        opts = {
-            -- simulate calling the same as the nvim AskAgent user command:
-            args = user_message
-        }
-        -- TODO if /selection that won't work, I can fix that later
-        --   TODO can't I get a history of selections or smth?
-        --    what if I wanna select text in the chat window itself?
-        --    does last selection track the file? is it per window?
-        -- hack: close window so LSP is available AND selections work (last selected)
-        AgentsFrontend.chat_window:close()
-        ask_agent_command(opts)
-        return
-    end
-
-    send_trace_follow_up(user_message)
-end
-
 function ask_dump_agent_trace_command()
     local trace = AgentsFrontend.trace
     if not trace then
@@ -1462,7 +1430,6 @@ function AgentsFrontend.setup()
     vim.keymap.set('n', '<leader>ai', AgentsFrontend.interrupt_agent, { noremap = true, desc = 'interrupt the agent mid-completion and deliver queued messages' })
     vim.keymap.set('n', '<leader>ac', ':<C-u>:AskAgent /tools /norag /coordinator ', { noremap = true })
     vim.keymap.set('n', '<leader>al', AgentsFrontend.clear_chat_command, { noremap = true })
-    vim.keymap.set('n', '<leader>af', AgentsFrontend.user_sends_message_with_follow_up_command, { noremap = true })
     vim.keymap.set('n', '<leader>ao', AgentsFrontend.ensure_chat_window_is_open, { noremap = true })
     vim.keymap.set('n', '<leader>au', function() AgentsFrontend.ensure_user_input_window_is_open(true) end, { noremap = true, desc = 'open/focus the user message input box' })
     vim.keymap.set('n', '<leader>as', AgentsFrontend.check_model_command, { noremap = true, desc = 'Check model server /v1/models' })
