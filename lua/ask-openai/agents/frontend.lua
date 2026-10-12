@@ -343,11 +343,7 @@ function AgentsFrontend.then_get_assistant_response(trace)
     AgentsFrontend.chat_window:ensure_spinner_running("agenting...")
 
     -- * make the dedicated input box available so the user can type while the agent works.
-    --   NOTE: don't force focus/reset cursor here -- this runs on every agent resume
-    --   (e.g. after each tool call completes) and would yank the user's cursor to
-    --   line 1 while they're typing a follow-up. Focus is set on first creation,
-    --   or by submit_user_message_from_user_input_window / the <leader>au keymap.
-    AgentsFrontend.ensure_user_input_window_is_open()
+    AgentsFrontend.ensure_user_input_window_is_open() -- TODO how about one surface to opn all the windows together? same with close?
 
     local next_request = CurlRequestForTrace:new({
         body = trace:next_curl_request_body(),
