@@ -57,8 +57,13 @@ local cached_files = {}
 ---@return string
 local function build_interrupt_message(queued_messages)
     local parts = {
-        "[I interrupted your work before you finished]",
-        "I stopped you mid-completion so I could tell you this. Keep the work you had done so far, incorporate what I am telling you now, and continue/resume your prior request unless I instruct you to stop and/or change course.",
+        "FYI...", -- FYI alone is perfect to convey added context and to continue onward
+        -- PRN? if I have agents that stop after my context, then I'll add more here ...
+        --   PRN? OR i can type "resume<ENTER>"!
+        -- PRN? add back a blurb about "continue unless I tell you to stop" if it is absolutely necessary...
+        --  a few reasons not to add big blurb: wastes context
+        --  is weird to give instructions when I could just give those myself each time...
+        --  if anything I can have special keymap for STOP work and think about this... vs FYI forgot to say... foo
     }
     for index, message in ipairs(queued_messages) do
         if #queued_messages > 1 then
