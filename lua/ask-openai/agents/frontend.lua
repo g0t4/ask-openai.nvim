@@ -967,6 +967,7 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(trace)
                 -- FYI this is exactly the right spot to include this!!!
                 -- include user messages right after tool call result(s), before next assistant response even begins (nothing wasted)
                 AgentsFrontend.append_queued_user_messages(trace)
+                -- TODO! issue is we don't show them to the user
 
                 -- IIUC I need to queue this after the changes from update_chat_viewer_buffer?
                 -- else IIRC, the line count will be broken for the next message
