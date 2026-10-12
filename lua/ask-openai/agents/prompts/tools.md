@@ -1,5 +1,4 @@
-## `semantic_grep` tool
+## Tool notes
 
-- embeddings index + re-ranker
-- use `semantic_grep` when you don't know where to look
-- then, use `rg` to find every instance of text
+- `semantic_grep` searches an embeddings index and reranks results by relevance. Use it to discover where to look; use rg for exhaustive matches.
+
