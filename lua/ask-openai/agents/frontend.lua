@@ -32,6 +32,7 @@ local inspect = require("devtools.inspect")
 local config = require("ask-openai.config")
 local context_builder = require("ask-openai.agents.context_builder")
 local trace_restorer = require("ask-openai.agents.viewer.trace_restorer")
+local ansi = require("devtools.ansi")
 
 require("ask-openai.helpers.buffers")
 
@@ -1289,6 +1290,7 @@ function AgentsFrontend.send_user_message_from_user_input_window()
     if text == "" then
         return
     end
+    log:info(ansi.red("[red]send from UIW: "), text)
 
     if AgentsFrontend.chat_window and AgentsFrontend.chat_window._agent_is_running then
         -- * queue message if agent is running
