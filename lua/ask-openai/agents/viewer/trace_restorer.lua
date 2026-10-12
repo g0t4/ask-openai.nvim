@@ -539,7 +539,7 @@ local function setup_trace_for_followup(tx_messages)
 
     -- Set the offset for where streaming messages will be drawn
     -- TODO when I hide this behind chat_window, remove setting this here... this should be a chat_window only construct IMO (and it can handle one or more physical windows)
-    AgentsFrontend.this_turn_chat_start_line_base0 = AgentsFrontend.chat_window.buffer:get_line_count() - 1
+    AgentsFrontend.current_turn_start_line_base0 = AgentsFrontend.chat_window.buffer:get_line_count() - 1
 
     log:info("Trace restored and ready for follow-up with " .. #tx_messages .. " messages")
 end

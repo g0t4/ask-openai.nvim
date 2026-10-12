@@ -43,7 +43,7 @@ AgentsFrontend.queued_user_messages = {}
 
 -- **** hacky hack hack to track where to update for last message updates only (so we don't redraw entire buffer on every token, just current message)
 ---@type integer|nil -- 0-indexed line where the rendered queued-messages section begins in the chat window
-AgentsFrontend.this_turn_chat_start_line_base0 = nil
+AgentsFrontend.current_turn_start_line_base0 = nil
 ---@type integer|nil -- 0-indexed line where the rendered queued-messages section begins in the chat window
 AgentsFrontend.queued_section_start_line_base0 = nil
 
@@ -341,9 +341,8 @@ end
 ---@param trace AgentTrace
 function AgentsFrontend.then_get_assistant_response(trace)
     -- * conversation turns (track start line for streaming chunks)
-    AgentsFrontend.this_turn_chat_start_line_base0 = AgentsFrontend.chat_window.buffer:get_line_count()
+    AgentsFrontend.current_turn_start_line_base0 = AgentsFrontend.chat_window.buffer:get_line_count()
 
-    -- log:info("M.this_turn_chat_start_line_base0", M.this_turn_chat_start_line_base0)
     AgentsFrontend.chat_window:mark_agent_running(true)
     AgentsFrontend.chat_window:ensure_spinner_running("agenting...")
 
@@ -624,7 +623,7 @@ local function update_ui_chat_viewer(trace)
     vim.schedule(function()
         lines.marks_ns_id = request.marks_ns_id -- ?? generate namespace here in lines builder? lines:gen_mark_ns()? OR do it on first downstream use?
         -- TODO! deepseek this is yours... how about we setup two virtual buffers within chat_window... and let it handle writing to the physical single window (or it can even use two, it doesn't matter to consumers then!)
-        AgentsFrontend.chat_window.buffer:replace_with_styled_lines_after(AgentsFrontend.this_turn_chat_start_line_base0, lines)
+        AgentsFrontend.chat_window.buffer:replace_with_styled_lines_after(AgentsFrontend.current_turn_start_line_base0, lines)
 
         -- * re-pin any queued user messages to the bottom (the replace wiped the prior queued section)
         AgentsFrontend.queued_section_start_line_base0 = nil -- replace above already wiped out previous display
