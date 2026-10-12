@@ -55,31 +55,6 @@ local first_turn_ns_id
 
 local cached_files = {}
 
--- * forward declarations so interrupt_agent (defined earlier in source) can capture
---   these as upvalues (Lua binds names at parse time, before later `local function`s)
---- Build the interruption user message that explains the agent's work was cut short
---- to deliver one or more queued messages immediately (vs. waiting for completion).
----@param queued_messages string[]
----@return string
-local function build_queued_message(queued_messages)
-    local parts = {
-        "FYI...", -- FYI alone is perfect to convey added context and to continue onward
-        -- PRN? if I have agents that stop after my context, then I'll add more here ...
-        --   PRN? OR i can type "resume<ENTER>"!
-        -- PRN? add back a blurb about "continue unless I tell you to stop" if it is absolutely necessary...
-        --  a few reasons not to add big blurb: wastes context
-        --  is weird to give instructions when I could just give those myself each time...
-        --  if anything I can have special keymap for STOP work and think about this... vs FYI forgot to say... foo
-    }
-    for index, message in ipairs(queued_messages) do
-        if #queued_messages > 1 then
-            table.insert(parts, string.format("-- queued message %d of %d --", index, #queued_messages))
-        end
-        table.insert(parts, message)
-    end
-    return table.concat(parts, "\n")
-end
-
 --- Display a user message as a role-styled section at the end of the chat window.
 ---@param text string
 local function display_user_message_in_chat(text)
@@ -843,7 +818,7 @@ function AgentsFrontend.on_curl_exited_successfully()
             local queued = AgentsFrontend.queued_user_messages
             AgentsFrontend.queued_user_messages = {}
             AgentsFrontend.redraw_queued_user_messages() -- drops rendered queue items
-            AgentsFrontend.send_follow_up_user_message(build_queued_message(queued))
+            AgentsFrontend.send_follow_up_user_message(build_fyi_message(queued))
             -- TODO add an integration test of this scenario (queued during final message) (with model responses faked so we get reliable, fast testing)
             return -- b/c reached_final_message should only happen if no messages after it... perhaps we should be returning on reached_final_message regardless of queued messages to avoid ambiguity... turns out run_tools_and_send_results_back_to_the_model does nothing (loop over tool_calls) if there are no tool calls so it is safe to let run always (intersting)
         end
@@ -1080,7 +1055,7 @@ function AgentsFrontend.interrupt_agent()
         if #queued_messages > 0 then
             -- TODO add integration test with faked model responses and make sure sending queued messages works here (when we force an interruption an interruption when _the model is not running_)
             AgentsFrontend.redraw_queued_user_messages()
-            AgentsFrontend.send_follow_up_user_message(build_queued_message(queued_messages))
+            AgentsFrontend.send_follow_up_user_message(build_fyi_message(queued_messages))
         end
         return
     end
@@ -1126,7 +1101,7 @@ function AgentsFrontend.interrupt_agent()
 
     -- * tell the agent we interrupted its work and pass along the queued message(s)
     -- ?? should I add blurb here about why I interrupted it? since this actually killed it mid generation?
-    local contents = "I had to stop you immediately to provide additional context, please resume when you've read this: \n\n " .. build_queued_message(queued_messages)
+    local contents = "I had to stop you immediately to provide additional context, please resume when you've read this: \n\n " .. build_fyi_message(queued_messages)
     local message = TxChatMessage:user(contents)
     trace:add_message(message)
 
@@ -1219,7 +1194,7 @@ function AgentsFrontend.append_queued_user_messages(trace)
     local contents = build_fyi_message(queued)
     display_user_message_in_chat(contents)
 
-    -- PRN can I switch to what others code calls: AgentsFrontend.send_follow_up_user_message(build_queued_message(queued))
+    -- PRN can I switch to what others code calls: AgentsFrontend.send_follow_up_user_message(build_fyi_message(queued))
     local message = TxChatMessage:user(contents)
     trace:add_message(message)
     -- TODO why not AgentsFrontend.then_get_assistant_response in caller or here or?
