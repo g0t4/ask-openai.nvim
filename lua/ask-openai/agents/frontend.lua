@@ -1243,17 +1243,17 @@ function AgentsFrontend.ensure_user_input_window_is_open(focus)
             vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<CR>", true, false, true), "n", false)
         end, { buffer = bufnr, desc = "insert a blank line in user message" })
 
-        -- * hide the input box
-        vim.keymap.set({ "i", "n" }, "<C-c>", function()
-            AgentsFrontend.close_agent_windows()
-        end, { buffer = bufnr, desc = "close all agent windows" })
-
-        -- * close all agent windows (same action as the chat window's <F8>)
-        vim.keymap.set("n", "<F8>", AgentsFrontend.abort_and_close,
-            { buffer = bufnr, desc = "abort and close all agent windows" })
     end
 
     AgentsFrontend.user_input_window:open()
+
+    -- * always (re)bind the close keymaps so they apply even on a reused input buffer
+    local bufnr = AgentsFrontend.user_input_window.buffer_number
+    vim.keymap.set({ "i", "n" }, "<C-c>", function()
+        AgentsFrontend.close_agent_windows()
+    end, { buffer = bufnr, desc = "close all agent windows" })
+    vim.keymap.set("n", "<F8>", AgentsFrontend.close_agent_windows,
+        { buffer = bufnr, desc = "close all agent windows" })
 
     if is_new or focus then
         pcall(function()
