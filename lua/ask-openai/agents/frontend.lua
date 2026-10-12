@@ -934,6 +934,10 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(trace)
                 --   (instead of the agent polling/sleeping).
                 local tool_name = tool_call["function"] and tool_call["function"].name
                 if tool_name == "run_process" then
+                    -- TODO we're going to need to make sure canceling an agent request (above), that subsequent notices don't trigger an agent response!
+                    -- IOTW mark something so we know if the run_process request is still valid or not
+                    -- also tricky is what happens if it runs in background across requests?
+                    -- maybe cancellation for bg should be explicit by the agent? i.e. start web server might run a really long time!
                     local pid = extract_pid_from_result(tool_call.call_output.result)
                     local tool_args = decode_tool_args(tool_call["function"].arguments)
                     if pid and tool_args and tool_args.background and tool_args.notify_on_completion then
