@@ -1167,20 +1167,20 @@ function AgentsFrontend.redraw_queued_user_messages()
 end
 
 --- Submit a follow-up user message against the current trace (or start a new one).
----@param user_message string
-function AgentsFrontend.send_follow_up_user_message(user_message)
+---@param contents string
+function AgentsFrontend.send_follow_up_user_message(contents)
     AgentsFrontend.ensure_chat_window_is_open()
 
     local trace = AgentsFrontend.trace
     if not trace then
         -- * start a brand-new trace; ask_agent_command also displays the user message
-        ask_agent_command({ args = user_message })
+        ask_agent_command({ args = contents })
         return
     end
 
-    display_user_message_in_chat(user_message)
+    display_user_message_in_chat(contents)
 
-    local message = TxChatMessage:user(user_message)
+    local message = TxChatMessage:user(contents)
     trace:add_message(message)
     AgentsFrontend.then_get_assistant_response(trace)
 end
