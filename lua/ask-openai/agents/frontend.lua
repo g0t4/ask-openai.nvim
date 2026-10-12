@@ -975,7 +975,21 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(trace)
 
                 -- * tack on queued messages too
                 -- include user messages right after tool call result(s), before next assistant response even begins (nothing wasted)
-                AgentsFrontend.append_queued_user_messages(trace)
+                if #AgentsFrontend.queued_user_messages > 0 then
+                    local queued = AgentsFrontend.queued_user_messages
+                    AgentsFrontend.queued_user_messages = {}
+                    AgentsFrontend.redraw_queued_user_messages() -- drop queued messages from chat viewer
+
+                    local contents = build_fyi_message(queued)
+                    display_user_message_in_chat(contents)
+
+                    -- PRN can I switch to what others code calls: AgentsFrontend.send_follow_up_user_message(build_fyi_message(queued))
+                    local message = TxChatMessage:user(contents)
+                    trace:add_message(message)
+                end
+
+                -- TODO why not AgentsFrontend.then_get_assistant_response in caller or here or?
+
                 AgentsFrontend.then_get_assistant_response(trace) -- NOTE you must always submit the tool result(s) even if no queued messages
             end
 
@@ -1178,25 +1192,6 @@ function AgentsFrontend.send_follow_up_user_message(contents)
     local message = TxChatMessage:user(contents)
     trace:add_message(message)
     AgentsFrontend.then_get_assistant_response(trace)
-end
-
----@param trace AgentTrace
-function AgentsFrontend.append_queued_user_messages(trace)
-    if #AgentsFrontend.queued_user_messages == 0 then
-        return
-    end
-
-    local queued = AgentsFrontend.queued_user_messages
-    AgentsFrontend.queued_user_messages = {}
-    AgentsFrontend.redraw_queued_user_messages() -- drop queued messages from chat viewer
-
-    local contents = build_fyi_message(queued)
-    display_user_message_in_chat(contents)
-
-    -- PRN can I switch to what others code calls: AgentsFrontend.send_follow_up_user_message(build_fyi_message(queued))
-    local message = TxChatMessage:user(contents)
-    trace:add_message(message)
-    -- TODO why not AgentsFrontend.then_get_assistant_response in caller or here or?
 end
 
 --- Ensure the dedicated user message input box is open.
