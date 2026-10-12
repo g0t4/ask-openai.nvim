@@ -226,7 +226,7 @@ local function build_synthetic_tool_call(tool_call_data, tool_results_by_id)
         },
         call_output = call_output,
         progress_notifications = {},
-        start_time_ms = 0,
+        start_time_ms = 0, -- what? lets just exclude instead of making it up?
         is_done = function()
             return has_call_output
         end,
