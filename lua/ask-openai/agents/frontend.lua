@@ -973,7 +973,6 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(trace)
                 -- FYI this is exactly the right spot to include this!!!
                 -- include user messages right after tool call result(s), before next assistant response even begins (nothing wasted)
                 AgentsFrontend.append_queued_user_messages(trace)
-                -- TODO! issue is we don't show them to the user
 
                 -- IIUC I need to queue this after the changes from update_chat_viewer_buffer?
                 -- else IIRC, the line count will be broken for the next message
@@ -1195,8 +1194,11 @@ function AgentsFrontend.append_queued_user_messages(trace)
     AgentsFrontend.queued_user_messages = {}
     AgentsFrontend.queued_section_start_line_base0 = nil
 
-    local interruption = TxChatMessage:user(build_interruption_message(queued))
-    trace:add_message(interruption)
+    local contents = build_interruption_message(queued)
+    display_user_message_in_chat(contents)
+
+    local message = TxChatMessage:user(contents)
+    trace:add_message(message)
 end
 
 --- Ensure the dedicated user message input box is open.
