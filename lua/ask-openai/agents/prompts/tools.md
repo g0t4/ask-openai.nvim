@@ -11,4 +11,3 @@ Don't use _SLOW_ 🐌 commands like `ls -R`, `grep -R` and `find . -type f`
 - Use `git diff` as a sanity check
 - Commit when you're done with a task. Don't make me ask!
 - Include `--author="INSERT_COMMIT_AUTHOR"`
-
