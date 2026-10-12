@@ -1247,6 +1247,10 @@ function AgentsFrontend.ensure_user_input_window_is_open(focus)
         vim.keymap.set({ "i", "n" }, "<C-c>", function()
             AgentsFrontend.close_agent_windows()
         end, { buffer = bufnr, desc = "close all agent windows" })
+
+        -- * close all agent windows (same action as the chat window's <F8>)
+        vim.keymap.set("n", "<F8>", AgentsFrontend.abort_and_close,
+            { buffer = bufnr, desc = "abort and close all agent windows" })
     end
 
     AgentsFrontend.user_input_window:open()

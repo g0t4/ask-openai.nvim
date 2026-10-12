@@ -183,8 +183,9 @@ end
 ---@param title string
 function FloatWindow:set_title(title)
     vim.schedule(function()
-        if not title or not self.win_id or not vim.api.nvim_win_is_valid(self.win_id) then
-            log:warn("Cannot set title", { win_id = self.win_id, valid = vim.api.nvim_win_is_valid(self.win_id), title = title, })
+        local win_is_valid = self.win_id and vim.api.nvim_win_is_valid(self.win_id)
+        if not title or not win_is_valid then
+            log:warn("Cannot set title", { win_id = self.win_id, title = title, })
             return
         end
         local config = {}
@@ -198,8 +199,9 @@ end
 ---@param footer string
 function FloatWindow:set_footer(footer)
     vim.schedule(function()
-        if not footer or not self.win_id or not vim.api.nvim_win_is_valid(self.win_id) then
-            log:warn("Cannot set footer", { win_id = self.win_id, valid = vim.api.nvim_win_is_valid(self.win_id), footer = footer, })
+        local win_is_valid = self.win_id and vim.api.nvim_win_is_valid(self.win_id)
+        if not footer or not win_is_valid then
+            log:warn("Cannot set footer", { win_id = self.win_id, footer = footer, })
             return
         end
         local config = {}
