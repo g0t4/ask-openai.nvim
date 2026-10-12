@@ -309,8 +309,8 @@ function AgentsFrontend.then_get_assistant_response(trace)
     AgentsFrontend.chat_window:mark_agent_running(true)
     AgentsFrontend.chat_window:ensure_spinner_running("agenting...")
 
-    -- * make the dedicated input box available so the user can type while the agent works
-    AgentsFrontend.ensure_user_input_window_is_open()
+    -- * make the dedicated input box available (and focused) so the user can type while the agent works
+    AgentsFrontend.ensure_user_input_window_is_open(true)
 
     local next_request = CurlRequestForTrace:new({
         body = trace:next_curl_request_body(),
@@ -459,7 +459,9 @@ function AgentsFrontend.clear_undos()
     local buffer = AgentsFrontend.chat_window and AgentsFrontend.chat_window.buffer
 end
 
-function AgentsFrontend.ensure_chat_window_is_open()
+--- Open the chat viewer window (creating the instance/keymaps if needed).
+--- Does NOT open the user input window (callers compose the pair).
+function AgentsFrontend.ensure_chat_window_open()
     if AgentsFrontend.chat_window == nil then
         local window = AgentWindow:new()
         AgentsFrontend.chat_window = window
@@ -481,6 +483,12 @@ function AgentsFrontend.ensure_chat_window_is_open()
     end
 
     AgentsFrontend.chat_window:open()
+end
+
+--- Open the chat viewer AND the user input window together.
+function AgentsFrontend.ensure_chat_window_is_open()
+    AgentsFrontend.ensure_chat_window_open()
+    AgentsFrontend.ensure_user_input_window_is_open()
 end
 
 ---@param trace AgentTrace
@@ -1216,6 +1224,9 @@ end
 --- Focuses + starts insert mode on first creation (or when `focus` is truthy).
 ---@param focus? boolean
 function AgentsFrontend.ensure_user_input_window_is_open(focus)
+    -- * the user input window always opens alongside the chat viewer
+    AgentsFrontend.ensure_chat_window_open()
+
     local is_new = AgentsFrontend.user_input_window == nil
     if is_new then
         AgentsFrontend.user_input_window = UserInputWindow:new()
@@ -1255,7 +1266,7 @@ function AgentsFrontend.ensure_user_input_window_is_open(focus)
     vim.keymap.set("n", "<F8>", AgentsFrontend.close_agent_windows,
         { buffer = bufnr, desc = "close all agent windows" })
 
-    if is_new or focus then
+    if focus then
         pcall(function()
             local win = AgentsFrontend.user_input_window
             if vim.api.nvim_win_is_valid(win.win_id) then
