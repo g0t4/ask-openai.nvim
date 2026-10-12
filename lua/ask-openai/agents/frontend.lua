@@ -1126,11 +1126,12 @@ function AgentsFrontend.interrupt_agent()
 
     -- * tell the agent we interrupted its work and pass along the queued message(s)
     -- ?? should I add blurb here about why I interrupted it? since this actually killed it mid generation?
-    local interruption = TxChatMessage:user(build_queued_message(queued_messages))
-    trace:add_message(interruption)
+    local contents = "I had to stop you immediately to provide additional context, please resume when you've read this: \n\n " .. build_queued_message(queued_messages)
+    local message = TxChatMessage:user(contents)
+    trace:add_message(message)
 
     -- * render the interruption message, then immediately ask the agent to continue
-    display_user_message_in_chat(interruption.content)
+    display_user_message_in_chat(contents)
     AgentsFrontend.then_get_assistant_response(trace)
 end
 
