@@ -152,15 +152,18 @@ end
 --- The content is typically MCP-style JSON: {"content": [{"name": "STDOUT", "text": "...", "type": "text"}]}
 ---
 ---@param content string -- raw JSON string from the tool result message
----@return ToolCallOutput?
+---@return ToolCallOutput|string|nil
 local function build_tool_call_output(content)
     if not content or content == "" then
         return nil
     end
 
     local ok, decoded = safely.decode_json(content)
+    if not ok and type(content) == "string" then
+        -- PRN any utility in reverse parse into { isError, result = content } ?
+        return content
+    end
     if not ok or type(decoded) ~= "table" then
-        log:warn("Failed to decode tool result JSON: " .. content:sub(1, 80))
         return nil
     end
 
@@ -203,6 +206,8 @@ local function build_synthetic_tool_call(tool_call_data, tool_results_by_id)
     local call_output = nil
     local result_content = tool_results_by_id[call_id]
     if result_content then
+        -- TODO test with flattened strings fix inside:
+        --  and/or test with a restore trace
         call_output = build_tool_call_output(result_content)
     end
 
