@@ -1273,12 +1273,13 @@ function AgentsFrontend.submit_from_input_window()
         return
     end
     local bufnr = AgentsFrontend.user_input_window.buffer_number
-    local user_message = table.concat(vim.api.nvim_buf_get_lines(bufnr, 0, -1, false), "\n")
 
-    -- * clear the input buffer after reading
+    local user_message = table.concat(vim.api.nvim_buf_get_lines(bufnr, 0, -1, false), "\n")
+        :gsub("^%s+", ""):gsub("%s+$", "")
+
+    -- * clear the user input window's buffer after reading
     vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { "" })
 
-    user_message = user_message:gsub("^%s+", ""):gsub("%s+$", "")
     if user_message == "" then
         return
     end
