@@ -718,27 +718,10 @@ function M.send_tool_call(tool_call, callback, on_progress)
     end
 end
 
-M._cached_run_process_instructions = nil
 ---@param tool_name string
 ---@return string|nil instructions (if applicable for tool_name)
 function M.get_system_message_instructions(tool_name)
-    -- Return system message instructions for specific MCP tools.
-
-    if tool_name == "fetch" then
-        if M._cached_fetch_instructions then
-            return M._cached_fetch_instructions
-        end
-        local files = require("ask-openai.helpers.files")
-        local fetch_path = "~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/tools/mcp/fetch/fetch.md"
-        M._cached_fetch_instructions = files.read_text(fetch_path)
-        return M._cached_fetch_instructions
-
-        -- TODO fetch tool/instruction improvement ideas
-        -- ** setup a subagent for each request w/ a question/statement about what is of interest, let it gather multiple links and report back with links and what matters about each one
-        --    subagent can have detailed instructions (/INSTRUCT like) for GitHub links and many other common sites to make a more productive experience fetching from common sites
-        --    also means instructions don't have to polluate normal system prompt for top level agent trace
-    end
-
+    -- leaving this as a placeholder for future, tool specific instructions
     return nil
 end
 
