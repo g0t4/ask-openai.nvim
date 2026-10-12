@@ -376,6 +376,23 @@ function AgentsFrontend.close_agent_windows()
     end
 end
 
+local function _get_user_input_window_text()
+    if AgentsFrontend.user_input_window == nil then
+        return ""
+    end
+
+    local bufnr = AgentsFrontend.user_input_window.buffer_number
+    return table.concat(vim.api.nvim_buf_get_lines(bufnr, 0, -1, false), "\n")
+        :gsub("^%s+", ""):gsub("%s+$", "")
+end
+
+local function _clear_user_input_winow()
+    if AgentsFrontend.user_input_window == nil then
+        return
+    end
+    vim.api.nvim_buf_set_lines(AgentsFrontend.user_input_window.buffer_number, 0, -1, false, { "" })
+end
+
 function AgentsFrontend.save_current_user_message()
     local start_line_base0 = AgentsFrontend.chat_window.followup_starts_at_line_0indexed or 0
     local user_message = AgentsFrontend.chat_window.buffer:get_lines_from(start_line_base0)
@@ -1256,23 +1273,6 @@ function AgentsFrontend.ensure_user_input_window_is_open(focus)
             end
         end)
     end
-end
-
-local function _get_user_input_window_text()
-    if AgentsFrontend.user_input_window == nil then
-        return ""
-    end
-
-    local bufnr = AgentsFrontend.user_input_window.buffer_number
-    return table.concat(vim.api.nvim_buf_get_lines(bufnr, 0, -1, false), "\n")
-        :gsub("^%s+", ""):gsub("%s+$", "")
-end
-
-local function _clear_user_input_winow()
-    if AgentsFrontend.user_input_window == nil then
-        return
-    end
-    vim.api.nvim_buf_set_lines(AgentsFrontend.user_input_window.buffer_number, 0, -1, false, { "" })
 end
 
 function AgentsFrontend.user_sends_message_from_user_input_window()
