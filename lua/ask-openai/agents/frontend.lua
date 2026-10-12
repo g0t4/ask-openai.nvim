@@ -795,8 +795,8 @@ function AgentsFrontend.on_curl_exited_successfully()
             --  at the same time I like the history of what was submitted
             --  this is the inherent tension between adding that assistant response message to the messages array (which is really for the next request)... vs keeping it separate as the completion to the messages array sent as-is to llama-server
 
-            local is_final_assistant_message = #rx_message.tool_calls == 0
-            if is_final_assistant_message then
+            -- ? perhaps warn if reached_final_message is not last message :)
+            if #rx_message.tool_calls == 0 then
                 reached_final_message = true
                 AgentsFrontend.chat_window:mark_agent_running(false)
                 AgentsFrontend.chat_window:stop_spinner("Agent Finished")
