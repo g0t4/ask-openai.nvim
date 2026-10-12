@@ -965,7 +965,8 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(trace)
 
                 -- * deliver any queued user messages as an interruption before continuing
                 -- FYI this is exactly the right spot to include this!!!
-                AgentsFrontend.inject_queued_user_messages(trace)
+                -- include user messages right after tool call result(s), before next assistant response even begins (nothing wasted)
+                AgentsFrontend.append_queued_user_messages(trace)
 
                 -- IIUC I need to queue this after the changes from update_chat_viewer_buffer?
                 -- else IIRC, the line count will be broken for the next message
@@ -1212,7 +1213,7 @@ end
 --- Inject queued user messages into the trace as an interruption user message.
 --- Called right before the next request is sent after a tool call completes.
 ---@param trace AgentTrace
-function AgentsFrontend.inject_queued_user_messages(trace)
+function AgentsFrontend.append_queued_user_messages(trace)
     if #AgentsFrontend.queued_user_messages == 0 then
         return
     end
