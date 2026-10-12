@@ -897,7 +897,7 @@ function AgentsFrontend.inject_background_process_completion(pid, tool_call_id, 
     local done_message = TxChatMessage:tool_completion(
         tool_call_id,
         "Background process (pid " .. pid .. ") has completed. Call process_status with pid "
-            .. pid .. " to retrieve its STDOUT/STDERR and exit code."
+        .. pid .. " to retrieve its STDOUT/STDERR and exit code."
     )
     trace:add_message(done_message)
     AgentsFrontend.then_get_assistant_response(trace)
@@ -1265,7 +1265,6 @@ function AgentsFrontend.ensure_user_input_window_is_open(focus)
         vim.keymap.set("i", "<S-CR>", function()
             vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<CR>", true, false, true), "n", false)
         end, { buffer = bufnr, desc = "insert a blank line in user message" })
-
     end
 
     AgentsFrontend.user_input_window:open()
