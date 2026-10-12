@@ -874,13 +874,8 @@ def build_semantic_grep_lsp_matches_result(root: TreeWrapper, content: Any, requ
 
 def build_unrecognized_tool_result_message(root: TreeWrapper, content: Any) -> None:
     # FYI this is just a warning to consider adding handlers for it
-    node = root.add("[yellow bold]⚠️ UNRECOGNIZED RESULT TYPE:[/]")
-    if isinstance(content, str):
-        # Render the raw string verbatim (real newlines preserved) instead of a
-        # Pretty repr that shows literal ``\n`` escapes.
-        node.add_no_markup(content)
-    else:
-        node.add(_pretty_no_truncate(content))
+    root.add("[yellow bold]⚠️ UNRECOGNIZED RESULT TYPE:[/]") \
+        .add(_pretty_no_truncate(content))
 
 
 def build_tool_call_requests_by_id(messages: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
@@ -966,6 +961,13 @@ def build_tool_result_message(
 
 
 def build_mcp_tool_result(root: TreeWrapper, content: Any) -> bool:
+    if isinstance(content, str):
+        # Flattened MCP output: the tool result content is already a plain
+        # string (nested JSON was flattened for the agent). Render it verbatim
+        # (no markup interpretation, real newlines preserved).
+        root.add_no_markup(content)
+        return True
+
     has_mcp_content_list = isinstance(content, list)
     if not has_mcp_content_list:
         return False
