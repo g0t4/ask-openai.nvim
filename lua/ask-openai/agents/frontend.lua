@@ -1114,19 +1114,12 @@ local function send_trace_follow_up(user_message)
     AgentsFrontend.then_get_assistant_response(trace)
 end
 
---- Build the interruption user message from one or more queued messages.
---- Instructs the agent to resume the prior request unless told otherwise.
 ---@param queued_messages string[]
 ---@return string
 local function build_interruption_message(queued_messages)
-    local parts = {
-        -- don't add any prefix message, worse case if it stops I can instruct to "resume" and that's it!
-        -- much better than blathering the same interruption boilerplate every time I send a queued message!
-    }
-    for index, message in ipairs(queued_messages) do
-        table.insert(parts, message)
-    end
-    return table.concat(parts, "\n\n")
+    -- don't add any prefix message, worse case if it stops I can instruct to "resume" and that's it!
+    -- much better than blathering the same interruption boilerplate every time I send a queued message!
+    return table.concat(queued_messages, "\n\n")
 end
 
 --- Display a user message as a role-styled section at the end of the chat window.
