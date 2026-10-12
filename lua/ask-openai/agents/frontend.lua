@@ -755,6 +755,14 @@ function AgentsFrontend.on_parsed_data_sse(sse_parsed)
     update_ui_chat_viewer(trace)
 end
 
+---@param queued_messages string[]
+---@return string
+local function build_fyi_message(queued_messages)
+    -- don't add any prefix message, worse case if it stops I can instruct to "resume" and that's it!
+    -- much better than blathering the same interruption boilerplate every time I send a queued message!
+    return table.concat(queued_messages, "\n\n")
+end
+
 ---@type OnCurlExitedSuccessfully
 function AgentsFrontend.on_curl_exited_successfully()
     vim.schedule(function()
@@ -1107,14 +1115,6 @@ function AgentsFrontend.interrupt_agent()
     -- * render the interruption message, then immediately ask the agent to continue
     display_user_message_in_chat(contents)
     AgentsFrontend.then_get_assistant_response(trace)
-end
-
----@param queued_messages string[]
----@return string
-local function build_fyi_message(queued_messages)
-    -- don't add any prefix message, worse case if it stops I can instruct to "resume" and that's it!
-    -- much better than blathering the same interruption boilerplate every time I send a queued message!
-    return table.concat(queued_messages, "\n\n")
 end
 
 --- Re-render the queued user messages pinned to the bottom of the chat window.
