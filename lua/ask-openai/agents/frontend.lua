@@ -1157,13 +1157,15 @@ function AgentsFrontend.redraw_queued_user_messages()
         if start_line_base0 < line_count then
             vim.api.nvim_buf_set_lines(bufnr, start_line_base0, -1, false, {})
         end
-        AgentsFrontend.queued_section_start_line_base0 = nil
+        AgentsFrontend.queued_section_start_line_base0 = nil -- will be set anew below if there are still queued messages
     end
 
     if #AgentsFrontend.queued_user_messages == 0 then
+        -- we were only clearing previously displayed queued messages (i.e. after send or cancel)
         return
     end
 
+    -- * display queued section w/ current queued_messages
     local lines = LinesBuilder:new()
     lines:create_marks_namespace()
     lines:append_role_header("user")
@@ -1176,7 +1178,7 @@ function AgentsFrontend.redraw_queued_user_messages()
     if start_line_base0 == 1 and buffer:get_lines_from(0) == "" then
         start_line_base0 = 0
     end
-    AgentsFrontend.queued_section_start_line_base0 = start_line_base0
+    AgentsFrontend.queued_section_strt_line_base0 = start_line_base0 -- store offset so we can clear/redo this section on an update
     buffer:append_styled_lines(lines)
 end
 
