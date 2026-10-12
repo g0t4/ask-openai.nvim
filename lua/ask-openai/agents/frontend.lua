@@ -335,9 +335,10 @@ end
 
 ---@param trace AgentTrace
 function AgentsFrontend.then_get_assistant_response(trace)
-    -- * conversation turns (track start line for streaming chunks)
 
+    -- * conversation turns (track start line for streaming chunks)
     AgentsFrontend.this_turn_chat_start_line_base0 = AgentsFrontend.chat_window.buffer:get_line_count()
+
     -- log:info("M.this_turn_chat_start_line_base0", M.this_turn_chat_start_line_base0)
     AgentsFrontend.chat_window:mark_agent_running(true)
     AgentsFrontend.chat_window:ensure_spinner_running("agenting...")
