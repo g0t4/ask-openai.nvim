@@ -1273,12 +1273,12 @@ function AgentsFrontend.submit_from_input_window()
         return
     end
     local bufnr = AgentsFrontend.user_input_window.buffer_number
-    local text = table.concat(vim.api.nvim_buf_get_lines(bufnr, 0, -1, false), "\n")
+    local user_message = table.concat(vim.api.nvim_buf_get_lines(bufnr, 0, -1, false), "\n")
 
     -- * clear the input buffer after reading
     vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { "" })
 
-    AgentsFrontend.submit_user_message(text)
+    AgentsFrontend.submit_user_message(user_message)
 end
 
 --- Submit a user message. While the agent runs it is queued for later delivery;
