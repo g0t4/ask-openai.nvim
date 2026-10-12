@@ -82,9 +82,6 @@
 ---@field content OpenAIChatCompletion_MessageContent - btw role="user" has a few extra item times in table[]
 ---@field name? string - NOT using (so far)
 
----@class OpenAIChatCompletion_System_TxChatMessage : OpenAIChatCompletion_TxChatMessage
----@field role string - "system"
-
 --- For returning tool call results to the model (assistant)
 ---  FTR no `name` field
 ---@class OpenAIChatCompletion_ToolResult_TxChatMessage : OpenAIChatCompletion_TxChatMessage

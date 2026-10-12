@@ -93,10 +93,10 @@ function TxChatMessage:tool_completion(tool_call_id, content)
 end
 
 ---@param content string
----@return OpenAIChatCompletion_System_TxChatMessage
+---@return TxChatMessage
 function TxChatMessage:system(content)
     -- * content, role, name - https://platform.openai.com/docs/api-reference/chat/create#chat_create-messages-system_message
-    return TxChatMessage:new(TX_MESSAGE_ROLES.SYSTEM, content) --[[@as OpenAIChatCompletion_System_TxChatMessage]]
+    return TxChatMessage:new(TX_MESSAGE_ROLES.SYSTEM, content)
 end
 
 ---@param content string
