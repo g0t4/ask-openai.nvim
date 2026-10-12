@@ -964,6 +964,7 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(trace)
                 request.already_sent = true
 
                 -- * deliver any queued user messages as an interruption before continuing
+                -- FYI this is exactly the right spot to include this!!!
                 AgentsFrontend.inject_queued_user_messages(trace)
 
                 -- IIUC I need to queue this after the changes from update_chat_viewer_buffer?
