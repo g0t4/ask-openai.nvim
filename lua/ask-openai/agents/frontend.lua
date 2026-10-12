@@ -809,9 +809,8 @@ function AgentsFrontend.on_curl_exited_successfully()
 
         -- * If the agent finished (final message) and the user queued messages while it ran,
         --   deliver them now as a normal follow-up instead of waiting for the next tool call.
-        local should_deliver_queued_as_followup = reached_final_message and #AgentsFrontend.queued_user_messages > 0
-
-        if should_deliver_queued_as_followup then
+        local deliver_queued_after_final = reached_final_message and #AgentsFrontend.queued_user_messages > 0
+        if deliver_queued_after_final then
             -- FYI only send on final assistant message here b/c we handle queuing messages
             -- when the model is already generating a request for tool calls
             -- in run_tools_and_send_results_back_to_the_model (called below)
