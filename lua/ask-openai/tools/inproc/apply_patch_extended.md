@@ -1,15 +1,10 @@
 Tips on a failure:
-- You only need enough context for a unique match!
-- The line(s) you replace are context too; if they’re unique, no additional context is needed.
-- Split bigger patches into smaller patches, i.e. if editing two functions, try each separately!
-- Watch out for whitespace differences, i.e. blank lines
+- Split bigger patches into smaller patches
+- Watch out for whitespace differences
 
-Please be curteous:
-- Check your work!
+### More exmaples
 
-### More Examples
-
-Here's a patch file to change the `win` property's type:
+Here's a patch file to change the type of `win`:
 
 ```diff
 *** Begin Patch
@@ -26,7 +21,7 @@ Here's a patch file to change the `win` property's type:
 *** End Patch
 ```
 
-Which can be simplified to:
+This can be simplified to:
 
 ```diff
 *** Begin Patch
@@ -39,7 +34,7 @@ Which can be simplified to:
 *** End Patch
 ```
 
-Or, this could work if the `win` property is unique:
+Or, if the `win` property is globally unique:
 
 ```diff
 *** Begin Patch

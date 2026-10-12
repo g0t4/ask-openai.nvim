@@ -1,18 +1,17 @@
 ## Use `apply_patch` to edit files.
 
-Your patch language is a stripped‑down, file‑oriented diff format designed to be easy to parse and safe to apply.
+Uses a diff format that's easy to parse and apply.
 
 *** Begin Patch
 [ one or more file operations ]
 *** End Patch
 
 Each “operation” MUST start with one of three “headers”:
+*** Add File: <path>
+*** Delete File: <path>
+*** Update File: <path>
 
-*** Add File: <path> - every following line is a + line (the initial contents).
-*** Delete File: <path> - remove an existing file. Nothing follows.
-*** Update File: <path> - in-place edits (optionally with a rename).
-
-UpdateFile can be immediately followed by MoveTo to rename the file:
+UpdateFile may be followed by MoveTo to rename it:
 *** Move to: <new_path>
 
 Then one or more “hunks”, each introduced by @@ (optionally followed by a hunk header).
@@ -38,7 +37,7 @@ MoveTo := "*** Move to: " newPath NEWLINE
 Hunk := "@@" [ header ] NEWLINE { HunkLine } [ "*** End of File" NEWLINE ]
 HunkLine := (" " | "-" | "+") text NEWLINE
 
-### A full patch can combine several operations:
+### A patch can combine operations:
 
 *** Begin Patch
 *** Add File: hello.txt
@@ -53,9 +52,6 @@ HunkLine := (" " | "-" | "+") text NEWLINE
 
 ### Reminders
 
-- Verify your changes with `git diff foo.json`
-- Nothing wrong with commands too:
-  - `rm foo.json` to delete
-  - `mv foo.json bar.json` to rename
-  - `rename` for bulk rename
-- Don't be that guy that uses DeleteFile followed by AddFile just to rename a file!
+Prefer commands for simple edits:
+- `rm foo.json` to delete
+- `mv foo.json bar.json` to rename
