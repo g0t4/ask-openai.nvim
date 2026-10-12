@@ -1144,6 +1144,7 @@ end
 --- Drops any previously-rendered queued section, then (re)appends the current queue.
 function AgentsFrontend.redraw_queued_user_messages()
     if not AgentsFrontend.chat_window then
+        log:warn("redraw_queued_user_messages was called when there's no chat_window (should not happen)")
         return
     end
     local buffer = AgentsFrontend.chat_window.buffer
