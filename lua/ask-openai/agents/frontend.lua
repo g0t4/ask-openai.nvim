@@ -822,7 +822,7 @@ function AgentsFrontend.on_curl_exited_successfully()
             local queued = AgentsFrontend.queued_user_messages
             AgentsFrontend.queued_user_messages = {}
             AgentsFrontend.redraw_queued_user_messages() -- drops rendered queue items
-            AgentsFrontend.submit_follow_up(build_queued_message(queued))
+            AgentsFrontend.send_follow_up_user_message(build_queued_message(queued))
             -- TODO add an integration test of this scenario (queued during final message) (with model responses faked so we get reliable, fast testing)
             return -- b/c reached_final_message should only happen if no messages after it... perhaps we should be returning on reached_final_message regardless of queued messages to avoid ambiguity... turns out run_tools_and_send_results_back_to_the_model does nothing (loop over tool_calls) if there are no tool calls so it is safe to let run always (intersting)
         end
@@ -1062,7 +1062,7 @@ function AgentsFrontend.interrupt_agent()
         if #queued_messages > 0 then
             -- TODO add integration test with faked model responses and make sure sending queued messages works here (when we force an interruption an interruption when _the model is not running_)
             AgentsFrontend.redraw_queued_user_messages()
-            AgentsFrontend.submit_follow_up(build_queued_message(queued_messages))
+            AgentsFrontend.send_follow_up_user_message(build_queued_message(queued_messages))
         end
         return
     end
@@ -1177,7 +1177,7 @@ end
 
 --- Submit a follow-up user message against the current trace (or start a new one).
 ---@param user_message string
-function AgentsFrontend.submit_follow_up(user_message)
+function AgentsFrontend.send_follow_up_user_message(user_message)
     AgentsFrontend.ensure_chat_window_is_open()
 
     local trace = AgentsFrontend.trace
@@ -1288,7 +1288,7 @@ function AgentsFrontend.user_sends_message_from_user_input_window()
     end
 
     -- if not running then we can submit as a normal user message
-    AgentsFrontend.submit_follow_up(user_message)
+    AgentsFrontend.send_follow_up_user_message(user_message)
 end
 
 function AgentsFrontend.follow_up_command()
