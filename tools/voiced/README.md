@@ -9,7 +9,7 @@ domain socket for IPC (newline-delimited JSON).
 
 ## What it does
 
-- **PTT** - hold the **fn** key on macOS to talk (detected via a Quartz
+- **PTT** - hold the **right Option/Alt** key on macOS to talk (detected via a Quartz
   `CGEventTap`). While held, audio is captured and transcribed live. On
   release, a final transcription of the whole utterance is emitted.
   (Socket-based `start` / `stop` commands work as a fallback.)
@@ -72,9 +72,8 @@ Useful commands:
 
 ## Notes
 
-- The **fn** key listener needs macOS Accessibility permission for the process
+- The **right Option/Alt** key listener needs macOS Accessibility permission for the process
   running the daemon (grant it to your terminal / the daemon's host app).
   Without it, use `:VoicedStart` / `:VoicedStop` or the socket commands.
 - This is a proof of concept. VAD (e.g. Silero) and feeding transcriptions
   into the AI prompt are natural next steps.
-

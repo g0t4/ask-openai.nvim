@@ -1,4 +1,4 @@
-"""Pytest tests for the macOS fn-key PTT callback logic."""
+"""Pytest tests for the macOS right Option key PTT callback logic."""
 
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ def _fake_quartz(monkeypatch):
         kCGEventKeyDown=2,
         kCGEventKeyUp=3,
         kCGKeyboardEventKeycode=4,
-        kCGEventFlagMaskSecondaryFn=0x800000,
+        kCGEventFlagMaskAlternate=0x80000,
         kCGEventTapOptionDefault=0,
         kCGHeadInsertEventTap=0,
         kCGSessionEventTap=0,
@@ -33,7 +33,7 @@ def _fake_quartz(monkeypatch):
     return fake
 
 
-def test_fn_key_press_and_release(monkeypatch):
+def test_right_option_press_and_release(monkeypatch):
     _fake_quartz(monkeypatch)
 
     events = []
@@ -42,12 +42,12 @@ def test_fn_key_press_and_release(monkeypatch):
         on_release=lambda: events.append("release"),
     )
 
-    fn_pressed = {"keycode": ptt_module.FN_KEYCODE, "flags": 0x800000}
-    fn_released = {"keycode": ptt_module.FN_KEYCODE, "flags": 0}
+    right_option_pressed = {"keycode": ptt_module.RIGHT_OPTION_KEYCODE, "flags": 0x80000}
+    right_option_released = {"keycode": ptt_module.RIGHT_OPTION_KEYCODE, "flags": 0}
 
-    # fn press -> press, fn release -> release
-    _event_tap_callback(None, 1, fn_pressed, ptt)
-    _event_tap_callback(None, 1, fn_released, ptt)
+    # right Option press -> press, right Option release -> release
+    _event_tap_callback(None, 1, right_option_pressed, ptt)
+    _event_tap_callback(None, 1, right_option_released, ptt)
     assert events == ["press", "release"]
 
 
@@ -62,7 +62,6 @@ def test_other_keys_ignored(monkeypatch):
 
     # A normal key down (non-flagsChanged) must be ignored.
     _event_tap_callback(None, 2, {"keycode": 1, "flags": 0}, ptt)
-    # flagsChanged for a non-fn key must be ignored.
-    _event_tap_callback(None, 1, {"keycode": 2, "flags": 0x800000}, ptt)
+    # flagsChanged for a non-right-Option key must be ignored.
+    _event_tap_callback(None, 1, {"keycode": 2, "flags": 0x80000}, ptt)
     assert events == []
-

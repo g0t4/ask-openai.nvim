@@ -1,9 +1,9 @@
 """Push-to-talk detection for macOS.
 
-Primary trigger: holding down the fn key (kVK_Function = 63) is detected via
-a Quartz CGEventTap. Because an event tap requires Accessibility permission,
-we also expose ``press`` / ``release`` (driven by socket commands) so PTT works
-even before/without that permission.
+Primary trigger: holding down the right Option/Alt key (kVK_RightOption = 61)
+is detected via a Quartz CGEventTap. Because an event tap requires
+Accessibility permission, we also expose ``press`` / ``release`` (driven by
+socket commands) so PTT works even before/without that permission.
 """
 
 from __future__ import annotations
@@ -15,8 +15,8 @@ from tools.voiced.voiced_logger import get_logger
 
 logger = get_logger(__name__)
 
-# kVK_Function: the fn (globe) key on Apple keyboards
-FN_KEYCODE = 63
+# kVK_RightOption: the right Option/Alt key (works on external keyboards)
+RIGHT_OPTION_KEYCODE = 61
 
 try:  # only available on macOS
     import Quartz
@@ -27,19 +27,19 @@ except ImportError:  # pragma: no cover - macOS only
 def _event_tap_callback(proxy, event_type, event, refcon):
     """Quartz CGEventTap callback; ``refcon`` is the owning PushToTalk."""
     ptt = refcon
-    # The fn key does not produce ordinary keyDown/keyUp events; it fires a
-    # flagsChanged event whose SecondaryFn flag reflects press/release.
+    # The Option key fires flagsChanged events; the Alternate flag reflects
+    # press/release. Check the keycode to distinguish right Option from left.
     if event_type != Quartz.kCGEventFlagsChanged:
         return event
 
     keycode = Quartz.CGEventGetIntegerValueField(
         event, Quartz.kCGKeyboardEventKeycode
     )
-    if keycode != FN_KEYCODE:
+    if keycode != RIGHT_OPTION_KEYCODE:
         return event
 
     flags = Quartz.CGEventGetFlags(event)
-    if flags & Quartz.kCGEventFlagMaskSecondaryFn:
+    if flags & Quartz.kCGEventFlagMaskAlternate:
         ptt.press()
     else:
         ptt.release()
@@ -79,7 +79,7 @@ class PushToTalk:
         return self._pressed
 
     def start_hardware_listener(self) -> None:
-        """Start the macOS fn key listener on a background thread."""
+        """Start the macOS right Option key listener on a background thread."""
         self._thread = threading.Thread(
             target=self._run_event_tap,
             name="ptt-event-tap",
@@ -89,7 +89,7 @@ class PushToTalk:
 
     def _run_event_tap(self) -> None:
         if Quartz is None:
-            logger.warning("pyobjc Quartz not available; fn key PTT disabled")
+            logger.warning("pyobjc Quartz not available; right Option PTT disabled")
             return
 
         tap = Quartz.CGEventTapCreate(
@@ -103,7 +103,7 @@ class PushToTalk:
         if tap is None:
             logger.warning(
                 "CGEventTapCreate failed - grant Accessibility permission to "
-                "the process running `voiced` for fn key PTT."
+                "the process running `voiced` for right Option PTT."
             )
             return
 
@@ -114,5 +114,7 @@ class PushToTalk:
             Quartz.kCFRunLoopDefaultMode,
         )
         Quartz.CGEventTapEnable(tap, True)
-        logger.info("fn key PTT listener active (keycode %d)", FN_KEYCODE)
+        logger.info(
+            "right Option PTT listener active (keycode %d)", RIGHT_OPTION_KEYCODE
+        )
         Quartz.CFRunLoopRun()
