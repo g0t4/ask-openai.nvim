@@ -994,10 +994,7 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(trace)
                 -- FYI this is exactly the right spot to include this!!!
                 -- include user messages right after tool call result(s), before next assistant response even begins (nothing wasted)
                 AgentsFrontend.append_queued_user_messages(trace)
-
-                -- IIUC I need to queue this after the changes from update_chat_viewer_buffer?
-                -- else IIRC, the line count will be broken for the next message
-                vim.schedule(function() AgentsFrontend.then_get_assistant_response(trace) end)
+                AgentsFrontend.then_get_assistant_response(trace)
             end
 
             local function on_tool_progress(progress)
@@ -1217,13 +1214,15 @@ function AgentsFrontend.append_queued_user_messages(trace)
 
     local queued = AgentsFrontend.queued_user_messages
     AgentsFrontend.queued_user_messages = {}
-    AgentsFrontend.queued_section_start_line_base0 = nil
+    AgentsFrontend.redraw_queued_user_messages() -- drop queued messages from chat viewer
 
     local contents = build_fyi_message(queued)
     display_user_message_in_chat(contents)
 
+    -- PRN can I switch to what others code calls: AgentsFrontend.send_follow_up_user_message(build_queued_message(queued))
     local message = TxChatMessage:user(contents)
     trace:add_message(message)
+    -- TODO why not AgentsFrontend.then_get_assistant_response in caller or here or?
 end
 
 --- Ensure the dedicated user message input box is open.
