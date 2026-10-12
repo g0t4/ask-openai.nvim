@@ -965,11 +965,10 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(trace)
                 end
                 request.already_sent = true
 
-                -- * deliver any queued user messages as an interruption before continuing
-                -- FYI this is exactly the right spot to include this!!!
+                -- * tack on queued messages too
                 -- include user messages right after tool call result(s), before next assistant response even begins (nothing wasted)
                 AgentsFrontend.append_queued_user_messages(trace)
-                AgentsFrontend.then_get_assistant_response(trace)
+                AgentsFrontend.then_get_assistant_response(trace) -- NOTE you must always submit the tool result(s) even if no queued messages
             end
 
             local function on_tool_progress(progress)
