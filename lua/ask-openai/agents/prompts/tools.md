@@ -1,4 +1,14 @@
-## Tool notes
+## File searches
 
-- `semantic_grep` searches an embeddings index and reranks results by relevance. Use it to discover where to look; use rg for exhaustive matches.
+Use `semantic_grep` to discover where to look; use `rg` for exhaustive matches.
+
+Use `fd` to search file names.
+
+Don't use _SLOW_ 🐌 commands like `ls -R`, `grep -R` and `find . -type f`
+
+## Git repos
+
+- Use `git diff` as a sanity check
+- Commit when you're done with a task. Don't make me ask!
+- Include `--author="INSERT_COMMIT_AUTHOR"`
 

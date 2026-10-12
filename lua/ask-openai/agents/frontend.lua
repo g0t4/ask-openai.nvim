@@ -138,17 +138,19 @@ local function ask_agent_command(opts)
     local tool_definitions
     if use_tools then
         -- PRN build out more detailed guidance: review Claude Code and Codex prompts
-        local tool_instructs = get_file("~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/agents/prompts/tools.md")
-        -- * repo root vs cwd prompt instructions
+
+        -- * inject repo_root + workdir
         local cwd = vim.fn.getcwd()
         local repo_root = files.get_repo_root()
         local cwd_text = context_builder.build_git_context(cwd, repo_root)
-
         system = system:gsub("INSERT_CWD", cwd_text)
 
-        system = system .. "\n\n" .. tool_instructs
-
-
+        -- * tool instructions
+        local tool_instructions = get_file("~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/agents/prompts/tools.md")
+        local current_model = config.get_agents_model()
+        local commit_author = models.MODEL_AUTHOR_MAP[current_model] or "unknown<unknown@example.com>"
+        tool_instructions = tool_instructions:gsub("INSERT_COMMIT_AUTHOR", commit_author)
+        system = system .. "\n\n" .. tool_instructions
 
         local tool_provided_instructs
         -- Pass coordinator flag based on slash command "coordinator"
