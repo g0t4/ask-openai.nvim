@@ -774,7 +774,6 @@ function AgentsFrontend.on_curl_exited_successfully()
             end
         end
 
-        local has_tool_calls = false
         local reached_final_message = false
         for _, rx_message in ipairs(request.accumulated_model_response_messages or {}) do
             -- *** trace.last_request.accumulated_model_response_messages IS NOT trace.messages
@@ -797,9 +796,6 @@ function AgentsFrontend.on_curl_exited_successfully()
             --  this is the inherent tension between adding that assistant response message to the messages array (which is really for the next request)... vs keeping it separate as the completion to the messages array sent as-is to llama-server
 
             local is_final_assistant_message = #rx_message.tool_calls == 0
-            if not is_final_assistant_message then
-                has_tool_calls = true
-            end
             if is_final_assistant_message then
                 reached_final_message = true
                 AgentsFrontend.chat_window:mark_agent_running(false)
