@@ -1046,12 +1046,13 @@ end
 function AgentsFrontend.interrupt_agent()
     local is_running = AgentsFrontend.chat_window and AgentsFrontend.chat_window._agent_is_running
 
+    local queued_messages = AgentsFrontend.queued_user_messages
+    AgentsFrontend.queued_user_messages = {}
+
     -- * if the agent isn't running, just deliver any queued messages as a normal follow-up
     if not is_running then
-        local queued_messages = AgentsFrontend.queued_user_messages
-        AgentsFrontend.queued_user_messages = {}
-        AgentsFrontend.redraw_queued_user_messages()
         if #queued_messages > 0 then
+            AgentsFrontend.redraw_queued_user_messages()
             AgentsFrontend.submit_follow_up(table.concat(queued_messages, "\n"))
         end
         return
@@ -1060,9 +1061,6 @@ function AgentsFrontend.interrupt_agent()
     local trace = AgentsFrontend.trace
     -- * capture the request being interrupted BEFORE then_get_assistant_response replaces it
     local interrupted_request = trace and trace.last_request
-    -- * capture the queued user messages (they are sent immediately, not deferred)
-    local queued_messages = AgentsFrontend.queued_user_messages
-    AgentsFrontend.queued_user_messages = {}
 
     -- * stop the agent like cancel/escape does, marking THIS request cancelled so any
     --   still-running tool call's result is ignored (future requests are unaffected)
@@ -1210,20 +1208,18 @@ function AgentsFrontend.submit_follow_up(user_message)
     send_trace_follow_up(user_message)
 end
 
---- Inject queued user messages into the trace as an interruption user message.
---- Called right before the next request is sent after a tool call completes.
 ---@param trace AgentTrace
 function AgentsFrontend.append_queued_user_messages(trace)
     if #AgentsFrontend.queued_user_messages == 0 then
         return
     end
 
-    local interruption = TxChatMessage:user(build_interruption_message(AgentsFrontend.queued_user_messages))
-    trace:add_message(interruption)
-
-    -- * consumed: clear the queue (the rendered section stays in the buffer as history)
+    local queued = AgentsFrontend.queued_user_messages
     AgentsFrontend.queued_user_messages = {}
     AgentsFrontend.queued_section_start_line_base0 = nil
+
+    local interruption = TxChatMessage:user(build_interruption_message(queued))
+    trace:add_message(interruption)
 end
 
 --- Ensure the dedicated user message input box is open.
