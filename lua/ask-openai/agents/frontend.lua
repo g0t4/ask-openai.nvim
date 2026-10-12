@@ -600,6 +600,7 @@ local function update_ui_chat_viewer(trace)
         AgentsFrontend.chat_window.buffer:replace_with_styled_lines_after(AgentsFrontend.this_turn_chat_start_line_base0, lines)
 
         -- * re-pin any queued user messages to the bottom (the replace wiped the prior queued section)
+        -- TODO add integration test with faked model responses and make sure queued messages show after updates from model
         AgentsFrontend.queued_section_start_line_base0 = nil
         AgentsFrontend.redraw_queued_user_messages()
 
@@ -816,6 +817,8 @@ function AgentsFrontend.on_curl_exited_successfully()
             -- * drop the rendered queued section (submit_follow_up re-displays it as a normal user message)
             AgentsFrontend.redraw_queued_user_messages()
             AgentsFrontend.submit_follow_up(table.concat(queued, "\n"))
+            -- TODO is this updating offsets appropriately?
+            -- TODO add an integration test of this scenario (queued during final message) (with model responses faked so we get reliable, fast testing)
             return -- b/c reached_final_message should only happen if no messages after it... perhaps we should be returning on reached_final_message regardless of queued messages to avoid ambiguity... turns out run_tools_and_send_results_back_to_the_model does nothing (loop over tool_calls) if there are no tool calls so it is safe to let run always (intersting)
         end
 
@@ -1025,6 +1028,7 @@ function AgentsFrontend.abort_request()
     if #AgentsFrontend.queued_user_messages > 0 then
         AgentsFrontend.queued_user_messages = {}
         AgentsFrontend.redraw_queued_user_messages()
+        -- TODO add integration test with faked model responses and make sure cancel works with queued messages
     end
 
     CurlRequestForTrace.terminate(trace.last_request)
@@ -1051,6 +1055,7 @@ function AgentsFrontend.interrupt_agent()
     -- * if the agent isn't running, just deliver any queued messages as a normal follow-up
     if not is_running then
         if #queued_messages > 0 then
+            -- TODO add integration test with faked model responses and make sure sending queued messages works here (when we force an interruption an interruption when _the model is not running_)
             AgentsFrontend.redraw_queued_user_messages()
             AgentsFrontend.submit_follow_up(table.concat(queued_messages, "\n"))
         end
@@ -1074,6 +1079,7 @@ function AgentsFrontend.interrupt_agent()
         AgentsFrontend.rag_cancel()
     end
 
+    -- TODO add integration test with faked model responses and make sure sending queued messages works here (when model is mid response and we force interrupt)
     -- * drop the rendered queued section (re-rendered as a normal user message below)
     AgentsFrontend.queued_section_start_line_base0 = nil
     AgentsFrontend.redraw_queued_user_messages()
@@ -1182,6 +1188,7 @@ function AgentsFrontend.submit_user_message(user_message)
 
     if AgentsFrontend.chat_window and AgentsFrontend.chat_window._agent_is_running then
         table.insert(AgentsFrontend.queued_user_messages, user_message)
+        -- TODO add integration test with faked model responses and make sure queued messages shows right after user submits it
         AgentsFrontend.redraw_queued_user_messages()
         return "queued"
     end
