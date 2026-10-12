@@ -94,7 +94,7 @@ function M.http(request)
     on_headers = request.on_headers or function() end
     -- FYI https://docs.libuv.org/en/v1.x/tcp.html for uv_tcp_t
     local tcp_handle, newtcp_err, newtcp_err_name = uv.new_tcp()
-    log:info("new tcp_handle", tcp_handle)
+    -- log:info("new tcp_handle", tcp_handle)
 
     assert(tcp_handle ~= nil)
     if newtcp_err ~= nil then
@@ -205,7 +205,7 @@ function M.http(request)
             end)
         end)
         -- FYI likely can ignore ECANCELED as that would be me calling tcp_handle:close() during connection
-        log:info("connect results", conn, conn_err, conn_err_name)
+        -- log:info("connect results", conn, conn_err, conn_err_name)
     end)
     return tcp_handle
 end
