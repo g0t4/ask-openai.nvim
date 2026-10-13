@@ -973,25 +973,28 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(trace)
                 end
                 request.already_sent = true
 
-                -- * tack on any queued user messages (if applicable)
-                if #AgentsFrontend.queued_user_messages > 0 then
-                    local queued = AgentsFrontend.queued_user_messages
+                local queued = AgentsFrontend.queued_user_messages
+                AgentsFrontend.queued_user_messages = {}
 
-                    -- * clear queued messages in chat_window
-                    AgentsFrontend.queued_user_messages = {}
-                    AgentsFrontend.redraw_queued_user_messages()
+                vim.schedule(function()
+                    -- * tack on any queued user messages (if applicable)
+                    if #queued > 0 then
+                        -- * clear queued messages in chat_window
+                        AgentsFrontend.redraw_queued_user_messages()
 
-                    -- * show final user message (from queued messages) in chat_window
-                    local contents = build_fyi_message(queued)
-                    display_user_message_in_chat(contents)
+                        -- * show final user message (from queued messages) in chat_window
+                        local contents = build_fyi_message(queued)
+                        display_user_message_in_chat(contents)
 
-                    -- * add user message to the trace
-                    local message = TxChatMessage:user(contents)
-                    trace:add_message(message)
-                end
+                        -- * add user message to the trace
+                        local message = TxChatMessage:user(contents)
+                        trace:add_message(message)
+                    end
 
-                -- ** no matter what, submit the tool results
-                AgentsFrontend.then_get_assistant_response(trace)
+                    -- ** no matter what, submit the tool results
+                    -- DO NOT split apart getting assistant response from display_user_message_in_chat(contents) above else it is likely the displayed message will be overwritten by something else before the_get_assistant_response fires (i.e. if vim.schedule'd alone)
+                    AgentsFrontend.then_get_assistant_response(trace)
+                end)
             end
 
             local function on_tool_progress(progress)
