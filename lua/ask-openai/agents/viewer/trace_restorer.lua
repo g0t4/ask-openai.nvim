@@ -536,9 +536,10 @@ local function setup_trace_for_followup(tx_messages)
     -- Set up AgentsFrontend for follow-up mode
     AgentsFrontend.trace = new_trace
 
-    -- Mark the agent as running (for spinner)
-    AgentsFrontend.chat_window:mark_agent_running(true)
-    AgentsFrontend.chat_window:ensure_spinner_running("ready")
+    -- * Do NOT mark the agent as running. The agent is idle after a restore and
+    --   ready for a follow-up message. Marking it running causes
+    --   send_user_message_from_user_input_window to *queue* the user's next
+    --   message instead of sending it directly (and nothing ever delivers the queue).
 
     -- PRN on save, have it save the draft user message too!? instead of the save user input message crappy approach currently?
 
