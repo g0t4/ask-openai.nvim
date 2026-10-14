@@ -21,6 +21,8 @@ local combined_diff = require("devtools.diff.combined")
 ---@field replace_end_line_base0: integer?   -- buffer line to replace to (exclusive)
 ---@field replace_end_col_base0: integer?    -- buffer col to replace to (exclusive)
 ---@field trailing_echo_end_line_base0: integer? -- last line of the echoed context (exclusive)
+---@field _original_conceallevel: integer?   -- saved conceallevel for diff display
+---@field _original_concealcursor: string?   -- saved concealcursor for diff display
 ---@field has_duplicate_prefix: boolean
 ---@field has_prediction: boolean
 ---@field extmarks table
@@ -361,30 +363,43 @@ function Prediction:fix_fim_and_redraw_extmarks()
             end
 
             if #diff_lines > 0 then
-                -- Show the diff as virtual lines positioned ABOVE the end of the
-                -- replacement span. This visually covers the original lines being
-                -- replaced (like RewritesFrontend does by removing them), so only
-                -- the diff content is shown.
-                vim.api.nvim_buf_set_extmark(self.bufnr, extmarks_ns_id,
-                    self.replace_end_line_base0, 0,
-                    {
-                        virt_lines = diff_lines,
-                        virt_lines_above = true,
-                    })
-                -- Also hide the trailing echo context lines (e.g. a trailing
-                -- `end` line) so the diff view shows only the changed code.
-                if self.trailing_echo_end_line_base0 ~= nil
-                    and self.trailing_echo_end_line_base0 > self.replace_end_line_base0 then
-                    for line_base0 = self.replace_end_line_base0,
-                        self.trailing_echo_end_line_base0 - 1 do
-                        vim.api.nvim_buf_set_extmark(self.bufnr, extmarks_ns_id,
-                            line_base0, 0,
-                            {
-                                virt_text = { { "", "Normal" } },
-                                virt_text_pos = "overlay",
-                            })
-                    end
+                -- * Conceal the original lines being replaced and the trailing
+                --   echo context lines, then show the diff in their place.
+                --   This is like RewritesFrontend which removes the original
+                --   lines before showing the diff.
+                --
+                --   conceal_lines requires conceallevel to be >= 1 and
+                --   concealcursor to include the current mode.
+                if self._original_conceallevel == nil then
+                    self._original_conceallevel = vim.wo.conceallevel
+                    self._original_concealcursor = vim.wo.concealcursor
                 end
+                vim.wo.conceallevel = 2
+                vim.wo.concealcursor = "nvic"
+
+                -- Conceal lines from replacement start through the trailing echo.
+                local conceal_end_line_base0 = self.trailing_echo_end_line_base0
+                    or self.replace_end_line_base0
+                for line_base0 = self.replace_start_line_base0,
+                    conceal_end_line_base0 - 1 do
+                    vim.api.nvim_buf_set_extmark(self.bufnr, extmarks_ns_id,
+                        line_base0, 0,
+                        {
+                            conceal_lines = "",
+                        })
+                end
+
+                -- Show the diff at the first concealed line. The first diff
+                -- line uses virt_text (overlay) so it appears on the concealed
+                -- line; remaining lines use virt_lines.
+                local first_diff_line = table.remove(diff_lines, 1)
+                vim.api.nvim_buf_set_extmark(self.bufnr, extmarks_ns_id,
+                    self.replace_start_line_base0, 0,
+                    {
+                        virt_text = first_diff_line,
+                        virt_lines = diff_lines,
+                        virt_text_pos = "overlay",
+                    })
                 return
             end
         end
@@ -410,6 +425,17 @@ end
 
 function Prediction:clear_extmarks()
     vim.api.nvim_buf_clear_namespace(self.bufnr, extmarks_ns_id, 0, -1)
+
+    -- Restore conceal options if we changed them for the diff display.
+    -- The namespace clear above removes the conceal_lines extmarks, so the
+    -- lines become visible again. Restore the window options so the user's
+    -- normal editing experience is unaffected.
+    if self._original_conceallevel ~= nil then
+        vim.wo.conceallevel = self._original_conceallevel
+        vim.wo.concealcursor = self._original_concealcursor
+        self._original_conceallevel = nil
+        self._original_concealcursor = nil
+    end
 
     -- Explicitly remove the duplicate prefix highlight if it exists
     if not self.extmarks then
