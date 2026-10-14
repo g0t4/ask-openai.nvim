@@ -49,7 +49,7 @@ Reasoning: ]] .. config.get_fim_reasoning_level() [[
     return self
 end
 
-local FIM_CHAT_STYLE_CURSOR_MARKER = "<|CURSOR_IS_HERE|>"  -- qwen.FIM_MIDDLE)
+local FIM_CHAT_STYLE_CURSOR_MARKER = "<|CURSOR_IS_HERE|>" -- qwen.FIM_MIDDLE)
 HarmonyFimPromptBuilder.developer_message =
     files
     .read_text("~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/backends/models/gptoss/prompts/fim_dev.md")
@@ -159,18 +159,26 @@ end
 ---@param request FimRequestBuilder
 function HarmonyFimPromptBuilder.fim_prompt(request)
     -- * user message
-    local current_file_relative_path = request.inject_file_path_test_seam()
-    if current_file_relative_path == nil then
+    local file_relative_path = request.inject_file_path_test_seam()
+    if file_relative_path == nil then
         log:warn("current_file_name is nil")
     end
 
+    local start_line = request.ps_chunk.start_line_base1
+    local end_line = request.ps_chunk.end_line_base1
+    local line_info = start_line == end_line
+        and ("(line: " .. start_line .. ")")
+        or ("(lines: " .. start_line .. "-" .. end_line .. ")")
+
+    local file_extension = file_relative_path:match("%.([^%.]+)$") or ""
+    -- FYI don't bother with making a link out of file_name (path)... agents don't need that and neither do humans... and your markdown parser/color-er can always detect most of these to color them if you really want that
+
     local fim_user_message =
         "Please suggest an edit to the code. Repeat at least one line of the existing code "
-        ..
-        "verbatim (a context anchor) immediately before the lines you want to change; the "
-        ..
-        "plugin uses that anchor to locate your edit. The edit may be at the cursor or nearby.\n\n```"
-        .. current_file_relative_path .. "\n"
+        .. "verbatim (a context anchor) immediately before the lines you want to change; the "
+        .. "plugin uses that anchor to locate your edit. The edit may be at the cursor or nearby.\n\n"
+        .. "This is from " .. file_relative_path .. " " .. line_info
+        .. "\n```" .. file_extension .. "\n"
         .. request.ps_chunk.prefix
         .. FIM_CHAT_STYLE_CURSOR_MARKER
         .. request.ps_chunk.suffix
