@@ -23,6 +23,7 @@ local combined_diff = require("devtools.diff.combined")
 ---@field trailing_echo_end_line_base0: integer? -- last line of the echoed context (exclusive)
 ---@field _original_conceallevel: integer?   -- saved conceallevel for diff display
 ---@field _original_concealcursor: string?   -- saved concealcursor for diff display
+---@field _completion_after_anchor: string[]? -- completion lines from anchor onwards
 ---@field has_duplicate_prefix: boolean
 ---@field has_prediction: boolean
 ---@field extmarks table
@@ -173,6 +174,7 @@ function Prediction:fim_fixes()
         self.replace_end_line_base0 = edit.replace_end_line_base0
         self.replace_end_col_base0 = edit.replace_end_col_base0
         self.trailing_echo_end_line_base0 = edit.trailing_echo_end_line_base0
+        self._completion_after_anchor = edit.completion_after_anchor
         self.first_line = edit.insertion_lines[1] or ""
         self.rest_of_lines = {}
         for i = 2, #edit.insertion_lines do
@@ -190,6 +192,7 @@ function Prediction:fim_fixes()
         self.replace_end_line_base0 = nil
         self.replace_end_col_base0 = nil
         self.trailing_echo_end_line_base0 = nil
+        self._completion_after_anchor = nil
         self.first_line = lines[1] or ""
         self.rest_of_lines = {}
         for i = 2, #lines do
@@ -205,6 +208,7 @@ function Prediction:fim_fixes()
         self.replace_end_line_base0 = nil
         self.replace_end_col_base0 = nil
         self.trailing_echo_end_line_base0 = nil
+        self._completion_after_anchor = nil
         self.first_line = ""
         self.rest_of_lines = {}
         self.has_prediction = false
@@ -323,12 +327,31 @@ function Prediction:fix_fim_and_redraw_extmarks()
     --   (like RewritesFrontend does) so the user sees exactly what will change.
     --   The diff highlights only the added/removed words, not the whole line.
     if self.replace_start_line_base0 ~= nil and self.replace_end_line_base0 ~= nil then
+        -- The full rewritten area: from the replacement start through the
+        -- trailing echo (if any). This is everything the model's completion
+        -- covers, so we can show the complete new code in the diff.
+        local rewritten_end_line_base0 = self.trailing_echo_end_line_base0
+            or self.replace_end_line_base0
         local buffer_lines = vim.api.nvim_buf_get_lines(
-            self.bufnr, self.replace_start_line_base0, self.replace_end_line_base0, false)
+            self.bufnr, self.replace_start_line_base0, rewritten_end_line_base0, false)
         local original_text = table.concat(buffer_lines, "\n")
-        local new_text = table.concat(self.rest_of_lines, "\n")
-        if self.first_line ~= "" then
-            new_text = self.first_line .. (new_text ~= "" and "\n" .. new_text or "")
+
+        -- The new code: the full completion from the anchor onwards (minus the
+        -- anchor line itself, which is before the rewritten area).
+        local new_text
+        if self._completion_after_anchor ~= nil and #self._completion_after_anchor > 0 then
+            -- Drop the anchor line (first element), keep the rest.
+            local new_lines = {}
+            for i = 2, #self._completion_after_anchor do
+                table.insert(new_lines, self._completion_after_anchor[i])
+            end
+            new_text = table.concat(new_lines, "\n")
+        else
+            -- Fallback: use the trimmed delta.
+            new_text = table.concat(self.rest_of_lines, "\n")
+            if self.first_line ~= "" then
+                new_text = self.first_line .. (new_text ~= "" and "\n" .. new_text or "")
+            end
         end
 
         if original_text ~= "" and new_text ~= "" then
@@ -363,13 +386,13 @@ function Prediction:fix_fim_and_redraw_extmarks()
             end
 
             if #diff_lines > 0 then
-                -- * Conceal the original lines being replaced and the trailing
-                --   echo context lines, then show the diff in their place.
-                --   This is like RewritesFrontend which removes the original
-                --   lines before showing the diff.
+                -- * Conceal the original lines in the rewritten area, then show
+                --   the diff on top. This is like RewritesFrontend which removes
+                --   the original lines before showing the diff.
                 --
-                --   conceal_lines requires conceallevel to be >= 1 and
-                --   concealcursor to include the current mode.
+                --   NOTE: Use range-based conceal (end_col) instead of
+                --   conceal_lines. conceal_lines hides the ENTIRE line including
+                --   virt_text/virt_lines, which would hide the diff too.
                 if self._original_conceallevel == nil then
                     self._original_conceallevel = vim.wo.conceallevel
                     self._original_concealcursor = vim.wo.concealcursor
@@ -377,15 +400,17 @@ function Prediction:fix_fim_and_redraw_extmarks()
                 vim.wo.conceallevel = 2
                 vim.wo.concealcursor = "nvic"
 
-                -- Conceal lines from replacement start through the trailing echo.
-                local conceal_end_line_base0 = self.trailing_echo_end_line_base0
-                    or self.replace_end_line_base0
+                -- Conceal the text on each line in the rewritten area.
+                local buf_line_count = vim.api.nvim_buf_line_count(self.bufnr)
                 for line_base0 = self.replace_start_line_base0,
-                    conceal_end_line_base0 - 1 do
+                    math.min(rewritten_end_line_base0 - 1, buf_line_count - 1) do
+                    local line_text = vim.api.nvim_buf_get_lines(
+                        self.bufnr, line_base0, line_base0 + 1, false)[1] or ""
                     vim.api.nvim_buf_set_extmark(self.bufnr, extmarks_ns_id,
                         line_base0, 0,
                         {
-                            conceal_lines = "",
+                            end_col = #line_text,
+                            conceal = "",
                         })
                 end
 

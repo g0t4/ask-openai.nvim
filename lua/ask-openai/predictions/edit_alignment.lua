@@ -30,6 +30,7 @@ local M = {}
 ---@field replace_end_line_base0? integer -- buffer line to replace to (exclusive)
 ---@field replace_end_col_base0? integer -- buffer column to replace to (exclusive)
 ---@field trailing_echo_end_line_base0? integer -- last line of the echoed context (exclusive)
+---@field completion_after_anchor? string[] -- completion lines from anchor onwards (including anchor)
 
 --- Split text into lines, preserving empty lines.
 --- @param text string
@@ -262,6 +263,14 @@ function M.align(completion_text, buffer_lines, cursor_line_base0, cursor_col_ba
         anchor_line_base0 = anchor_buffer_line_base0,
         insertion_lines = delta_lines,
     }
+
+    -- Store the full completion from the anchor onwards (including the anchor
+    -- line itself) so the display can show the complete new code when the model
+    -- rewrites a large area (e.g. the rest of the file).
+    result.completion_after_anchor = {}
+    for i = anchor_completion_index_base1, #completion_lines do
+        table.insert(result.completion_after_anchor, completion_lines[i])
+    end
 
     -- Determine where the edit begins in the buffer.
     -- When the anchor is the cursor line, the edit is at the cursor column
