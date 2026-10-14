@@ -542,12 +542,8 @@ def add_semantic_grep_markdown_sections(root: TreeWrapper, markdown: str) -> boo
             continue
 
         root.add_with_markup(f"🔍 MATCH {file_location}")  # keep the original format!
-
-        ext = os.path.splitext(file_path)[1].lstrip('.').lower()
-        # Remaining lines after the header constitute the snippet.
-        snippet = "\n".join(lines[1:]).strip("\n")
-        root.add(_syntax(snippet, ext or "text"))
-
+        md_fence = "\n".join(lines[1:]).strip("\n") # strip("\n") strips blanks before/after fence indicators (NOT within the code chunk, I do not want within stripping)
+        root.add(_markdown(md_fence))
         root.blank_line()
         has_visible_match = True
     return has_visible_match
@@ -558,7 +554,6 @@ def pprint_no_truncate(what):
     # btw expand_all=False is the default and will truncate some sections (shown w/ yellow bg on black text with "...")
     #   for now just always show everything given the review is supposed to be exhaustive and so far I haven't noticed much that is a huge burden
     pprint(what, expand_all=True, indent_guides=False)
-
 
 def _pretty_no_truncate(text: Any):
     # ?? was I relying on soft_wrap=True from pprint (this replaced pprint)? if yes, what makes sense in a Tree instead?
