@@ -791,16 +791,33 @@ local function deepseek_fim_user_message(request)
         log:warn("current_file_name is nil")
     end
 
-    return "Please suggest text to replace "
-        .. DEEPSEEK_FIM_CURSOR_MARKER
-        .. ":\n\n```"
-        .. (current_file_relative_path or "")
-        .. "\n"
+    local start_line = request.ps_chunk.start_line_base1
+    local end_line = request.ps_chunk.end_line_base1
+    local line_info = start_line == end_line
+        and ("(line: " .. start_line .. ")")
+        or ("(lines: " .. start_line .. "-" .. end_line .. ")")
+
+    local file_extension = (current_file_relative_path or ""):match("%.([^%.]+)$") or ""
+
+    local fim_user_message =
+        "Please suggest an edit to the following code."
+        .. "Return only the code for the edit: first repeat at least one unchanged line immediately before the change as a context anchor, then give the new or revised code, then repeat at least one unchanged line immediately after the change as a trailing anchor. "
+        .. "The edit may be at or near the cursor. Use the surrounding code to infer what should be completed or changed. "
+        .. "Do not include an explanation or markdown fences."
+        .. "\n\n"
+        .. "FYI " .. DEEPSEEK_FIM_CURSOR_MARKER .. " marks the editor's current cursor position. "
+        .. "Use it only to understand what code the user is focused on; it does not indicate where to insert or place generated code. "
+        .. "Do not include the marker in your response."
+        .. "\n\n"
+        .. "This is from " .. (current_file_relative_path or "") .. " " .. line_info
+        .. "\n```" .. file_extension .. "\n"
         .. request.ps_chunk.prefix
         .. DEEPSEEK_FIM_CURSOR_MARKER
         .. request.ps_chunk.suffix
         .. "\n```"
         .. deepseek_fim_reminder_nudges(request)
+
+    return fim_user_message
 end
 
 ---@param request FimRequestBuilder

@@ -128,7 +128,7 @@ local function get_reminder_nudges(request)
     local reminders = {}
     -- FYI I think it's intuitive that `` are delimiters in these reminders, cuz the actual code is all there too (right above)
 
-    before = cursor_line.before_cursor
+    local before = cursor_line.before_cursor
     if before ~= "" then
         table.insert(reminders, "Text before cursor: `" .. before .. "`")
         local is_all_whitespace = before:match("^%s*$") ~= nil
@@ -137,12 +137,12 @@ local function get_reminder_nudges(request)
         end
     end
 
-    after = cursor_line.after_cursor
+    local after = cursor_line.after_cursor
     if after ~= "" then
         table.insert(reminders, "Text after cursor: `" .. after .. "`")
     end
 
-    if not reminders then
+    if #reminders == 0 then
         return ""
     end
     -- some things are useful if re-iterated when the situation arises
@@ -175,7 +175,7 @@ function HarmonyFimPromptBuilder.fim_prompt(request)
 
     local fim_user_message =
         "Please suggest an edit to the following code."
-        .. "Return only the code for the edit: first repeat at least one unchanged line immediately before the change as a context anchor, then give the new or revised code. "
+        .. "Return only the code for the edit: first repeat at least one unchanged line immediately before the change as a context anchor, then give the new or revised code, then repeat at least one unchanged line immediately after the change as a trailing anchor. "
         .. "The edit may be at or near the cursor. Use the surrounding code to infer what should be completed or changed. "
         .. "Do not include an explanation or markdown fences."
         .. "\n\n"
@@ -228,6 +228,7 @@ HarmonyFimPromptBuilder.deep_thoughts_about_fim = vim.trim([[
 The user is asking for an edit prediction.
 They provided the existing code with a ]] .. qwen.FIM_MIDDLE .. [[ tag where their cursor is currently located. My response is aligned against the existing code to locate the edit.
 To make alignment reliable, I will repeat at least one line of the existing code VERBATIM (a context anchor) immediately before the lines I want to change. The plugin finds that repeated line in the file to position my edit.
+When there is a line after my edit, I will also repeat it VERBATIM as a trailing anchor so the plugin knows exactly where my edit ends.
 I will not change the anchor line — it is only context to position the edit.
 I will NOT wrap my response in ``` markdown blocks.
 I will not explain anything.
