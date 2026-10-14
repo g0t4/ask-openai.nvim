@@ -112,10 +112,17 @@ function M.flatten_tool_result_to_text(result)
             local value = structured[key]
             key = key:upper() -- log as uppercase so it stands out in flattened output (mostly for humans like me... i.e. STDOUT/STDERR/EXIT_CODE)
             if type(value) == "string" and value ~= "" then
-                parts[#parts + 1] = key .. ":\n" .. value
+                if value:find("\n") then
+                    parts[#parts + 1] = key .. ":\n" .. value
+                else
+                    -- if value is single line then put it right after the key
+                    parts[#parts + 1] = key .. ": " .. value
+                end
             elseif type(value) == "number" or type(value) == "boolean" then
                 parts[#parts + 1] = key .. ": " .. tostring(value)
             elseif type(value) == "table" then
+                log:info("value is table in a structuredContent tool result, just FYI you wanted to know if this ever happens", key, value)
+                vim.notify("value is table in a structuredContent tool result, just FYI you wanted to know if this ever happens for " .. key)
                 parts[#parts + 1] = key .. ": " .. vim.inspect(value)
             end
         end
