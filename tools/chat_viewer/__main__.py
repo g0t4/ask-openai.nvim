@@ -16,6 +16,7 @@ from rich.style import Style
 from rich.markdown import Markdown
 from rich.padding import Padding
 from rich.syntax import Syntax
+from wes_syntax import syntax as themed_syntax
 from rich.panel import Panel
 from rich.pretty import Pretty, pprint
 from rich.text import Text
@@ -1071,15 +1072,13 @@ def _syntax(source: str, lexer: str) -> Syntax:
 
 def _markdown(source: str):
     # FYI markdown must use word_wrap=True (often has really long paragraphs that must wrap)
-    return _syntax(source, "markdown")
+    return themed_syntax(source, "markdown", line_numbers=False, word_wrap=True)
 
 def _lua(source: str) -> Syntax:
     return _syntax(source, "lua")
 
 def _bash(source: str):
-    # FYI pygments bash lexer sucks at coloring bash, basically only builtins seem styled... i.e. echo
-    # return _syntax(source, "bash")
-    return _commandline_via_bat_high_contrast(source, language="bash")
+    return themed_syntax(source, "bash", line_numbers=False, word_wrap=True)
 
 def _diff(source: str) -> Syntax:
     return _syntax(source, "diff")
@@ -1203,7 +1202,7 @@ def _add_run_in_neovim(arguments: str, tree: TreeWrapper):
 def _add_run_xonsh(arguments: str, tree: TreeWrapper):
     try:
         code, remaining_arguments = parse_run_xonsh_arguments(arguments)
-        tree.add(_commandline_via_bat_high_contrast(code, language="xsh"))
+        tree.add(themed_syntax(code, "xonsh", line_numbers=False, word_wrap=True))
         tree.list_key_value_pairs(remaining_arguments)
     except Exception as err:
         tree.add_error("Failed parsing run_xonsh arguments", err, arguments)

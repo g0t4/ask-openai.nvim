@@ -45,9 +45,11 @@ dependencies = [
     "tree-sitter-xonsh>=0.2.2",
     "whoosh>=2.7.4",
     "yapf>=0.43.0",
+    "wes-syntax",
 ]
 
 [tool.uv.sources]
+wes-syntax = { path = "../dotfiles/tools/syntax-lab", editable = true }
 langchain-llama-server = { path = "../langchain-llama-server" }
 langchain-mcp-adapters = { path = "../../langchain-ai/langchain-mcp-adapters" }
 
