@@ -176,7 +176,12 @@ function HarmonyFimPromptBuilder.fim_prompt(request)
     local fim_user_message =
         "Please suggest an edit to the code. Repeat at least one line of the existing code "
         .. "verbatim (a context anchor) immediately before the lines you want to change; the "
-        .. "plugin uses that anchor to locate your edit. The edit may be at the cursor or nearby.\n\n"
+        .. "plugin uses that anchor to locate your edit. The edit may be at the cursor or nearby. "
+        .. "\n\n"
+        .. "FYI " .. FIM_CHAT_STYLE_CURSOR_MARKER .. " marks the editor's current cursor position. "
+        .. "Use it only to understand what code the user is focused on; it does not indicate where to insert or place generated code. "
+        .. "Do not include the marker in your response."
+        .. "\n\n"
         .. "This is from " .. file_relative_path .. " " .. line_info
         .. "\n```" .. file_extension .. "\n"
         .. request.ps_chunk.prefix
