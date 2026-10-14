@@ -59,3 +59,21 @@ def test_process_and_xonsh_arguments_use_shared_rendering_without_bat(monkeypatc
         Console(file=output, width=100, force_terminal=True, no_color=False, color_system='truecolor').print(tree)
         assert '/tmp' in output.getvalue()  # remaining metadata still displayed
         assert '38;2;172;208;149' in output.getvalue()  # our string color
+
+
+def test_apply_patch_preserves_directives_and_uses_shared_diff_colors():
+    patch = '*** Begin Patch\n*** Add File: new.py\n+hello\n*** Update File: old.py\n*** Move to: renamed.py\n@@\n-old\n+new\n context\n*** Delete File: gone.py\n*** End Patch\n'
+    tree = TreeWrapper.hidden_root()
+    add_tool_call_request('apply_patch', json.dumps({'patch': patch}), tree)
+    snippet = tree.children[0].children[0].label
+    assert isinstance(snippet, Syntax)
+    assert snippet.code == patch
+    assert snippet.lexer.name == 'Apply Patch'
+    output = io.StringIO()
+    Console(file=output, force_terminal=True, no_color=False, color_system='truecolor', width=120).print(tree)
+    ansi = output.getvalue()
+    assert '38;2;172;208;149' in ansi
+    assert '38;2;238;126;120' in ansi
+    assert '38;2;130;176;223' in ansi
+    assert '38;2;142;203;187' in ansi
+    assert '*** Move to: renamed.py' in re.sub(r'\x1b\[[0-9;]*m', '', ansi)

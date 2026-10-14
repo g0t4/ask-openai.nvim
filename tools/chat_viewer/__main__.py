@@ -1039,7 +1039,7 @@ def _add_apply_patch(arguments: str, tree: TreeWrapper):
     if isinstance(parsed, dict) and "patch" in parsed:
         patch_content = str(parsed["patch"])
         try:
-            syntax = _diff(patch_content)
+            syntax = themed_syntax(patch_content, "apply-patch", line_numbers=False, word_wrap=True)
             return child.add(syntax)
         except Exception as err:
             return child.add_error("Failed adding patch", err, patch_content)
@@ -1076,7 +1076,7 @@ def _bash(source: str):
     return themed_syntax(source, "bash", line_numbers=False, word_wrap=True)
 
 def _diff(source: str) -> Syntax:
-    return _syntax(source, "diff")
+    return themed_syntax(source, "diff", line_numbers=False, word_wrap=True)
 
 def _commandline_via_bat_high_contrast(
     content: str,
