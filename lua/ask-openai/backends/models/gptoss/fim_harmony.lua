@@ -177,7 +177,7 @@ function HarmonyFimPromptBuilder.fim_prompt(request)
         "Please suggest an edit to the following code."
         .. "Return only the code for the edit: first repeat at least one unchanged line immediately before the change as a context anchor, then give the new or revised code. "
         .. "The edit may be at or near the cursor. Use the surrounding code to infer what should be completed or changed. "
-        .. "Do not include an explanation."
+        .. "Do not include an explanation or markdown fences."
         .. "\n\n"
         .. "FYI " .. FIM_CHAT_STYLE_CURSOR_MARKER .. " marks the editor's current cursor position. "
         .. "Use it only to understand what code the user is focused on; it does not indicate where to insert or place generated code. "
