@@ -9,6 +9,7 @@ agent with MCP tools:
 - **run_xonsh** - execute Python + shell through Xonsh
 - **delegate** - spawn subagents (optionally background), then
   `delegate_status` / `delegate_stop` to manage them
+- **speak** - text-to-speech with the user's cloned voice (Qwen3-TTS)
 
 ## Live vs final transcriptions
 
