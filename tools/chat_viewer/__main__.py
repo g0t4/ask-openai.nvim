@@ -1465,6 +1465,7 @@ def render_trace_to_console(console, messages, model_name, timings) -> None:
         table.add_column(justify='right', header="in time")
         table.add_column(justify='right', header="out time")
         table.add_column(justify='right', header="total tokens")
+        table.add_column(justify='right', header="generated")
         table.add_column(justify='right', header="cached")
         table.add_column(justify='left', header="cache miss")
         has_draft = any(t.draft_tokens for _, _, t in assistant_timings if t.draft_tokens)
@@ -1475,6 +1476,7 @@ def render_trace_to_console(console, messages, model_name, timings) -> None:
             in_speed = ProgressBar(total=max_in_speed, completed=timings.prompt_tokens_per_second, width=40)
             out_speed = ProgressBar(total=max_out_speed, completed=timings.predicted_tokens_per_second, width=40)
             total_tokens = f"{_humanize_int(timings.cached_tokens + timings.prompt_tokens + timings.predicted_tokens)}"
+            generated_tokens = _humanize_int(timings.predicted_tokens)
             cached_tokens = _humanize_int(timings.cached_tokens) if timings.cached_tokens is not None else ''
             if cache_state is None:
                 cache_miss = ''
@@ -1494,9 +1496,15 @@ def render_trace_to_console(console, messages, model_name, timings) -> None:
                     ratio = f"{accepted} / {timings.draft_tokens}"
                 else:
                     ratio = ''
-                table.add_row(in_speed, out_speed, label, in_label, out_label, in_time, out_time, total_tokens, cached_tokens, cache_miss, draft_accept, ratio)
+                table.add_row(in_speed, out_speed, label, in_label, out_label, in_time, out_time, total_tokens, generated_tokens, cached_tokens, cache_miss, draft_accept, ratio)
             else:
-                table.add_row(in_speed, out_speed, label, in_label, out_label, in_time, out_time, total_tokens, cached_tokens, cache_miss)
+                table.add_row(in_speed, out_speed, label, in_label, out_label, in_time, out_time, total_tokens, generated_tokens, cached_tokens, cache_miss)
+        # total row: sum of agent-generated tokens across all assistant responses
+        total_generated = sum(t.predicted_tokens for _, _, t in assistant_timings)
+        if has_draft:
+            table.add_row("", "", "[bold]total[/]", "", "", "", "", "", f"{_humanize_int(total_generated)}", "", "", "", "")
+        else:
+            table.add_row("", "", "[bold]total[/]", "", "", "", "", "", f"{_humanize_int(total_generated)}", "", "")
         _console.print(table)
         _console.print()
     # show summaries at end since command line the last part shows first (unlike web viewer where summary is best at top)
