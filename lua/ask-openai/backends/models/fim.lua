@@ -771,6 +771,11 @@ local function deepseek_fim_reminder_nudges(request)
     local before_cursor = cursor_line.before_cursor
     if before_cursor ~= "" then
         table.insert(reminders, "Text before cursor: `" .. before_cursor .. "`")
+        local is_all_whitespace = before_cursor:match("^%s*$") ~= nil
+        if is_all_whitespace then
+            -- TODO is this needed? if an extra blank line exists... do we really need to ask the model to keep it?
+            table.insert(reminders, "Text before cursor is all whitespace (do not ignore this)")
+        end
     end
     local after_cursor = cursor_line.after_cursor
     if after_cursor ~= "" then
