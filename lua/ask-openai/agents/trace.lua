@@ -42,8 +42,10 @@ end
 function AgentTrace:add_message(message)
     if not message.role then
         -- TODO do I really want to blow up here?
-        error("message.role is missing")
-        log:error("message.role is missing", vim.inspect(message))
+        local error_message = "message.role is missing: " .. vim.inspect(message)
+        vim.notify(error_message, vim.log.levels.ERROR)
+        log:error(error_message)
+        error(error_message)
     end
     table.insert(self.messages, message)
 end
