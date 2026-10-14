@@ -384,10 +384,17 @@ local function ask_rewrite_command(opts)
         explainer = "Please rewrite the following code selection. My editor will replace the selected code with your response. Here is my request:"
         local start_line = (selection._start_line_0indexed or 0) + 1
         local end_line = (selection._end_line_0indexed or 0) + 1
-        local line_info = start_line == end_line and tostring(start_line) or (start_line .. "-" .. end_line)
-        code_context = "Here is the code I selected:"
-            .. "\n```" .. file_name .. ":" .. line_info
-            .. "\n" .. code .. "\n```"
+        local line_info = start_line == end_line
+            and ("(line: " .. start_line .. ")")
+            or ("(lines: " .. start_line .. "-" .. end_line .. ")")
+
+        local file_extension = file_name:match("%.([^%.]+)$") or ""
+        -- FYI don't bother with making a link out of file_name (path)... agents don't need that and neither do humans... and your markdown parser/color-er can always detect most of these to color them if you really want that
+        code_context = "I selected from " .. file_name .. " " .. line_info
+            .. "\n```" .. file_extension
+            .. "\n" .. code
+            .. "\n```"
+
         code_caveat = "\n\nThis is not necessarily a complete selection of nearby code, this is just the part I want help with. Preserve indentation!"
         -- TODO add separate reasoning level for rewrites/agents vs predictions... that should help here and with tool calls too!
         -- * response indentation:
