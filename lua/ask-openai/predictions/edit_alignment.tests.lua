@@ -174,4 +174,33 @@ describe("edit_alignment.align", function()
         assert.equal(8, edit.replace_end_line_base0)
         assert.equal(0, edit.replace_end_col_base0)
     end)
+
+    it("handles multi-line context with trailing empty line in completion", function()
+        -- Model returns a full block with a trailing newline. The aligner must
+        -- ignore the trailing empty line when detecting trailing echoes, and
+        -- correctly compute a replacement span for the single changed line.
+        local lines = {
+            "def _result_to_content(result):",
+            "    blocks = []",
+            "    blocks.append(",
+            "        TextContent(",
+            '            type="text",',
+            '            name="METADATA",',
+            "            text=metadata,",
+            "        )",
+            "    )",
+            "    return blocks",
+        }
+        -- cursor on the `text=metadata,` line (base0 6), after `            text=`
+        local edit = edit_alignment.align(
+            "    blocks.append(\n        TextContent(\n            type=\"text\",\n            name=\"METADATA\",\n            text=\"\\n\".join(metadata),\n        )\n    )\n    return blocks\n",
+            lines, 6, 19)
+        assert.is_not_nil(edit)
+        assert.equal(2, edit.anchor_line_base0)
+        assert.are_same({ '            text="\\n".join(metadata),' }, edit.insertion_lines)
+        assert.equal(6, edit.replace_start_line_base0)
+        assert.equal(0, edit.replace_start_col_base0)
+        assert.equal(7, edit.replace_end_line_base0)
+        assert.equal(0, edit.replace_end_col_base0)
+    end)
 end)

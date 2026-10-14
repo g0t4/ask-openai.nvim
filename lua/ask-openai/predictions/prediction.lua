@@ -435,10 +435,16 @@ function Prediction:insert_accepted(insert_lines)
         local buffer_lines = vim.api.nvim_buf_get_lines(
             self.bufnr, self.replace_start_line_base0, self.replace_end_line_base0, false)
         local last_replaced_line = buffer_lines[#buffer_lines] or ""
+        -- The end position must be at the END of the LAST line being replaced,
+        -- not at the start of the line AFTER the replacement (which is the
+        -- exclusive end line). Using (replace_end_line_base0, #last_replaced_line)
+        -- would apply the column to the wrong line and cause "end_col out of
+        -- range" when the next line is shorter than the last replaced line.
+        local last_replaced_line_base0 = math.max(self.replace_start_line_base0, self.replace_end_line_base0 - 1)
         vim.api.nvim_buf_set_text(
             self.bufnr,
             self.replace_start_line_base0, self.replace_start_col_base0 or 0,
-            self.replace_end_line_base0, #last_replaced_line,
+            last_replaced_line_base0, #last_replaced_line,
             insert_lines)
     else
         -- * INSERT b/c start == end == cursor position! (nothing to replace)

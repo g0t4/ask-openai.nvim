@@ -157,9 +157,19 @@ local function find_trailing_echoes(delta_lines, buffer_context, leading_echoes)
         return 0, nil
     end
 
+    -- Ignore trailing empty lines in the delta (e.g. from a trailing newline
+    -- in the model's completion). They are noise and would prevent the echo
+    -- detection from matching against the buffer context.
+    while delta_len > 0 and delta_lines[leading_echoes + delta_len] == "" do
+        delta_len = delta_len - 1
+    end
+    if delta_len <= 0 then
+        return 0, nil
+    end
+
     -- Try progressively shorter suffixes of the delta, from longest to shortest.
     for echo_len = delta_len, 1, -1 do
-        local delta_start = #delta_lines - echo_len + 1
+        local delta_start = leading_echoes + delta_len - echo_len + 1
         -- Try every contiguous run in buffer_context of the same length.
         for ctx_start = 1, #buffer_context - echo_len + 1 do
             local matches = true
@@ -207,8 +217,15 @@ function M.trim_repeated_context(delta_lines, buffer_lines, anchor_buffer_line_b
     local trailing_echoes, echo_start_in_context_base0 = find_trailing_echoes(
         delta_lines, trailing_context, leading_echoes)
 
+    -- Also drop trailing empty lines from the delta (noise from a trailing
+    -- newline in the completion), so they don't end up in the trimmed delta.
+    local trimmed_end = #delta_lines
+    while trimmed_end > leading_echoes and delta_lines[trimmed_end] == "" do
+        trimmed_end = trimmed_end - 1
+    end
+
     local trimmed = {}
-    for i = leading_echoes + 1, #delta_lines - trailing_echoes do
+    for i = leading_echoes + 1, trimmed_end - trailing_echoes do
         table.insert(trimmed, delta_lines[i])
     end
     return trimmed, leading_echoes, trailing_echoes, echo_start_in_context_base0
