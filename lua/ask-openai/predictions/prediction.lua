@@ -5,6 +5,7 @@ local CursorController = require "ask-openai.predictions.cursor_controller"
 local FIMPerformance = require("ask-openai.predictions.fim_performance")
 local markdown_strip = require("ask-openai.predictions.markdown_strip")
 local edit_alignment = require("ask-openai.predictions.edit_alignment")
+local combined_diff = require("devtools.diff.combined")
 
 ---@class Prediction
 ---@field id integer
@@ -15,6 +16,10 @@ local edit_alignment = require("ask-openai.predictions.edit_alignment")
 ---@field rest_of_lines: string[]
 ---@field insertion_line_base0: integer? -- where the delta inserts (buffer line, 0-indexed)
 ---@field insertion_col_base0: integer?  -- where the delta inserts (buffer col, 0-indexed)
+---@field replace_start_line_base0: integer? -- buffer line to replace from (nil = pure insert)
+---@field replace_start_col_base0: integer?  -- buffer col to replace from
+---@field replace_end_line_base0: integer?   -- buffer line to replace to (exclusive)
+---@field replace_end_col_base0: integer?    -- buffer col to replace to (exclusive)
 ---@field has_duplicate_prefix: boolean
 ---@field has_prediction: boolean
 ---@field extmarks table
@@ -160,6 +165,10 @@ function Prediction:fim_fixes()
         -- Aligned: use the extracted delta and its insertion position.
         self.insertion_line_base0 = edit.insertion_line_base0
         self.insertion_col_base0 = edit.insertion_col_base0
+        self.replace_start_line_base0 = edit.replace_start_line_base0
+        self.replace_start_col_base0 = edit.replace_start_col_base0
+        self.replace_end_line_base0 = edit.replace_end_line_base0
+        self.replace_end_col_base0 = edit.replace_end_col_base0
         self.first_line = edit.insertion_lines[1] or ""
         self.rest_of_lines = {}
         for i = 2, #edit.insertion_lines do
@@ -172,6 +181,10 @@ function Prediction:fim_fixes()
         local lines = edit_alignment.split_lines(prediction_text)
         self.insertion_line_base0 = nil
         self.insertion_col_base0 = nil
+        self.replace_start_line_base0 = nil
+        self.replace_start_col_base0 = nil
+        self.replace_end_line_base0 = nil
+        self.replace_end_col_base0 = nil
         self.first_line = lines[1] or ""
         self.rest_of_lines = {}
         for i = 2, #lines do
@@ -182,6 +195,10 @@ function Prediction:fim_fixes()
         -- Streaming and not yet aligned (the anchor line has not arrived): wait.
         self.insertion_line_base0 = nil
         self.insertion_col_base0 = nil
+        self.replace_start_line_base0 = nil
+        self.replace_start_col_base0 = nil
+        self.replace_end_line_base0 = nil
+        self.replace_end_col_base0 = nil
         self.first_line = ""
         self.rest_of_lines = {}
         self.has_prediction = false
@@ -296,6 +313,63 @@ function Prediction:fix_fim_and_redraw_extmarks()
         table.insert(virt_lines, { { line, HLGroups.PREDICTION_TEXT } })
     end
 
+    -- * When we have a replacement span, show a word-level diff of the change
+    --   (like RewritesFrontend does) so the user sees exactly what will change.
+    --   The diff highlights only the added/removed words, not the whole line.
+    if self.replace_start_line_base0 ~= nil and self.replace_end_line_base0 ~= nil then
+        local buffer_lines = vim.api.nvim_buf_get_lines(
+            self.bufnr, self.replace_start_line_base0, self.replace_end_line_base0, false)
+        local original_text = table.concat(buffer_lines, "\n")
+        local new_text = table.concat(self.rest_of_lines, "\n")
+        if self.first_line ~= "" then
+            new_text = self.first_line .. (new_text ~= "" and "\n" .. new_text or "")
+        end
+
+        if original_text ~= "" and new_text ~= "" then
+            local diff = combined_diff.combined_word_diff(original_text, new_text)
+
+            -- Build extmark lines from diff chunks
+            local diff_lines = {}
+            local current_line = {}
+            for _, chunk in ipairs(diff) do
+                local chunk_type = chunk[1]
+                local chunk_text = chunk[2]
+                local hlgroup = nil
+                if chunk_type == "+" then
+                    hlgroup = "diffAdded"
+                elseif chunk_type == "-" then
+                    hlgroup = "diffRemoved"
+                end
+
+                local pieces = vim.split(chunk_text, "\n", { plain = true })
+                for i, piece in ipairs(pieces) do
+                    if #piece > 0 then
+                        table.insert(current_line, { piece, hlgroup })
+                    end
+                    if i < #pieces then
+                        table.insert(diff_lines, current_line)
+                        current_line = {}
+                    end
+                end
+            end
+            if #current_line > 0 then
+                table.insert(diff_lines, current_line)
+            end
+
+            if #diff_lines > 0 then
+                local first_diff_line = table.remove(diff_lines, 1)
+                vim.api.nvim_buf_set_extmark(self.bufnr, extmarks_ns_id,
+                    self.replace_start_line_base0, self.replace_start_col_base0 or 0,
+                    {
+                        virt_text = first_diff_line,
+                        virt_lines = diff_lines,
+                        virt_text_pos = "overlay",
+                    })
+                return
+            end
+        end
+    end
+
     -- * Draw the delta at its insertion position (falls back to the cursor when
     --   no aligned position is known, e.g. after a partial accept).
     local display_line_base0 = cursor.line_base0
@@ -341,8 +415,10 @@ function Prediction:insert_accepted(insert_lines)
     self.skip_text_changed_from_accept_suggestion = true
     local controller = CursorController:new()
 
-    -- * insert accepted text at the aligned position (fall back to cursor when
-    --   no position is known, e.g. after a partial accept).
+    -- * Determine the edit position. If we have a replacement span, replace the
+    --   buffer lines in that span with the accepted text. Otherwise insert at
+    --   the aligned position (fall back to cursor when no position is known,
+    --   e.g. after a partial accept).
     local insert_line_base0 = self.insertion_line_base0
     local insert_col_base0 = self.insertion_col_base0
     if insert_line_base0 == nil then
@@ -351,20 +427,40 @@ function Prediction:insert_accepted(insert_lines)
         insert_col_base0 = cursor.col_base0
     end
 
-    -- INSERT b/c start == end == cursor position! (nothing to replace)
-    vim.api.nvim_buf_set_text(
-        self.bufnr, insert_line_base0, insert_col_base0,
-        insert_line_base0, insert_col_base0, insert_lines)
+    if self.replace_start_line_base0 ~= nil and self.replace_end_line_base0 ~= nil then
+        -- * REPLACE: the delta replaces existing buffer lines (the trailing echo
+        --   context is left untouched).
+        --   Use nvim_buf_set_text with end at the last byte of the last line to
+        --   replace so the newline at the end of that line is preserved.
+        local buffer_lines = vim.api.nvim_buf_get_lines(
+            self.bufnr, self.replace_start_line_base0, self.replace_end_line_base0, false)
+        local last_replaced_line = buffer_lines[#buffer_lines] or ""
+        vim.api.nvim_buf_set_text(
+            self.bufnr,
+            self.replace_start_line_base0, self.replace_start_col_base0 or 0,
+            self.replace_end_line_base0, #last_replaced_line,
+            insert_lines)
+    else
+        -- * INSERT b/c start == end == cursor position! (nothing to replace)
+        vim.api.nvim_buf_set_text(
+            self.bufnr, insert_line_base0, insert_col_base0,
+            insert_line_base0, insert_col_base0, insert_lines)
+    end
 
     -- * move cursor
     local new_cursor = controller:calc_new_position(
-        { line_base0 = insert_line_base0, col_base0 = insert_col_base0 },
+        { line_base0 = self.replace_start_line_base0 or insert_line_base0,
+          col_base0 = self.replace_start_col_base0 or insert_col_base0 },
         insert_lines)
     vim.api.nvim_win_set_cursor(controller.window_id, { new_cursor.line_base1, new_cursor.col_base0 }) -- (1,0)-indexed
 
     -- after accepting, subsequent accepts insert at the (moved) cursor
     self.insertion_line_base0 = nil
     self.insertion_col_base0 = nil
+    self.replace_start_line_base0 = nil
+    self.replace_start_col_base0 = nil
+    self.replace_end_line_base0 = nil
+    self.replace_end_col_base0 = nil
 end
 
 local BLANK_LINE = ""

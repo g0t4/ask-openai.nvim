@@ -142,4 +142,36 @@ describe("edit_alignment.align", function()
         assert.equal(4, edit.insertion_col_base0)
         assert.are_same({ "    else", "        print(\"Non-positive\")" }, edit.insertion_lines)
     end)
+
+    it("replaces a line when the model echoes trailing context after the edit", function()
+        -- Model returns the full sub function with the fix. It echoes the `end`
+        -- line after the changed line, so the aligner must detect this as a
+        -- replacement (replace `    return b` with `    return a - b`), not an
+        -- insertion.
+        local lines = {
+            "local M = {}",
+            "",
+            "function M.add(a, b)",
+            "    return a + b",
+            "end",
+            "",
+            "function M.sub(a, b)",
+            "    return b",
+            "end",
+            "",
+            "",
+            "return M",
+        }
+        -- cursor on the `    return b` line (base0 7), after `    return `
+        local edit = edit_alignment.align(
+            "function M.sub(a, b)\n    return a - b\nend",
+            lines, 7, 12)
+        assert.is_not_nil(edit)
+        assert.equal(6, edit.anchor_line_base0)
+        assert.are_same({ "    return a - b" }, edit.insertion_lines)
+        assert.equal(7, edit.replace_start_line_base0)
+        assert.equal(0, edit.replace_start_col_base0)
+        assert.equal(8, edit.replace_end_line_base0)
+        assert.equal(0, edit.replace_end_col_base0)
+    end)
 end)
