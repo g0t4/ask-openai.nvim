@@ -114,6 +114,7 @@ local servers = {
 ---@field counter integer
 ---@field callbacks_by_request_id table<any, ToolCallDoneCallback>
 ---@field progress_callbacks_by_token table<any, ToolCallOnProgress>
+---@field keep_progress_by_request_id table<any, boolean> -- request ids that should keep progress callbacks alive after the response (e.g. background delegate)
 local MCPClient = {}
 MCPClient.__index = MCPClient
 
@@ -140,7 +141,14 @@ function MCPClient:dispatch_message(message)
         if callback then
             callback(message)
             self.callbacks_by_request_id[request_id] = nil
-            self.progress_callbacks_by_token[request_id] = nil
+            -- Keep the progress callback alive for requests that need it (e.g. background delegate)
+            -- so the client can still receive progress notifications after the tool call returns.
+            if not self.keep_progress_by_request_id[request_id] then
+                self.progress_callbacks_by_token[request_id] = nil
+            else
+                -- The progress callback is now long-lived; keep it registered under this token.
+                log:info(string.format("MCP %s keeping progress callback for request.id=%s (background delegate)", self.server_log_name, request_id))
+            end
             return
         end
 
@@ -190,7 +198,8 @@ end
 ---@param request table
 ---@param callback ToolCallDoneCallback
 ---@param on_progress? ToolCallOnProgress
-function MCPClient:send_request(request, callback, on_progress)
+---@param keep_progress? boolean -- if true, keep the progress callback registered after the response arrives
+function MCPClient:send_request(request, callback, on_progress, keep_progress)
     if not request.id then
         request.id = self.counter
         self.counter = self.counter + 1
@@ -199,6 +208,7 @@ function MCPClient:send_request(request, callback, on_progress)
 
     self.callbacks_by_request_id[request.id] = callback
     self.progress_callbacks_by_token[request.id] = on_progress
+    self.keep_progress_by_request_id[request.id] = keep_progress
     self:write_to(request)
 end
 
@@ -217,7 +227,8 @@ end
 ---@param args table
 ---@param callback ToolCallDoneCallback
 ---@param on_progress? ToolCallOnProgress
-function MCPClient:tools_call(id, tool_name, args, callback, on_progress)
+---@param keep_progress? boolean
+function MCPClient:tools_call(id, tool_name, args, callback, on_progress, keep_progress)
     self:send_request({
         id = id,
         method = "tools/call",
@@ -226,7 +237,7 @@ function MCPClient:tools_call(id, tool_name, args, callback, on_progress)
             arguments = args,
             _meta = { progressToken = id },
         },
-    }, callback, on_progress)
+    }, callback, on_progress, keep_progress)
 end
 
 --- Transport-specific method: write an encoded message to the server.
@@ -266,6 +277,7 @@ function MCPStdioClient.new(name, options)
     self.counter = 1
     self.callbacks_by_request_id = {}
     self.progress_callbacks_by_token = {}
+    self.keep_progress_by_request_id = {}
     self.pending_json = ""
 
     -- Spawn the subprocess with pipes for stdin, stdout, stderr
@@ -402,8 +414,8 @@ function MCPStdioClient:initialize(on_done)
                 for _, tool in ipairs(response.result.tools) do
                     ---@cast tool MCP_Tool
                     -- log:info("tools/list:", tool)
-                    tool.call = function(id, tool_name, args, callback, on_progress)
-                        self:tools_call(id, tool_name, args, callback, on_progress)
+                    tool.call = function(id, tool_name, args, callback, on_progress, keep_progress)
+                        self:tools_call(id, tool_name, args, callback, on_progress, keep_progress)
                     end
                     tool._mcp_client = self
                     M.tools_available[tool.name] = tool
@@ -435,6 +447,7 @@ function MCPHttpServer.new(name, options)
     self.counter = 1
     self.callbacks_by_request_id = {}
     self.progress_callbacks_by_token = {}
+    self.keep_progress_by_request_id = {}
     self.url = options.url
 
     return self
@@ -540,8 +553,8 @@ function MCPHttpServer:initialize(on_done)
         if response.result and response.result.tools then
             for _, tool in pairs(response.result.tools) do
                 ---@cast tool MCP_Tool
-                tool.call = function(id, tool_name, args, callback, on_progress)
-                    self:tools_call(id, tool_name, args, callback, on_progress)
+                tool.call = function(id, tool_name, args, callback, on_progress, keep_progress)
+                    self:tools_call(id, tool_name, args, callback, on_progress, keep_progress)
                 end
                 tool._mcp_client = self
                 M.tools_available[tool.name] = tool
@@ -702,7 +715,11 @@ function M.send_tool_call(tool_call, callback, on_progress)
     end
 
     local args_decoded = decode_tool_args(tool_call["function"].arguments)
-    tool.call(tool_call.id, name, args_decoded, vim.schedule_wrap(callback), on_progress)
+    -- Background delegate tool calls return immediately with a task_id, but the
+    -- subagent keeps running and sending progress notifications. Keep the progress
+    -- callback alive so those notifications still get routed to the frontend.
+    local keep_progress = name == "delegate" and args_decoded.background == true
+    tool.call(tool_call.id, name, args_decoded, vim.schedule_wrap(callback), on_progress, keep_progress)
 
     -- * cooperative cancellation: ask the owning MCP server to cancel this request.
     --   Best-effort — a server that doesn't handle notifications/cancelled just ignores it.

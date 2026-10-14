@@ -27,7 +27,7 @@
 ---@field outputSchema? MCP_ToolOutputSchema
 ---@field annotations? MCP_ToolAnnotations
 ---@field _meta? MCP_Meta
----@field call fun(id: integer|string, tool_name: string, args: table, callback: ToolCallDoneCallback, on_progress: ToolCallOnProgress) -- my function to invoke the tool, not part of MCP specification
+---@field call fun(id: integer|string, tool_name: string, args: table, callback: ToolCallDoneCallback, on_progress: ToolCallOnProgress, keep_progress?: boolean) -- my function to invoke the tool, not part of MCP specification
 ---
 ---@class MCPToolsListResult
 ---@field result? MCP_ListToolsResult
