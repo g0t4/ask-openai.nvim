@@ -1070,7 +1070,7 @@ def _markdown(source: str):
     return themed_syntax(source, "markdown", line_numbers=False, word_wrap=True)
 
 def _lua(source: str) -> Syntax:
-    return _syntax(source, "lua")
+    return themed_syntax(source, "lua", line_numbers=False, word_wrap=True)
 
 def _bash(source: str):
     return themed_syntax(source, "bash", line_numbers=False, word_wrap=True)
