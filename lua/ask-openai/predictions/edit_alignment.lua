@@ -29,6 +29,7 @@ local M = {}
 ---@field replace_start_col_base0? integer -- buffer column to replace from
 ---@field replace_end_line_base0? integer -- buffer line to replace to (exclusive)
 ---@field replace_end_col_base0? integer -- buffer column to replace to (exclusive)
+---@field trailing_echo_end_line_base0? integer -- last line of the echoed context (exclusive)
 
 --- Split text into lines, preserving empty lines.
 --- @param text string
@@ -301,6 +302,10 @@ function M.align(completion_text, buffer_lines, cursor_line_base0, cursor_col_ba
         result.replace_start_col_base0 = 0
         result.replace_end_line_base0 = replace_end_line_base0
         result.replace_end_col_base0 = 0
+        -- The trailing echo extends from replace_end_line_base0 for
+        -- trailing_echoes lines. Store the exclusive end so the display can
+        -- also hide the echoed context (e.g. a trailing `end` line).
+        result.trailing_echo_end_line_base0 = replace_end_line_base0 + trailing_echoes
         result.insertion_line_base0 = edit_start_line_base0
         result.insertion_col_base0 = 0
     else

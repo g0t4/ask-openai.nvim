@@ -20,6 +20,7 @@ local combined_diff = require("devtools.diff.combined")
 ---@field replace_start_col_base0: integer?  -- buffer col to replace from
 ---@field replace_end_line_base0: integer?   -- buffer line to replace to (exclusive)
 ---@field replace_end_col_base0: integer?    -- buffer col to replace to (exclusive)
+---@field trailing_echo_end_line_base0: integer? -- last line of the echoed context (exclusive)
 ---@field has_duplicate_prefix: boolean
 ---@field has_prediction: boolean
 ---@field extmarks table
@@ -169,6 +170,7 @@ function Prediction:fim_fixes()
         self.replace_start_col_base0 = edit.replace_start_col_base0
         self.replace_end_line_base0 = edit.replace_end_line_base0
         self.replace_end_col_base0 = edit.replace_end_col_base0
+        self.trailing_echo_end_line_base0 = edit.trailing_echo_end_line_base0
         self.first_line = edit.insertion_lines[1] or ""
         self.rest_of_lines = {}
         for i = 2, #edit.insertion_lines do
@@ -185,6 +187,7 @@ function Prediction:fim_fixes()
         self.replace_start_col_base0 = nil
         self.replace_end_line_base0 = nil
         self.replace_end_col_base0 = nil
+        self.trailing_echo_end_line_base0 = nil
         self.first_line = lines[1] or ""
         self.rest_of_lines = {}
         for i = 2, #lines do
@@ -199,6 +202,7 @@ function Prediction:fim_fixes()
         self.replace_start_col_base0 = nil
         self.replace_end_line_base0 = nil
         self.replace_end_col_base0 = nil
+        self.trailing_echo_end_line_base0 = nil
         self.first_line = ""
         self.rest_of_lines = {}
         self.has_prediction = false
@@ -367,6 +371,20 @@ function Prediction:fix_fim_and_redraw_extmarks()
                         virt_lines = diff_lines,
                         virt_lines_above = true,
                     })
+                -- Also hide the trailing echo context lines (e.g. a trailing
+                -- `end` line) so the diff view shows only the changed code.
+                if self.trailing_echo_end_line_base0 ~= nil
+                    and self.trailing_echo_end_line_base0 > self.replace_end_line_base0 then
+                    for line_base0 = self.replace_end_line_base0,
+                        self.trailing_echo_end_line_base0 - 1 do
+                        vim.api.nvim_buf_set_extmark(self.bufnr, extmarks_ns_id,
+                            line_base0, 0,
+                            {
+                                virt_text = { { "", "Normal" } },
+                                virt_text_pos = "overlay",
+                            })
+                    end
+                end
                 return
             end
         end
@@ -469,6 +487,7 @@ function Prediction:insert_accepted(insert_lines)
     self.replace_start_col_base0 = nil
     self.replace_end_line_base0 = nil
     self.replace_end_col_base0 = nil
+    self.trailing_echo_end_line_base0 = nil
 end
 
 local BLANK_LINE = ""
