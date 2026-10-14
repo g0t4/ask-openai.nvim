@@ -5,6 +5,7 @@ Builds the primary brain agent with MCP tools:
   - run_xonsh    (xonsh shell + python)
   - delegate     (spawn a subagent, optionally background)
   - delegate_status / delegate_stop
+  - speak        (text-to-speech with the user's cloned voice)
 """
 
 from __future__ import annotations
@@ -17,12 +18,14 @@ from langchain.agents import create_agent
 from langchain_core.messages import SystemMessage
 from langchain_core.messages import HumanMessage
 from langchain_core.runnables import RunnableConfig
+from langchain_core.tools import tool
 from langchain_llama_server import ChatLlamaServer
 from langchain_mcp_adapters.client import MultiServerMCPClient
 from langgraph.checkpoint.memory import InMemorySaver
 
 from tools.clankerd.logger import get_logger
 from tools.clankerd.trace import TraceWriter
+from tools.voiced.tts import SERVER_VOICE_REF, TTSClient
 
 logger = get_logger(__name__)
 
@@ -68,6 +71,26 @@ MCP_SERVERS: dict[str, dict[str, Any]] = {
 }
 
 
+@tool
+def speak(text: str, lang: str = "en") -> str:
+    """Speak text out loud using text-to-speech (TTS).
+
+    Uses the user's cloned voice (Wes). The audio is played on the local
+    machine (the mac) so the user can hear it. Use this to communicate
+    audibly with the user.
+
+    Args:
+        text: The text to speak. Keep it concise (1-3 sentences).
+        lang: Language code (e.g. 'en', 'zh', 'ja'). Default 'en'.
+    """
+    try:
+        client = TTSClient()
+        client.speak(text, lang=lang, speaker_file=SERVER_VOICE_REF)
+        return f"Spoke: {text!r}"
+    except Exception as error:
+        return f"ERROR: Failed to speak: {error}"
+
+
 SYSTEM_PROMPT = """You are clankerd, the primary brain agent for this workspace.
 
 You receive speech transcriptions from the user's voice input. There are two
@@ -104,12 +127,20 @@ You have the following tools:
 - **delegate_status**: Check the status of a background subagent by task_id.
   Returns done (boolean) + the subagent's last status message + final output.
 - **delegate_stop**: Stop/kill a background subagent by task_id.
+- **speak**: Speak text out loud using text-to-speech with the user's cloned
+  voice. Use this when you want to talk to the user verbally. Keep the text
+  concise (1-3 sentences). The audio plays on the user's machine.
 
 Use delegation for long-running or parallel work so you remain responsive to
 new voice input. Track background tasks (PIDs and task_ids) and clean them up
 when no longer needed.
 
 Always log what you are doing so the user can tail your logs while you work.
+
+When you respond, consider whether speaking the response (or a summary) out
+loud would be helpful. If the user asked you something verbally, speak your
+answer back to them. Don't overdo it - speak when it adds value, not for
+every response.
 """
 
 
@@ -129,13 +160,15 @@ class ClankerAgent:
         self._model = ChatLlamaServer(
             base_url=LLAMA_SERVER_BASE_URL, api_key="foo"
         )
+        # In-process tools (speak) plus MCP tools
+        all_tools = [speak] + list(mcp_tools)
         self._agent = create_agent(
             self._model,
             checkpointer=InMemorySaver(),
-            tools=mcp_tools,
+            tools=all_tools,
             system_prompt=SystemMessage(content=SYSTEM_PROMPT),
         )
-        logger.info("agent setup complete (%d tools)", len(mcp_tools))
+        logger.info("agent setup complete (%d tools)", len(all_tools))
 
     async def run(
         self,
