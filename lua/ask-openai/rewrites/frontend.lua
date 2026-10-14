@@ -329,7 +329,7 @@ local function ask_rewrite_command(opts)
     local selection = Selection.get_visual_selection_for_current_window()
 
     local user_prompt = opts.args
-    local file_name = files.get_current_file_relative_path()
+    local file_relative_path = files.get_current_file_relative_path()
 
     -- Store selection details for later use
     RewriteFrontend.selection = selection
@@ -357,7 +357,7 @@ local function ask_rewrite_command(opts)
 
     local markdown_exclusion = "\n- DO NOT wrap answers in markdown code blocks, which"
         .. " means no triple backticks like ``` nor single backtick like ` ."
-    if file_name:match(".*.md$") then
+    if file_relative_path:match(".*.md$") then
         markdown_exclusion = ""
     end
 
@@ -388,9 +388,9 @@ local function ask_rewrite_command(opts)
             and ("(line: " .. start_line .. ")")
             or ("(lines: " .. start_line .. "-" .. end_line .. ")")
 
-        local file_extension = file_name:match("%.([^%.]+)$") or ""
-        -- FYI don't bother with making a link out of file_name (path)... agents don't need that and neither do humans... and your markdown parser/color-er can always detect most of these to color them if you really want that
-        code_context = "I selected from " .. file_name .. " " .. line_info
+        local file_extension = file_relative_path:match("%.([^%.]+)$") or ""
+        -- FYI don't bother with making a link out of file_relative_path... agents don't need that and neither do humans... and your markdown parser/color-er can always detect most of these to color them if you really want that
+        code_context = "I selected from " .. file_relative_path .. " " .. line_info
             .. "\n```" .. file_extension
             .. "\n" .. code
             .. "\n```"
@@ -408,7 +408,7 @@ local function ask_rewrite_command(opts)
         --  filename gives context if nothing else is provided, i.e. provides context for what language to write!
         explainer = "I want you to write some code for me. Your response will be inserted into my editor where my cursor resides. Here is my request:"
         -- PRN if I have trouble in non-code files like a text file or markdown... I can change verbiage, but I am sure the model will handle it just fine based on filetype
-        code_context = "I am working on this file: " .. file_name
+        code_context = "I am working on this file: " .. file_relative_path
     end
 
     ---@param rag_matches LSPRankedMatch[]
