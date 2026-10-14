@@ -102,6 +102,26 @@ function M.flatten_tool_result_to_text(result)
         parts[1] = "ERROR"
     end
 
+    -- Structured content takes precedence; flatten key: value pairs.
+    local structured = result.structuredContent
+    if type(structured) == "table" then
+        -- Sort keys for deterministic output; common metadata first.
+        local keys = vim.tbl_keys(structured)
+        table.sort(keys)
+        for _, key in ipairs(keys) do
+            local value = structured[key]
+            if type(value) == "string" and value ~= "" then
+                parts[#parts + 1] = key .. ":\n" .. value
+            elseif type(value) == "number" or type(value) == "boolean" then
+                parts[#parts + 1] = key .. ": " .. tostring(value)
+            elseif type(value) == "table" then
+                parts[#parts + 1] = key .. ": " .. vim.inspect(value)
+            end
+        end
+        local flat = table.concat(parts, "\n\n")
+        return flat
+    end
+
     local content = result.content
     if type(content) == "string" then
         parts[#parts + 1] = content
