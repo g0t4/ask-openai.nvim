@@ -110,6 +110,7 @@ function M.flatten_tool_result_to_text(result)
         table.sort(keys)
         for _, key in ipairs(keys) do
             local value = structured[key]
+            key = key:upper() -- log as uppercase so it stands out in flattened output (mostly for humans like me... i.e. STDOUT/STDERR/EXIT_CODE)
             if type(value) == "string" and value ~= "" then
                 parts[#parts + 1] = key .. ":\n" .. value
             elseif type(value) == "number" or type(value) == "boolean" then
