@@ -176,7 +176,7 @@ class ClankerAgent:
         *,
         is_final: bool,
         thread_id: str | None = None,
-        recursion_limit: int = 50,
+        recursion_limit: int = 100,
     ) -> str:
         """Send a user message to the agent and return the final response."""
         if self._agent is None:
