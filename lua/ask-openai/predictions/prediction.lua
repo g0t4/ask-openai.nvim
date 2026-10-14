@@ -357,13 +357,15 @@ function Prediction:fix_fim_and_redraw_extmarks()
             end
 
             if #diff_lines > 0 then
-                local first_diff_line = table.remove(diff_lines, 1)
+                -- Show the diff as virtual lines positioned ABOVE the end of the
+                -- replacement span. This visually covers the original lines being
+                -- replaced (like RewritesFrontend does by removing them), so only
+                -- the diff content is shown.
                 vim.api.nvim_buf_set_extmark(self.bufnr, extmarks_ns_id,
-                    self.replace_start_line_base0, self.replace_start_col_base0 or 0,
+                    self.replace_end_line_base0, 0,
                     {
-                        virt_text = first_diff_line,
                         virt_lines = diff_lines,
-                        virt_text_pos = "overlay",
+                        virt_lines_above = true,
                     })
                 return
             end
