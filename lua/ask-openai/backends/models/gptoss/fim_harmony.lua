@@ -174,9 +174,10 @@ function HarmonyFimPromptBuilder.fim_prompt(request)
     -- FYI don't bother with making a link out of file_name (path)... agents don't need that and neither do humans... and your markdown parser/color-er can always detect most of these to color them if you really want that
 
     local fim_user_message =
-        "Please suggest an edit to the code. Repeat at least one line of the existing code "
-        .. "verbatim (a context anchor) immediately before the lines you want to change; the "
-        .. "plugin uses that anchor to locate your edit. The edit may be at the cursor or nearby. "
+        "Please suggest an edit to the following code."
+        .. "Return only the code for the edit: first repeat at least one unchanged line immediately before the change as a context anchor, then give the new or revised code. "
+        .. "The edit may be at or near the cursor. Use the surrounding code to infer what should be completed or changed. "
+        .. "Do not include an explanation."
         .. "\n\n"
         .. "FYI " .. FIM_CHAT_STYLE_CURSOR_MARKER .. " marks the editor's current cursor position. "
         .. "Use it only to understand what code the user is focused on; it does not indicate where to insert or place generated code. "
