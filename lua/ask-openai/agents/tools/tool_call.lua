@@ -19,9 +19,9 @@ function ToolCall:new(o)
     return o
 end
 
----@param message string
-function ToolCall:add_progress_message(message)
-    table.insert(self.progress_notifications, message)
+---@param notification string
+function ToolCall:add_progress_notification(notification)
+    table.insert(self.progress_notifications, notification) -- TODO track full object not just stringified?
 end
 
 ---@return boolean

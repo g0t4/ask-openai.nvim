@@ -72,4 +72,11 @@ function M.call(what, ...)
     return xpcall(what, M.xpcall_log_failures, ...)
 end
 
+function M.schedule(what, ...)
+    local args = { ... }
+    vim.schedule(function()
+        M.call(what, unpack(args))
+    end)
+end
+
 return M

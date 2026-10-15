@@ -64,7 +64,7 @@ function M.openai_tools(coordinator_only)
 end
 
 ---@alias ToolCallDoneCallback fun(call_output: MCP_CallToolResponse|MCP_JSONRPCErrorResponse)
----@alias ToolCallOnProgress fun(progress: MCP_ProgressNotificationParams)
+---@alias ToolCallOnProgress fun(progress: MCP_ProgressNotification)
 
 ---@param tool_call table
 ---@param callback ToolCallDoneCallback
@@ -96,7 +96,7 @@ function M.send_tool_call_router(tool_call, callback, on_progress)
         end
         local ok, err = pcall(on_progress, ...)
         if not ok then
-            log:error(string.format("Tool [%s] on_progress callback error: %s", tool_name, err))
+            log:error(string.format("Tool [%s] on_progress callback error: ", tool_name), err)
         end
     end
 

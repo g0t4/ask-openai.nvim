@@ -134,6 +134,7 @@ function MCPClient:dispatch_message(message)
     if message.error then
         log:error(string.format("MCP %s error response:", self.server_log_name), vim.inspect(message.error))
     end
+    log:info("dispatch_message", message)
 
     local request_id = message.id
     if request_id then
@@ -143,12 +144,14 @@ function MCPClient:dispatch_message(message)
             self.callbacks_by_request_id[request_id] = nil
             -- Keep the progress callback alive for requests that need it (e.g. background delegate)
             -- so the client can still receive progress notifications after the tool call returns.
-            if not self.keep_progress_by_request_id[request_id] then
-                self.progress_callbacks_by_token[request_id] = nil
-            else
-                -- The progress callback is now long-lived; keep it registered under this token.
-                log:info(string.format("MCP %s keeping progress callback for request.id=%s (background delegate)", self.server_log_name, request_id))
-            end
+            -- * leave callback for now for all requests... NBD
+            -- TODO add back selective keeping of callback based on background=True? and then can remove registration when receive background_done notification?
+            -- if not self.keep_progress_by_request_id[request_id] then
+            --     self.progress_callbacks_by_token[request_id] = nil
+            -- else
+            --     -- The progress callback is now long-lived; keep it registered under this token.
+            --     log:info(string.format("MCP %s keeping progress callback for request.id=%s (background delegate)", self.server_log_name, request_id))
+            -- end
             return
         end
 
@@ -157,37 +160,34 @@ function MCPClient:dispatch_message(message)
     end
 
     -- Notifications (no ID). Currently only "notifications/progress" is handled.
-    if message.method == "notifications/progress" then
+    if message.method == "notification/progress" or message.method == "notification/background_done" then
+        -- TODO update all MCP servers (w/ background-able tasks) to send this:
+        -- DONE: subagents (see how here:  ~/repos/github/g0t4/mcp-servers/src/agents/subagents/server.py:109)
+        -- TODO mirror in mcp-server-commands (specifcally get rid of the initial process_completed notification and use the new name and format)
+        --
+        -- TODO overall need to handle this notification with a callback that is registered IMMEDIATELY not after the tool call request is ack'd
+        --   that way any sync notifications (even with background=True) are not dropped!!!
+        --   no crap about waiting for tool result ack w/ PID to register a handler
+        -- TODO implement queuing of status messages (actually they would fit fine into queued user messages (or a parallel queue that is drained at the same time) - for now, without this we may miss some progress notices... not end of world
+        -- TODO need to look into clankerd so it can handle these status messages (notifications) too... don't worry about following some standards nonsense just shoehorn ours in (like here)
+
+        -- FYI progressToken is how you correlate notification back to the original request!
         ---@cast message MCP_ProgressNotification
         local progress_token = message.params.progressToken
-        local callback = self.progress_callbacks_by_token[progress_token]
+        log:info("n/p progress_token", progress_token)
 
-        if callback then
-            log:info(string.format("MCP %s rx: %s", self.server_log_name, message)) -- FYI message has message.method for type to show to user, don't duplicate that
-            callback(message.params)
+        -- TODO where are we setting progress_callbacks_by_token?
+        local on_progress_callback = self.progress_callbacks_by_token[progress_token]
+        if on_progress_callback then
+            -- FYI message has message.method for type to show to user, don't duplicate that:
+            log:info(string.format("MCP %s rx:", self.server_log_name), message)
+            -- local tool_call_id = ? -- TODO lookup tool_call/args/func.name etc?
+            on_progress_callback(message) -- TODO finish assing full message (previously passed only message.params... I want message.method (string) to be available too)
             return
         end
 
-        local log_message = string.format("MCP %s rx - MISSING CALLBACK: %s", self.server_log_name, message)
-        log:error(log_message)
-        vim.notify(log_message)
-    end
-
-    -- Background process completion (run_process with notify_on_completion).
-    -- Carries the PID; the frontend registers a callback to tell the agent.
-    if message.method == "notifications/process_completed" then
-        local pid = message.params and message.params.pid
-        local callback = M._process_completed_callbacks[pid]
-
-        if callback then
-            M._process_completed_callbacks[pid] = nil
-            log:info(string.format("MCP %s rx: %s", self.server_log_name, message))
-            callback(message.params)
-            return
-        end
-
-        local log_message = string.format("MCP %s rx - MISSING CALLBACK: %s", self.server_log_name, message)
-        log:error(log_message)
+        local log_message = string.format("MCP %s rx - MISSING CALLBACK:", self.server_log_name)
+        log:error(log_message, message)
         vim.notify(log_message)
     end
 end
@@ -197,7 +197,7 @@ end
 ---@param self MCPClient
 ---@param request table
 ---@param callback ToolCallDoneCallback
----@param on_progress? ToolCallOnProgress
+---@param on_progress ToolCallOnProgress
 ---@param keep_progress? boolean -- if true, keep the progress callback registered after the response arrives
 function MCPClient:send_request(request, callback, on_progress, keep_progress)
     if not request.id then
@@ -592,25 +592,6 @@ end
 
 ---@type table<string, MCP_Tool>
 M.tools_available = {}
-
---- Map of background process PID -> completion callback (pid => fun(params)).
---- Registered when a background run_process result is received, so the frontend
---- can tell the agent when the process finishes.
----@type table<integer, fun(params: table)>
-M._process_completed_callbacks = {}
-
---- Register a callback to fire when a background process (by PID) completes.
----@param pid integer
----@param callback fun(params: table)
-function M.register_process_completed(pid, callback)
-    M._process_completed_callbacks[pid] = callback
-end
-
---- Remove a registered completion callback for a PID.
----@param pid integer
-function M.unregister_process_completed(pid)
-    M._process_completed_callbacks[pid] = nil
-end
 
 ---@type boolean
 M.ready = false

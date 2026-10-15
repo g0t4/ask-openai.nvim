@@ -33,8 +33,7 @@ local config = require("ask-openai.config")
 local context_builder = require("ask-openai.agents.context_builder")
 local trace_restorer = require("ask-openai.agents.viewer.trace_restorer")
 local ansi = require("devtools.ansi")
-
-require("ask-openai.helpers.buffers")
+local safely = require("ask-openai.helpers.safely")
 
 ---@class AgentsFrontend : StreamingFrontend
 local AgentsFrontend = {}
@@ -835,84 +834,6 @@ function AgentsFrontend.on_curl_exited_successfully()
     end)
 end
 
---- Extract the PID from a run_process result (content is a list of {name,type,text}).
----@param result any
----@return integer|nil
-local function extract_pid_from_result(result)
-    if not (type(result) == "table" and type(result.content) == "table") then
-        return nil
-    end
-    for _, block in ipairs(result.content) do
-        if block and block.name == "PID" and block.type == "text" then
-            local pid = tonumber(block.text)
-            if pid and pid > 0 then
-                return pid
-            end
-        end
-    end
-    return nil
-end
-
---- Decode OpenAI tool call arguments (JSON string or table).
----@param arguments any
----@return table|nil
-local function decode_tool_args(arguments)
-    if type(arguments) == "string" then
-        local ok, decoded = pcall(vim.json.decode, arguments)
-        if ok and type(decoded) == "table" then
-            return decoded
-        end
-    elseif type(arguments) == "table" then
-        return arguments
-    end
-    return nil
-end
-
---- Display a background-process completion notice as a styled "tool" section in
---- the chat window. Appended before the agent resumes so it sits below the new
---- turn start and is not wiped by the next viewer redraw.
----@param pid integer
-local function display_background_completion_in_chat(pid)
-    local lines = LinesBuilder:new()
-    lines:create_marks_namespace()
-    lines:append_styled_lines({ "tool" }, HLGroups.TOOL_PROGRESS)
-    lines:append_text("Background process (pid " .. pid .. ") completed")
-    lines:append_text("Call process_status with pid " .. pid .. " to retrieve its STDOUT/STDERR and exit code.")
-    lines:append_blank_line()
-    AgentsFrontend.chat_window:append_styled_lines(lines)
-end
-
---- Inject a background-process completion notice into the current trace and
---- resume the agent so it can call process_status for the output/exit code.
----@param pid integer
----@param tool_call_id string
----@param trace AgentTrace
-function AgentsFrontend.inject_background_process_completion(pid, tool_call_id, trace)
-    -- Only act if this is still the active trace and the agent is idle.
-    if AgentsFrontend.trace ~= trace then
-        log:warn("background process " .. pid .. " completed but trace changed; ignoring")
-        return
-    end
-    if not AgentsFrontend.chat_window then
-        log:warn("background process " .. pid .. " completed but chat window is closed; ignoring")
-        return
-    end
-    if AgentsFrontend.chat_window and AgentsFrontend.chat_window._agent_is_running then
-        log:warn("background process " .. pid .. " completed while agent is running; skipping resume")
-        return
-    end
-
-    display_background_completion_in_chat(pid)
-
-    local done_message = TxChatMessage:tool_completion(
-        tool_call_id,
-        "Background process (pid " .. pid .. ") has completed. Call process_status with pid "
-        .. pid .. " to retrieve its STDOUT/STDERR and exit code."
-    )
-    trace:add_message(done_message)
-    AgentsFrontend.then_get_assistant_response(trace)
-end
-
 ---@param trace AgentTrace
 function AgentsFrontend.run_tools_and_send_results_back_to_the_model(trace)
     local request = trace.last_request
@@ -938,26 +859,6 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(trace)
                 tool_call.call_output.start_time_ms = tool_call.start_time_ms
                 tool_call.call_output.duration_ms = tool_call_duration_ms
                 log:trace("tool_call_output", vim.inspect(tool_call_output))
-
-                -- * If this tool started a background process with notify_on_completion,
-                --   register a handler so we can tell the agent when it finishes
-                --   (instead of the agent polling/sleeping).
-                local tool_name = tool_call["function"] and tool_call["function"].name
-                if tool_name == "run_process" then
-                    -- TODO we're going to need to make sure canceling an agent request (above), that subsequent notices don't trigger an agent response!
-                    -- IOTW mark something so we know if the run_process request is still valid or not
-                    -- also tricky is what happens if it runs in background across requests?
-                    -- maybe cancellation for bg should be explicit by the agent? i.e. start web server might run a really long time!
-                    local pid = extract_pid_from_result(tool_call.call_output.result)
-                    local tool_args = decode_tool_args(tool_call["function"].arguments)
-                    if pid and tool_args and tool_args.background and tool_args.notify_on_completion then
-                        mcp.register_process_completed(pid, function()
-                            vim.schedule(function()
-                                AgentsFrontend.inject_background_process_completion(pid, tool_call.id, trace)
-                            end)
-                        end)
-                    end
-                end
 
                 -- * triggers UI updates to show tool results
                 update_ui_chat_viewer(trace)
@@ -997,17 +898,59 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(trace)
                 end)
             end
 
-            local function on_tool_progress(progress)
+            ---@param notification MCP_ProgressNotification
+            local function on_tool_progress(notification)
+                -- if progress.method  == "notification/background_done" => then fire diff handler that sends agent a message every time
+                -- for now if progress.method == notifications/progress => just log it for now! (agent can ask for status when they want to see it)
+                log:info("on_tool_progress:", notification)
+
                 -- * extract message from MCP progress notification
-                local progress_message = progress.message
-                if not progress_message or progress_message:match("^%s*$") then
+                local message_text = notification.params.message
+                if not message_text or message_text:match("^%s*$") then
+                    log:warn("empty message on_tool_progress")
                     return
                 end
 
-                tool_call:add_progress_message(progress_message)
+                local tool_call_id = tool_call.id
+                -- Only act if this is still the active trace and the agent is idle.
+                if AgentsFrontend.trace ~= trace then
+                    -- TODO how to handle this? vim.notify maybe?
+                    log:error("progress from background tool call with id: " .. tool_call_id .. "  however it is from a prior trace (not current trace)... ignoring")
+                    return
+                end
+                if not AgentsFrontend.chat_window then
+                    -- TODO how to handle this? vim.notify maybe?
+                    -- TODO if agent is still available then shouldn't we send this?!
+                    log:error("progress from background tool call with id: " .. tool_call_id .. " ... however, chat window is closed; ignoring")
+                    return
+                end
 
-                log:info("on_tool_progress")
-                update_ui_chat_viewer(trace)
+                safely.schedule(function()
+                    if AgentsFrontend.chat_window and AgentsFrontend.chat_window._agent_is_running then
+                        -- TODO! queue message to go to agent just like a queued user message (in fact can use that initially)
+                        msg = "progress from background tool call with id: " .. tool_call_id .. " while agent is running; skipping resume... TODO queue this to go back to agent when it is done!"
+                        vim.notify(msg)
+                        log:warn(msg)
+                        return
+                    end
+                    log:info("notifying model!!!")
+
+                    -- must do both (chat_window update + send to agent) at the same time so we don't have slippage with crappy chat window design currently... long term less important but for now be careful... especially when you get to queueing messages (above)
+                    -- * update chat window (for humans)
+                    tool_call:add_progress_notification(vim.inspect(notification)) -- PRN scale bac what I show?
+                    update_ui_chat_viewer(trace)
+
+                    -- TODO wire up new progress types to actual follow up messages to the agent! (could be role=user or role=tool would liely be fine too)
+                    local progress_msg = TxChatMessage:tool_completion(
+                        tool_call_id,
+                        "Progress arrived for tool call with id: " .. tool_call_id .. ".\n\n"
+                        -- PRN put this in a codefence and markdown format for message overall?
+                        .. vim.inspect(notification)
+                    )
+                    log:info("sending to agent", progress_msg)
+                    trace:add_message(progress_msg)
+                    AgentsFrontend.then_get_assistant_response(trace)
+                end)
             end
 
             -- * capture start time before running the tool
