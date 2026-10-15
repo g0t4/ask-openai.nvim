@@ -160,7 +160,7 @@ function MCPClient:dispatch_message(message)
     end
 
     -- Notifications (no ID). Currently only "notifications/progress" is handled.
-    if message.method == "notification/progress" or message.method == "notification/background_done" then
+    if message.method == "notifications/progress" or message.method == "notifications/background_done" then
         -- TODO update all MCP servers (w/ background-able tasks) to send this:
         -- DONE: subagents (see how here:  ~/repos/github/g0t4/mcp-servers/src/agents/subagents/server.py:109)
         -- TODO mirror in mcp-server-commands (specifcally get rid of the initial process_completed notification and use the new name and format)
