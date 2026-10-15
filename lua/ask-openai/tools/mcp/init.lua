@@ -164,9 +164,9 @@ function MCPClient:_dispatch_message(notification)
         return
     end
 
-    local is_notifications = notification.method:sub(1, #"notifications/") == "notifications/"
-    if is_notifications then
-        log:info("is_notifications", notification)
+    local is_background_notify = notification.method:sub(1, #"background/") == "background/"
+    if is_background_notify then
+        log:info("is_background", notification)
         ---@cast notification MCP_ProgressNotification
 
         -- DONE: mcp-servers => subagents (delegate) + mcp-server-commands (run_process)
