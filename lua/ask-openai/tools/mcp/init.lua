@@ -174,10 +174,8 @@ function MCPClient:dispatch_message(notification)
 
         local on_progress_callback = self.progress_callbacks_by_token[progress_token]
         if on_progress_callback then
-            -- FYI message has message.method for type to show to user, don't duplicate that:
-            log:info(string.format("MCP %s rx:", self.server_log_name), notification)
-            -- local tool_call_id = ? -- TODO lookup tool_call/args/func.name etc?
-            on_progress_callback(notification) -- TODO finish assing full message (previously passed only message.params... I want message.method (string) to be available too)
+            -- FYI on_progress_callback has tool_call request so use it as your spot for those details, don't try to get that info here
+            on_progress_callback(notification)
             return
         end
 
