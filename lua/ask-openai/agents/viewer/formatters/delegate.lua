@@ -47,6 +47,9 @@ end
 
 ---@type ToolCallFormatter
 function M.format(lines, tool_call, message)
+    local func = tool_call["function"]
+    local header = func.name or "delegate"
+
     -- * decode args to get agent_type for title
     local decoded_args = decode_delegate_args(tool_call["function"].arguments, message)
     if decoded_args and decoded_args.agent_type then
