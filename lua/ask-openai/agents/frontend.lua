@@ -931,7 +931,10 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(trace)
 
                 -- * extract message from MCP progress notification
                 local message_text = notification.params.message
-                if not message_text or message_text:match("^%s*$") then
+                -- background/status notifications may not carry a `message` field
+                -- (they carry `event`, `tool_name`, `arguments` instead); allow them through
+                local is_background_status = notification.method == "background/status"
+                if (not message_text or message_text:match("^%s*$")) and not is_background_status then
                     log:warn("empty message_text in on_tool_progress", notification)
                     return
                 end
