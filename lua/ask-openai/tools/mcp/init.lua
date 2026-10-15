@@ -4,6 +4,7 @@ local ansi = require("devtools.ansi")
 local plumbing = require("ask-openai.tools.plumbing")
 local safely = require("ask-openai.helpers.safely")
 local uv_spawn = require("ask-openai.helpers.uv_spawn")
+local values = require("ask-openai.helpers.values")
 
 local uv = vim.uv
 
@@ -122,7 +123,11 @@ MCPClient.__index = MCPClient
 --- Both transports share this logic after parsing.
 ---@param self MCPClient
 ---@param notification MCP_JSONRPCMessage
-function MCPClient:dispatch_message(notification)
+function MCPClient:_dispatch_message(notification)
+    -- loop over elements and replace vim.NIL => nil using nil_ify
+    -- -- FYI this is border line risky! would be better to fix sender to never send null, probably!
+    -- notification = values.nil_ify(notification)
+
     -- Response object (success or failure)
     -- - Server does NOT send response to notifications
     -- - https://www.jsonrpc.org/specification#response_object
@@ -134,7 +139,7 @@ function MCPClient:dispatch_message(notification)
     if notification.error then
         log:error(string.format("MCP %s error response:", self.server_log_name), vim.inspect(notification.error))
     end
-    log:info("dispatch_message", notification)
+    log:info("_dispatch_message", notification)
 
     local request_id = notification.id
     if request_id then
@@ -331,7 +336,7 @@ function MCPStdioClient.new(name, options)
 
             local ok, response = safely.decode_json(line)
             if ok then
-                self:dispatch_message(response)
+                self:_dispatch_message(response)
             else
                 log:error(string.format("MCP STDOUT decode error %s OK:", self.server_log_name), ok)
                 log:error(string.format("MCP STDOUT decode error %s LINE:", self.server_log_name), line)
@@ -479,7 +484,7 @@ function MCPHttpServer:write_to(message)
     local parser = SSEDataOnlyParser.new(function(data_value)
         ---@type MCP_JSONRPCMessage
         local rpc_message = vim.json.decode(data_value)
-        self:dispatch_message(rpc_message)
+        self:_dispatch_message(rpc_message)
     end)
 
     local headers_parsed = false
