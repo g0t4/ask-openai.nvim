@@ -108,6 +108,17 @@ end
 ---@param opts {args:string}
 local function ask_agent_command(opts)
     local user_prompt = opts.args
+
+    -- * Warn if MCP servers haven't finished initializing (tools may be missing)
+    local mcp_ready = mcp.ready
+    if not mcp_ready then
+        notify.warn(
+            "MCP servers are not ready yet (tools may be unavailable). " ..
+            "Wait for the status indicator to turn green or try again shortly.",
+            { title = "AskAgent" }
+        )
+    end
+
     local always_include = {
         yanks = true,
         project = true,

@@ -41,7 +41,10 @@ function M.lualine_components()
         return { fg = fg_color }
     end
 
-    -- * MCP dot indicator (separate component for per-segment coloring)
+    -- * MCP indicator (separate component for per-segment coloring)
+    --   Uses 5 dots to make the state more visible at a glance.
+    --   Ready:     ●●●●● (green filled dots)
+    --   Not ready: ○○○○○ (red hollow dots)
     local mcp_dot_color = function()
         local is_ready = mcp_tools.ready
         return { fg = is_ready and '#50fa7b' or '#ff5555' } -- green or red
@@ -150,7 +153,9 @@ function M.lualine_components()
 
     local mcp_component = {
         function()
-            return '●'
+            local is_ready = mcp_tools.ready
+            local dot_char = is_ready and '●' or '○'
+            return string.rep(dot_char, 5)
         end,
         color = mcp_dot_color,
         separator = { left = ' ', right = '' },
