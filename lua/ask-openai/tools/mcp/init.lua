@@ -173,7 +173,6 @@ function MCPClient:dispatch_message(notification)
         -- TODO need to look into clankerd so it can handle these status messages (notifications) too... don't worry about following some standards nonsense just shoehorn ours in (like here)
 
         -- FYI progressToken is how you correlate notification back to the original request!
-        ---@cast message MCP_ProgressNotification
         local progress_token = notification.params.progressToken
         -- log:info("progress_token", progress_token)
 
