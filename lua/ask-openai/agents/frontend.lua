@@ -38,10 +38,8 @@ local safely = require("ask-openai.helpers.safely")
 ---@class AgentsFrontend : StreamingFrontend
 local AgentsFrontend = {}
 
----@type string[] -- user messages typed into the input box while the agent is running (awaiting delivery)
-AgentsFrontend.queued_user_messages = {}
----@type TxChatMessage[] -- tool completion messages awaiting delivery to the model (queued while agent is running)
-AgentsFrontend.queued_tool_completions = {}
+---@type TxChatMessage[] -- messages awaiting delivery to the model (user messages and tool completions, in arrival order)
+AgentsFrontend.queued_messages = {}
 
 -- **** hacky hack hack to track where to update for last message updates only (so we don't redraw entire buffer on every token, just current message)
 ---@type integer|nil -- 0-indexed line where the rendered queued-messages section begins in the chat window
@@ -75,20 +73,20 @@ local function display_tool_completion_in_chat(message)
     lines:create_marks_namespace()
     lines:mark_next_line(HLGroups.TOOL_PROGRESS)
     lines:append_line("tool")
-    lines:append_styled_text(message.content, HLGroups.TOOL_PROGRESS)
+    lines:append_text(message.content)
     lines:append_blank_line()
     AgentsFrontend.chat_window:append_styled_lines(lines)
 end
 
---- Drain queued tool completion messages and send them to the model.
+--- Drain queued messages (user messages and tool completions) and send them to the model.
 --- Called when the agent finishes its current turn (final message or tool results submitted).
 ---@param trace AgentTrace
-local function drain_queued_tool_completions(trace)
-    if #AgentsFrontend.queued_tool_completions == 0 then
+local function drain_queued_messages(trace)
+    if #AgentsFrontend.queued_messages == 0 then
         return
     end
-    local queued = AgentsFrontend.queued_tool_completions
-    AgentsFrontend.queued_tool_completions = {}
+    local queued = AgentsFrontend.queued_messages
+    AgentsFrontend.queued_messages = {}
     for _, message in ipairs(queued) do
         trace:add_message(message)
     end
@@ -644,7 +642,7 @@ local function update_ui_chat_viewer(trace)
 
         -- * re-pin any queued user messages to the bottom (the replace wiped the prior queued section)
         AgentsFrontend.queued_section_start_line_base0 = nil -- replace above already wiped out previous display
-        AgentsFrontend.redraw_queued_user_messages()
+        AgentsFrontend.redraw_queued_messages()
         -- TODO add integration test with faked model responses and make sure queued messages show after updates from model
 
         -- * update window title with model name and token count
@@ -795,14 +793,6 @@ function AgentsFrontend.on_parsed_data_sse(sse_parsed)
     update_ui_chat_viewer(trace)
 end
 
----@param queued_messages string[]
----@return string
-local function build_fyi_message(queued_messages)
-    -- don't add any prefix message, worse case if it stops I can instruct to "resume" and that's it!
-    -- much better than blathering the same interruption boilerplate every time I send a queued message!
-    return table.concat(queued_messages, "\n\n")
-end
-
 ---@type OnCurlExitedSuccessfully
 function AgentsFrontend.on_curl_exited_successfully()
     vim.schedule(function()
@@ -856,25 +846,12 @@ function AgentsFrontend.on_curl_exited_successfully()
         end
         AgentsFrontend.clear_undos()
 
-        -- * If the agent finished (final message) and the user queued messages while it ran,
-        --   deliver them now as a normal follow-up instead of waiting for the next tool call.
-        local deliver_queued_after_final = reached_final_message and #AgentsFrontend.queued_user_messages > 0
-        if deliver_queued_after_final then
-            -- FYI only send on final assistant message here b/c we handle queuing messages
-            -- when the model is already generating a request for tool calls
-            -- in run_tools_and_send_results_back_to_the_model (called below)
-            local queued = AgentsFrontend.queued_user_messages
-            AgentsFrontend.queued_user_messages = {}
-            AgentsFrontend.redraw_queued_user_messages() -- drops rendered queue items
-            AgentsFrontend.send_follow_up_user_message(build_fyi_message(queued))
+        -- * If the agent finished (final message) and there are queued messages (user or tool completions)
+        --   that arrived while it ran, deliver them now as a normal follow-up.
+        if reached_final_message and #AgentsFrontend.queued_messages > 0 then
+            AgentsFrontend.redraw_queued_messages() -- drops rendered queue items
+            drain_queued_messages(trace)
             -- TODO add an integration test of this scenario (queued during final message) (with model responses faked so we get reliable, fast testing)
-            return -- b/c reached_final_message should only happen if no messages after it... perhaps we should be returning on reached_final_message regardless of queued messages to avoid ambiguity... turns out run_tools_and_send_results_back_to_the_model does nothing (loop over tool_calls) if there are no tool calls so it is safe to let run always (intersting)
-        end
-
-        -- * If the agent finished and there are queued tool completions (background tasks that
-        --   completed while the agent was running), deliver them now so the model can react.
-        if reached_final_message and #AgentsFrontend.queued_tool_completions > 0 then
-            drain_queued_tool_completions(trace)
             return
         end
 
@@ -922,30 +899,24 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(trace)
                 end
                 request.already_sent = true
 
-                local queued = AgentsFrontend.queued_user_messages
-                AgentsFrontend.queued_user_messages = {}
+                local queued_messages = AgentsFrontend.queued_messages
+                AgentsFrontend.queued_messages = {}
 
                 vim.schedule(function()
-                    -- * tack on any queued user messages (if applicable)
-                    if #queued > 0 then
+                    -- * tack on any queued messages (user + tool completions, in arrival order)
+                    if #queued_messages > 0 then
                         -- * clear queued messages in chat_window
-                        AgentsFrontend.redraw_queued_user_messages()
+                        AgentsFrontend.redraw_queued_messages()
 
-                        -- * show final user message (from queued messages) in chat_window
-                        local contents = build_fyi_message(queued)
-                        display_user_message_in_chat(contents)
-
-                        -- * add user message to the trace
-                        local message = TxChatMessage:user(contents)
-                        trace:add_message(message)
-                    end
-
-                    -- * drain any queued tool completions (background tasks finished while agent was running)
-                    if #AgentsFrontend.queued_tool_completions > 0 then
-                        for _, tc_message in ipairs(AgentsFrontend.queued_tool_completions) do
-                            trace:add_message(tc_message)
+                        -- * show queued messages in chat_window and add them to the trace
+                        for _, message in ipairs(queued_messages) do
+                            if message.role == "user" then
+                                display_user_message_in_chat(message.content)
+                            elseif message.role == "tool" then
+                                display_tool_completion_in_chat(message)
+                            end
+                            trace:add_message(message)
                         end
-                        AgentsFrontend.queued_tool_completions = {}
                     end
 
                     -- ** no matter what, submit the tool results
@@ -992,8 +963,8 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(trace)
                             "Progress arrived for tool call with id: " .. tool_call_id .. ".\n\n"
                             .. vim.inspect(notification)
                         )
-                        table.insert(AgentsFrontend.queued_tool_completions, progress_msg)
-                        display_tool_completion_in_chat(progress_msg)
+                        table.insert(AgentsFrontend.queued_messages, progress_msg)
+                        AgentsFrontend.redraw_queued_messages()
                         return
                     end
                     log:info("notifying model!!!")
@@ -1055,14 +1026,12 @@ function AgentsFrontend.abort_request()
         trace.last_request.cancelled = true
     end
 
-    -- * aborting discards any queued user messages
-    if #AgentsFrontend.queued_user_messages > 0 then
-        AgentsFrontend.queued_user_messages = {}
-        AgentsFrontend.redraw_queued_user_messages()
+    -- * aborting discards any queued messages
+    if #AgentsFrontend.queued_messages > 0 then
+        AgentsFrontend.queued_messages = {}
+        AgentsFrontend.redraw_queued_messages()
         -- TODO add integration test with faked model responses and make sure cancel works with queued messages
     end
-    -- * aborting also discards any queued tool completions
-    AgentsFrontend.queued_tool_completions = {}
 
     CurlRequestForTrace.terminate(trace.last_request)
     AgentsFrontend.cancel_in_flight_tools(trace.last_request)
@@ -1082,27 +1051,27 @@ end
 function AgentsFrontend.interrupt_agent()
     local is_running = AgentsFrontend.chat_window and AgentsFrontend.chat_window._agent_is_running
 
-    local queued_messages = AgentsFrontend.queued_user_messages
-    AgentsFrontend.queued_user_messages = {}
-    local queued_tool_completions = AgentsFrontend.queued_tool_completions
-    AgentsFrontend.queued_tool_completions = {}
+    local queued_messages = AgentsFrontend.queued_messages
+    AgentsFrontend.queued_messages = {}
 
     -- * if the agent isn't running, just deliver any queued messages as a normal follow-up
     if not is_running then
         if #queued_messages > 0 then
             -- TODO add integration test with faked model responses and make sure sending queued messages works here (when we force an interruption an interruption when _the model is not running_)
-            AgentsFrontend.redraw_queued_user_messages()
-            AgentsFrontend.send_follow_up_user_message(build_fyi_message(queued_messages))
-        end
-        if #queued_tool_completions > 0 then
-            -- * deliver queued tool completions as a normal follow-up too
-            for _, tc_message in ipairs(queued_tool_completions) do
-                local trace = AgentsFrontend.trace
-                if trace then
-                    trace:add_message(tc_message)
+            AgentsFrontend.redraw_queued_messages()
+            -- * deliver all queued messages (user + tool completions, in order)
+            local trace = AgentsFrontend.trace
+            if trace then
+                for _, message in ipairs(queued_messages) do
+                    if message.role == "user" then
+                        display_user_message_in_chat(message.content)
+                    elseif message.role == "tool" then
+                        display_tool_completion_in_chat(message)
+                    end
+                    trace:add_message(message)
                 end
+                AgentsFrontend.then_get_assistant_response(trace)
             end
-            AgentsFrontend.then_get_assistant_response(AgentsFrontend.trace)
         end
         return
     end
@@ -1127,7 +1096,7 @@ function AgentsFrontend.interrupt_agent()
     -- TODO add integration test with faked model responses and make sure sending queued messages works here (when model is mid response and we force interrupt)
     -- * drop the rendered queued section (re-rendered as a normal user message below)
     AgentsFrontend.queued_section_start_line_base0 = nil
-    AgentsFrontend.redraw_queued_user_messages()
+    AgentsFrontend.redraw_queued_messages()
 
     if not trace then
         return
@@ -1148,13 +1117,22 @@ function AgentsFrontend.interrupt_agent()
 
     -- * tell the agent we interrupted its work and pass along the queued message(s)
     -- ?? should I add blurb here about why I interrupted it? since this actually killed it mid generation?
-    local contents = "I had to stop you immediately to provide additional context, please resume when you've read this: \n\n " .. build_fyi_message(queued_messages)
+    -- * build interruption user message from any queued user messages
+    local user_contents = {}
+    for _, message in ipairs(queued_messages) do
+        if message.role == "user" then
+            table.insert(user_contents, message.content)
+        end
+    end
+    local contents = "I had to stop you immediately to provide additional context, please resume when you've read this: \n\n " .. table.concat(user_contents, "\n\n")
     local message = TxChatMessage:user(contents)
     trace:add_message(message)
 
     -- * also add any queued tool completions (background tasks finished while agent was running)
-    for _, tc_message in ipairs(queued_tool_completions) do
-        trace:add_message(tc_message)
+    for _, message in ipairs(queued_messages) do
+        if message.role == "tool" then
+            trace:add_message(message)
+        end
     end
 
     -- * render the interruption message, then immediately ask the agent to continue
@@ -1162,11 +1140,11 @@ function AgentsFrontend.interrupt_agent()
     AgentsFrontend.then_get_assistant_response(trace)
 end
 
---- Re-render the queued user messages pinned to the bottom of the chat window.
+--- Re-render the queued messages (user + tool completions) pinned to the bottom of the chat window.
 --- Drops any previously-rendered queued section, then (re)appends the current queue.
-function AgentsFrontend.redraw_queued_user_messages()
+function AgentsFrontend.redraw_queued_messages()
     if not AgentsFrontend.chat_window then
-        log:warn("redraw_queued_user_messages was called when there's no chat_window (should not happen)")
+        log:warn("redraw_queued_messages was called when there's no chat_window (should not happen)")
         return
     end
     local buffer = AgentsFrontend.chat_window.buffer
@@ -1174,7 +1152,7 @@ function AgentsFrontend.redraw_queued_user_messages()
 
     -- * drop any previously rendered queued section (a viewer update wiped it, marker is stale)
     if AgentsFrontend.queued_section_start_line_base0 then
-        log:info("redraw_queued_user_messages -> clear queued display")
+        log:info("redraw_queued_messages -> clear queued display")
         local start_line_base0 = AgentsFrontend.queued_section_start_line_base0
         local line_count = vim.api.nvim_buf_line_count(bufnr)
         if start_line_base0 < line_count then
@@ -1183,18 +1161,24 @@ function AgentsFrontend.redraw_queued_user_messages()
         AgentsFrontend.queued_section_start_line_base0 = nil -- will be set anew below if there are still queued messages
     end
 
-    if #AgentsFrontend.queued_user_messages == 0 then
+    if #AgentsFrontend.queued_messages == 0 then
         -- we were only clearing previously displayed queued messages (i.e. after send or cancel)
         return
     end
-    log:info("redraw_queued_user_messages -> redo anew user queued messages")
+    log:info("redraw_queued_messages -> redo anew queued messages")
 
     -- * display queued section w/ current queued_messages
     local lines = LinesBuilder:new()
     lines:create_marks_namespace()
-    lines:append_role_header("user")
-    for _, message in ipairs(AgentsFrontend.queued_user_messages) do
-        lines:append_text(message)
+    for _, message in ipairs(AgentsFrontend.queued_messages) do
+        if message.role == "user" then
+            lines:append_role_header("user")
+            lines:append_text(message.content)
+        elseif message.role == "tool" then
+            lines:mark_next_line(HLGroups.TOOL_PROGRESS)
+            lines:append_line("tool")
+            lines:append_text(message.content)
+        end
     end
     lines:append_blank_line()
 
@@ -1294,10 +1278,11 @@ function AgentsFrontend.send_user_message_from_user_input_window()
     log:info(ansi.red("[red]send from UIW: "), text)
 
     if AgentsFrontend.chat_window and AgentsFrontend.chat_window._agent_is_running then
-        -- * queue message if agent is running
-        table.insert(AgentsFrontend.queued_user_messages, text)
+        -- * queue message if agent is running (preserve arrival order w/ tool completions)
+        local queued_message = TxChatMessage:user(text)
+        table.insert(AgentsFrontend.queued_messages, queued_message)
         -- TODO add integration test with faked model responses and make sure queued messages shows right after user submits it
-        AgentsFrontend.redraw_queued_user_messages()
+        AgentsFrontend.redraw_queued_messages()
         return
     end
 
