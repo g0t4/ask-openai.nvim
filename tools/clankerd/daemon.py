@@ -20,15 +20,21 @@ class ClankerDaemon:
 
     def __init__(self) -> None:
         self._trace = TraceWriter()
-        self._agent = ClankerAgent(trace=self._trace)
+        self._agent = ClankerAgent(
+            trace=self._trace,
+            on_background_notification=self._on_background_notification,
+        )
         self._clients: set[asyncio.StreamWriter] = set()
         self._loop: Optional[asyncio.AbstractEventLoop] = None
         self._server: Optional[asyncio.AbstractServer] = None
         self._voiced_reader: Optional[asyncio.StreamReader] = None
         self._voiced_writer: Optional[asyncio.StreamWriter] = None
         self._voiced_task: Optional[asyncio.Task] = None
+        self._background_task: Optional[asyncio.Task] = None
         self._current_status = "starting"
         self._active_agent_task: Optional[asyncio.Task] = None
+        self._background_notifications: asyncio.Queue = asyncio.Queue()
+        self._pending_background_notifications: list[str] = []
         self._thread_id = "clankerd"
         self._shutting_down = False
         self._shutdown_event = asyncio.Event()
@@ -56,6 +62,11 @@ class ClankerDaemon:
 
         # Connect to voiced daemon for transcriptions
         self._connect_to_voiced()
+
+        # Start background notification handler
+        self._background_task = asyncio.create_task(
+            self._background_notification_loop()
+        )
 
         # Start our control socket server
         await self.start_server()
@@ -95,6 +106,65 @@ class ClankerDaemon:
                     self._loop.call_later(5.0, self._connect_to_voiced)
 
         asyncio.ensure_future(_connect())
+
+    # ----------------------------------------------------- background notifications
+
+    async def _on_background_notification(
+        self, server_name: str, method: str, params: dict
+    ) -> None:
+        """Called by the agent when a background notification is received."""
+        logger.info(
+            "background notification: server=%s method=%s params=%s",
+            server_name,
+            method,
+            params,
+        )
+        self._trace.event(
+            "background_notification",
+            server=server_name,
+            method=method,
+            params=params,
+        )
+        await self._background_notifications.put((server_name, method, params))
+        await self._broadcast({
+            "type": "background_notification",
+            "server": server_name,
+            "method": method,
+            "params": params,
+        })
+
+    async def _background_notification_loop(self) -> None:
+        """Process background notifications and feed them to the agent."""
+        while not self._shutting_down:
+            try:
+                server_name, method, params = await self._background_notifications.get()
+            except asyncio.CancelledError:
+                break
+
+            if method != "background/done":
+                # status updates are informational; only act on done
+                continue
+
+            # Build a message for the agent
+            message = params.get("message") or f"Background task completed on {server_name}"
+            logger.info("background done: %s", message)
+
+            # If agent is already running, queue this for later (the agent will
+            # pick it up on the next run). Otherwise, start a new agent run.
+            if self._active_agent_task and not self._active_agent_task.done():
+                logger.info("agent busy; background notification will be processed later")
+                self._pending_background_notifications.append(
+                    f"Background task completed: {message}"
+                )
+                continue
+
+            # Start a new agent run with the background notification as context
+            self._active_agent_task = asyncio.create_task(
+                self._run_agent(
+                    f"Background task completed: {message}",
+                    is_final=True,
+                )
+            )
 
     async def _voiced_read_loop(self) -> None:
         """Read transcription events from the voiced daemon."""
@@ -162,6 +232,13 @@ class ClankerDaemon:
                     "message": "agent is not ready (setup failed)",
                 })
                 return
+
+            # Prepend any pending background notifications as context
+            if self._pending_background_notifications:
+                pending = "\n\n".join(self._pending_background_notifications)
+                self._pending_background_notifications.clear()
+                text = f"{text}\n\n[Background notifications]\n{pending}"
+
             response = await self._agent.run(
                 text,
                 is_final=is_final,
@@ -285,12 +362,19 @@ class ClankerDaemon:
     async def _shutdown_async(self) -> None:
         logger.info("shutting down")
         self._shutting_down = True
+        if self._background_task and not self._background_task.done():
+            self._background_task.cancel()
+            try:
+                await self._background_task
+            except asyncio.CancelledError:
+                pass
         if self._active_agent_task and not self._active_agent_task.done():
             self._active_agent_task.cancel()
             try:
                 await self._active_agent_task
             except asyncio.CancelledError:
                 pass
+        await self._agent.shutdown()
         if self._server:
             self._server.close()
             await self._server.wait_closed()

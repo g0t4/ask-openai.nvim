@@ -17,6 +17,9 @@ class FakeAgent:
     async def setup(self) -> None:
         pass
 
+    async def shutdown(self) -> None:
+        pass
+
     async def run(
         self,
         user_message: str,

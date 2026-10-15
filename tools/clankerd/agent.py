@@ -6,6 +6,9 @@ Builds the primary brain agent with MCP tools:
   - delegate     (spawn a subagent, optionally background)
   - delegate_status / delegate_stop
   - speak        (text-to-speech with the user's cloned voice)
+
+Uses persistent MCP sessions so background notifications (background/status,
+background/done) can be received after tool calls return.
 """
 
 from __future__ import annotations
@@ -13,6 +16,7 @@ from __future__ import annotations
 import asyncio
 import os
 from typing import Any
+from typing import Union
 
 from langchain.agents import create_agent
 from langchain_core.messages import SystemMessage
@@ -20,8 +24,23 @@ from langchain_core.messages import HumanMessage
 from langchain_core.runnables import RunnableConfig
 from langchain_core.tools import tool
 from langchain_llama_server import ChatLlamaServer
-from langchain_mcp_adapters.client import MultiServerMCPClient
+from langchain_mcp_adapters.tools import load_mcp_tools
 from langgraph.checkpoint.memory import InMemorySaver
+from mcp import ClientSession, StdioServerParameters
+from mcp.client.stdio import stdio_client
+from mcp.types import (
+    CancelledNotification,
+    ElicitCompleteNotification,
+    LoggingMessageNotification,
+    Notification,
+    ProgressNotification,
+    PromptListChangedNotification,
+    ResourceListChangedNotification,
+    ResourceUpdatedNotification,
+    TaskStatusNotification,
+    ToolListChangedNotification,
+)
+from pydantic import RootModel
 
 from tools.clankerd.logger import get_logger
 from tools.clankerd.trace import TraceWriter
@@ -69,6 +88,41 @@ MCP_SERVERS: dict[str, dict[str, Any]] = {
         ],
     },
 }
+
+
+# ---------------------------------------------------------------------------
+# Custom notification support
+# ---------------------------------------------------------------------------
+
+# Custom notification type that includes standard notifications plus a raw
+# catch-all for custom methods like background/status and background/done.
+class CustomServerNotification(RootModel):
+    root: Union[
+        CancelledNotification,
+        ProgressNotification,
+        LoggingMessageNotification,
+        ResourceUpdatedNotification,
+        ResourceListChangedNotification,
+        ToolListChangedNotification,
+        PromptListChangedNotification,
+        ElicitCompleteNotification,
+        TaskStatusNotification,
+        Notification[dict[str, Any], str],
+    ]
+
+
+class ClankerClientSession(ClientSession):
+    """ClientSession that accepts custom notification methods (e.g. background/done)."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Override the notification type to accept custom methods
+        self._receive_notification_type = CustomServerNotification
+
+
+# ---------------------------------------------------------------------------
+# Tools
+# ---------------------------------------------------------------------------
 
 
 @tool
@@ -135,6 +189,15 @@ Use delegation for long-running or parallel work so you remain responsive to
 new voice input. Track background tasks (PIDs and task_ids) and clean them up
 when no longer needed.
 
+You will also receive background notifications when tasks complete:
+- **background/status**: Progress updates from background processes/subagents
+- **background/done**: A background task has finished. Use this to know when
+  to report results or follow up.
+
+When you receive a background/done notification, treat it as new input. The
+notification message describes what happened. You should respond accordingly
+(e.g. speak a summary to the user, or take follow-up action).
+
 Always log what you are doing so the user can tail your logs while you work.
 
 When you respond, consider whether speaking the response (or a summary) out
@@ -144,24 +207,155 @@ every response.
 """
 
 
-class ClankerAgent:
-    """Owns the LangChain agent and MCP client connections."""
+# ---------------------------------------------------------------------------
+# Persistent session management
+# ---------------------------------------------------------------------------
 
-    def __init__(self, trace: TraceWriter | None = None) -> None:
+
+class PersistentMCPSession:
+    """Keeps an MCP stdio session open for the daemon's lifetime.
+
+    This is necessary so background notifications (background/status,
+    background/done) can be received after tool calls return. The standard
+    langchain_mcp_adapters client creates a new session per tool call, which
+    closes before the notification arrives.
+    """
+
+    def __init__(
+        self,
+        name: str,
+        connection: dict[str, Any],
+        on_notification: callable | None = None,
+    ) -> None:
+        self._name = name
+        self._connection = connection
+        self._on_notification = on_notification
+        self._ready = asyncio.Event()
+        self._session: ClientSession | None = None
+        self._keepalive_task: asyncio.Task | None = None
+        self._started = False
+
+    async def start(self) -> None:
+        """Create and initialize the persistent session."""
+        if self._started:
+            return
+
+        self._keepalive_task = asyncio.create_task(self._keepalive())
+        await self._ready.wait()
+        self._started = True
+        logger.info("persistent MCP session started: %s", self._name)
+
+    async def _keepalive(self) -> None:
+        """Keep the MCP session alive in a dedicated task."""
+        conn = self._connection
+        server_params = StdioServerParameters(
+            command=conn["command"],
+            args=conn["args"],
+            env=conn.get("env"),
+            cwd=conn.get("cwd"),
+        )
+
+        async def message_handler(message: Any) -> None:
+            """Intercept custom notifications like background/done."""
+            await self._handle_message(message)
+
+        try:
+            async with stdio_client(server_params) as (read, write):
+                async with ClankerClientSession(
+                    read,
+                    write,
+                    message_handler=message_handler,
+                ) as session:
+                    await session.initialize()
+                    self._session = session
+                    self._ready.set()
+                    # Keep alive until cancelled
+                    await asyncio.Event().wait()
+        except asyncio.CancelledError:
+            logger.info("persistent MCP session keepalive cancelled: %s", self._name)
+            raise
+        except Exception as error:
+            logger.error("persistent MCP session keepalive failed: %s: %s", self._name, error)
+            self._ready.set()  # signal start() to proceed even on failure
+
+    async def _handle_message(self, message: Any) -> None:
+        """Handle incoming messages, intercepting background notifications."""
+        try:
+            # Check if this is a custom background notification
+            if hasattr(message, "root") and hasattr(message.root, "method"):
+                method = message.root.method
+                if method and method.startswith("background/"):
+                    logger.info("background notification from %s: %s", self._name, method)
+                    if self._on_notification:
+                        params = getattr(message.root, "params", {})
+                        await self._on_notification(
+                            self._name, method, dict(params)
+                        )
+        except Exception as error:
+            logger.warning("error handling notification in %s: %s", self._name, error)
+
+    async def stop(self) -> None:
+        """Close the persistent session."""
+        if self._keepalive_task and not self._keepalive_task.done():
+            self._keepalive_task.cancel()
+            try:
+                await self._keepalive_task
+            except asyncio.CancelledError:
+                pass
+        self._session = None
+        self._started = False
+        logger.info("persistent MCP session stopped: %s", self._name)
+
+    @property
+    def session(self) -> ClientSession | None:
+        """Return the underlying ClientSession (or None if not started)."""
+        return self._session
+
+
+# ---------------------------------------------------------------------------
+# Agent
+# ---------------------------------------------------------------------------
+
+
+class ClankerAgent:
+    """Owns the LangChain agent and persistent MCP client connections."""
+
+    def __init__(
+        self,
+        trace: TraceWriter | None = None,
+        on_background_notification: callable | None = None,
+    ) -> None:
         self._trace = trace
         self._agent = None
-        self._client = None
         self._model = None
+        self._sessions: dict[str, PersistentMCPSession] = {}
+        self._on_background_notification = on_background_notification
 
     async def setup(self) -> None:
-        """Initialize MCP clients and build the agent."""
-        self._client = MultiServerMCPClient(MCP_SERVERS)
-        mcp_tools = await self._client.get_tools()
+        """Initialize persistent MCP sessions and build the agent."""
+        all_tools = [speak]
+
+        # Start persistent sessions so background notifications can be received
+        for name, conn in MCP_SERVERS.items():
+            session = PersistentMCPSession(
+                name,
+                conn,
+                on_notification=self._on_background_notification,
+            )
+            await session.start()
+            self._sessions[name] = session
+
+            # Load tools from the persistent session
+            tools = await load_mcp_tools(
+                session.session,
+                server_name=name,
+            )
+            all_tools.extend(tools)
+            logger.info("loaded %d tools from %s", len(tools), name)
+
         self._model = ChatLlamaServer(
             base_url=LLAMA_SERVER_BASE_URL, api_key="foo"
         )
-        # In-process tools (speak) plus MCP tools
-        all_tools = [speak] + list(mcp_tools)
         self._agent = create_agent(
             self._model,
             checkpointer=InMemorySaver(),
@@ -169,6 +363,12 @@ class ClankerAgent:
             system_prompt=SystemMessage(content=SYSTEM_PROMPT),
         )
         logger.info("agent setup complete (%d tools)", len(all_tools))
+
+    async def shutdown(self) -> None:
+        """Close all persistent MCP sessions."""
+        for name, session in self._sessions.items():
+            await session.stop()
+        self._sessions.clear()
 
     async def run(
         self,
