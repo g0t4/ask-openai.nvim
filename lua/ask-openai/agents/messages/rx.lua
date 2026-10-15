@@ -37,15 +37,17 @@ local RX_MESSAGE_ROLES = {
 ---@return RxAccumulatedMessage
 function RxAccumulatedMessage:new(role, content)
     self = setmetatable({}, { __index = RxAccumulatedMessage })
-    self.role = role
+    -- Default to assistant when role is missing (some backends omit `role` in
+    -- the first SSE delta, e.g. when reasoning is off or content-only chunks)
+    self.role = role or RX_MESSAGE_ROLES.ASSISTANT
     self.content = content
     self.finish_reason = nil
     self.tool_calls = {} -- empty == None (enforce invariant)
 
-    if role ~= RX_MESSAGE_ROLES.ASSISTANT then
+    if self.role ~= RX_MESSAGE_ROLES.ASSISTANT then
         -- NOT really an error, I just want it to stand out
         -- mostly I am interested in when this happens so I can build that into my mental model of this RxAccumulatedMessage type
-        log:error("[WARN] unexpected role (not a problem, just heads up so you can think about it): " .. tostring(role))
+        log:error("[WARN] unexpected role (not a problem, just heads up so you can think about it): " .. tostring(self.role))
         -- TODO remove this logging when you think you have enough history collected
     end
 
