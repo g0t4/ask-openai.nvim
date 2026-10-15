@@ -1,4 +1,5 @@
 local log = require("devtools.logs.logger"):universal()
+local values = require("ask-openai.helpers.values")
 
 -- logic for parsing SSEs from all completion backends
 
@@ -100,26 +101,6 @@ function get_probs(choice)
     return selected_token_prob
 end
 
----@param value string|vim.NIL|nil
----@return string
-local function empty_for_nil(value)
-    if value == nil then
-        return ""
-    end
-    if value == vim.NIL then
-        return ""
-    end
-    ---@cast value string -- tell type checker to shut up
-    return value
-end
-
-local function vim_NIL_to_nil(value)
-    if value == vim.NIL then
-        return nil
-    end
-    return value
-end
-
 ---@param sse LlamaServerChatCompletionSSE
 ---@return SseFieldsResult?
 function parse_sse_v1_chat_completions(sse)
@@ -148,17 +129,17 @@ function parse_sse_v1_chat_completions(sse)
     local prob = get_probs(first_choice)
     -- log:info("prob", prob)
 
-    local finish_reason = vim_NIL_to_nil(first_choice.finish_reason)
+    local finish_reason = values.vim_NIL_to_nil(first_choice.finish_reason)
 
     return {
         -- content == vim.NIL => first response has `content: null` b/c it is setting the role to asssistant
         --   - likely due to roles/channels token(s) in harmony parser (among others)
         -- content == nil
         --   - 2+ SSEs are for reasoning and use reasoning_content until thinking is complete (these don't even set the content field, so it's nil in this case)
-        content = empty_for_nil(delta.content),
+        content = values.empty_for_nil(delta.content),
 
         -- FYI I have yet to seel reasoning_content come back with vim.NIL (and maybe not even nil?)
-        reasoning_content = empty_for_nil(delta.reasoning_content),
+        reasoning_content = values.empty_for_nil(delta.reasoning_content),
 
         -- FYI finish_reason is vim.NIL until it is set (end of completion)
         finish_reason = finish_reason,
@@ -191,11 +172,11 @@ function parse_sse_llamacpp_completions(sse)
     log:info("raw sse", sse)
 
     return {
-        content           = empty_for_nil(sse.content),
+        content           = values.empty_for_nil(sse.content),
         done              = sse.stop == true, -- ensure always a boolean even if stop were nil
 
         -- FYI I have not encountered sse.stop_type == vim.NIL, doesn't hurt to check
-        finish_reason     = vim_NIL_to_nil(sse.stop_type),
+        finish_reason     = values.vim_NIL_to_nil(sse.stop_type),
 
         -- unused for this endpoint, set default values:
         reasoning_content = "",

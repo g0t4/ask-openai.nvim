@@ -2,6 +2,7 @@ local ansi = require("devtools.ansi")
 local log = require("devtools.logs.logger").universal()
 local rag_trace = require("ask-openai.rag.client.trace")
 local safely = require("ask-openai.helpers.safely")
+local values = require("ask-openai.helpers.values")
 
 local M = {}
 
@@ -22,18 +23,12 @@ function nil_means_nil(matches)
     --
     -- ?? walk the entire response object and delete all the keys with vim.NIL?
     --   IOTW change vim.NIL => nil
-    local function nillify(what)
-        if what == vim.NIL then
-            return nil
-        end
-        return what
-    end
     for _, match in ipairs(matches) do
         -- FYI for now be conservative and only replace vim.NIL on values that you know can be python's None value
         -- and that client side (here in lua) can be nil
         -- 100% when column is not used it should be nil and no other value.. so integer|nil are only values
-        match.start_column_base0 = nillify(match.start_column_base0)
-        match.end_column_base0 = nillify(match.end_column_base0)
+        match.start_column_base0 = values.vim_NIL_to_nil(match.start_column_base0)
+        match.end_column_base0 = values.vim_NIL_to_nil(match.end_column_base0)
         -- TODO replace other values explicitly here instead of blanket walking entire object...
         --  why? because there is a chance in another context that you might want to differentiate vim.NIL
         --  consider context before blanket replace
