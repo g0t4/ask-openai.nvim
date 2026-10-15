@@ -16,7 +16,7 @@ HLGroups.TOOL_FAILED_GLYPH = " " -- alternatives: ❌ 
 HLGroups.TOOL_PROGRESS = "AskToolProgress"
 vim.api.nvim_set_hl(0, HLGroups.TOOL_SUCCESS, { fg = "#92E2AC", bg = "NONE" })
 vim.api.nvim_set_hl(0, HLGroups.TOOL_FAILED, { fg = "#e06c75", bg = "NONE", bold = true })
-vim.api.nvim_set_hl(0, HLGroups.TOOL_PROGRESS, { fg = "#FFD700", italic = true })
+vim.api.nvim_set_hl(0, HLGroups.TOOL_PROGRESS, { fg = "#FFD700", italic = true, bold = true })
 
 -- * CHAT / :AskAgent
 HLGroups.CHAT_REASONING = "AskChatReasoning"
