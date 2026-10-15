@@ -159,17 +159,11 @@ function MCPClient:dispatch_message(notification)
         return
     end
 
-    -- Notifications (no ID). Currently only "notifications/progress" is handled.
     local is_notifications = notification.method == "notifications/progress" or notification.method == "notifications/background_done"
     if is_notifications then
-        -- TODO update all MCP servers (w/ background-able tasks) to send this:
-        -- DONE: subagents (see how here:  ~/repos/github/g0t4/mcp-servers/src/agents/subagents/server.py:109)
-        -- TODO mirror in mcp-server-commands (specifcally get rid of the initial process_completed notification and use the new name and format)
+        -- DONE: mcp-servers => subagents (delegate) + mcp-server-commands (run_process)
+        --   MAYBES: run_xonsh
         --
-        -- TODO overall need to handle this notification with a callback that is registered IMMEDIATELY not after the tool call request is ack'd
-        --   that way any sync notifications (even with background=True) are not dropped!!!
-        --   no crap about waiting for tool result ack w/ PID to register a handler
-        -- TODO implement queuing of status messages (actually they would fit fine into queued user messages (or a parallel queue that is drained at the same time) - for now, without this we may miss some progress notices... not end of world
         -- TODO need to look into clankerd so it can handle these status messages (notifications) too... don't worry about following some standards nonsense just shoehorn ours in (like here)
 
         -- FYI progressToken is how you correlate notification back to the original request!
