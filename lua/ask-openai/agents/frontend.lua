@@ -927,14 +927,12 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(trace)
 
             ---@param notification MCP_ProgressNotification
             local function on_tool_progress(notification)
-                -- if progress.method  == "notification/background_done" => then fire diff handler that sends agent a message every time
-                -- for now if progress.method == notifications/progress => just log it for now! (agent can ask for status when they want to see it)
-                log:info("on_tool_progress:", notification)
+                -- log:info("on_tool_progress:", notification)
 
                 -- * extract message from MCP progress notification
                 local message_text = notification.params.message
                 if not message_text or message_text:match("^%s*$") then
-                    log:warn("empty message on_tool_progress")
+                    log:warn("empty message_text in on_tool_progress", notification)
                     return
                 end
 
