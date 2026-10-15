@@ -40,6 +40,8 @@ local AgentsFrontend = {}
 
 ---@type string[] -- user messages typed into the input box while the agent is running (awaiting delivery)
 AgentsFrontend.queued_user_messages = {}
+---@type TxChatMessage[] -- tool completion messages awaiting delivery to the model (queued while agent is running)
+AgentsFrontend.queued_tool_completions = {}
 
 -- **** hacky hack hack to track where to update for last message updates only (so we don't redraw entire buffer on every token, just current message)
 ---@type integer|nil -- 0-indexed line where the rendered queued-messages section begins in the chat window
@@ -63,6 +65,34 @@ local function display_user_message_in_chat(text)
     lines:append_text(text)
     lines:append_blank_line()
     AgentsFrontend.chat_window:append_styled_lines(lines)
+end
+
+--- Display a tool completion message (sent back to the model) in the chat window.
+--- Uses a golden dark-yellow highlight so "background task finished" notifications pop.
+---@param message TxChatMessage
+local function display_tool_completion_in_chat(message)
+    local lines = LinesBuilder:new()
+    lines:create_marks_namespace()
+    lines:mark_next_line(HLGroups.TOOL_PROGRESS)
+    lines:append_line("tool")
+    lines:append_styled_text(message.content, HLGroups.TOOL_PROGRESS)
+    lines:append_blank_line()
+    AgentsFrontend.chat_window:append_styled_lines(lines)
+end
+
+--- Drain queued tool completion messages and send them to the model.
+--- Called when the agent finishes its current turn (final message or tool results submitted).
+---@param trace AgentTrace
+local function drain_queued_tool_completions(trace)
+    if #AgentsFrontend.queued_tool_completions == 0 then
+        return
+    end
+    local queued = AgentsFrontend.queued_tool_completions
+    AgentsFrontend.queued_tool_completions = {}
+    for _, message in ipairs(queued) do
+        trace:add_message(message)
+    end
+    AgentsFrontend.then_get_assistant_response(trace)
 end
 
 local function get_file(path)
@@ -830,6 +860,13 @@ function AgentsFrontend.on_curl_exited_successfully()
             return -- b/c reached_final_message should only happen if no messages after it... perhaps we should be returning on reached_final_message regardless of queued messages to avoid ambiguity... turns out run_tools_and_send_results_back_to_the_model does nothing (loop over tool_calls) if there are no tool calls so it is safe to let run always (intersting)
         end
 
+        -- * If the agent finished and there are queued tool completions (background tasks that
+        --   completed while the agent was running), deliver them now so the model can react.
+        if reached_final_message and #AgentsFrontend.queued_tool_completions > 0 then
+            drain_queued_tool_completions(trace)
+            return
+        end
+
         AgentsFrontend.run_tools_and_send_results_back_to_the_model(trace)
     end)
 end
@@ -892,6 +929,14 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(trace)
                         trace:add_message(message)
                     end
 
+                    -- * drain any queued tool completions (background tasks finished while agent was running)
+                    if #AgentsFrontend.queued_tool_completions > 0 then
+                        for _, tc_message in ipairs(AgentsFrontend.queued_tool_completions) do
+                            trace:add_message(tc_message)
+                        end
+                        AgentsFrontend.queued_tool_completions = {}
+                    end
+
                     -- ** no matter what, submit the tool results
                     -- DO NOT split apart getting assistant response from display_user_message_in_chat(contents) above else it is likely the displayed message will be overwritten by something else before the_get_assistant_response fires (i.e. if vim.schedule'd alone)
                     AgentsFrontend.then_get_assistant_response(trace)
@@ -927,10 +972,17 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(trace)
 
                 safely.schedule(function()
                     if AgentsFrontend.chat_window and AgentsFrontend.chat_window._agent_is_running then
-                        -- TODO! queue message to go to agent just like a queued user message (in fact can use that initially)
-                        msg = "progress from background tool call with id: " .. tool_call_id .. " while agent is running; skipping resume... TODO queue this to go back to agent when it is done!"
-                        vim.notify(msg)
-                        log:warn(msg)
+                        -- * agent is busy generating; queue the tool completion to deliver after the current turn
+                        log:info("queueing tool completion for background tool call id: " .. tool_call_id)
+                        tool_call:add_progress_notification(vim.inspect(notification))
+                        update_ui_chat_viewer(trace)
+                        local progress_msg = TxChatMessage:tool_completion(
+                            tool_call_id,
+                            "Progress arrived for tool call with id: " .. tool_call_id .. ".\n\n"
+                            .. vim.inspect(notification)
+                        )
+                        table.insert(AgentsFrontend.queued_tool_completions, progress_msg)
+                        display_tool_completion_in_chat(progress_msg)
                         return
                     end
                     log:info("notifying model!!!")
@@ -949,6 +1001,8 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(trace)
                     )
                     log:info("sending to agent", progress_msg)
                     trace:add_message(progress_msg)
+                    -- * show the user what's being sent back to the model (golden "tool" completion)
+                    display_tool_completion_in_chat(progress_msg)
                     AgentsFrontend.then_get_assistant_response(trace)
                 end)
             end
@@ -996,6 +1050,8 @@ function AgentsFrontend.abort_request()
         AgentsFrontend.redraw_queued_user_messages()
         -- TODO add integration test with faked model responses and make sure cancel works with queued messages
     end
+    -- * aborting also discards any queued tool completions
+    AgentsFrontend.queued_tool_completions = {}
 
     CurlRequestForTrace.terminate(trace.last_request)
     AgentsFrontend.cancel_in_flight_tools(trace.last_request)
@@ -1017,6 +1073,8 @@ function AgentsFrontend.interrupt_agent()
 
     local queued_messages = AgentsFrontend.queued_user_messages
     AgentsFrontend.queued_user_messages = {}
+    local queued_tool_completions = AgentsFrontend.queued_tool_completions
+    AgentsFrontend.queued_tool_completions = {}
 
     -- * if the agent isn't running, just deliver any queued messages as a normal follow-up
     if not is_running then
@@ -1024,6 +1082,16 @@ function AgentsFrontend.interrupt_agent()
             -- TODO add integration test with faked model responses and make sure sending queued messages works here (when we force an interruption an interruption when _the model is not running_)
             AgentsFrontend.redraw_queued_user_messages()
             AgentsFrontend.send_follow_up_user_message(build_fyi_message(queued_messages))
+        end
+        if #queued_tool_completions > 0 then
+            -- * deliver queued tool completions as a normal follow-up too
+            for _, tc_message in ipairs(queued_tool_completions) do
+                local trace = AgentsFrontend.trace
+                if trace then
+                    trace:add_message(tc_message)
+                end
+            end
+            AgentsFrontend.then_get_assistant_response(AgentsFrontend.trace)
         end
         return
     end
@@ -1072,6 +1140,11 @@ function AgentsFrontend.interrupt_agent()
     local contents = "I had to stop you immediately to provide additional context, please resume when you've read this: \n\n " .. build_fyi_message(queued_messages)
     local message = TxChatMessage:user(contents)
     trace:add_message(message)
+
+    -- * also add any queued tool completions (background tasks finished while agent was running)
+    for _, tc_message in ipairs(queued_tool_completions) do
+        trace:add_message(tc_message)
+    end
 
     -- * render the interruption message, then immediately ask the agent to continue
     display_user_message_in_chat(contents)
