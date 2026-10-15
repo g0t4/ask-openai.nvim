@@ -150,7 +150,7 @@ function MCPClient:_dispatch_message(notification)
             -- Keep the progress callback alive for requests that need it (e.g. background delegate)
             -- so the client can still receive progress notifications after the tool call returns.
             -- * leave callback for now for all requests... NBD
-            -- TODO add back selective keeping of callback based on background=True? and then can remove registration when receive background_done notification?
+            -- TODO add back selective keeping of callback based on background=True? and then can remove registration when receive background/done notification?
             -- if not self.keep_progress_by_request_id[request_id] then
             --     self.progress_callbacks_by_token[request_id] = nil
             -- else
