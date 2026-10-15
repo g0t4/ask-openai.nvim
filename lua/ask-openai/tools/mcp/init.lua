@@ -121,8 +121,8 @@ MCPClient.__index = MCPClient
 --- Dispatch a parsed JSON-RPC message (response or notification).
 --- Both transports share this logic after parsing.
 ---@param self MCPClient
----@param message MCP_JSONRPCMessage
-function MCPClient:dispatch_message(message)
+---@param notification MCP_JSONRPCMessage
+function MCPClient:dispatch_message(notification)
     -- Response object (success or failure)
     -- - Server does NOT send response to notifications
     -- - https://www.jsonrpc.org/specification#response_object
@@ -131,16 +131,16 @@ function MCPClient:dispatch_message(message)
     --     - NOT BOTH
     --     - `result` object not constrained by spec
     --     - `error` object has code/message/data properties: https://www.jsonrpc.org/specification#error_object
-    if message.error then
-        log:error(string.format("MCP %s error response:", self.server_log_name), vim.inspect(message.error))
+    if notification.error then
+        log:error(string.format("MCP %s error response:", self.server_log_name), vim.inspect(notification.error))
     end
-    log:info("dispatch_message", message)
+    log:info("dispatch_message", notification)
 
-    local request_id = message.id
+    local request_id = notification.id
     if request_id then
         local callback = self.callbacks_by_request_id[request_id]
         if callback then
-            callback(message)
+            callback(notification)
             self.callbacks_by_request_id[request_id] = nil
             -- Keep the progress callback alive for requests that need it (e.g. background delegate)
             -- so the client can still receive progress notifications after the tool call returns.
@@ -160,7 +160,7 @@ function MCPClient:dispatch_message(message)
     end
 
     -- Notifications (no ID). Currently only "notifications/progress" is handled.
-    local is_notifications = message.method == "notifications/progress" or message.method == "notifications/background_done"
+    local is_notifications = notification.method == "notifications/progress" or notification.method == "notifications/background_done"
     if is_notifications then
         -- TODO update all MCP servers (w/ background-able tasks) to send this:
         -- DONE: subagents (see how here:  ~/repos/github/g0t4/mcp-servers/src/agents/subagents/server.py:109)
@@ -174,21 +174,20 @@ function MCPClient:dispatch_message(message)
 
         -- FYI progressToken is how you correlate notification back to the original request!
         ---@cast message MCP_ProgressNotification
-        local progress_token = message.params.progressToken
-        log:info("n/p progress_token", progress_token)
+        local progress_token = notification.params.progressToken
+        -- log:info("progress_token", progress_token)
 
-        -- TODO where are we setting progress_callbacks_by_token?
         local on_progress_callback = self.progress_callbacks_by_token[progress_token]
         if on_progress_callback then
             -- FYI message has message.method for type to show to user, don't duplicate that:
-            log:info(string.format("MCP %s rx:", self.server_log_name), message)
+            log:info(string.format("MCP %s rx:", self.server_log_name), notification)
             -- local tool_call_id = ? -- TODO lookup tool_call/args/func.name etc?
-            on_progress_callback(message) -- TODO finish assing full message (previously passed only message.params... I want message.method (string) to be available too)
+            on_progress_callback(notification) -- TODO finish assing full message (previously passed only message.params... I want message.method (string) to be available too)
             return
         end
 
         local log_message = string.format("MCP %s rx - MISSING CALLBACK:", self.server_log_name)
-        log:error(log_message, message)
+        log:error(log_message, notification)
         vim.notify(log_message)
     end
 end
