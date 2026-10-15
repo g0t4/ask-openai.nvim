@@ -154,8 +154,8 @@ function M.lualine_components()
     local mcp_component = {
         function()
             local is_ready = mcp_tools.ready
-            local dot_char = is_ready and '●' or '○'
-            return string.rep(dot_char, 5)
+            local dot_char = is_ready and '●' or '●●●●●●●●●●●●●●●●●●●●●●●●●●●'
+            return dot_char
         end,
         color = mcp_dot_color,
         separator = { left = ' ', right = '' },
