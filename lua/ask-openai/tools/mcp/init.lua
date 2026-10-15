@@ -161,6 +161,8 @@ function MCPClient:dispatch_message(notification)
 
     local is_notifications = notification.method == "notifications/progress" or notification.method == "notifications/background_done"
     if is_notifications then
+        ---@cast notification MCP_ProgressNotification
+
         -- DONE: mcp-servers => subagents (delegate) + mcp-server-commands (run_process)
         --   MAYBES: run_xonsh
         --
