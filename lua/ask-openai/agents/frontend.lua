@@ -636,8 +636,8 @@ local function update_ui_chat_viewer(trace)
 
     vim.schedule(function()
         lines.marks_ns_id = request.marks_ns_id -- ?? generate namespace here in lines builder? lines:gen_mark_ns()? OR do it on first downstream use?
-        -- TODO! deepseek this is yours... how about we setup two virtual buffers within chat_window... and let it handle writing to the physical single window (or it can even use two, it doesn't matter to consumers then!)
-        log:info(ansi.yellow("clear after current_turn_start_line_base0"), AgentsFrontend.current_turn_start_line_base0)
+        -- TODO lets redo the chat window to have virtual sections and allow for easier re-rendering of only what has changed... maybe even allow the submission of blocks/lines of text per "message" and not need to worry about where it lands? just a message # + lines array?
+        -- log:info(ansi.yellow("clear after current_turn_start_line_base0"), AgentsFrontend.current_turn_start_line_base0)
         AgentsFrontend.chat_window.buffer:replace_with_styled_lines_after(AgentsFrontend.current_turn_start_line_base0, lines)
 
         -- * re-pin any queued user messages to the bottom (the replace wiped the prior queued section)
