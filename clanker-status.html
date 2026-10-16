@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CLANKER · Status Blob</title>
+<style>
+  :root { --bg:#07090f; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: radial-gradient(1200px 800px at 50% -10%, #0d1322, var(--bg) 60%);
+    min-height:100vh; overflow:hidden; font-family:'SF Mono',ui-monospace,Menlo,monospace;
+    color:#e8eaf0;
+  }
+  #stage { position:absolute; inset:0; }
+  svg { width:100%; height:100%; display:block; filter:url(#goo); }
+  .blob { fill:#ffb84d; }
+  #core { fill:#ff7a18; }
+  /* HUD */
+  #hud {
+    position:fixed; left:28px; bottom:28px; z-index:10;
+    background:rgba(10,14,24,.72); border:1px solid rgba(255,255,255,.08);
+    backdrop-filter:blur(8px); border-radius:14px; padding:16px 20px; min-width:300px;
+    box-shadow:0 10px 40px rgba(0,0,0,.5);
+  }
+  #hud .row { display:flex; align-items:center; gap:12px; }
+  .dot { width:12px; height:12px; border-radius:50%; background:#555; transition:.3s; }
+  #state { font-size:15px; letter-spacing:2px; font-weight:600; text-transform:uppercase; }
+  #sub { margin-top:6px; font-size:12px; color:#8b93a8; }
+  #meter { margin-top:12px; height:6px; background:rgba(255,255,255,.08); border-radius:4px; overflow:hidden; }
+  #meterFill { height:100%; width:0%; background:linear-gradient(90deg,#ff7a18,#ffb84d); transition:width .08s linear; }
+  #clock { font-size:11px; color:#5a6175; margin-top:10px; }
+  #title { position:fixed; top:24px; left:28px; font-size:12px; letter-spacing:4px; color:#6b7388; z-index:10; }
+  #title b { color:#ffb84d; }
+</style>
+</head>
+<body>
+  <div id="title"><b>CLANKER</b> · LIVE STATUS</div>
+  <div id="stage">
+    <svg viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <filter id="goo">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="26" result="blur"/>
+          <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 24 -12" result="goo"/>
+          <feBlend in="SourceGraphic" in2="goo"/>
+        </filter>
+      </defs>
+      <g filter="url(#goo)">
+        <circle id="core" cx="500" cy="350" r="70"/>
+        <circle class="blob" id="b1" cx="500" cy="350" r="40"/>
+        <circle class="blob" id="b2" cx="500" cy="350" r="40"/>
+        <circle class="blob" id="b3" cx="500" cy="350" r="40"/>
+        <circle class="blob" id="b4" cx="500" cy="350" r="40"/>
+        <circle class="blob" id="b5" cx="500" cy="350" r="40"/>
+        <circle class="blob" id="b6" cx="500" cy="350" r="40"/>
+      </g>
+    </svg>
+  </div>
+
+  <div id="hud">
+    <div class="row"><div class="dot" id="dot"></div><div id="state">BOOTING</div></div>
+    <div id="sub">initializing...</div>
+    <div id="meter"><div id="meterFill"></div></div>
+    <div id="clock">clanker.local · 00:00:00</div>
+  </div>
+
+<script>
+const cx=500, cy=350;
+const core=document.getElementById('core');
+const blobs=[b1,b2,b3,b4,b5,b6].map(id=>document.getElementById(id));
+const stateEl=document.getElementById('state');
+const subEl=document.getElementById('sub');
+const dotEl=document.getElementById('dot');
+const meterFill=document.getElementById('meterFill');
+const clockEl=document.getElementById('clock');
+
+// state config
+const STATES={
+  idle:   {color:'#3d8bff', sub:'awaiting input',   speed:.0022, amp:0,      wob:6},
+  listen: {color:'#22d3ee', sub:'listening...',      speed:.004,  amp:14,     wob:10},
+  think:  {color:'#ff7a18', sub:'thinking...',       speed:.006,  amp:24,     wob:4},
+  speak:  {color:'#ffb84d', sub:'speaking',          speed:.009,  amp:34,     wob:2},
+};
+let cur='idle';
+const colors={idle:'#3d8bff',listen:'#22d3ee',think:'#ff7a18',speak:'#ffb84d'};
+
+function setState(s){
+  if(!STATES[s]) return;
+  cur=s;
+  const c=STATES[s];
+  stateEl.textContent=s.toUpperCase();
+  subEl.textContent=c.sub;
+  dotEl.style.background=c.color;
+  dotEl.style.boxShadow=`0 0 14px ${c.color}`;
+  core.style.fill=c.color;
+  blobs.forEach(b=>b.style.fill=c.color);
+}
+
+// clock
+setInterval(()=>{
+  clockEl.textContent='clanker.local · '+new Date().toLocaleTimeString();
+},1000);
+
+// blob animation loop
+const t0=performance.now();
+function frame(t){
+  const c=STATES[cur];
+  const time=t-t0;
+  const n=blobs.length;
+  blobs.forEach((b,i)=>{
+    const a=(Math.PI*2*i)/n + time*c.speed;
+    const rad=52+ c.amp*(0.6+0.4*Math.sin(time*0.004+i));
+    const x=cx+Math.cos(a)*rad;
+    const y=cy+Math.sin(a)*rad*0.85;
+    b.setAttribute('cx',x);
+    b.setAttribute('cy',y);
+    b.setAttribute('r',30+Math.sin(time*0.01+i)*3+c.amp*0.3);
+  });
+  // core pulse
+  const pulse=1+Math.sin(time*0.006)*0.04+c.amp*0.004;
+  core.setAttribute('r',70*pulse);
+  // meter follows amplitude
+  meterFill.style.width=Math.min(100,c.amp*2+ (c.amp?Math.sin(time*0.01)*20:0)+'%');
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+// ---- Audio: live mic reactivity ----
+let audioCtx, analyser, data, stream;
+const meterTargets={listen:30,think:10,speak:70};
+function startMic(){
+  navigator.mediaDevices.getUserMedia({audio:true}).then(s=>{
+    stream=s;
+    audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    analyser=audioCtx.createAnalyser();
+    analyser.fftSize=512;
+    audioCtx.createMediaStreamSource(s).connect(analyser);
+    data=new Uint8Array(analyser.frequencyBinCount);
+    animateMeter();
+  }).catch(()=>{});
+}
+function animateMeter(){
+  if(!analyser){requestAnimationFrame(animateMeter);return;}
+  analyser.getByteFrequencyData(data);
+  let avg=0; for(let i=0;i<data.length;i++) avg+=data[i];
+  avg/=data.length;
+  const target=meterTargets[cur]||0;
+  const lvl=Math.max(target, avg*1.6);
+  meterFill.style.width=Math.min(100,lvl)+'%';
+  // if speaking, amplify blob with real audio
+  if(cur==='speak'){
+    const boost=avg*0.6;
+    core.style.filter=`brightness(${1+avg/255})`;
+    core.setAttribute('r',70+boost);
+  }
+  requestAnimationFrame(animateMeter);
+}
+startMic();
+
+// ---- Demo state cycling (for show) ----
+// In production, these are driven by clanker's real events. Press keys to simulate:
+const seq=['listen','think','speak','idle'];
+let si=0;
+window.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'){si=(si+1)%seq.length;setState(seq[si]);}
+  if(e.key==='ArrowLeft'){si=(si-1+seq.length)%seq.length;setState(seq[si]);}
+});
+
+// auto demo for 40s
+setState('listen');
+const demo=['listen','think','speak','idle','listen'];
+setTimeout(()=>setState('think'),2000);
+setTimeout(()=>setState('speak'),3500);
+setTimeout(()=>setState('idle'),7000);
+setTimeout(()=>{setState('listen');setTimeout(()=>setState('think'),3000);setTimeout(()=>setState('speak'),5000);},9000);
+</script>
+</body>
+</html>

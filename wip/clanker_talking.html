@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clanker — Talking Visualization</title>
+<style>
+  :root { --bg: #05060e; --accent: #22d3ee; --accent2: #a855f7; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: radial-gradient(circle at 50% 40%, #0b1026 0%, #05060e 70%);
+    color: #e2e8f0; font-family: 'SF Mono', 'Menlo', monospace; overflow: hidden;
+    height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  }
+  #stage { position: relative; width: 100vw; height: 100vh; }
+  canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+  #hud {
+    position: absolute; bottom: 26px; left: 50%; transform: translateX(-50%);
+    text-align: center; z-index: 10; pointer-events: none;
+  }
+  #status {
+    font-size: 13px; letter-spacing: 2px; text-transform: uppercase; opacity: .8;
+    color: var(--accent); text-shadow: 0 0 12px rgba(34,211,238,.6);
+  }
+  #transcript {
+    margin-top: 12px; font-size: 15px; color: #cbd5e1; max-width: 70vw;
+    line-height: 1.5; min-height: 22px;
+  }
+  #transcript span { opacity: 0; animation: fadeIn .5s forwards; }
+  @keyframes fadeIn { to { opacity: 1; } }
+  .tag { position: absolute; top: 22px; left: 24px; font-size: 12px; letter-spacing: 3px; color: #64748b; z-index: 10; }
+</style>
+</head>
+<body>
+  <div class="tag">CLANKER // SPEECH VISUALIZER</div>
+  <div id="stage"><canvas id="cv"></canvas></div>
+  <div id="hud">
+    <div id="status">● LIVE — LISTENING</div>
+    <div id="transcript"></div>
+  </div>
+<script>
+const cv = document.getElementById('cv');
+const ctx = cv.getContext('2d');
+let W, H, DPR;
+function resize() {
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  W = cv.clientWidth = cv.width = innerWidth * DPR;
+  H = cv.clientHeight = cv.height = innerHeight * DPR;
+}
+addEventListener('resize', resize); resize();
+
+const cx = () => W/2, cy = () => H/2;
+
+// ---- speech simulation ----
+const phrases = [
+  "Listening...",
+  "Processing your words, West...",
+  "I am Clanker, your thinking companion.",
+  "Let's build something cool.",
+  "Every input becomes an idea.",
+  "I am here, always ready.",
+  "The neural orb is alive.",
+  "Thinking, thinking...",
+  "What shall we create next?",
+];
+let phraseIdx = 0, phraseProgress = 0, speechLevel = 0, targetSpeech = 0;
+let particles = [];
+let time = 0;
+
+function pickPhrase() {
+  phraseIdx = (phraseIdx + 1) % phrases.length;
+  phraseProgress = 0;
+  targetSpeech = 1;
+  renderTranscript(phrases[phraseIdx]);
+  // spawn burst of particles
+  for (let i=0;i<40;i++){
+    const a = Math.random()*Math.PI*2;
+    const sp = 2 + Math.random()*4;
+    particles.push({
+      x: cx(), y: cy(), vx: Math.cos(a)*sp, vy: Math.sin(a)*sp,
+      life: 1, size: 2+Math.random()*3, hue: Math.random()<.5?190:270
+    });
+  }
+}
+
+function renderTranscript(text){
+  const el = document.getElementById('transcript');
+  el.innerHTML = '';
+  [...text].forEach((ch,i)=>{
+    const s = document.createElement('span');
+    s.textContent = ch;
+    s.style.animationDelay = (i*0.03)+'s';
+    el.appendChild(s);
+  });
+}
+
+// speech level decays unless talking
+function tickSpeech(dt){
+  // simulate bursts of "talking" - pulses
+  if (Math.random() < 0.06 && phraseProgress < 1) targetSpeech = 0.6 + Math.random()*0.4;
+  else if (phraseProgress >= 1) targetSpeech = 0;
+  phraseProgress += dt/2.5;
+  if (phraseProgress >= 1.6) pickPhrase();
+  speechLevel += (targetSpeech - speechLevel) * Math.min(1, dt*6);
+}
+
+// ---- drawing ----
+function drawWave(speech, cx0, cy0, radius){
+  ctx.beginPath();
+  const n = 96;
+  for(let i=0;i<=n;i++){
+    const t = i/n * Math.PI*2;
+    const r = radius + Math.sin(t*6 + time*6) * (10 + speech*26);
+    const x = cx0 + Math.cos(t)*r;
+    const y = cy0 + Math.sin(t)*r;
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.strokeStyle = `rgba(34,211,238,${0.35 + speech*0.5})`;
+  ctx.lineWidth = 2.2; ctx.lineJoin='round';
+  ctx.shadowColor = 'rgba(34,211,238,.9)'; ctx.shadowBlur = 20;
+  ctx.stroke();
+  ctx.shadowBlur = 0;
+}
+
+function drawCore(speech, cx0, cy0){
+  const r = 46 + speech*10 + Math.sin(time*3)*4;
+  const g = ctx.createRadialGradient(cx0,cy0,0, cx0,cy0,r*2.4);
+  g.addColorStop(0,'rgba(168,85,247,1)');
+  g.addColorStop(.5,'rgba(34,211,238,.85)');
+  g.addColorStop(1,'rgba(34,211,238,0)');
+  ctx.fillStyle = g;
+  ctx.beginPath(); ctx.arc(cx0,cy0,r*2.4,0,Math.PI*2); ctx.fill();
+  // inner bright core
+  const g2 = ctx.createRadialGradient(cx0,cy0,0,cx0,cy0,r);
+  g2.addColorStop(0,'rgba(255,255,255,.95)');
+  g2.addColorStop(1,'rgba(34,211,238,.2)');
+  ctx.fillStyle = g2;
+  ctx.beginPath(); ctx.arc(cx0,cy0,r,0,Math.PI*2); ctx.fill();
+}
+
+function drawRing(speech, cx0, cy0){
+  ctx.beginPath();
+  ctx.arc(cx0,cy0, 70+speech*30, 0, Math.PI*2);
+  ctx.strokeStyle = `rgba(168,85,247,${0.25+speech*0.4})`;
+  ctx.lineWidth = 1.5;
+  ctx.shadowColor = 'rgba(168,85,247,.7)'; ctx.shadowBlur = 14;
+  ctx.stroke(); ctx.shadowBlur=0;
+}
+
+function drawParticles(){
+  for(let i=particles.length-1;i>=0;i--){
+    const p = particles[i];
+    p.x += p.vx; p.y += p.vy;
+    p.vx *= .97; p.vy *= .97;
+    p.life -= .012;
+    if(p.life<=0){ particles.splice(i,1); continue; }
+    ctx.fillStyle = `hsla(${p.hue},90%,65%,${p.life})`;
+    ctx.beginPath(); ctx.arc(p.x,p.y,p.size*p.life,0,Math.PI*2); ctx.fill();
+  }
+}
+
+function drawConnections(cx0, cy0){
+  // faint network lines radiating out
+  ctx.strokeStyle = 'rgba(100,116,139,.12)';
+  ctx.lineWidth = 1;
+  for(let i=0;i<12;i++){
+    const a = i/12*Math.PI*2 + time*0.2;
+    const r1 = 90, r2 = 180 + Math.sin(time+i)*20;
+    ctx.beginPath();
+    ctx.moveTo(cx0+Math.cos(a)*r1, cy0+Math.sin(a)*r1);
+    ctx.lineTo(cx0+Math.cos(a)*r2, cy0+Math.sin(a)*r2);
+    ctx.stroke();
+  }
+}
+
+// background grid
+function drawGrid(){
+  ctx.strokeStyle = 'rgba(34,211,238,.04)';
+  ctx.lineWidth = 1;
+  const gap = 60;
+  for(let x=0;x<W;x+=gap){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,H); ctx.stroke(); }
+  for(let y=0;y<H;y+=gap){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(W,y); ctx.stroke(); }
+}
+
+function loop(){
+  const dt = 1/60; time += dt;
+  tickSpeech(dt);
+  ctx.clearRect(0,0,W,H);
+  drawGrid();
+  const x = cx(), y = cy();
+  drawConnections(x,y);
+  drawRing(speechLevel, x, y);
+  drawWave(speechLevel, x, y);
+  drawCore(speechLevel, x, y);
+  drawParticles();
+  requestAnimationFrame(loop);
+}
+
+pickPhrase();
+loop();
+</script>
+</body>
+</html>

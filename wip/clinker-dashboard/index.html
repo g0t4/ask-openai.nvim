@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clinker — Live Status</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root { --bg:#05070d; --cyan:#00e0ff; --purple:#6c5ce7; --pink:#ff6b9d; --yellow:#f5c542; }
+  body {
+    font-family:'SF Mono','Menlo',monospace; color:#c8d6e5;
+    background: radial-gradient(circle at 25% 15%, #0b0f1a, #05070d 60%, #02040a);
+    height:100vh; overflow:hidden; display:flex; flex-direction:column;
+  }
+  header {
+    display:flex; align-items:center; gap:14px; padding:13px 22px;
+    border-bottom:1px solid #1a2333; background:rgba(8,12,22,.6);
+  }
+  .logo { width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+    font-weight:800;font-size:19px;color:#05070d;
+    background:linear-gradient(135deg,var(--cyan),var(--purple)); box-shadow:0 0 16px rgba(0,224,255,.5); }
+  header h1 { font-size:17px; letter-spacing:1px; }
+  header .sub { font-size:10px; color:#6d7d92; letter-spacing:2px; }
+  #connDot { width:10px;height:10px;border-radius:50%;background:#2ecc71;margin-left:auto;
+    box-shadow:0 0 10px #2ecc71; animation:pulse 1.6s infinite; }
+  #connDot.off { background:#ff4d4d; box-shadow:0 0 10px #ff4d4d; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+  main { flex:1; display:grid; grid-template-columns:340px 1fr; gap:14px; padding:16px 22px; }
+  .panel { background:rgba(10,16,28,.55); border:1px solid #1a2333; border-radius:12px; padding:16px; }
+  .panel h2 { font-size:10px; color:#6d7d92; text-transform:uppercase; letter-spacing:2px; margin-bottom:12px; }
+
+  /* Gooey orb */
+  .orb-wrap { position:relative; width:100%; height:220px; display:flex; align-items:center; justify-content:center; }
+  svg { width:220px; height:220px; filter:url(#goo); }
+  #stateLabel { margin-top:10px; font-size:13px; text-align:center; }
+  #stateLabel .mode { font-weight:700; }
+  #stateLabel .sub { font-size:11px; color:#6d7d92; margin-top:4px; }
+
+  .meter-row { display:flex; align-items:center; gap:10px; margin:9px 0; }
+  .meter-row label { width:72px; font-size:10px; color:#6d7d92; }
+  .bar { flex:1; height:8px; border-radius:6px; background:#14203a; overflow:hidden; }
+  .bar span { display:block; height:100%; border-radius:6px; transition:width .3s; }
+  .meter-row .val { width:34px; text-align:right; font-size:11px; color:#8fa3bd; }
+
+  .log { display:flex; flex-direction:column; }
+  .log-scroll { flex:1; overflow-y:auto; font-size:12px; line-height:1.7; }
+  .log-line { padding:2px 6px; border-radius:4px; white-space:pre-wrap; word-break:break-word; }
+  .log-line .time { color:#4d5b73; margin-right:8px; }
+  .log-line .tag { font-weight:700; margin-right:8px; }
+  .tag.INFO{color:#00e0ff}.tag.SPEAK{color:#ff6b9d}.tag.HEAR{color:#2ecc71}
+  .tag.THINK{color:#f5c542}.tag.ACT{color:#6c5ce7}.tag.ERR{color:#ff4d4d}
+  .log-line.live { background:rgba(0,224,255,.06); border-left:2px solid #00e0ff; }
+
+  #transcript { margin-top:8px; font-size:12px; color:#a7b4c8; min-height:16px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">C</div>
+  <div><h1>CLINKER <span style="color:#00e0ff">//</span> LIVE STATUS</h1>
+    <div class="sub">SPEECH AGENT · REAL-TIME</div></div>
+  <div id="connDot" class="off"></div>
+</header>
+<main>
+  <div class="panel">
+    <div class="orb-wrap">
+      <svg viewBox="0 0 220 220">
+        <defs>
+          <filter id="goo">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="12" result="blur"/>
+            <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0 0 1 0 0 0 0 0 1 0 0 0 0 0 22 -11"/>
+          </filter>
+        </defs>
+        <g filter="url(#goo)">
+          <circle id="core" cx="110" cy="110" r="34" fill="#00e0ff"/>
+          <circle class="blob" cx="110" cy="110" r="18" fill="#00e0ff"/>
+          <circle class="blob" cx="110" cy="110" r="18" fill="#00e0ff"/>
+          <circle class="blob" cx="110" cy="110" r="18" fill="#00e0ff"/>
+          <circle class="blob" cx="110" cy="110" r="18" fill="#00e0ff"/>
+          <circle class="blob" cx="110" cy="110" r="18" fill="#00e0ff"/>
+        </g>
+      </svg>
+    </div>
+    <div id="stateLabel">
+      <div class="mode" id="mode">CONNECTING</div>
+      <div class="sub" id="modeSub">waiting for clankerd socket...</div>
+    </div>
+    <div class="meter-row"><label>VOICE</label><div class="bar"><span id="voiceBar" style="width:0%;background:#ff6b9d"></span></div><div class="val" id="voiceVal">0</div></div>
+    <div class="meter-row"><label>THOUGHT</label><div class="bar"><span id="thinkBar" style="width:0%;background:#f5c542"></span></div><div class="val" id="thinkVal">0</div></div>
+    <div class="meter-row"><label>ACTIVITY</label><div class="bar"><span id="actBar" style="width:0%;background:#6c5ce7"></span></div><div class="val" id="actVal">0</div></div>
+    <div id="transcript">—</div>
+  </div>
+  <div class="panel log">
+    <h2>LIVE LOG FEED</h2>
+    <div class="log-scroll" id="log"></div>
+  </div>
+</main>
+<script>
+const log=document.getElementById('log'), mode=document.getElementById('mode'), modeSub=document.getElementById('modeSub');
+const vBar=document.getElementById('voiceBar'),vVal=document.getElementById('voiceVal');
+const tBar=document.getElementById('thinkBar'),tVal=document.getElementById('thinkVal');
+const aBar=document.getElementById('actBar'),aVal=document.getElementById('actVal');
+const connDot=document.getElementById('connDot');
+const transcript=document.getElementById('transcript');
+const core=document.getElementById('core');
+const blobs=[...document.querySelectorAll('.blob')];
+
+// gooey color per state
+const COLORS={listening:'#00e0ff',processing:'#f5c542',speaking:'#ff6b9d',idle:'#6c5ce7',
+  connected_to_voiced:'#00e0ff',ready:'#00e0ff',starting:'#6c5ce7',shutdown:'#ff4d4d'};
+function colorFor(s){ return COLORS[s]||'#00e0ff'; }
+function applyColor(c){
+  core.setAttribute('fill',c); blobs.forEach(b=>b.setAttribute('fill',c));
+  mode.style.color=c;
+}
+
+// animate gooey orb
+let time=0, amp=0;
+function frame(){
+  time+=0.016;
+  const n=blobs.length;
+  blobs.forEach((b,i)=>{
+    const a=(Math.PI*2*i)/n+time*0.02;
+    const rad=24+amp*8;
+    b.setAttribute('cx',110+Math.cos(a)*rad);
+    b.setAttribute('cy',110+Math.sin(a)*rad*0.8);
+    b.setAttribute('r',15+Math.sin(time*3+i)*3+amp*2);
+  });
+  core.setAttribute('r',30+Math.sin(time*2)*3+amp*4);
+  requestAnimationFrame(frame);
+}
+frame();
+
+let liveLine=null;
+function stamp(){ const d=new Date(); return d.toTimeString().slice(0,8); }
+function addLog(tag,msg,live){
+  const line=document.createElement('div');
+  line.className='log-line'+(live?' live':'');
+  line.innerHTML='<span class="time">'+stamp()+'</span><span class="tag '+tag+'">'+tag+'</span>'+msg;
+  if(live){ if(liveLine) liveLine.remove(); liveLine=line; }
+  log.appendChild(line);
+  while(log.children.length>200) log.removeChild(log.firstChild);
+  log.scrollTop=log.scrollHeight;
+}
+
+function setMode(state){
+  const m=(state||'idle').toUpperCase();
+  mode.textContent=m;
+  const subs={listening:'hearing you...',processing:'thinking...',speaking:'talking',
+    idle:'awaiting input',connected_to_voiced:'listening for input',ready:'ready'};
+  modeSub.textContent=subs[state]||'';
+  applyColor(colorFor(state));
+}
+
+// meters
+function setMeter(bar,val,valEl,pct){ bar.style.width=pct+'%'; valEl.textContent=Math.round(pct); }
+function decay(){ // idle decay
+  let v=parseFloat(vBar.style.width)||0; if(v>0){setMeter(vBar,vVal,null,Math.max(0,v-4));}
+}
+
+// ---- WebSocket connection to bridge ----
+const ws=new WebSocket('ws://127.0.0.1:8766');
+ws.onopen=()=>{ connDot.classList.remove('off'); addLog('INFO','connected to bridge'); };
+ws.onclose=()=>{ connDot.classList.add('off'); addLog('ERR','bridge disconnected — retrying...');
+  setTimeout(()=>location.reload(),3000); };
+ws.onerror=()=>{ connDot.classList.add('off'); };
+ws.onmessage=(e)=>{
+  const ev=JSON.parse(e.data);
+  switch(ev.type){
+    case 'system': addLog('INFO','bridge: '+ev.message); break;
+    case 'status':
+      setMode(ev.state);
+      if(ev.state==='processing'){ setMeter(tBar,tVal,null,40+Math.random()*40); setMeter(aBar,aVal,null,50); }
+      else if(ev.state==='speaking'){ setMeter(vBar,vVal,null,60+Math.random()*30); setMeter(aBar,aVal,null,70); }
+      else { setMeter(tBar,tVal,null,10); setMeter(aBar,aVal,null,10); }
+      break;
+    case 'transcription':
+      transcript.textContent=(ev.final?'✓ ':'… ')+ev.text;
+      addLog(ev.final?'HEAR':'THINK',(ev.final?'[final] ':'[partial] ')+ev.text,true);
+      break;
+    case 'agent_response':
+      addLog('SPEAK','"'+ev.text+'"');
+      setMode('speaking');
+      setTimeout(()=>setMode('idle'),3000);
+      break;
+    case 'error':
+      addLog('ERR','ERROR: '+ev.message); setMode('idle'); break;
+    case 'voiced_status': addLog('INFO','voiced: '+ev.state); break;
+    case 'background_notification': addLog('ACT','bg: '+ev.server+' '+ev.method); break;
+    default: addLog('INFO',ev.type);
+  }
+};
+</script>
+</body>
+</html>
