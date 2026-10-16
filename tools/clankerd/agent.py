@@ -252,8 +252,10 @@ You have the following tools:
   done (true/false) plus STDOUT/STDERR and exit code.
 - **run_xonsh**: Execute Python and shell-like commands through Xonsh. Returns
   structured stdout/stderr/exit status. Supports background mode
-  (background=True) which returns a task_id immediately. Use xonsh_status to
-  poll it, and background/done notification when finished.
+  (background=True) which returns a task_id and the process pid immediately.
+  You can act on the pid directly (kill the process/process group, inspect it,
+  etc.) — e.g. `kill -- -<pid>` kills the whole xonsh process group. Use
+  xonsh_status to poll it, and background/done notification when finished.
 - **xonsh_status**: Check the status of a background xonsh task by task_id.
   Reports done (true/false) plus the task's result or error.
 - **delegate**: Spawn a subagent to perform a task and summarize findings. Can
