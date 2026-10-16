@@ -130,7 +130,11 @@ function TxChatMessage:from_assistant_rx_message(rx_message)
     local role = rx_message.role or "assistant"
     local tx_message = TxChatMessage:new(role, rx_message.content) --[[@as Ask_OpenAIChatCompletion_Assistant_TxChatMessage]]
 
-    tx_message.timings = rx_message.last_sse.timings -- llama-server ignores extra field for timings on subsequent requests (verified in server's request logs)
+    -- llama-server ignores extra field for timings on subsequent requests (verified in server's request logs)
+    -- Guard: last_sse may be nil if the model didn't send timings (e.g. a fake/mock server)
+    if rx_message.last_sse then
+        tx_message.timings = rx_message.last_sse.timings
+    end
 
     -- FYI qwen3-8b's template exploded after tool call w/ reasoning_content included: (smth about lstrip).. if I comment out next line, then it works fine (tool calls and all):
     tx_message.reasoning_content = rx_message.reasoning_content
