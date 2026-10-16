@@ -1,4 +1,10 @@
-"""The voiced daemon: mic + whisper.cpp streaming + Unix socket IPC."""
+"""The voiced daemon: mic + whisper.cpp streaming + Unix socket IPC.
+
+Supports three activation modes:
+  * Push-to-talk (right Option key) — manual.
+  * Hands-free VAD — auto start/stop listening on voice activity.
+  * Wake-word — say "clanker, clanker" to start, "over"/"out" to stop.
+"""
 
 from __future__ import annotations
 
@@ -12,13 +18,15 @@ from tools.voiced.config import SAMPLE_RATE, socket_path
 from tools.voiced.mic import Microphone
 from tools.voiced.ptt import PushToTalk
 from tools.voiced.transcriber import Transcriber
+from tools.voiced.vad import VoiceActivityDetector, VadConfig
 from tools.voiced.voiced_logger import get_logger
+from tools.voiced.wake_listener import WakeListener
 
 logger = get_logger(__name__)
 
 
 class VoicedDaemon:
-    """Owns the mic, transcriber, PTT state machine, and socket server."""
+    """Owns the mic, transcriber, PTT/VAD/wake state machine, and socket server."""
 
     def __init__(
         self,
@@ -29,8 +37,18 @@ class VoicedDaemon:
         device: Optional[int] = None,
         mic: Optional[Microphone] = None,
         transcriber: Optional[Transcriber] = None,
+        handsfree: bool = False,
+        wake_words: bool = False,
+        vad_config: Optional[VadConfig] = None,
     ) -> None:
-        self._mic = mic or Microphone(device=device)
+        self._handsfree = handsfree
+        self._wake_words = wake_words
+        self._vad = VoiceActivityDetector(vad_config or VadConfig())
+
+        self._mic = mic or Microphone(
+            device=device,
+            on_samples=self._on_mic_samples if handsfree else None,
+        )
         self._device = device
         self._transcriber = transcriber or Transcriber(model_path, n_threads=n_threads)
         self._step_seconds = step_ms / 1000.0
@@ -47,12 +65,26 @@ class VoicedDaemon:
             on_release=self._on_ptt_release,
         )
 
+        self._wake_listener: Optional[WakeListener] = None
+        if wake_words:
+            self._wake_listener = WakeListener(
+                mic=self._mic,
+                transcriber=self._transcriber,
+                on_wake=self._on_wake_detected,
+                on_stop=self._on_stop_detected,
+            )
+
     async def run(self) -> None:
         """Start mic, PTT listener, and socket server; block forever."""
         self._loop = asyncio.get_running_loop()
 
         self._mic.start()
         logger.info("mic started (device=%s, %d Hz)", self._device, SAMPLE_RATE)
+        if self._handsfree:
+            logger.info("hands-free VAD active (auto start/stop on voice)")
+        if self._wake_listener:
+            await self._wake_listener.start()
+            logger.info("wake-word listener active (say 'clanker, clanker' to start)")
 
         self._ptt.start_hardware_listener()
 
@@ -86,10 +118,44 @@ class VoicedDaemon:
         if self._loop:
             asyncio.run_coroutine_threadsafe(self.stop_listening(), self._loop)
 
+    # ------------------------------------------------------------- wake words
+
+    def _on_wake_detected(self) -> None:
+        """Wake phrase heard -> start listening (hands-free)."""
+        logger.info("wake word detected -> start listening")
+        if self._loop:
+            asyncio.run_coroutine_threadsafe(self.start_listening(), self._loop)
+
+    def _on_stop_detected(self) -> None:
+        """Stop phrase heard -> stop listening (hands-free)."""
+        logger.info("stop word detected -> stop listening")
+        if self._loop:
+            asyncio.run_coroutine_threadsafe(self.stop_listening(), self._loop)
+
+    # ------------------------------------------------------------- VAD feed
+
+    def _on_mic_samples(self, samples: np.ndarray) -> None:
+        """Called from the audio callback thread for every mic chunk."""
+        if not self._handsfree or self._loop is None:
+            return
+        event = self._vad.feed(samples)
+        if event == "start":
+            asyncio.run_coroutine_threadsafe(self.start_listening(), self._loop)
+            logger.info("VAD: speech onset -> start listening")
+        elif event == "stop":
+            asyncio.run_coroutine_threadsafe(self.stop_listening(), self._loop)
+            logger.info("VAD: speech end -> stop listening")
+
+    # ------------------------------------------------------------- listening
+
     async def start_listening(self) -> None:
         if self._listening:
             return
         self._listening = True
+        # Pause the wake listener while actively listening so it doesn't
+        # consume the same audio we are transcribing.
+        if self._wake_listener:
+            await self._wake_listener.stop()
         self._mic.enable_capture(True)
         self._transcribe_task = asyncio.create_task(self._transcribe_loop())
         await self._broadcast({"type": "status", "state": "listening"})
@@ -111,6 +177,10 @@ class VoicedDaemon:
                 {"type": "transcription", "text": text, "final": True}
             )
         self._mic.enable_capture(False)
+
+        # Resume wake-word listening now that we are idle again.
+        if self._wake_listener:
+            await self._wake_listener.start()
         await self._broadcast({"type": "status", "state": "idle"})
 
     async def _transcribe_loop(self) -> None:
@@ -199,6 +269,8 @@ class VoicedDaemon:
 
     async def _shutdown(self) -> None:
         logger.info("shutting down")
+        if self._wake_listener:
+            await self._wake_listener.stop()
         if self._server:
             self._server.close()
             await self._server.wait_closed()

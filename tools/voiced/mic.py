@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import threading
-from typing import Optional
+from typing import Callable, Optional
 
 import numpy as np
 import sounddevice as sd
@@ -16,22 +16,35 @@ class Microphone:
 
     The stream stays open so we can react to push-to-talk quickly. Samples
     are only accumulated while ``capture_enabled`` is True, which keeps CPU
-    low when idle.
+    low when idle. An optional ``on_samples`` callback fires for every chunk
+    (used by the VAD monitor for hands-free activation).
     """
 
-    def __init__(self, sample_rate: int = SAMPLE_RATE, device: Optional[int] = None) -> None:
+    def __init__(
+        self,
+        sample_rate: int = SAMPLE_RATE,
+        device: Optional[int] = None,
+        on_samples: Optional[Callable[[np.ndarray], None]] = None,
+    ) -> None:
         self._sample_rate = sample_rate
         self._device = device
+        self._on_samples = on_samples
         self._stream: Optional[sd.InputStream] = None
         self._lock = threading.Lock()
         self._buffer = np.zeros((0,), dtype=np.float32)
         self._capture_enabled = False
 
     def _audio_callback(self, indata, frames, time_info, status) -> None:
+        mono = indata[:, 0].copy()
+        if self._on_samples is not None:
+            try:
+                self._on_samples(mono)
+            except Exception:
+                pass
         if not self._capture_enabled:
             return
         with self._lock:
-            self._buffer = np.concatenate((self._buffer, indata[:, 0]))
+            self._buffer = np.concatenate((self._buffer, mono))
 
     def start(self) -> None:
         """Open the mic input stream (does not begin capturing yet)."""
@@ -85,4 +98,3 @@ class Microphone:
     def sample_count(self) -> int:
         with self._lock:
             return len(self._buffer)
-

@@ -12,7 +12,7 @@ from tools.voiced.daemon import VoicedDaemon
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         prog="voiced",
-        description="Push-to-talk speech-to-text daemon (whisper.cpp).",
+        description="Speech-to-text daemon (whisper.cpp) with push-to-talk, hands-free VAD, and wake-word activation.",
     )
     parser.add_argument(
         "--model",
@@ -43,6 +43,16 @@ def parse_args() -> argparse.Namespace:
         default=None,
         help="input device index (default: system default)",
     )
+    parser.add_argument(
+        "--handsfree",
+        action="store_true",
+        help="enable hands-free activation: auto start/stop listening on voice activity",
+    )
+    parser.add_argument(
+        "--wake-words",
+        action="store_true",
+        help="enable wake-word activation: say 'clanker, clanker' to start and 'over'/'out' to stop",
+    )
     return parser.parse_args()
 
 
@@ -54,10 +64,11 @@ def main() -> None:
         step_ms=args.step_ms,
         max_length_ms=args.max_length_ms,
         device=args.device,
+        handsfree=args.handsfree,
+        wake_words=args.wake_words,
     )
     asyncio.run(daemon.run())
 
 
 if __name__ == "__main__":
     main()
-
