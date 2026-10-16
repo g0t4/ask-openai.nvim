@@ -15,14 +15,12 @@ agent with MCP tools:
 
 The agent receives two kinds of transcription events:
 
-- **Live** (`final=false`) - partial, streaming text. The daemon is very
-  conservative about triggering on these. It only starts an agent run if the
-  text is meaningful (≥15 chars), the agent is idle, and it's not a minor
-  extension of a previous live transcription. The agent is instructed to
-  treat live transcriptions as noise and only respond if extremely confident.
-- **Final** (`final=true`) - definitive utterance. The daemon always cancels
-  any in-flight agent run and starts a fresh one. The agent treats this as a
-  new person speaking to it and responds accordingly.
+- **Live** (`final=false`) - partial, streaming text. The daemon broadcasts
+  these for display but **never triggers agent runs**. This prevents parallel
+  agent executions and duplicate responses.
+- **Final** (`final=true`) - definitive utterance. The daemon cancels any
+  in-flight agent run and starts a fresh one. This is the only time the
+  agent is invoked.
 
 ## Single chain of thought
 

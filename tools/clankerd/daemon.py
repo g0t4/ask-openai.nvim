@@ -5,7 +5,6 @@ from __future__ import annotations
 import asyncio
 import json
 import signal
-import difflib
 from typing import Optional
 
 from tools.clankerd.agent import ClankerAgent
@@ -39,14 +38,6 @@ class ClankerDaemon:
         self._thread_id = "clankerd"
         self._shutting_down = False
         self._shutdown_event = asyncio.Event()
-        # Track the current utterance so we don't re-trigger on the same text
-        self._current_live_text = ""
-        # Debounce live transcriptions: don't start a new run if one is
-        # already running for the same utterance.
-        self._live_run_started_for_text = ""
-        # Minimum interval between live-run triggers to avoid rapid-fire
-        self._last_live_run_time = 0.0
-        self._min_live_run_interval_seconds = 5.0
 
     async def run(self) -> None:
         """Start the daemon; connect to voiced, serve control socket, block."""
@@ -168,8 +159,6 @@ class ClankerDaemon:
                 continue
 
             # Start a new agent run with the background notification as context
-            self._current_live_text = ""
-            self._live_run_started_for_text = ""
             self._active_agent_task = asyncio.create_task(
                 self._run_agent(
                     f"Background task completed: {message}",
@@ -212,10 +201,11 @@ class ClankerDaemon:
                 "final": is_final,
             })
 
+            # Final-only model: only trigger agent runs on final transcriptions.
+            # Live transcriptions are broadcast for display but never trigger
+            # an agent run, which prevents parallel/duplicate responses.
             if is_final:
                 await self._handle_final_transcription(text)
-            else:
-                await self._handle_live_transcription(text)
 
         elif event_type == "status":
             logger.info("voiced status: %s", event.get("state"))
@@ -235,83 +225,8 @@ class ClankerDaemon:
                 reason="final_transcription_arrived",
             )
 
-        self._current_live_text = ""
-        self._live_run_started_for_text = ""
-
         self._active_agent_task = asyncio.create_task(
             self._run_agent(text, is_final=True)
-        )
-
-    async def _handle_live_transcription(self, text: str) -> None:
-        """Handle a live transcription: only trigger if meaningful and agent is idle.
-
-        Live transcriptions are partial and noisy. We only start an agent run
-        for a live transcription if:
-          - The agent is not already running
-          - The text has significantly changed from the last live text
-          - The text is long enough to be a real utterance
-        """
-        # If agent is busy, ignore live transcriptions entirely
-        if self._active_agent_task and not self._active_agent_task.done():
-            logger.debug("agent busy; ignoring live transcription")
-            return
-
-        # Track if text has grown from the previous live transcription
-        is_growth = len(text) > len(self._current_live_text) and (
-            text.startswith(self._current_live_text)
-            or self._current_live_text == ""
-        )
-
-        # Only act on live text if it's a meaningful utterance (not a fragment)
-        is_meaningful = len(text.strip()) >= 15
-
-        # Skip if this is the same text we already started a run for
-        if text == self._live_run_started_for_text:
-            logger.debug("live transcription unchanged; skipping")
-            return
-
-        # Skip if this is just a minor extension of text we already started a
-        # run for (e.g. "what do you call" -> "what do you call it?")
-        if (
-            self._live_run_started_for_text
-            and text.startswith(self._live_run_started_for_text)
-            and len(text) - len(self._live_run_started_for_text) < 20
-        ):
-            logger.debug("live transcription is minor extension; skipping")
-            return
-
-        if not is_meaningful:
-            logger.debug("live transcription too short; skipping: %r", text)
-            self._current_live_text = text
-            return
-
-        # Rate limit: don't start a new live run too frequently
-        now = asyncio.get_running_loop().time()
-        if now - self._last_live_run_time < self._min_live_run_interval_seconds:
-            logger.debug(
-                "live transcription rate-limited; %.1fs since last run",
-                now - self._last_live_run_time,
-            )
-            return
-
-        # If the text hasn't grown meaningfully and we already saw this prefix,
-        # don't re-trigger
-        if self._current_live_text and not is_growth:
-            similarity = difflib.SequenceMatcher(
-                None, self._current_live_text, text
-            ).ratio()
-            if similarity > 0.9:
-                logger.debug("live transcription similar to last (%.2f); skipping", similarity)
-                return
-
-        self._current_live_text = text
-        self._live_run_started_for_text = text
-        self._last_live_run_time = now
-
-        # Only start a live run if agent is idle and this is a real utterance
-        logger.info("starting agent run for live transcription: %s", text)
-        self._active_agent_task = asyncio.create_task(
-            self._run_agent(text, is_final=False)
         )
 
     async def _run_agent(self, text: str, *, is_final: bool) -> None:
@@ -422,14 +337,12 @@ class ClankerDaemon:
                         "agent_cancelled",
                         reason="manual_message_arrived",
                     )
-                self._current_live_text = ""
-                self._live_run_started_for_text = ""
                 self._active_agent_task = asyncio.create_task(
                     self._run_agent(text, is_final=True)
                 )
             else:
-                # For non-final messages, use live transcription logic
-                await self._handle_live_transcription(text)
+                # Non-final manual messages are ignored (final-only model)
+                pass
             await self._send(writer, {"type": "ack", "message": "sent to agent"})
         elif command_type == "status":
             await self._send(writer, {"type": "status", "state": self._current_status})

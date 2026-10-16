@@ -132,22 +132,6 @@ async def test_unknown_command():
 
 
 @pytest.mark.asyncio
-async def test_live_transcription_ignored_when_too_short():
-    """Live transcriptions that are fragments should not trigger agent runs."""
-    daemon = ClankerDaemon()
-    daemon._agent = FakeAgent()
-    try:
-        # Short fragment should be ignored (no agent response)
-        await daemon._handle_live_transcription("you")
-
-        # Give it a moment - if the agent ran, we'd see a response
-        await asyncio.sleep(0.2)
-        assert daemon._active_agent_task is None or daemon._active_agent_task.done()
-    finally:
-        await daemon._shutdown_async()
-
-
-@pytest.mark.asyncio
 async def test_final_transcription_triggers_agent_run():
     """Final transcriptions should always trigger an agent run."""
     daemon = ClankerDaemon()
@@ -164,41 +148,52 @@ async def test_final_transcription_triggers_agent_run():
 
 
 @pytest.mark.asyncio
-async def test_live_transcription_triggers_when_meaningful():
-    """Meaningful live transcriptions should trigger when agent is idle."""
+async def test_live_transcription_does_not_trigger_agent_run():
+    """Live transcriptions should never trigger agent runs (final-only model)."""
     daemon = ClankerDaemon()
     daemon._agent = FakeAgent()
     try:
-        await daemon._handle_live_transcription("Tell me something funny")
+        # Send a live transcription through the voiced event handler
+        await daemon._handle_voiced_event(
+            b'{"type":"transcription","text":"Tell me something funny","final":false}\n'
+        )
 
-        # Wait for the agent run to complete
-        if daemon._active_agent_task:
-            await daemon._active_agent_task
-        assert daemon._active_agent_task.done()
+        # Agent should NOT be running
+        assert daemon._active_agent_task is None, (
+            "Live transcriptions must not trigger agent runs"
+        )
     finally:
         await daemon._shutdown_async()
 
 
 @pytest.mark.asyncio
-async def test_live_transcription_dedup():
-    """Similar live transcriptions should not re-trigger agent runs."""
+async def test_final_cancels_previous_run():
+    """A new final transcription should cancel the previous in-flight run."""
     daemon = ClankerDaemon()
-    daemon._agent = FakeAgent()
+
+    class BlockingAgent(FakeAgent):
+        """Agent that blocks on the first run, then completes on second."""
+
+        async def run(self, user_message, *, is_final, thread_id=None, recursion_limit=50):
+            if user_message == "first":
+                # Block until cancelled
+                try:
+                    await asyncio.Event().wait()
+                except asyncio.CancelledError:
+                    raise
+            return f"processed: {user_message}"
+
+    daemon._agent = BlockingAgent()
     try:
-        # First live transcription triggers a run
-        await daemon._handle_live_transcription("Tell me something funny")
+        # Start a run that blocks
+        await daemon._handle_final_transcription("first")
+        assert daemon._active_agent_task is not None
+        assert not daemon._active_agent_task.done()
 
-        # Wait for the task to complete
-        if daemon._active_agent_task:
-            await daemon._active_agent_task
-        daemon._active_agent_task = None
-
-        # Second similar live transcription should NOT trigger a new run
-        await daemon._handle_live_transcription("Tell me something funny please")
-
-        await asyncio.sleep(0.2)
-        assert daemon._active_agent_task is None, (
-            "Similar live transcription should not trigger a new run"
-        )
+        # Now a new final arrives - this should cancel the blocking run
+        await daemon._handle_final_transcription("second")
+        assert daemon._active_agent_task is not None
+        await daemon._active_agent_task
+        assert daemon._active_agent_task.done()
     finally:
         await daemon._shutdown_async()

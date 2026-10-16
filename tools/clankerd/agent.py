@@ -127,7 +127,7 @@ class ClankerClientSession(ClientSession):
 
 
 @tool
-def speak(text: str, lang: str = "en", background: bool = False) -> str:
+async def speak(text: str, lang: str = "en", background: bool = False) -> str:
     """Speak text out loud using text-to-speech (TTS).
 
     Uses the user's cloned voice (Wes). The audio is played on the local
@@ -153,11 +153,18 @@ def speak(text: str, lang: str = "en", background: bool = False) -> str:
 
             threading.Thread(target=_speak_async, daemon=True).start()
         else:
-            client = TTSClient()
-            client.speak(text, lang=lang, speaker_file=SERVER_VOICE_REF)
+            # Run TTS in a thread so we don't block the event loop.
+            # This allows the task to be cancelled even mid-speech.
+            await asyncio.to_thread(_do_speak, text, lang)
         return f"Spoke: {text!r}"
     except Exception as error:
         return f"ERROR: Failed to speak: {error}"
+
+
+def _do_speak(text: str, lang: str = "en") -> None:
+    """Synchronous TTS speak helper."""
+    client = TTSClient()
+    client.speak(text, lang=lang, speaker_file=SERVER_VOICE_REF)
 
 
 SYSTEM_PROMPT = """You are clankerd, the primary brain agent for this workspace.
@@ -173,13 +180,13 @@ You receive speech transcriptions from the user's voice input. There are two
 kinds:
 
 1. **Live transcriptions** (final=False): Partial, streaming text while the
-   user is still speaking. Treat these as noise — you should NOT respond to
-   them unless you are extremely confident and the user has clearly finished
-   their thought. If you do respond to a live transcription, keep it brief
-   and be prepared to change course immediately.
+   user is still speaking. You will only ever receive these for display — you
+   should NOT respond to them. The daemon will not send them to you as agent
+   runs.
 
 2. **Final transcriptions** (final=True): The definitive, complete utterance.
-   This is when you should respond. Treat it as a new person speaking to you.
+   This is the only time you should respond. Treat it as a new person speaking
+   to you.
 
 ## Single chain of thought
 
