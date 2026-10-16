@@ -14,6 +14,7 @@ background/done) can be received after tool calls return.
 from __future__ import annotations
 
 import asyncio
+import json
 import os
 import threading
 from typing import Any
@@ -27,6 +28,7 @@ from langchain_core.tools import tool
 from langchain_llama_server import ChatLlamaServer
 from langchain_mcp_adapters.tools import load_mcp_tools
 from langgraph.checkpoint.memory import InMemorySaver
+from langgraph.checkpoint.sqlite import SqliteSaver
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from mcp.types import (
@@ -167,6 +169,36 @@ def _do_speak(text: str, lang: str = "en") -> None:
     client.speak(text, lang=lang, speaker_file=SERVER_VOICE_REF)
 
 
+@tool
+async def restart_daemon(target: str) -> str:
+    """Restart a daemon managed by the clankersupervisor.
+
+    Use this to restart yourself (target='clankerd') after deploying new
+    code, or to restart 'voiced' if the speech-to-text daemon is having
+    issues. The supervisor will restart the process automatically.
+
+    Args:
+        target: Which daemon to restart: 'clankerd' or 'voiced'.
+    """
+    try:
+        from tools.clankersupervisor.config import socket_path as sup_socket_path
+        reader, writer = await asyncio.open_unix_connection(str(sup_socket_path()))
+        writer.write((json.dumps({"type": "restart", "target": target}) + "\n").encode())
+        await writer.drain()
+        line = await asyncio.wait_for(reader.readline(), timeout=10.0)
+        writer.close()
+        try:
+            await writer.wait_closed()
+        except Exception:
+            pass
+        if line:
+            response = json.loads(line.decode("utf-8"))
+            return f"Restart request sent: {response.get('message', '')}"
+        return f"Restart request sent for {target}"
+    except Exception as error:
+        return f"ERROR: Failed to restart {target}: {error}"
+
+
 SYSTEM_PROMPT = """You are clankerd, the primary brain agent for this workspace.
 
 You are a single, coherent person — not a promptable system. You have ONE
@@ -232,6 +264,10 @@ You have the following tools:
   voice. Use this when you want to talk to the user verbally. Keep the text
   concise (1-3 sentences). Use `background=True` for fire-and-forget messages
   like "one sec" so you're not blocked on the TTS call.
+- **restart_daemon**: Restart a daemon managed by the clankersupervisor.
+  Use `restart_daemon('clankerd')` to restart yourself after code changes
+  (your conversation thread persists via SQLite). Use
+  `restart_daemon('voiced')` to restart the speech-to-text daemon.
 
 ## Background vs blocking — ALWAYS prefer background for anything slow
 
@@ -282,6 +318,14 @@ keeps you responsive to new voice input from the user.
 When you receive a background/done notification, treat it as new input. The
 notification message describes what happened. You should respond accordingly
 (e.g. speak a summary to the user, or take follow-up action).
+
+## Self-upgrade
+
+If you deploy new code (e.g. via git pull or a code change), you can restart
+yourself with `restart_daemon('clankerd')`. Your conversation thread is
+persisted in SQLite (`~/.local/state/ask-openai/clankerd-thread.db`), so you
+will resume where you left off. After restarting, you can continue the
+conversation with the user as if nothing happened.
 
 Always log what you are doing so the user can tail your logs while you work.
 
@@ -418,7 +462,7 @@ class ClankerAgent:
 
     async def setup(self) -> None:
         """Initialize persistent MCP sessions and build the agent."""
-        all_tools = [speak]
+        all_tools = [speak, restart_daemon]
 
         # Start persistent sessions so background notifications can be received
         for name, conn in MCP_SERVERS.items():
@@ -441,9 +485,20 @@ class ClankerAgent:
         self._model = ChatLlamaServer(
             base_url=LLAMA_SERVER_BASE_URL, api_key="foo"
         )
+
+        # Use a persistent SQLite checkpointer so the conversation thread
+        # survives clankerd restarts. This enables self-upgrade: clankerd can
+        # restart itself and resume where it left off.
+        from tools.clankerd.config import state_dir
+        db_path = state_dir() / "clankerd-thread.db"
+        db_path.parent.mkdir(parents=True, exist_ok=True)
+        import sqlite3
+        conn = sqlite3.connect(str(db_path))
+        self._checkpointer = SqliteSaver(conn)
+
         self._agent = create_agent(
             self._model,
-            checkpointer=InMemorySaver(),
+            checkpointer=self._checkpointer,
             tools=all_tools,
             system_prompt=SystemMessage(content=SYSTEM_PROMPT),
         )
@@ -454,6 +509,12 @@ class ClankerAgent:
         for name, session in self._sessions.items():
             await session.stop()
         self._sessions.clear()
+        # Close the SQLite checkpointer connection
+        if hasattr(self, "_checkpointer") and self._checkpointer:
+            try:
+                self._checkpointer.cursor.close()
+            except Exception:
+                pass
 
     async def run(
         self,

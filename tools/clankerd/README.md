@@ -62,6 +62,28 @@ Requires the `voiced` daemon to be running (for transcriptions) and the
 llama-server at `http://paxy.lan:8014` (override via
 `CLANKERD_LLAMA_SERVER_URL`).
 
+## Supervisor
+
+Use the `clankersupervisor` to manage both daemons (voiced + clankerd) as
+child processes with auto-restart on crash:
+
+```fish
+# Start the supervisor (starts both daemons)
+.venv/bin/python -m tools.clankersupervisor
+
+# Control from another shell
+.venv/bin/python -m tools.clankersupervisor.client status
+.venv/bin/python -m tools.clankersupervisor.client restart-clankerd
+.venv/bin/python -m tools.clankersupervisor.client restart-voiced
+.venv/bin/python -m tools.clankersupervisor.client restart-all
+.venv/bin/python -m tools.clankersupervisor.client stop-clankerd
+```
+
+Clankerd can also restart itself via the `restart_daemon` tool:
+`restart_daemon('clankerd')`. Its conversation thread is persisted in
+SQLite (`~/.local/state/ask-openai/clankerd-thread.db`), so it resumes
+where it left off after restart.
+
 ## Control socket
 
 The daemon listens on `~/.local/state/ask-openai/clankerd.sock` (newline-
