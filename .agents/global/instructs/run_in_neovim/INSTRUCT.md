@@ -14,6 +14,17 @@ The Neovim process executes the code and returns output and error messages.
 
 Make sure commands won't harm user files and/or the machine.
 
+## Use for introspection, not edits
+
+`run_in_neovim` is best used for **read-only introspection** — querying the live
+Neovim state to diagnose problems (what autocmds are registered, what the
+effective settings are, what's actually loaded, etc.).
+
+Do **not** use it to edit files. Make file edits through `apply_patch` (and
+review with `git diff`), so changes are auditable and revertable. If you need to
+modify runtime state, prefer doing it in a way that generates a config change
+the user can review, rather than mutating the live session directly.
+
 ## Examples
 
 ```lua
