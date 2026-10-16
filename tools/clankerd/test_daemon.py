@@ -129,3 +129,76 @@ async def test_unknown_command():
         await writer.wait_closed()
     finally:
         await daemon._shutdown_async()
+
+
+@pytest.mark.asyncio
+async def test_live_transcription_ignored_when_too_short():
+    """Live transcriptions that are fragments should not trigger agent runs."""
+    daemon = ClankerDaemon()
+    daemon._agent = FakeAgent()
+    try:
+        # Short fragment should be ignored (no agent response)
+        await daemon._handle_live_transcription("you")
+
+        # Give it a moment - if the agent ran, we'd see a response
+        await asyncio.sleep(0.2)
+        assert daemon._active_agent_task is None or daemon._active_agent_task.done()
+    finally:
+        await daemon._shutdown_async()
+
+
+@pytest.mark.asyncio
+async def test_final_transcription_triggers_agent_run():
+    """Final transcriptions should always trigger an agent run."""
+    daemon = ClankerDaemon()
+    daemon._agent = FakeAgent()
+    try:
+        await daemon._handle_final_transcription("Can you explain 6-7?")
+
+        # Wait for the agent run to complete
+        if daemon._active_agent_task:
+            await daemon._active_agent_task
+        assert daemon._active_agent_task.done()
+    finally:
+        await daemon._shutdown_async()
+
+
+@pytest.mark.asyncio
+async def test_live_transcription_triggers_when_meaningful():
+    """Meaningful live transcriptions should trigger when agent is idle."""
+    daemon = ClankerDaemon()
+    daemon._agent = FakeAgent()
+    try:
+        await daemon._handle_live_transcription("Tell me something funny")
+
+        # Wait for the agent run to complete
+        if daemon._active_agent_task:
+            await daemon._active_agent_task
+        assert daemon._active_agent_task.done()
+    finally:
+        await daemon._shutdown_async()
+
+
+@pytest.mark.asyncio
+async def test_live_transcription_dedup():
+    """Similar live transcriptions should not re-trigger agent runs."""
+    daemon = ClankerDaemon()
+    daemon._agent = FakeAgent()
+    try:
+        # First live transcription triggers a run
+        await daemon._handle_live_transcription("Tell me something funny")
+
+        # Wait for the task to complete
+        if daemon._active_agent_task:
+            await daemon._active_agent_task
+        daemon._active_agent_task = None
+
+        # Second similar live transcription should NOT trigger a new run
+        await daemon._handle_live_transcription("Tell me something funny please")
+
+        await asyncio.sleep(0.2)
+        assert daemon._active_agent_task is None, (
+            "Similar live transcription should not trigger a new run"
+        )
+    finally:
+        await daemon._shutdown_async()

@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import asyncio
 import os
+import threading
 from typing import Any
 from typing import Union
 
@@ -126,7 +127,7 @@ class ClankerClientSession(ClientSession):
 
 
 @tool
-def speak(text: str, lang: str = "en") -> str:
+def speak(text: str, lang: str = "en", background: bool = False) -> str:
     """Speak text out loud using text-to-speech (TTS).
 
     Uses the user's cloned voice (Wes). The audio is played on the local
@@ -136,10 +137,24 @@ def speak(text: str, lang: str = "en") -> str:
     Args:
         text: The text to speak. Keep it concise (1-3 sentences).
         lang: Language code (e.g. 'en', 'zh', 'ja'). Default 'en'.
+        background: If true, fire-and-forget the speech without blocking.
+            Use this for quick acknowledgments like "one sec" so the agent
+            can continue working immediately.
     """
     try:
-        client = TTSClient()
-        client.speak(text, lang=lang, speaker_file=SERVER_VOICE_REF)
+        if background:
+            # Fire-and-forget: don't block on the TTS request.
+            def _speak_async():
+                try:
+                    client = TTSClient()
+                    client.speak(text, lang=lang, speaker_file=SERVER_VOICE_REF)
+                except Exception as error:
+                    logger.warning("background speak failed: %s", error)
+
+            threading.Thread(target=_speak_async, daemon=True).start()
+        else:
+            client = TTSClient()
+            client.speak(text, lang=lang, speaker_file=SERVER_VOICE_REF)
         return f"Spoke: {text!r}"
     except Exception as error:
         return f"ERROR: Failed to speak: {error}"
@@ -147,43 +162,65 @@ def speak(text: str, lang: str = "en") -> str:
 
 SYSTEM_PROMPT = """You are clankerd, the primary brain agent for this workspace.
 
+You are a single, coherent person — not a promptable system. You have ONE
+chain of thought. You respond to inquiries once, give your answer, and then
+you're done. You don't repeat yourself or respond to the same thing multiple
+times.
+
+## How you interact
+
 You receive speech transcriptions from the user's voice input. There are two
-kinds of transcription events:
+kinds:
 
-1. **Live transcriptions** (final=False): These are partial, streaming
-   transcriptions that arrive while the user is still speaking. They may be
-   incomplete or change as more words come in. You MAY act on these if you are
-   confident about the intent, but be prepared to change course when the final
-   transcription arrives.
+1. **Live transcriptions** (final=False): Partial, streaming text while the
+   user is still speaking. Treat these as noise — you should NOT respond to
+   them unless you are extremely confident and the user has clearly finished
+   their thought. If you do respond to a live transcription, keep it brief
+   and be prepared to change course immediately.
 
-2. **Final transcriptions** (final=True): These are the definitive, complete
-   transcription of the user's utterance. When you receive one of these, you
-   should:
-   - Re-evaluate any work you started based on live transcriptions
-   - If your interpretation was wrong, abort the wrong-direction work (e.g. kill
-     background processes you no longer need, cancel subagents)
-   - Proceed with the correct interpretation
+2. **Final transcriptions** (final=True): The definitive, complete utterance.
+   This is when you should respond. Treat it as a new person speaking to you.
+
+## Single chain of thought
+
+- If you are mid-thought and a new final transcription arrives, stop what
+  you're doing and react to the new input. Your previous chain of thought is
+  abandoned.
+- If you're doing research or a long-running task and the user says something
+  new, interrupt your work and respond to the new input. You can always
+  resume later.
+- Never respond to the same inquiry twice. Once you've given your answer,
+  you're done with that topic.
+- Don't respond to trivial fragments like "you", "okay", "thank you" with
+  long-winded responses. A simple acknowledgment is fine, or silence.
+
+## Verbal signals
+
+When someone makes a verbal inquiry:
+- If you can answer immediately, just answer. No filler needed.
+- If you need time to think or do research, fire-and-forget a **speak** call
+  with `background=True` saying something like "one sec" or "just a moment"
+  so the user knows you're working. Then do your work and speak the answer
+  when ready.
+
+## Tools
 
 You have the following tools:
 - **run_process**: Run shell commands on this machine. Supports background mode
   (background=True) which returns a PID immediately. Use process_status to poll
-  it, and notify_on_completion to get notified when it finishes. This is great
-  for long-running work. To kill a background process, use `kill <pid>` via
-  run_process or run_xonsh.
+  it, and notify_on_completion to get notified when it finishes.
 - **process_status**: Check the status of a background process by PID. Reports
-  done (true/false) plus STDOUT/STDERR and exit code. Optionally wait for
-  completion (wait=true with wait_timeout_ms).
+  done (true/false) plus STDOUT/STDERR and exit code.
 - **run_xonsh**: Execute Python and shell-like commands through Xonsh. Returns
   structured stdout/stderr/exit status.
 - **delegate**: Spawn a subagent to perform a task and summarize findings. Can
   run in background mode (background=True) which returns a task_id immediately.
-  Use delegate_status to check completion, delegate_stop to kill it.
 - **delegate_status**: Check the status of a background subagent by task_id.
-  Returns done (boolean) + the subagent's last status message + final output.
 - **delegate_stop**: Stop/kill a background subagent by task_id.
 - **speak**: Speak text out loud using text-to-speech with the user's cloned
   voice. Use this when you want to talk to the user verbally. Keep the text
-  concise (1-3 sentences). The audio plays on the user's machine.
+  concise (1-3 sentences). Use `background=True` for fire-and-forget messages
+  like "one sec" so you're not blocked on the TTS call.
 
 Use delegation for long-running or parallel work so you remain responsive to
 new voice input. Track background tasks (PIDs and task_ids) and clean them up

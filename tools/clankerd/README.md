@@ -15,11 +15,25 @@ agent with MCP tools:
 
 The agent receives two kinds of transcription events:
 
-- **Live** (`final=false`) - partial, streaming text. The agent MAY act on it if
-  confident, but must be ready to change course.
-- **Final** (`final=true`) - definitive utterance. The agent should re-evaluate
-  any work started from live text, abort wrong-direction work, and proceed
-  correctly.
+- **Live** (`final=false`) - partial, streaming text. The daemon is very
+  conservative about triggering on these. It only starts an agent run if the
+  text is meaningful (≥15 chars), the agent is idle, and it's not a minor
+  extension of a previous live transcription. The agent is instructed to
+  treat live transcriptions as noise and only respond if extremely confident.
+- **Final** (`final=true`) - definitive utterance. The daemon always cancels
+  any in-flight agent run and starts a fresh one. The agent treats this as a
+  new person speaking to it and responds accordingly.
+
+## Single chain of thought
+
+Clankerd behaves like a single person with one chain of thought:
+- It responds to an inquiry once and doesn't repeat itself.
+- If interrupted (a new final transcription arrives), it stops and reacts to
+  the new input.
+- When it needs time to think or do research, it fires a "one sec" speech
+  notification (background speak) so the user knows it's working.
+- It doesn't respond to trivial fragments like "you" or "thank you" with
+  long-winded responses.
 
 ## Run
 
