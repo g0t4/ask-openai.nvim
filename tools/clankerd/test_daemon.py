@@ -167,8 +167,8 @@ async def test_live_transcription_does_not_trigger_agent_run():
 
 
 @pytest.mark.asyncio
-async def test_final_cancels_previous_run():
-    """A new final transcription should cancel the previous in-flight run."""
+async def test_final_queues_when_agent_busy():
+    """A new final transcription should be queued while agent is busy."""
     daemon = ClankerDaemon()
 
     class BlockingAgent(FakeAgent):
@@ -190,10 +190,53 @@ async def test_final_cancels_previous_run():
         assert daemon._active_agent_task is not None
         assert not daemon._active_agent_task.done()
 
-        # Now a new final arrives - this should cancel the blocking run
+        # Now a new final arrives while agent is busy - should be queued
         await daemon._handle_final_transcription("second")
+        assert len(daemon._queued_final_transcriptions) == 1
+        assert daemon._queued_final_transcriptions[0] == "second"
+
+        # The original run should still be in-flight (not cancelled)
         assert daemon._active_agent_task is not None
-        await daemon._active_agent_task
+        assert not daemon._active_agent_task.done()
+
+        # Cancel the blocking run to clean up
+        daemon._active_agent_task.cancel()
+        try:
+            await daemon._active_agent_task
+        except asyncio.CancelledError:
+            pass
+    finally:
+        await daemon._shutdown_async()
+
+
+@pytest.mark.asyncio
+async def test_queued_finals_delivered_after_run_completes():
+    """Queued finals should be delivered after the current run completes."""
+    daemon = ClankerDaemon()
+
+    class SlowAgent(FakeAgent):
+        """Agent that takes a moment to complete."""
+
+        async def run(self, user_message, *, is_final, thread_id=None, recursion_limit=50):
+            await asyncio.sleep(0.1)
+            return f"processed: {user_message}"
+
+    daemon._agent = SlowAgent()
+    try:
+        # Start a run that takes a moment
+        await daemon._handle_final_transcription("first")
+        assert daemon._active_agent_task is not None
+        assert not daemon._active_agent_task.done()
+
+        # Queue a follow-up while agent is busy
+        await daemon._handle_final_transcription("follow up")
+        assert len(daemon._queued_final_transcriptions) == 1
+
+        # Wait for the first run to complete (which should trigger queue drain)
+        await asyncio.wait_for(daemon._active_agent_task, timeout=5.0)
         assert daemon._active_agent_task.done()
+
+        # The queued follow-up should have been processed
+        assert len(daemon._queued_final_transcriptions) == 0
     finally:
         await daemon._shutdown_async()

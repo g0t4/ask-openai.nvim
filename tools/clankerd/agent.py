@@ -261,6 +261,24 @@ You will also receive background notifications when tasks complete:
 - **background/done**: A background task has finished. Use this to know when
   to report results or follow up.
 
+## Background tasks & rest
+
+When you fire off a background task (`delegate(background=True)`,
+`run_process(background=True)`, or `run_xonsh(background=True)`), you can
+**rest** — you don't need to poll or wait for it. Here's how it works:
+
+- You return a response immediately (e.g. "I'll look into that" or "one sec").
+- The background task runs on its own.
+- When it finishes, you'll receive a **background/done** notification. This
+  triggers a new agent turn with the task's result as context.
+- You should then respond to the user with the result (e.g. speak a summary).
+- You can also use `delegate_status` / `xonsh_status` / `process_status`
+  proactively if you want to check on a task before the notification arrives.
+
+You do NOT need to keep the agent "busy" while a background task runs. Let
+your turn end, rest, and let the completion notification wake you up. This
+keeps you responsive to new voice input from the user.
+
 When you receive a background/done notification, treat it as new input. The
 notification message describes what happened. You should respond accordingly
 (e.g. speak a summary to the user, or take follow-up action).

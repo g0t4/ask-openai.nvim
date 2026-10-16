@@ -38,6 +38,10 @@ class ClankerDaemon:
         self._thread_id = "clankerd"
         self._shutting_down = False
         self._shutdown_event = asyncio.Event()
+        # Queue of final transcriptions that arrived while the agent was busy.
+        # These are delivered at the next opportunity (after the current run
+        # completes, or after tool calls finish).
+        self._queued_final_transcriptions: list[str] = []
 
     async def run(self) -> None:
         """Start the daemon; connect to voiced, serve control socket, block."""
@@ -160,7 +164,7 @@ class ClankerDaemon:
 
             # Start a new agent run with the background notification as context
             self._active_agent_task = asyncio.create_task(
-                self._run_agent(
+                self._run_agent_with_queue_drain(
                     f"Background task completed: {message}",
                     is_final=True,
                 )
@@ -215,19 +219,44 @@ class ClankerDaemon:
             logger.info("voiced pong")
 
     async def _handle_final_transcription(self, text: str) -> None:
-        """Handle a final transcription: always trigger a new agent run."""
-        # Always cancel any in-flight run so the agent can re-evaluate
+        """Handle a final transcription: trigger or queue depending on agent state."""
+        # If agent is busy, queue the final transcription for later delivery.
+        # This prevents parallel agent runs and preserves the user's follow-up.
         if self._active_agent_task and not self._active_agent_task.done():
-            logger.info("cancelling in-flight agent run for final transcription")
-            self._active_agent_task.cancel()
+            logger.info("agent busy; queuing final transcription: %s", text)
+            self._queued_final_transcriptions.append(text)
             self._trace.event(
-                "agent_cancelled",
-                reason="final_transcription_arrived",
+                "user_message_queued",
+                content=text,
+                reason="agent_busy",
             )
+            await self._broadcast({
+                "type": "queued",
+                "text": text,
+                "reason": "agent_busy",
+            })
+            return
 
         self._active_agent_task = asyncio.create_task(
-            self._run_agent(text, is_final=True)
+            self._run_agent_with_queue_drain(text, is_final=True)
         )
+
+    async def _run_agent_with_queue_drain(self, text: str, *, is_final: bool) -> None:
+        """Run the agent, then drain any queued transcriptions as follow-ups."""
+        try:
+            await self._run_agent(text, is_final=is_final)
+            # After this run completes, deliver any queued final transcriptions
+            # that arrived while the agent was busy. This is the "next
+            # opportunity" for the agent to see the follow-up.
+            while self._queued_final_transcriptions and not self._shutting_down:
+                queued_text = self._queued_final_transcriptions.pop(0)
+                logger.info("delivering queued transcription: %s", queued_text)
+                await self._run_agent(queued_text, is_final=True)
+        except asyncio.CancelledError:
+            # If the task is cancelled, leave queued messages for the next run.
+            logger.info("agent run cancelled; %d queued message(s) remain",
+                        len(self._queued_final_transcriptions))
+            raise
 
     async def _run_agent(self, text: str, *, is_final: bool) -> None:
         """Send a transcription to the agent and broadcast the response."""
@@ -329,17 +358,18 @@ class ClankerDaemon:
             text = command.get("text", "")
             is_final = bool(command.get("final", True))
             if is_final:
-                # Same dedup logic as final transcriptions
                 if self._active_agent_task and not self._active_agent_task.done():
-                    logger.info("cancelling in-flight agent run for manual message")
-                    self._active_agent_task.cancel()
+                    logger.info("agent busy; queuing manual message: %s", text)
+                    self._queued_final_transcriptions.append(text)
                     self._trace.event(
-                        "agent_cancelled",
-                        reason="manual_message_arrived",
+                        "user_message_queued",
+                        content=text,
+                        reason="agent_busy",
                     )
-                self._active_agent_task = asyncio.create_task(
-                    self._run_agent(text, is_final=True)
-                )
+                else:
+                    self._active_agent_task = asyncio.create_task(
+                        self._run_agent_with_queue_drain(text, is_final=True)
+                    )
             else:
                 # Non-final manual messages are ignored (final-only model)
                 pass

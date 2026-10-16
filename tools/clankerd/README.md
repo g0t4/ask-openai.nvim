@@ -26,12 +26,31 @@ The agent receives two kinds of transcription events:
 
 Clankerd behaves like a single person with one chain of thought:
 - It responds to an inquiry once and doesn't repeat itself.
-- If interrupted (a new final transcription arrives), it stops and reacts to
-  the new input.
+- If a new final transcription arrives while it's working, the message is
+  **queued** and delivered at the next opportunity (after the current run
+  completes). This prevents parallel agents while preserving follow-ups.
 - When it needs time to think or do research, it fires a "one sec" speech
   notification (background speak) so the user knows it's working.
 - It doesn't respond to trivial fragments like "you" or "thank you" with
   long-winded responses.
+
+## Queueing
+
+Follow-up final transcriptions that arrive while the agent is busy are
+queued in the daemon. After the current agent run completes, queued messages
+are delivered as sequential follow-up runs. This means:
+- Your follow-up is never lost.
+- The agent processes your first request to completion, then handles the
+  follow-up.
+- No parallel agent runs ever happen.
+
+## Background tasks & rest
+
+When clanker fires off a background task (`delegate(background=True)`,
+`run_process(background=True)`, or `run_xonsh(background=True)`), it can
+rest — it doesn't need to poll. When the task completes, a
+`background/done` notification triggers a new agent turn with the result
+as context. This keeps clanker responsive to new voice input.
 
 ## Run
 
