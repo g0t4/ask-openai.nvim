@@ -679,7 +679,7 @@ function RewriteFrontend.setup()
         --  specifically, I suspect this might explain why Qwen randomly won't actually change the file but will show me new code (as if I will paste it in)
         --  seeing the full file before it asks might derail its focus on changing it with tools so I don't have to ask again!
         --   TODO does using file path only help Qwen reliably change with tools w/o asking twice?
-        local precanned_prompt = string.format(':AskAgent /tools I want to change the current file %s', vim.fn.shellescape(filename))
+        local precanned_prompt = string.format(':AskAgent /tools I want to change the current file %s ', vim.fn.shellescape(filename))
         -- FYI escaped is not necessary here but could be in other cases:
         -- precanned_prompt = precanned_prompt:gsub("\\", "\\\\"):gsub("\n", "\\n"):gsub("\r", "\\r")
         vim.api.nvim_feedkeys(precanned_prompt, "m", false)
