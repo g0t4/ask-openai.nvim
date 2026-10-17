@@ -15,38 +15,64 @@ local function fenced_code(content, language)
     return "```" .. lang_prefix .. "\n" .. content .. "\n```"
 end
 
---- Append the run_xonsh arguments to the lines builder.
+--- Resolve the header text for the tool call.
 ---
---- While streaming, show the raw (possibly partial) JSON args. Once streaming is
---- done, decode the JSON and display the `code` arg as a fenced code block, plus
---- any remaining args (e.g. cwd, timeout_seconds) as key: value pairs.
+--- While streaming, fall back to the raw tool name. Once streaming is done, if
+--- the `code` arg is a single line (no newline), use it as the header/title;
+--- otherwise return the plain tool name (the multi-line code is shown as a block).
 ---
----@param lines LinesBuilder
 ---@param args_json string
 ---@param message RxAccumulatedMessage
-local function append_args(lines, args_json, message)
+---@return string header
+---@return table? decoded_args
+local function get_header_text(args_json, message)
     if message:is_still_streaming() then
-        lines:append_text(args_json)
-        return
+        return nil, nil
     end
 
     local ok, decoded = safely.decode_json(args_json)
     if not ok or type(decoded) ~= "table" then
         log:error("failed to decode run_xonsh arguments", args_json)
-        lines:append_text(args_json)
-        return
+        return nil, nil
     end
 
-    -- * show the code arg in a readable fenced code block
     local code_arg = decoded.code
     if code_arg then
-        decoded.code = nil
-        lines:append_text(fenced_code(code_arg, "python"))
+        -- * single-line code => use as the header/title
+        if not code_arg:match("\n") then
+            decoded.code = nil
+            return code_arg, decoded
+        end
+        -- * multi-line code => shown as a fenced code block (handled by append_args)
     end
 
+    return nil, decoded
+end
+
+--- Append the run_xonsh arguments to the lines builder.
+---
+--- The `code` arg is shown as a fenced code block (multi-line), while any
+--- remaining args (e.g. cwd, timeout_seconds) are shown as key: value pairs.
+---
+---@param lines LinesBuilder
+---@param args_json string
+---@param decoded_args table?
+local function append_args(lines, args_json, decoded_args)
+    if decoded_args then
+        -- * show the code arg in a readable fenced code block (multi-line only)
+        local code_arg = decoded_args.code
+        if code_arg then
+            lines:append_text(fenced_code(code_arg, "python"))
+            decoded_args.code = nil
+        end
+
     -- * show the remaining args (cwd, timeout_seconds, ...)
-    for key, value in pairs(decoded) do
-        lines:append_text(key .. ": " .. vim.inspect(value))
+        for key, value in pairs(decoded_args) do
+            lines:append_text(key .. ": " .. vim.inspect(value))
+        end
+    else
+        -- * streaming or decode failure => show raw args
+        lines:append_text(args_json)
     end
 end
 
@@ -84,13 +110,13 @@ end
 
 ---@type ToolCallFormatter
 function M.format(lines, tool_call, message)
-    base.add_generic_header(lines, tool_call)
+    local args_json = tool_call["function"].arguments
+    local header, decoded_args = get_header_text(args_json, message)
+    base.add_generic_header(lines, tool_call, header)
 
     -- * tool args
-    local func = tool_call["function"]
-    local args = func.arguments
-    if args then
-        append_args(lines, args, message)
+    if args_json then
+        append_args(lines, args_json, decoded_args)
     end
 
     -- * progress messages (shown when tool is still running)
