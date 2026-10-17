@@ -28,7 +28,7 @@ from langchain_core.tools import tool
 from langchain_llama_server import ChatLlamaServer
 from langchain_mcp_adapters.tools import load_mcp_tools
 from langgraph.checkpoint.memory import InMemorySaver
-from langgraph.checkpoint.sqlite import SqliteSaver
+from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from mcp.types import (
@@ -494,9 +494,9 @@ class ClankerAgent:
         from tools.clankerd.config import state_dir
         db_path = state_dir() / "clankerd-thread.db"
         db_path.parent.mkdir(parents=True, exist_ok=True)
-        import sqlite3
-        conn = sqlite3.connect(str(db_path))
-        self._checkpointer = SqliteSaver(conn)
+        import aiosqlite
+        conn = await aiosqlite.connect(str(db_path))
+        self._checkpointer = AsyncSqliteSaver(conn)
 
         self._agent = create_agent(
             self._model,
@@ -514,7 +514,7 @@ class ClankerAgent:
         # Close the SQLite checkpointer connection
         if hasattr(self, "_checkpointer") and self._checkpointer:
             try:
-                self._checkpointer.cursor.close()
+                await self._checkpointer.conn.close()
             except Exception:
                 pass
 
