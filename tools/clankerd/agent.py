@@ -128,6 +128,33 @@ class ClankerClientSession(ClientSession):
 # ---------------------------------------------------------------------------
 
 
+def _default_background(tools: list) -> list:
+    """Make `background` default to True on any loaded tool that has it.
+
+    The MCP servers (run_process, run_xonsh, delegate) each ship with
+    `background=False` by default, but clankerd prefers to run everything in
+    the background so it stays responsive to voice input and can receive
+    background/status and background/done notifications. We patch the pydantic
+    field default on the loaded tool's args_schema (and rebuild) so the agent's
+    tool calls default to background=True unless the model explicitly passes
+    background=False.
+    """
+    for t in tools:
+        schema = getattr(t, "args_schema", None)
+        if schema is None:
+            continue
+        fields = getattr(schema, "model_fields", {})
+        bg = fields.get("background")
+        if bg is None:
+            continue
+        bg.default = True
+        try:
+            schema.model_rebuild(force=True)
+        except Exception as e:  # pragma: no cover - best effort
+            logger.warning("model_rebuild failed for %s: %s", getattr(t, "name", "?"), e)
+    return tools
+
+
 @tool
 async def speak(text: str, lang: str = "en", background: bool = False) -> str:
     """Speak text out loud using text-to-speech (TTS).
@@ -390,6 +417,7 @@ class ClankerAgent:
                 session.session,
                 server_name=name,
             )
+            tools = _default_background(tools)
             all_tools.extend(tools)
             logger.info("loaded %d tools from %s", len(tools), name)
 
