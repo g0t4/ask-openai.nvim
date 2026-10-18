@@ -69,26 +69,6 @@ MCP_SERVERS: dict[str, dict[str, Any]] = {
             os.getcwd(),
         ],
     },
-    # "commands": {
-    #     "transport": "stdio",
-    #     "command": "npx",
-    #     "args": [
-    #         os.environ["HOME"] + "/repos/github/g0t4/mcp-server-commands/build/index.js",
-    #         "--verbose",
-    #     ],
-    # },
-    # "xonsh": {
-    #     "transport": "stdio",
-    #     "command": "uv",
-    #     "args": [
-    #         "run",
-    #         "--directory",
-    #         os.environ["HOME"] + "/repos/github/g0t4/mcp-servers/src/xonsh",
-    #         "mcp-server-xonsh",
-    #         "--workdir",
-    #         os.getcwd(),
-    #     ],
-    # },
     "agents": {
         "transport": "stdio",
         "command": "uv",
