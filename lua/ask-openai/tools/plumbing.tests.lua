@@ -56,9 +56,9 @@ describe("flatten_tool_result_to_text", function()
             },
         }
         local flat = plumbing.flatten_tool_result_to_text(result)
-        assert.matches("exit_code: 0", flat)
-        assert.matches("stdout:\nhello world", flat)
-        assert.matches("duration_ms: 42", flat)
+        assert.matches("EXIT_CODE: 0", flat)
+        assert.matches("STDOUT:\nhello world", flat)
+        assert.matches("DURATION_MS: 42", flat)
         -- empty stderr should be skipped
         assert.is_nil(string.find(flat, "stderr:", 1, true))
     end)
@@ -74,8 +74,8 @@ describe("flatten_tool_result_to_text", function()
         }
         local flat = plumbing.flatten_tool_result_to_text(result)
         assert.matches("^ERROR", flat)
-        assert.matches("exit_code: 7", flat)
-        assert.matches("stderr:\nbad", flat)
+        assert.matches("EXIT_CODE: 7", flat)
+        assert.matches("STDERR:\nbad", flat)
     end)
 
     it("falls back to content blocks when no structuredContent", function()
