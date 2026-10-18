@@ -121,8 +121,8 @@ function M.flatten_tool_result_to_text(result)
             elseif type(value) == "number" or type(value) == "boolean" then
                 parts[#parts + 1] = key .. ": " .. tostring(value)
             elseif type(value) == "table" then
-                log:info("value is table in a structuredContent tool result, just FYI you wanted to know if this ever happens", key, value)
-                vim.notify("value is table in a structuredContent tool result, just FYI you wanted to know if this ever happens for " .. key)
+                -- nested tables are now used intentionally (e.g. background task results);
+                -- just inspect them inline rather than warning
                 parts[#parts + 1] = key .. ": " .. vim.inspect(value)
             end
         end

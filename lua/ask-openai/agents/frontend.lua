@@ -28,6 +28,7 @@ local CurlRequestForTrace = require("ask-openai.agents.curl_request_for_trace")
 local RxAccumulatedMessage = require("ask-openai.agents.messages.rx")
 local ToolCall = require("ask-openai.agents.tools.tool_call")
 local rag_instructions = require("ask-openai.frontends.prompts.rag_instructions")
+local plumbing = require("ask-openai.tools.plumbing")
 local inspect = require("devtools.inspect")
 local config = require("ask-openai.config")
 local context_builder = require("ask-openai.agents.context_builder")
@@ -79,6 +80,18 @@ local function format_value_for_display(value)
     return vim.inspect(value, { newline = "", indent = "  " })
 end
 
+--- Format a background/done result for display.
+--- Table/object results are flattened like regular tool results (so structured
+--- content renders as labeled text); strings are shown verbatim.
+---@param result any
+---@return string
+local function format_result_for_display(result)
+    if type(result) == "table" then
+        return plumbing.flatten_tool_result_to_text(result)
+    end
+    return format_value_for_display(result)
+end
+
 --- Whether an MCP notification is a background/done completion notification.
 ---@param notification table|nil
 ---@return boolean
@@ -105,7 +118,7 @@ local function display_tool_completion_in_chat(message)
             lines:append_styled_text(format_value_for_display(params.error), HLGroups.TOOL_FAILED)
         end
         if params.result ~= nil then
-            lines:append_text(format_value_for_display(params.result))
+            lines:append_text(format_result_for_display(params.result))
         end
     else
         lines:append_line("tool")
