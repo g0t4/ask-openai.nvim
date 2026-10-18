@@ -20,7 +20,7 @@ local servers = {
 
     -- PRN implement https://agentskills.io/mcp https based MCP tools... is it a websocket?
 
-    fetch    = {
+    fetch  = {
         -- PRN only include this tool if initial request includes /web?
 
         -- -- * via docker
@@ -43,29 +43,41 @@ local servers = {
         },
         -- env = { FOO = "BAR" }, -- example, env var overrides (BTW see below for env var inheritence + overrides logic + auto drop VIRTUAL_ENV* unless you set it in the overrides here
     },
-    xonsh    = {
+    commands  = {
         transport = "stdio",
         command = "uv",
         args = {
             "run",
             "--directory",
-            os.getenv("HOME") .. "/repos/github/g0t4/mcp-servers/src/xonsh",
-            "mcp-server-xonsh",
+            os.getenv("HOME") .. "/repos/github/g0t4/mcp-server-commands/src/mcp_server_commands",
+            "mcp-server-commands",
             "--workdir",
             vim.fn.getcwd()
         },
     },
-    commands = {
-        transport = "stdio",
-        command = "npx",
-        args = {
-            os.getenv("HOME") .. "/repos/github/g0t4/mcp-server-commands/build/index.js",
-            -- FYI leave --verbose on for now given I am using a log file so it s/b NBD
-            --    this will be a huge help in troubleshooting hung tool calls and other issues
-            "--verbose",
-        },
-    },
-    agents   = {
+    -- xonsh    = {
+    --     transport = "stdio",
+    --     command = "uv",
+    --     args = {
+    --         "run",
+    --         "--directory",
+    --         os.getenv("HOME") .. "/repos/github/g0t4/mcp-servers/src/xonsh",
+    --         "mcp-server-xonsh",
+    --         "--workdir",
+    --         vim.fn.getcwd()
+    --     },
+    -- },
+    -- commands = {
+    --     transport = "stdio",
+    --     command = "npx",
+    --     args = {
+    --         os.getenv("HOME") .. "/repos/github/g0t4/mcp-server-commands/build/index.js",
+    --         -- FYI leave --verbose on for now given I am using a log file so it s/b NBD
+    --         --    this will be a huge help in troubleshooting hung tool calls and other issues
+    --         "--verbose",
+    --     },
+    -- },
+    agents = {
         transport = "stdio",
         command = "uv",
         args = {

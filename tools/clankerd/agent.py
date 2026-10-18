@@ -59,24 +59,36 @@ LLAMA_SERVER_BASE_URL = os.environ.get(
 MCP_SERVERS: dict[str, dict[str, Any]] = {
     "commands": {
         "transport": "stdio",
-        "command": "npx",
-        "args": [
-            os.environ["HOME"] + "/repos/github/g0t4/mcp-server-commands/build/index.js",
-            "--verbose",
-        ],
-    },
-    "xonsh": {
-        "transport": "stdio",
         "command": "uv",
         "args": [
             "run",
             "--directory",
-            os.environ["HOME"] + "/repos/github/g0t4/mcp-servers/src/xonsh",
-            "mcp-server-xonsh",
+            os.environ["HOME"] + "/repos/github/g0t4/mcp-server-commands/src/mcp_server_commands",
+            "mcp-server-commands",
             "--workdir",
             os.getcwd(),
         ],
     },
+    # "commands": {
+    #     "transport": "stdio",
+    #     "command": "npx",
+    #     "args": [
+    #         os.environ["HOME"] + "/repos/github/g0t4/mcp-server-commands/build/index.js",
+    #         "--verbose",
+    #     ],
+    # },
+    # "xonsh": {
+    #     "transport": "stdio",
+    #     "command": "uv",
+    #     "args": [
+    #         "run",
+    #         "--directory",
+    #         os.environ["HOME"] + "/repos/github/g0t4/mcp-servers/src/xonsh",
+    #         "mcp-server-xonsh",
+    #         "--workdir",
+    #         os.getcwd(),
+    #     ],
+    # },
     "agents": {
         "transport": "stdio",
         "command": "uv",
@@ -268,7 +280,7 @@ Ideally for any task that might require troubleshooting, hand that off to a suba
 - Wes keeps his repos in `~/repos/github/g0t4/`
   `ask-openai.nvim` - your code lives in tools/clankerd + Wes's AI tools
   `dotfiles` - Wes's neovim, hammerspoon, shell configs, etc
-  `mcp-server-commands` - `run_process` tool
+  `mcp-server-commands` - `run_bash` + `run_xonsh` tools
   `mcp-servers` - `delegate`, `run_xonsh` and other MCP servers/tools
 - Commit when you feel like a task is done. Don't wait for Wes to ask.
 - Use `restart_daemon('clankerd')` to restart yourself, your conversation thread persists via SQLite so you can pick right where you left off.
