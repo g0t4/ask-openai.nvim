@@ -139,6 +139,8 @@ def _default_background(tools: list) -> list:
     tool calls default to background=True unless the model explicitly passes
     background=False.
     """
+    # TODO evaluate how well clankerd holds up with this change? TODO also I noted this in the system prompt so clankerd is aware!
+    # FYI goal is to setup clankerd for success so when he doesn't specific a value for backgroun, that we set it instead
     for t in tools:
         schema = getattr(t, "args_schema", None)
         if schema is None:
