@@ -12,6 +12,7 @@ local M = {}
 ---@type table<string, ToolCallFormatter>
 local formatters_by_function_name = {
     ["run_process"] = run_process.format,
+    ["run_bash"] = run_process.format,
     ["run_xonsh"] = run_xonsh.format,
     ["run_in_neovim"] = run_in_neovim.format,
     ["delegate"] = delegate.format,

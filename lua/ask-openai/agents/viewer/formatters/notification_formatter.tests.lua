@@ -133,6 +133,18 @@ describe("Test format_notification_message", function()
             local result = notification_formatter.format_notification_message(msg)
             assert.are.same('cat "my file.txt"', result)
         end)
+
+        it("delegates to argv_formatter for run_bash with command_line", function()
+            local msg = 'Running tool: run_bash args={"command_line": "ls -la | grep foo"}'
+            local result = notification_formatter.format_notification_message(msg)
+            assert.are.same("ls -la | grep foo", result)
+        end)
+
+        it("delegates to argv_formatter for run_bash with argv", function()
+            local msg = 'Running tool: run_bash args={"argv": ["cat", "my file.txt"]}'
+            local result = notification_formatter.format_notification_message(msg)
+            assert.are.same('cat "my file.txt"', result)
+        end)
     end)
 
     describe("unknown tool fallback", function()

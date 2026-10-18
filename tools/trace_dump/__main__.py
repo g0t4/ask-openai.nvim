@@ -149,7 +149,7 @@ def _extract_run_process_calls(messages: list[dict[str, Any]]) -> list[dict[str,
             func_name = function.get("name", "")
             arguments = function.get("arguments", "")
 
-            if func_name not in ("run_process", "run_command"):
+            if func_name not in ("run_process", "run_bash", "run_command"):
                 continue
 
             try:

@@ -1220,7 +1220,7 @@ def add_tool_call_request(func_name: str, arguments: str, tree: TreeWrapper):
     if func_name == "apply_patch":
         return _add_apply_patch(arguments, tree)
 
-    if func_name in ("run_command", "run_process"):
+    if func_name in ("run_command", "run_process", "run_bash"):
         child = tree.add(format_call_title(func_name))
         return _add_run_command_and_run_process(arguments, child)
 

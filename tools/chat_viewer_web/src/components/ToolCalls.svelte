@@ -33,7 +33,7 @@
         return { type: 'code', code: parsed.command, language: 'bash' }
       }
 
-      if (name === 'run_process' && parsed) {
+      if ((name === 'run_process' || name === 'run_bash') && parsed) {
         const isShellMode = typeof parsed.command_line === 'string'
         if (isShellMode) {
           return { type: 'code', code: parsed.command_line, language: 'bash' }
