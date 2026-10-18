@@ -80,8 +80,9 @@ end
 
 ---@param tool_call_id string
 ---@param content string
+---@param notification? table -- optional MCP notification (e.g. background/done) carried for chat viewer rendering
 ---@return OpenAIChatCompletion_ToolResult_TxChatMessage
-function TxChatMessage:tool_completion(tool_call_id, content)
+function TxChatMessage:tool_completion(tool_call_id, content, notification)
     -- FYI like tool_result() this is a role="tool" message, but it is NOT a direct
     -- result for the tool_call_id (the run_process call already got its PID result).
     -- It's an async completion notice injected after the agent's turn so the model
@@ -89,6 +90,9 @@ function TxChatMessage:tool_completion(tool_call_id, content)
     -- call name and tolerates this; strict OpenAI backends may not.
     self = TxChatMessage:new(TX_MESSAGE_ROLES.TOOL, content) --[[@as OpenAIChatCompletion_ToolResult_TxChatMessage]]
     self.tool_call_id = tool_call_id
+    -- * carry the source notification for chat viewer rendering (like duration_ms
+    --   metadata, it rides along on the message; the content already carries the data)
+    self.notification = notification
     return self
 end
 

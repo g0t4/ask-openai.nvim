@@ -65,15 +65,53 @@ local function display_user_message_in_chat(text)
     AgentsFrontend.chat_window:append_styled_lines(lines)
 end
 
+--- Format an arbitrary value for display as a single text string.
+--- Strings are shown verbatim; other values (tables/objects) are inspected.
+---@param value any
+---@return string
+local function format_value_for_display(value)
+    if value == nil then
+        return ""
+    end
+    if type(value) == "string" then
+        return value
+    end
+    return vim.inspect(value, { newline = "", indent = "  " })
+end
+
+--- Whether an MCP notification is a background/done completion notification.
+---@param notification table|nil
+---@return boolean
+local function is_background_done_notification(notification)
+    return notification ~= nil and notification.method == "background/done"
+end
+
 --- Display a tool completion message (sent back to the model) in the chat window.
 --- Uses a golden dark-yellow highlight so "background task finished" notifications pop.
+--- For a background/done notification, shows a clean "done" status header plus the
+--- notification's error (in the error hlgroup) and/or result (plain text).
 ---@param message TxChatMessage
 local function display_tool_completion_in_chat(message)
     local lines = LinesBuilder:new()
     lines:create_marks_namespace()
     lines:mark_next_line(HLGroups.TOOL_PROGRESS)
-    lines:append_line("tool")
-    lines:append_text(message.content)
+
+    local notification = message.notification
+    if is_background_done_notification(notification) then
+        -- * background/done: show a clean "done" status + error/result
+        lines:append_line("done")
+        local params = notification.params or {}
+        if params.error ~= nil then
+            lines:append_styled_text(format_value_for_display(params.error), HLGroups.TOOL_FAILED)
+        end
+        if params.result ~= nil then
+            lines:append_text(format_value_for_display(params.result))
+        end
+    else
+        lines:append_line("tool")
+        lines:append_text(message.content)
+    end
+
     lines:append_blank_line()
     AgentsFrontend.chat_window:append_styled_lines(lines)
 end
@@ -931,10 +969,12 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(trace)
 
                 -- * extract message from MCP progress notification
                 local message_text = notification.params.message
-                -- background/status notifications may not carry a `message` field
-                -- (they carry `event`, `tool_name`, `arguments` instead); allow them through
+                -- background/status and background/done notifications may not carry a
+                -- `message` field (they carry `event`, `tool_name`, `arguments`, `error`,
+                -- and/or `result` instead); allow them through
                 local is_background_status = notification.method == "background/status"
-                if (not message_text or message_text:match("^%s*$")) and not is_background_status then
+                local is_background_done = notification.method == "background/done"
+                if (not message_text or message_text:match("^%s*$")) and not is_background_status and not is_background_done then
                     log:warn("empty message_text in on_tool_progress", notification)
                     return
                 end
@@ -962,7 +1002,8 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(trace)
                         local progress_msg = TxChatMessage:tool_completion(
                             tool_call_id,
                             "Progress arrived for tool call with id: " .. tool_call_id .. ".\n\n"
-                            .. vim.inspect(notification)
+                            .. vim.inspect(notification),
+                            notification
                         )
                         table.insert(AgentsFrontend.queued_messages, progress_msg)
                         AgentsFrontend.redraw_queued_messages()
@@ -980,7 +1021,8 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(trace)
                         tool_call_id,
                         "Progress arrived for tool call with id: " .. tool_call_id .. ".\n\n"
                         -- PRN put this in a codefence and markdown format for message overall?
-                        .. vim.inspect(notification)
+                        .. vim.inspect(notification),
+                        notification
                     )
                     log:info("sending to agent", progress_msg)
                     trace:add_message(progress_msg)
