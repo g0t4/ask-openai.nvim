@@ -82,8 +82,8 @@ function M.format(lines, tool_call, message)
     end
 
     -- * tool result
-    local is_mcp = tool_call.call_output.result.content
-    if is_mcp then
+    local has_structured_content = tool_call.call_output.result.structuredContent
+    if has_structured_content then
         --- https://modelcontextprotocol.io/specification/2025-06-18/server/tools#tool-result
 
         -- * TESTING:
@@ -91,43 +91,36 @@ function M.format(lines, tool_call, message)
         -- - `ls -R` for lots of output
 
         ---@type MCP_ContentBlock[]
-        local content = tool_call.call_output.result.content
-
-        for _, output in ipairs(content) do
-            local name = output.name
-            local text = tostring(output.text or "")
-            -- PRN dict. lookup of formatter functions by type (name), w/ registerType(), esp. as the list of types grows
-            -- run_process
-            if name == "STDOUT" then
-                -- TODO! I want tool specific formatters... b/c for run_command, I want the command (esp if its small) to be the header! I don't need to see run_command ever, right?
-                if text then
-                    lines:append_text_fold_if_long("STDOUT", text)
+        local structuredContent = tool_call.call_output.result.structuredContent
+        local keys = vim.tbl_keys(structuredContent)
+        log:info("structuredContent", structuredContent)
+        for _, key in ipairs(keys) do
+            local value = structuredContent[key]
+            if type(value) ~= "string" then
+                log:warn("unexpected value type in run_bash/run_xonsh formatter... heads up in case you want to handle it different, key:" .. key, ", value:", value)
+                value = vim.inspect(value)
+            end
+            local skip = value == vim.NIL
+            if not skip then
+                local display_key = key:upper()
+                if display_key == "STDOUT" or display_key == "STDERR" then
+                    lines:append_text_fold_if_long(display_key, tostring(value))
                 else
-                    -- PRN skip STDOUT entirely if empty?
-                    lines:append_unexpected_line("UNEXPECTED empty STDOUT?")
-                end
-            else
-                -- GENERIC output type
-                if name == nil or name == "" then
-                    name = "[NO NAME]" -- heads up for now so I can identify scenarios/tools, can remove this later
-                end
-                if output.type == "text" then
-                    local is_multi_line = text:match("\n")
+                    local is_multi_line = value:match("\n")
                     if is_multi_line then
-                        lines:append_text(name)
-                        lines:append_text(text)
+                        lines:append_text(display_key)
+                        lines:append_text(value)
                     else
                         -- single line
-                        lines:append_text(name .. ": " .. text)
+                        lines:append_text(display_key .. ": " .. value)
                     end
-                else
-                    lines:append_unexpected_text("  UNEXPECTED type: \n" .. vim.inspect(output))
                 end
             end
         end
     else
-        -- TODO NON-MCP tool responses
-        --  i.e. in-process tools: rag_query, apply_patch
+        lines:append_text("unexpected tool result type in run_bash/run_xonsh formatter")
+        lines:append_text(vim.inspect(tool_call.call_output))
+        log:error("unexpected tool result type in run_bash/run_xonsh formatter", tool_call.call_output)
     end
 end
 
