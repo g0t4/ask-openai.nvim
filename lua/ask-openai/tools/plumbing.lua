@@ -87,12 +87,12 @@ local function flatten_text_block(block)
     return name .. ":\n" .. text
 end
 
-local function flatten_key_value_pairs(what)
+function M.flatten_key_value_pairs(what)
     local function format_structured_entry(key_raw, value)
         local display_key = key_raw:upper()
         if type(value) == "string" and value ~= "" then
             if value:find("\n") then
-                return display_key .. ":\n" .. value
+                return display_key .. ":\n" .. value .. "\n" -- extra trailing blank line to differentiate vs subsequent output (that way we don't need \n\n between all key/value pairs)
             else
                 -- if value is single line then put it right after the key
                 return display_key .. ": " .. value
@@ -103,6 +103,7 @@ local function flatten_key_value_pairs(what)
             -- nested tables are now used intentionally (e.g. background task results);
             -- just inspect them inline rather than warning
             return display_key .. ": " .. vim.inspect(value)
+            -- PRN add extra blank line here if it helps
         end
     end
 
@@ -117,7 +118,7 @@ local function flatten_key_value_pairs(what)
             parts[#parts + 1] = formatted
         end
     end
-    local flat = table.concat(parts, "\n\n")
+    local flat = table.concat(parts, "\n")
     return flat
 end
 
@@ -129,7 +130,7 @@ function M.flatten_tool_result_to_text(result)
     end
 
     if type(result.structuredContent) == "table" then
-        local flat = flatten_key_value_pairs(result.structuredContent)
+        local flat = M.flatten_key_value_pairs(result.structuredContent)
         if result.isError then
             return "ERROR\n\n" .. flat
         end

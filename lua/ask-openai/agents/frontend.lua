@@ -87,7 +87,7 @@ end
 ---@return string
 local function format_background_done_result_for_display(result)
     if type(result) == "table" then
-        return plumbing.flatten_tool_result_to_text(result)
+        return plumbing.flatten_key_value_pairs(result)
     end
     return format_value_for_display(result)
 end
