@@ -31,6 +31,7 @@ def test_process_and_xonsh_arguments_use_shared_rendering_without_bat(monkeypatc
 
     monkeypatch.setattr('tools.chat_viewer.__main__.subprocess.run', reject_subprocess)
     cases = [
+        ('run_bash', {'command_line': 'echo "hello" | cat', 'cwd': '/tmp', 'stdin_text': 'input'}, 'bash'),
         ('run_process', {'command_line': 'echo "hello" | cat', 'cwd': '/tmp', 'stdin_text': 'input'}, 'bash'),
         ('run_process', {'argv': ['echo', 'hello world'], 'cwd': '/tmp'}, 'bash'),
         ('run_xonsh', {'code': 'import os\nvalue = $(echo "hello")', 'cwd': '/tmp'}, 'xonsh'),
