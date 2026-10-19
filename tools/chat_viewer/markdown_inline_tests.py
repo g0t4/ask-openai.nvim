@@ -37,9 +37,9 @@ def test_basic_inline_code_is_bolded() -> None:
 
 
 def test_multiple_inline_code_spans() -> None:
-    styled = style_inline_code("Call `run_process` with `cwd` set")
-    assert styled.plain == "Call `run_process` with `cwd` set"
-    assert bold_spans(styled) == ["run_process", "cwd"]
+    styled = style_inline_code("Call `foo` with `cwd` set")
+    assert styled.plain == "Call `foo` with `cwd` set"
+    assert bold_spans(styled) == ["foo", "cwd"]
 
 
 def test_no_backticks_passes_through() -> None:
