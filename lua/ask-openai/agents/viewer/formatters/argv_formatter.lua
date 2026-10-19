@@ -39,7 +39,7 @@ end
 ---@param args_json string: JSON string of arguments from the tool call.
 ---@return string: A formatted command string ready for display.
 ---@error string: "Ambiguous run_process - both command_line and argv are set" or "No command found"
-function M.format_run_process_command(args_json)
+function M.format_run_bash_command(args_json)
     local ok, obj = pcall(function()
         return vim.json.decode(args_json)
     end)
@@ -92,7 +92,7 @@ function M.format_progress_message(msg)
 
     -- Try to parse and format
     local ok, formatted = pcall(function()
-        return M.format_run_process_command(msg)
+        return M.format_run_bash_command(msg)
     end)
 
     if ok then

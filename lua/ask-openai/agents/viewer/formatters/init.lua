@@ -1,4 +1,4 @@
-local run_process = require("ask-openai.agents.viewer.formatters.run_process")
+local run_process = require("ask-openai.agents.viewer.formatters.run_bash")
 local run_xonsh = require("ask-openai.agents.viewer.formatters.run_xonsh")
 local run_in_neovim = require("ask-openai.agents.viewer.formatters.run_in_neovim")
 local delegate = require("ask-openai.agents.viewer.formatters.delegate")

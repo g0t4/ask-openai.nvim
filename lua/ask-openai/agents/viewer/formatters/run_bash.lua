@@ -6,7 +6,7 @@ local base = require("ask-openai.agents.viewer.formatters.base")
 
 local M = {}
 
---- Format the command header text for a run_process tool call.
+--- Format the command header text for a run_bash tool call.
 ---
 ---@param args_json string
 ---@param message RxAccumulatedMessage
@@ -37,13 +37,13 @@ local function get_tool_header_text(args_json, message)
 
     -- Fallback: try the full formatter (includes ambiguity check, legacy command)
     local format_ok, formatted_cmd = pcall(function()
-        return argv_formatter.format_run_process_command(args_json)
+        return argv_formatter.format_run_bash_command(args_json)
     end)
     if format_ok then
         return formatted_cmd, object_or_error
     end
 
-    log:error("failed to format run_process command", args_json)
+    log:error("failed to format run_bash command", args_json)
     return "command format error: " .. args_json, object_or_error
 end
 

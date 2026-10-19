@@ -159,9 +159,6 @@ function MCPClient:_dispatch_message(notification)
         log:info("is_background", notification)
         ---@cast notification MCP_ProgressNotification
 
-        -- DONE: mcp-servers => subagents (delegate) + mcp-server-commands (run_process)
-        --   MAYBES: run_xonsh
-        --
         -- TODO need to look into clankerd so it can handle these status messages (notifications) too... don't worry about following some standards nonsense just shoehorn ours in (like here)
 
         -- FYI progressToken is how you correlate notification back to the original request!
