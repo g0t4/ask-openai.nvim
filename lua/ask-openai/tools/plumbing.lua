@@ -87,6 +87,40 @@ local function flatten_text_block(block)
     return name .. ":\n" .. text
 end
 
+local function flatten_key_value_pairs(what)
+    local function format_structured_entry(key_raw, value)
+        local display_key = key_raw:upper()
+        if type(value) == "string" and value ~= "" then
+            if value:find("\n") then
+                return display_key .. ":\n" .. value
+            else
+                -- if value is single line then put it right after the key
+                return display_key .. ": " .. value
+            end
+        elseif type(value) == "number" or type(value) == "boolean" then
+            return display_key .. ": " .. tostring(value)
+        elseif type(value) == "table" then
+            -- nested tables are now used intentionally (e.g. background task results);
+            -- just inspect them inline rather than warning
+            return display_key .. ": " .. vim.inspect(value)
+        end
+    end
+
+    local keys = vim.tbl_keys(what)
+    -- FYI order is not guaranteed to be preserved... that's fine for now...
+    -- PRN add explicit order preferences per tool?
+    local parts = {}
+    for _, key in ipairs(keys) do
+        local value = what[key]
+        local formatted = format_structured_entry(key, value)
+        if formatted then
+            parts[#parts + 1] = formatted
+        end
+    end
+    local flat = table.concat(parts, "\n\n")
+    return flat
+end
+
 ---@param result MCP_CallToolResult
 ---@return string
 function M.flatten_tool_result_to_text(result)
@@ -94,6 +128,15 @@ function M.flatten_tool_result_to_text(result)
         return tostring(result)
     end
 
+    if type(result.structuredContent) == "table" then
+        local flat = flatten_key_value_pairs(result.structuredContent)
+        if result.isError then
+            return "ERROR\n\n" .. flat
+        end
+        return flat
+    end
+
+    local content = result.content
     -- log:info("flatten_tool_result_to_text, original result:", result)
     -- Unwrap MCP content blocks into plain text so the model sees raw output
     -- instead of a JSON string containing JSON-escaped strings (JSON-in-JSON).
@@ -102,42 +145,6 @@ function M.flatten_tool_result_to_text(result)
         parts[1] = "ERROR"
     end
 
-    -- Structured content takes precedence; flatten key: value pairs.
-    local structured = result.structuredContent
-    if type(structured) == "table" then
-        local function format_structured_entry(key_raw, value)
-            local display_key = key_raw:upper()
-            if type(value) == "string" and value ~= "" then
-                if value:find("\n") then
-                    return display_key .. ":\n" .. value
-                else
-                    -- if value is single line then put it right after the key
-                    return display_key .. ": " .. value
-                end
-            elseif type(value) == "number" or type(value) == "boolean" then
-                return display_key .. ": " .. tostring(value)
-            elseif type(value) == "table" then
-                -- nested tables are now used intentionally (e.g. background task results);
-                -- just inspect them inline rather than warning
-                return display_key .. ": " .. vim.inspect(value)
-            end
-        end
-
-        local keys = vim.tbl_keys(structured)
-        -- FYI order is not guaranteed to be preserved... that's fine for now...
-        -- PRN add explicit order preferences per tool?
-        for _, key in ipairs(keys) do
-            local value = structured[key]
-            local formatted = format_structured_entry(key, value)
-            if formatted then
-                parts[#parts + 1] = formatted
-            end
-        end
-        local flat = table.concat(parts, "\n\n")
-        return flat
-    end
-
-    local content = result.content
     if type(content) == "string" then
         parts[#parts + 1] = content
     elseif type(content) == "table" then
