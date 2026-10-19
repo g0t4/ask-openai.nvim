@@ -102,7 +102,11 @@ function M.render_progress(lines, tool_call, is_done)
             if #formatted_msg > 200 then
                 formatted_msg = formatted_msg:sub(1, 197) .. "..."
             end
-            lines:append_line(string.format("    ↳ %s", formatted_msg))
+            -- Progress messages may contain newlines (e.g. vim.inspect output);
+            -- split so each becomes its own buffer line instead of corrupting one.
+            for _, progress_line in ipairs(vim.split(formatted_msg, "\n")) do
+                lines:append_line(string.format("    ↳ %s", progress_line))
+            end
         end
     else
         lines:append_line("    ↳ Waiting for response...")

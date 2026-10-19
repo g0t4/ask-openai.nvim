@@ -780,8 +780,91 @@ describe("FakeModelServer - AgentsFrontend integration", function()
     end)
 
     it("run_bash with background=True shows when tool call is done", function()
-        -- TODO
+        -- Mock the tool router to simulate a background run_bash call: it should
+        -- capture the progress callback and NOT invoke the done callback
+        -- synchronously (a background tool returns immediately with a task_id,
+        -- and reports completion later via a background/done notification).
+        local tool_router = require("ask-openai.tools.router")
+        local original_send_tool_call_router = tool_router.send_tool_call_router
+        local captured_tool_call = nil
+        local captured_on_progress = nil
+        tool_router.send_tool_call_router = function(tool_call, _, on_progress)
+            captured_tool_call = tool_call
+            captured_on_progress = on_progress
+            -- Background execution: return immediately, no done callback.
+            return function() end
+        end
 
+        fake.script("bg_tool", {
+            fake.tool_call_chunk({
+                id = "call_bg",
+                name = "run_bash",
+                arguments = '{"command_line":"sleep 4 && date","background":true}',
+            }),
+            finish_chunk_with_timings("tool_calls"),
+        })
+        -- Follow-up request (triggered when the background/done notification is
+        -- delivered back to the agent) should produce a clean final message.
+        fake.script("bg_followup", {
+            fake.content_chunk("Background task finished.", "assistant"),
+            finish_chunk_with_timings("stop"),
+        })
+
+        local request_count = 0
+        fake.set_on_request_started(function()
+            request_count = request_count + 1
+            if request_count > 1 then
+                fake.use_script("bg_followup")
+            end
+        end)
+        fake.use_script("bg_tool")
+
+        local trace = create_trace({})
+        frontend.trace = trace
+
+        frontend.then_get_assistant_response(trace)
+
+        -- Wait for the tool call to be routed to the (mocked) tool router.
+        local ok = vim.wait(1000, function()
+            return captured_on_progress ~= nil
+        end, 10)
+        assert.is_true(ok, "run_bash tool call should be routed to the tool router")
+
+        assert.is_not_nil(captured_tool_call, "tool call should be captured")
+        assert.are.same("run_bash", captured_tool_call["function"].name)
+        assert.are.same("call_bg", captured_tool_call.id)
+
+        -- The background task outlived the agent's turn, so the agent is idle
+        -- when the background/done notification arrives.
+        frontend.chat_window:mark_agent_running(false)
+
+        -- Deliver the background/done notification; the frontend should show a
+        -- clean "done" status (plus the result) in the chat window.
+        captured_on_progress({
+            method = "background/done",
+            params = {
+                tool_name = "run_bash",
+                result = "2026-06-05",
+            },
+        })
+
+        -- Wait for the scheduled display of the background completion.
+        ok = vim.wait(1000, function()
+            local text = frontend.chat_window.buffer:get_lines_from(0)
+            return text:find("done", 1, true) ~= nil
+        end, 10)
+
+        -- Restore the real tool router even if assertions fail.
+        tool_router.send_tool_call_router = original_send_tool_call_router
+        fake.set_on_request_started(nil)
+
+        local text = frontend.chat_window.buffer:get_lines_from(0)
+        assert.is_true(ok,
+            "chat window should show 'done' for a background/done notification. Got:\n" .. text)
+        assert.is_true(text:find("done", 1, true) ~= nil,
+            "chat window should contain 'done'. Got:\n" .. text)
+        assert.is_true(text:find("2026-06-05", 1, true) ~= nil,
+            "chat window should contain the background result. Got:\n" .. text)
     end)
 
 end)
