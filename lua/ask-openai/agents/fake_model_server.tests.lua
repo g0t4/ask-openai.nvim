@@ -537,6 +537,11 @@ describe("FakeModelServer - AgentsFrontend integration", function()
         assert.are.same("assistant", rx_message.role)
         assert.are.same("Hello from the agent!", rx_message.content)
         assert.are.same("stop", rx_message.finish_reason)
+
+        -- * wes testing
+        vim.wait(1) -- defer to make sure buffer is updated (vim.schedule/defer_fn calls inside of handlers)
+        -- without wait, buffer will be empty as there's been no updates to it yet
+        vim.print(frontend.chat_window.buffer:get_lines_from(0))
     end)
 
     it("accumulates reasoning content separately", function()
