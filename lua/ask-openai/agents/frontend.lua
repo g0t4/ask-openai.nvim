@@ -86,9 +86,9 @@ end
 ---@param result any
 ---@return string
 local function format_result_for_display(result)
-    -- if type(result) == "table" then
-    --     return plumbing.flatten_tool_result_to_text(result)
-    -- end
+    if type(result) == "table" then
+        return plumbing.flatten_tool_result_to_text(result)
+    end
     return format_value_for_display(result)
 end
 

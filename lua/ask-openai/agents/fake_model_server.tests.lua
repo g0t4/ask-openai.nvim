@@ -869,7 +869,7 @@ describe("FakeModelServer - AgentsFrontend integration", function()
             "chat window should show 'done' for a background/done notification. Got:\n" .. text)
         assert.is_true(text:find("done", 1, true) ~= nil,
             "chat window should contain 'done'. Got:\n" .. text)
-        assert.is_true(text:find("2026-06-05", 1, true) ~= nil,
+        assert.is_true(text:find("Sun Oct 18 22:57:53 CDT 2026", 1, true) ~= nil,
             "chat window should contain the background result. Got:\n" .. text)
     end)
 end)
