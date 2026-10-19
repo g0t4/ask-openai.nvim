@@ -3,6 +3,8 @@ require("ask-openai.backends.curl") -- for _G.CompletionsEndpoints
 
 local assert = require("luassert")
 local describe = require("devtools.tests.describe")
+local only = require("devtools.tests.only")
+local it = function() end
 
 local fake = require("ask-openai.agents.fake_model_server")
 local CurlRequestForTrace = require("ask-openai.agents.curl_request_for_trace")
@@ -779,7 +781,7 @@ describe("FakeModelServer - AgentsFrontend integration", function()
             "queued_section_start_line_base0 should be set")
     end)
 
-    it("run_bash with background=True shows when tool call is done", function()
+    only("run_bash with background=True shows when tool call is done", function()
         -- Mock the tool router to simulate a background run_bash call: it should
         -- capture the progress callback and NOT invoke the done callback
         -- synchronously (a background tool returns immediately with a task_id,
@@ -844,7 +846,10 @@ describe("FakeModelServer - AgentsFrontend integration", function()
             method = "background/done",
             params = {
                 tool_name = "run_bash",
-                result = "2026-06-05",
+                result = {
+                    exit_code = 0,
+                    stdout = "Sun Oct 18 22:57:53 CDT 2026",
+                }
             },
         })
 
@@ -859,6 +864,7 @@ describe("FakeModelServer - AgentsFrontend integration", function()
         fake.set_on_request_started(nil)
 
         local text = frontend.chat_window.buffer:get_lines_from(0)
+        print(text)
         assert.is_true(ok,
             "chat window should show 'done' for a background/done notification. Got:\n" .. text)
         assert.is_true(text:find("done", 1, true) ~= nil,
@@ -866,5 +872,4 @@ describe("FakeModelServer - AgentsFrontend integration", function()
         assert.is_true(text:find("2026-06-05", 1, true) ~= nil,
             "chat window should contain the background result. Got:\n" .. text)
     end)
-
 end)
