@@ -105,9 +105,7 @@ function M.flatten_tool_result_to_text(result)
     -- Structured content takes precedence; flatten key: value pairs.
     local structured = result.structuredContent
     if type(structured) == "table" then
-        -- Sort keys for deterministic output; common metadata first.
         local keys = vim.tbl_keys(structured)
-        -- table.sort(keys)
         for _, key in ipairs(keys) do
             local value = structured[key]
             key = key:upper() -- log as uppercase so it stands out in flattened output (mostly for humans like me... i.e. STDOUT/STDERR/EXIT_CODE)
