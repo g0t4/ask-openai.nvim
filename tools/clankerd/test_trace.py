@@ -11,7 +11,7 @@ def test_trace_writer_appends_events():
     trace = TraceWriter(trace_id="test123")
 
     trace.event("user_message", content="hello", is_final=True)
-    trace.event("tool_start", tool="run_process", inputs={"command_line": "ls"})
+    trace.event("tool_start", tool="run_bash", inputs={"command_line": "ls"})
     trace.event("agent_response", content="done")
 
     lines = trace.path.read_text().strip().split("\n")
@@ -28,7 +28,7 @@ def test_trace_writer_appends_events():
 
     third = json.loads(lines[2])
     assert third["type"] == "tool_start"
-    assert third["tool"] == "run_process"
+    assert third["tool"] == "run_bash"
 
     fourth = json.loads(lines[3])
     assert fourth["type"] == "agent_response"

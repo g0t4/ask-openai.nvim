@@ -1,4 +1,4 @@
-"""Formatter helpers for displaying run_process tool calls.
+"""Formatter helpers for displaying run_bash tool calls.
 
 Handles the argv vs command_line display logic, with smart quoting
 for argv elements containing whitespace.
@@ -36,8 +36,8 @@ def commandline_equivalent_for_argv(argv: list[str]) -> str:
     """
     return " ".join(_quote_argv_element(str(arg)) for arg in argv)
 
-def format_run_process_command(arguments: str) -> str:
-    """Parse run_process arguments and return a displayable command string.
+def format_run_bash_command(arguments: str) -> str:
+    """Parse run_bash arguments and return a displayable command string.
 
     Supports three modes:
     - argv: Array of arguments (quoted if they contain whitespace)
@@ -61,7 +61,8 @@ def format_run_process_command(arguments: str) -> str:
     command = obj.get("command")  # legacy name
 
     if command_line and argv:
-        raise ValueError("Ambiguous run_process - both command_line and argv are set")
+        # legacy mode in run_process (pre-run_bash rename)
+        raise ValueError("Ambiguous run_bash")
 
     if command_line:
         return command_line

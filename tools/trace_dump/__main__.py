@@ -1,8 +1,4 @@
-"""Dump run_process commands from a trace file.
-
-Extracts and displays all run_process / run_command tool calls from a trace,
-showing both command_line and argv styles with bash syntax highlighting.
-"""
+"""Dump command like tool calls from a trace file."""
 
 import argcomplete
 import argparse
@@ -65,7 +61,7 @@ def _bash_via_bat_high_contrast(
 
 
 def _format_command_line(arguments: str) -> str:
-    """Parse run_process arguments and return a displayable command string.
+    """Parse run_bash arguments and return a displayable command string.
 
     Supports three modes:
     - argv: Array of arguments (quoted if they contain whitespace)
@@ -89,7 +85,7 @@ def _format_command_line(arguments: str) -> str:
     command = obj.get("command")  # legacy name
 
     if command_line and argv:
-        raise ValueError("Ambiguous run_process - both command_line and argv are set")
+        raise ValueError("Ambiguous both command_line and argv are set")
 
     if command_line:
         return command_line
@@ -125,8 +121,8 @@ def _quote_argv_element(element: str) -> str:
     return f'"{escaped}"'
 
 
-def _extract_run_process_calls(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
-    """Extract all run_process / run_command tool calls from messages.
+def _extract_run_bash_calls(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    """Extract all command tool calls from messages.
 
     Args:
         messages: The messages array from a trace file's request_body.
@@ -196,10 +192,10 @@ def load_trace_messages(trace_file: Path) -> list[dict[str, Any]]:
 
 
 def dump_commands(commands: list[dict[str, Any]], plain_text: bool) -> None:
-    """Render a numbered list of run_process commands with syntax highlighting.
+    """Render a numbered list of commands with syntax highlighting.
 
     Args:
-        commands: List of command dicts from _extract_run_process_calls().
+        commands: List of command dicts
         plain_text: If True, output without colors or panel borders.
     """
     if plain_text:
@@ -208,7 +204,7 @@ def dump_commands(commands: list[dict[str, Any]], plain_text: bool) -> None:
         console = _console
 
     if not commands:
-        console.print("[dim]No run_process commands found.[/]")
+        console.print("[dim]No commands found.[/]")
         return
 
     for idx, cmd_info in enumerate(commands, start=1):
@@ -235,7 +231,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         Parsed namespace with trace_file and plain_text attributes.
     """
     parser = argparse.ArgumentParser(
-        description="Dump run_process commands from a trace file.",
+        description="Dump commands from a trace file.",
     )
     parser.add_argument(
         "trace_file",
@@ -259,7 +255,7 @@ def main() -> None:
 
     trace_file = Path(args.trace_file)
     messages = load_trace_messages(trace_file)
-    commands = _extract_run_process_calls(messages)
+    commands = _extract_run_bash_calls(messages)
     dump_commands(commands, plain_text=args.plain_text)
 
 

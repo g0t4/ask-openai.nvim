@@ -1,10 +1,10 @@
 import json
 import pytest
 
-from tools.chat_viewer.run_process_formatter import (
+from tools.chat_viewer.run_bash_formatter import (
     format_heredoc_stdin,
     commandline_equivalent_for_argv,
-    format_run_process_command,
+    format_run_bash_command,
 )
 
 class TestFormatArgv:
@@ -48,32 +48,32 @@ class TestFormatRunProcessCommand:
 
     def test_argv_transformed(self):
         args = json.dumps({"argv": ["git", "commit", "-m", "here is my message"]})
-        assert format_run_process_command(args) == 'git commit -m "here is my message"'
+        assert format_run_bash_command(args) == 'git commit -m "here is my message"'
 
     def test_command_line__returns_verbatim(self):
         args = json.dumps({"command_line": "ls -la | grep foo"})
-        assert format_run_process_command(args) == "ls -la | grep foo"
+        assert format_run_bash_command(args) == "ls -la | grep foo"
 
     def test_legacy_command__returns_verbatim(self):
         args = json.dumps({"command": "ls"})
-        assert format_run_process_command(args) == "ls"
+        assert format_run_bash_command(args) == "ls"
 
     def test_both_argv_and_command_line__raises_ValueError(self):
         """Should raise ValueError when both are set."""
         args = json.dumps({"command_line": "ls", "argv": ["ls"]})
-        with pytest.raises(ValueError, match="Ambiguous run_process"):
-            format_run_process_command(args)
+        with pytest.raises(ValueError, match="Ambiguous run_bash"):
+            format_run_bash_command(args)
 
     def test_entirely_missing__raises_ValueError(self):
         """Should raise ValueError when no command found."""
         args = json.dumps({"unknown": "value"})
         with pytest.raises(ValueError, match="No command found"):
-            format_run_process_command(args)
+            format_run_bash_command(args)
 
     def test_invalid_json__raises_JSONDecodeError(self):
         """Should raise JSONDecodeError for invalid JSON."""
         with pytest.raises(json.JSONDecodeError):
-            format_run_process_command("not valid json")
+            format_run_bash_command("not valid json")
 
 
 class TestFormatHeredocStdin:
