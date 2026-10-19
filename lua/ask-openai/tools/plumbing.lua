@@ -106,20 +106,20 @@ function M.flatten_tool_result_to_text(result)
     local structured = result.structuredContent
     if type(structured) == "table" then
         local function format_structured_entry(key_raw, value)
-            local key = key_raw:upper()
+            local display_key = key_raw:upper()
             if type(value) == "string" and value ~= "" then
                 if value:find("\n") then
-                    return key .. ":\n" .. value
+                    return display_key .. ":\n" .. value
                 else
                     -- if value is single line then put it right after the key
-                    return key .. ": " .. value
+                    return display_key .. ": " .. value
                 end
             elseif type(value) == "number" or type(value) == "boolean" then
-                return key .. ": " .. tostring(value)
+                return display_key .. ": " .. tostring(value)
             elseif type(value) == "table" then
                 -- nested tables are now used intentionally (e.g. background task results);
                 -- just inspect them inline rather than warning
-                return key .. ": " .. vim.inspect(value)
+                return display_key .. ": " .. vim.inspect(value)
             end
         end
 

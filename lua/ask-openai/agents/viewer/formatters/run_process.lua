@@ -94,15 +94,15 @@ function M.format(lines, tool_call, message)
         local structuredContent = tool_call.call_output.result.structuredContent
         local keys = vim.tbl_keys(structuredContent)
         log:info("structuredContent", structuredContent)
-        for _, key in ipairs(keys) do
-            local value = structuredContent[key]
+        for _, key_raw in ipairs(keys) do
+            local value = structuredContent[key_raw]
             if type(value) ~= "string" then
-                log:warn("unexpected value type in run_bash/run_xonsh formatter... heads up in case you want to handle it different, key:" .. key, ", value:", value)
+                log:warn("unexpected value type in run_bash/run_xonsh formatter... heads up in case you want to handle it different, key:" .. key_raw, ", value:", value)
                 value = vim.inspect(value)
             end
             local skip = value == vim.NIL
             if not skip then
-                local display_key = key:upper()
+                local display_key = key_raw:upper()
                 if display_key == "STDOUT" or display_key == "STDERR" then
                     lines:append_text_fold_if_long(display_key, tostring(value))
                 else
