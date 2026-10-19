@@ -121,19 +121,7 @@ describe("Test format_notification_message", function()
         end)
     end)
 
-    describe("run_process delegation", function()
-        it("delegates to argv_formatter for run_process with command_line", function()
-            local msg = 'Running tool: run_process args={"command_line": "ls -la | grep foo"}'
-            local result = notification_formatter.format_notification_message(msg)
-            assert.are.same("ls -la | grep foo", result)
-        end)
-
-        it("delegates to argv_formatter for run_process with argv", function()
-            local msg = 'Running tool: run_process args={"argv": ["cat", "my file.txt"]}'
-            local result = notification_formatter.format_notification_message(msg)
-            assert.are.same('cat "my file.txt"', result)
-        end)
-
+    describe("run_bash delegation", function()
         it("delegates to argv_formatter for run_bash with command_line", function()
             local msg = 'Running tool: run_bash args={"command_line": "ls -la | grep foo"}'
             local result = notification_formatter.format_notification_message(msg)
