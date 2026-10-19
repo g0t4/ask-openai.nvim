@@ -105,23 +105,30 @@ function M.flatten_tool_result_to_text(result)
     -- Structured content takes precedence; flatten key: value pairs.
     local structured = result.structuredContent
     if type(structured) == "table" then
-        local keys = vim.tbl_keys(structured)
-        for _, key in ipairs(keys) do
-            local value = structured[key]
-            key = key:upper() -- log as uppercase so it stands out in flattened output (mostly for humans like me... i.e. STDOUT/STDERR/EXIT_CODE)
+        local function format_structured_entry(key_raw, value)
+            local key = key_raw:upper()
             if type(value) == "string" and value ~= "" then
                 if value:find("\n") then
-                    parts[#parts + 1] = key .. ":\n" .. value
+                    return key .. ":\n" .. value
                 else
                     -- if value is single line then put it right after the key
-                    parts[#parts + 1] = key .. ": " .. value
+                    return key .. ": " .. value
                 end
             elseif type(value) == "number" or type(value) == "boolean" then
-                parts[#parts + 1] = key .. ": " .. tostring(value)
+                return key .. ": " .. tostring(value)
             elseif type(value) == "table" then
                 -- nested tables are now used intentionally (e.g. background task results);
                 -- just inspect them inline rather than warning
-                parts[#parts + 1] = key .. ": " .. vim.inspect(value)
+                return key .. ": " .. vim.inspect(value)
+            end
+        end
+
+        local keys = vim.tbl_keys(structured)
+        for _, key in ipairs(keys) do
+            local value = structured[key]
+            local formatted = format_structured_entry(key, value)
+            if formatted then
+                parts[#parts + 1] = formatted
             end
         end
         local flat = table.concat(parts, "\n\n")
