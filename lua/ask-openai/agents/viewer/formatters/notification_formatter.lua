@@ -128,7 +128,7 @@ end
 --- Recognizes the "Running tool: <name> args=<args>" format and dispatches
 --- to the appropriate tool-specific formatter.
 ---
---- For `run_process`, delegates to argv_formatter.format_progress_message()
+--- For `run_bash`, delegates to argv_formatter.format_progress_message()
 --- since it already handles the complex argv/command_line formatting.
 ---
 --- Unknown tools or unrecognized formats fall back to returning the original message.
@@ -148,10 +148,9 @@ function M.format_notification_message(msg)
         return msg
     end
 
-    -- run_process/run_bash delegate to argv_formatter (it's not a simple single-arg
+    -- run_bash delegate to argv_formatter (it's not a simple single-arg
     -- tool, so it isn't in tool_formatters; handle it before the formatter lookup bails).
-    -- run_bash is the new name, run_process is kept so old traces still display correctly.
-    if tool_name == "run_process" or tool_name == "run_bash" then
+    if tool_name == "run_bash" then
         -- Pass the extracted args string (JSON), not the full "Running tool:" line;
         -- argv_formatter.format_progress_message expects a bare JSON args string.
         return argv_formatter.format_progress_message(args_str)

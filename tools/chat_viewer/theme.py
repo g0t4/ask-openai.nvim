@@ -46,8 +46,8 @@ TOOL_ICONS = {
     #       
     # "run_command": "⚡", # I liked this too "zap"
     "run_command": " ", #   \uf489
-    # "run_process": "⚡",
     "run_process": " ", #   \uf489
+    "run_bash": " ", #   \uf489
 
     "run_xonsh": "🐚",
     "run_in_neovim": " ", # \uf36f

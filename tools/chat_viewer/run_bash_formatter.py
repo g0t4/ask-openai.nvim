@@ -62,7 +62,7 @@ def format_run_bash_command(arguments: str) -> str:
 
     if command_line and argv:
         # legacy mode in run_process (pre-run_bash rename)
-        raise ValueError("Ambiguous run_bash")
+        raise ValueError("Ambiguous run_bash (both command_line and argv set)")
 
     if command_line:
         return command_line

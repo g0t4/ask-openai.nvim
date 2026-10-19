@@ -33,7 +33,7 @@ from copy import deepcopy
 from tools.chat_viewer.markdown_utils import split_h2_markdown_sections
 from tools.chat_viewer.markdown_inline import style_markdown_text
 from tools.chat_viewer.tree_wrapper import TreeWrapper
-from tools.chat_viewer.run_process_formatter import commandline_equivalent_for_argv, format_heredoc_stdin
+from tools.chat_viewer.run_bash_formatter import commandline_equivalent_for_argv, format_heredoc_stdin
 from tools.chat_viewer.xonsh_formatter import parse_run_xonsh_arguments
 from tools.chat_viewer.timings import ModelTimings, parse_timings, format_stats_line, format_timings_display, _humanize_float, _humanize_int, detect_cache_misses
 from tools.chat_viewer.timing_utils import parse_tool_call_timings
@@ -1086,7 +1086,7 @@ def _commandline_via_bat_high_contrast(
     plain: bool = True,
 ):
     # material overhead like 20ms per call to bat... fine for now as the thread viewer loads super fast for now
-    #  ~400ms => 800ms for 90 message thread (most tool calls were run_process)
+    #  ~400ms => 800ms for 90 message thread (most tool calls were run_bash)
 
     cmd = [
         "bat",
@@ -1124,7 +1124,7 @@ def _json(data: dict) -> Syntax:
     return _syntax(pretty, "json")
 
 
-def _add_run_command_and_run_process(arguments: str, call_tree: TreeWrapper):
+def add_run_bash__and_legacy_shell_tools(arguments: str, call_tree: TreeWrapper):
     try:
         obj = json.loads(arguments)
         # child.add(_json(loaded)) # debugging
@@ -1139,7 +1139,7 @@ def _add_run_command_and_run_process(arguments: str, call_tree: TreeWrapper):
             command = yank(obj, "command", None)
 
             if command_line and argv:
-                raise ValueError("Ambiguous run_process - both command_line and argv are set")
+                raise ValueError("Ambiguous run_bash - both command_line and argv are set")
             if command_line:
                 return command_line
             if argv:
@@ -1220,9 +1220,9 @@ def add_tool_call_request(func_name: str, arguments: str, tree: TreeWrapper):
     if func_name == "apply_patch":
         return _add_apply_patch(arguments, tree)
 
-    if func_name in ("run_command", "run_process", "run_bash"):
+    if func_name in ("run_bash", "run_process", "run_command"):
         child = tree.add(format_call_title(func_name))
-        return _add_run_command_and_run_process(arguments, child)
+        return add_run_bash__and_legacy_shell_tools(arguments, child)
 
     if func_name == "run_xonsh":
         child = tree.add(format_call_title(func_name))

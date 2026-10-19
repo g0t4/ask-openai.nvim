@@ -202,7 +202,7 @@ class TestExtractPathsFromMessage:
             "role": "assistant",
             "tool_calls": [{
                 "function": {
-                    "name": "run_process",
+                    "name": "run_bash",
                     "arguments": json.dumps({
                         "command_line": "cd ~/repos/github/g0t4/ask-openai.nvim && git mv file1 file2"
                     })
@@ -218,7 +218,7 @@ class TestExtractPathsFromMessage:
             "role": "assistant",
             "tool_calls": [{
                 "function": {
-                    "name": "run_process",
+                    "name": "run_bash",
                     "arguments": "cd ~/repos/github/g0t4/ask-openai.nvim && git mv file1 file2"
                 }
             }]

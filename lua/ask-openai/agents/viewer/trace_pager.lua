@@ -32,9 +32,6 @@ local function setup_trace_keymaps(bufnr)
     --  na => next assistant message
     --   n/p to move
     --
-    -- PRN add more keymaps like
-    --   nc for next command (run_process)?
-    --
     vim.keymap.set("n", "q", "", vim.tbl_extend("force", base_opts, {
         callback = function()
             -- in my other viewers I have q mapped this way, else I'd just use my normal F9

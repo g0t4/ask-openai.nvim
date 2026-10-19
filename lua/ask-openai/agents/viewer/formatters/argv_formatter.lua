@@ -30,7 +30,7 @@ function M.commandline_equivalent_for_argv(argv)
     return table.concat(quoted, " ")
 end
 
---- Parse run_process arguments and return a displayable command string.
+--- Parse run_bash arguments and return a displayable command string.
 ---
 --- Supports three modes:
 --- - argv: Array of arguments (quoted if they contain whitespace)
@@ -38,7 +38,6 @@ end
 ---
 ---@param args_json string: JSON string of arguments from the tool call.
 ---@return string: A formatted command string ready for display.
----@error string: "Ambiguous run_process - both command_line and argv are set" or "No command found"
 function M.format_run_bash_command(args_json)
     local ok, obj = pcall(function()
         return vim.json.decode(args_json)
@@ -52,7 +51,7 @@ function M.format_run_bash_command(args_json)
     local command = obj.command -- legacy name
 
     if command_line and #argv > 0 then
-        error("Ambiguous run_process - both command_line and argv are set")
+        error("Ambiguous run_bash - both command_line and argv are set")
     end
 
     if command_line then
@@ -68,20 +67,20 @@ function M.format_run_bash_command(args_json)
 end
 
 --- Attempt to parse a progress message and format it as a command line if possible.
---- This is used to format progress messages from run_process tool calls
+--- This is used to format progress messages from run_bash tool calls
 --- so they display as readable commands instead of raw JSON.
 ---
 ---@param msg string: The progress message string.
 ---@return string: The formatted command if parseable, otherwise the original message.
 function M.format_progress_message(msg)
-    -- Quick check: does this look like it could be run_process args?
+    -- Quick check: does this look like it could be run_bash args?
     -- We check for common key names before attempting full JSON decode
     local is_likely_json = msg:match("^%s*{") ~= nil
     if not is_likely_json then
         return msg
     end
 
-    -- Check if it contains run_process-related keys before decoding
+    -- Check if it contains run_bash-related keys before decoding
     local has_command_line = msg:match("command_line") ~= nil
     local has_argv = msg:match("argv") ~= nil
     local has_command = msg:match("command") ~= nil

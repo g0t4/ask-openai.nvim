@@ -92,7 +92,7 @@ function M.render_progress(lines, tool_call, is_done)
 
         for i = start_idx, num_progress do
             local msg = tool_call.progress_notifications[i]
-            -- Try argv_formatter first (for JSON-style run_process args)
+            -- Try argv_formatter first (for JSON args)
             local formatted_msg = require("ask-openai.agents.viewer.formatters.argv_formatter").format_progress_message(msg)
             -- Try notification_formatter if argv_formatter didn't change the message
             if formatted_msg == msg then

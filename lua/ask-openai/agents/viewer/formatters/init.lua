@@ -1,4 +1,4 @@
-local run_process = require("ask-openai.agents.viewer.formatters.run_bash")
+local run_bash = require("ask-openai.agents.viewer.formatters.run_bash")
 local run_xonsh = require("ask-openai.agents.viewer.formatters.run_xonsh")
 local run_in_neovim = require("ask-openai.agents.viewer.formatters.run_in_neovim")
 local delegate = require("ask-openai.agents.viewer.formatters.delegate")
@@ -11,8 +11,8 @@ local M = {}
 
 ---@type table<string, ToolCallFormatter>
 local formatters_by_function_name = {
-    ["run_process"] = run_process.format,
-    ["run_bash"] = run_process.format,
+    ["run_process"] = run_bash.format,
+    ["run_bash"] = run_bash.format,
     ["run_xonsh"] = run_xonsh.format,
     ["run_in_neovim"] = run_in_neovim.format,
     ["delegate"] = delegate.format,
