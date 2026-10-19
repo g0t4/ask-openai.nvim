@@ -778,4 +778,10 @@ describe("FakeModelServer - AgentsFrontend integration", function()
         assert.is_not_nil(frontend.queued_section_start_line_base0,
             "queued_section_start_line_base0 should be set")
     end)
+
+    it("run_bash with background=True shows when tool call is done", function()
+        -- TODO
+
+    end)
+
 end)
