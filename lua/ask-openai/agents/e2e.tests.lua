@@ -53,11 +53,11 @@ for name, tool in pairs(mcp_tools.tools_available or {}) do
 end
 print("========================================\n")
 
--- * Assert: run_process tool must be available for this test
-local has_run_process_tool = mcp_tools.tools_available["run_process"] ~= nil
+-- * Assert: run_bash tool must be available for this test
+local has_run_bash_tool = mcp_tools.tools_available["run_bash"] ~= nil
 assert.is_true(
-    has_run_process_tool,
-    "MCP tools must include 'run_process' for this test. Available tools:\n"
+    has_run_bash_tool,
+    "MCP tools must include 'run_bash' for this test. Available tools:\n"
     .. table.concat(vim.tbl_keys(mcp_tools.tools_available or {}), ", ")
 )
 
@@ -112,7 +112,7 @@ local function extract_assistant_response(bufnr)
 end
 
 describe("E2E - AskAgent /tools with date question", function()
-    it("should use run_process tool to get date and show green checkmark", function()
+    it("should use run_bash tool to get date and show green checkmark", function()
         -- * Setup: ensure plugin is loaded and configured for agents mode
         local frontend = require("ask-openai.agents.frontend")
 
@@ -120,8 +120,8 @@ describe("E2E - AskAgent /tools with date question", function()
         config.set_agents_model(config.get_agents_model() or "qwen")
 
         -- * Action: invoke the AskAgent command with tools and a date question
-        --   Prompt explicitly asks to use the run_process tool
-        local user_prompt = "use the run_process tool to run 'date' and show me today's date"
+        --   Prompt explicitly asks to use the run_bash tool
+        local user_prompt = "use the run_bash tool to run 'date' and show me today's date"
         vim.cmd(string.format("AskAgent /tools %s", user_prompt))
 
         -- * Wait for the agent to finish processing
@@ -178,11 +178,11 @@ describe("E2E - AskAgent /tools with date question", function()
         )
 
         -- * Assert: response should contain tool-related content
-        local has_tool_reference = full_buffer:match("run_process")
+        local has_tool_reference = full_buffer:match("run_bash")
             or full_buffer:match("date")
         assert.is_not_nil(
             has_tool_reference,
-            "Response should reference the run_process tool or date. Full buffer:\n" .. full_buffer
+            "Response should reference the run_bash tool or date. Full buffer:\n" .. full_buffer
         )
     end)
 end)
@@ -192,8 +192,8 @@ describe("E2E - AskAgent queued user message in dedicated input window", functio
         local frontend = require("ask-openai.agents.frontend")
 
         -- * Start a request that uses a slow tool so there is time to type while it runs.
-        --   The agent runs `sleep 4` (via run_process) which gives us a window to queue.
-        local user_prompt = "use the run_process tool to run 'sleep 4 && date' and then tell me today's date"
+        --   The agent runs `sleep 4` (via run_bash) which gives us a window to queue.
+        local user_prompt = "use the run_bash tool to run 'sleep 4 && date' and then tell me today's date"
         vim.cmd(string.format("AskAgent /tools %s", user_prompt))
 
         -- * Wait for the agent to start running

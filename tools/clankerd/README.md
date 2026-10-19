@@ -4,7 +4,7 @@ The primary brain daemon for ask-openai. It listens to live/final speech
 transcriptions from the `voiced` daemon and takes action using a LangChain
 agent with MCP tools:
 
-- **run_process** - shell commands with background support, process status,
+- **run_bash** - shell commands with background support, process status,
   completion notifications
 - **run_xonsh** - execute Python + shell through Xonsh
 - **delegate** - spawn subagents (optionally background), then
@@ -47,7 +47,7 @@ are delivered as sequential follow-up runs. This means:
 ## Background tasks & rest
 
 When clanker fires off a background task (`delegate(background=True)`,
-`run_process(background=True)`, or `run_xonsh(background=True)`), it can
+`run_bash(background=True)`, or `run_xonsh(background=True)`), it can
 rest — it doesn't need to poll. When the task completes, a
 `background/done` notification triggers a new agent turn with the result
 as context. This keeps clanker responsive to new voice input.
