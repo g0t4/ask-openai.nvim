@@ -84,7 +84,6 @@ end
 ---@return OpenAIChatCompletion_ToolResult_TxChatMessage
 function TxChatMessage:tool_completion(tool_call_id, content, notification)
     -- FYI like tool_result() this is a role="tool" message, but it is NOT a direct
-    -- result for the tool_call_id (the run_process call already got its PID result).
     -- It's an async completion notice injected after the agent's turn so the model
     -- knows to call process_status. gptoss/llama-server correlates on the last tool
     -- call name and tolerates this; strict OpenAI backends may not.
