@@ -85,7 +85,7 @@ end
 --- content renders as labeled text); strings are shown verbatim.
 ---@param result any
 ---@return string
-local function format_result_for_display(result)
+local function format_background_done_result_for_display(result)
     if type(result) == "table" then
         return plumbing.flatten_tool_result_to_text(result)
     end
@@ -118,7 +118,7 @@ local function display_tool_completion_in_chat(message)
             lines:append_styled_text(format_value_for_display(params.error), HLGroups.TOOL_FAILED)
         end
         if params.result ~= nil then
-            lines:append_text(format_result_for_display(params.result))
+            lines:append_text(format_background_done_result_for_display(params.result))
         end
     else
         lines:append_line("tool")
