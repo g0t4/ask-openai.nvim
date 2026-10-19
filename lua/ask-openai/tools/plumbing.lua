@@ -124,6 +124,8 @@ function M.flatten_tool_result_to_text(result)
         end
 
         local keys = vim.tbl_keys(structured)
+        -- FYI order is not guaranteed to be preserved... that's fine for now...
+        -- PRN add explicit order preferences per tool?
         for _, key in ipairs(keys) do
             local value = structured[key]
             local formatted = format_structured_entry(key, value)
