@@ -111,8 +111,7 @@ function M.flatten_key_value_pairs(what)
     -- FYI order is not guaranteed to be preserved... that's fine for now...
     -- PRN add explicit order preferences per tool?
     local parts = {}
-    for _, key in ipairs(keys) do
-        local value = what[key]
+    for key, value in pairs(what) do
         local formatted = format_structured_entry(key, value)
         if formatted then
             parts[#parts + 1] = formatted
