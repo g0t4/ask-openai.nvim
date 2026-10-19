@@ -90,14 +90,14 @@ describe("FakeModelServer - chunk builders", function()
     it("tool_call_chunk builds a tool call SSE chunk", function()
         local chunk = fake.tool_call_chunk({
             id = "call_123",
-            name = "run_process",
+            name = "run_bash",
             arguments = '{"cmd":"date"}',
         })
 
         local tool_call = chunk.choices[1].delta.tool_calls[1]
         assert.are.same("call_123", tool_call.id)
         assert.are.same("function", tool_call.type)
-        assert.are.same("run_process", tool_call["function"].name)
+        assert.are.same("run_bash", tool_call["function"].name)
         assert.are.same('{"cmd":"date"}', tool_call["function"].arguments)
     end)
 
@@ -217,7 +217,7 @@ describe("FakeModelServer - spawn with synchronous delivery", function()
         fake.script("tool_call", {
             fake.tool_call_chunk({
                 id = "call_1",
-                name = "run_process",
+                name = "run_bash",
                 arguments = '{"cmd":',
             }),
             fake.tool_call_args_chunk('"date"}', 0),
@@ -243,7 +243,7 @@ describe("FakeModelServer - spawn with synchronous delivery", function()
         local first_chunk = received_chunks[1]
         local tool_call_delta = first_chunk.choices[1].delta.tool_calls[1]
         assert.are.same("call_1", tool_call_delta.id)
-        assert.are.same("run_process", tool_call_delta["function"].name)
+        assert.are.same("run_bash", tool_call_delta["function"].name)
     end)
 
     it("invokes on_request_started hook before delivering chunks", function()
@@ -557,7 +557,7 @@ describe("FakeModelServer - AgentsFrontend integration", function()
         fake.script("tool_calls", {
             fake.tool_call_chunk({
                 id = "call_abc",
-                name = "run_process",
+                name = "run_bash",
                 arguments = '{"cmd":',
             }),
             fake.tool_call_args_chunk('"date"}', 0),
@@ -583,7 +583,7 @@ describe("FakeModelServer - AgentsFrontend integration", function()
 
         local tool_call = rx_message.tool_calls[1]
         assert.are.same("call_abc", tool_call.id)
-        assert.are.same("run_process", tool_call["function"].name)
+        assert.are.same("run_bash", tool_call["function"].name)
         assert.are.same('{"cmd":"date"}', tool_call["function"].arguments)
     end)
 
@@ -691,7 +691,7 @@ describe("FakeModelServer - AgentsFrontend integration", function()
         fake.script("tool_flow", {
             fake.tool_call_chunk({
                 id = "call_1",
-                name = "run_process",
+                name = "run_bash",
                 arguments = '{"cmd":"date"}',
             }),
             finish_chunk_with_timings("tool_calls"),
