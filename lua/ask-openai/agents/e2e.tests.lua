@@ -216,7 +216,7 @@ describe("E2E - AskAgent queued user message in dedicated input window", functio
         frontend.send_user_message_from_user_input_window()
 
         -- * Assert the message was queued (agent is still running)
-        assert.are.same({ queued_text }, frontend.queued_user_messages,
+        assert.are.same({{ role = "user", content = queued_text }}, frontend.queued_messages,
             "Typed message should be queued while the agent is running")
 
         -- * Assert the queued message is shown pinned at the bottom of the chat window
@@ -234,7 +234,7 @@ describe("E2E - AskAgent queued user message in dedicated input window", functio
         assert.is_true(finished, "Agent did not finish within timeout")
 
         -- * After delivery the queue should be drained
-        assert.are.same({}, frontend.queued_user_messages,
+        assert.are.same({}, frontend.queued_messages,
             "Queued messages should be delivered (drained) after the agent finishes")
 
         -- * Assert the queued message is still visible as a user message after delivery
