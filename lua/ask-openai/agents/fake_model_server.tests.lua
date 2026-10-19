@@ -50,6 +50,12 @@ local function finish_chunk_with_timings(finish_reason)
     })
 end
 
+-- ****************************************************************************
+-- * PART A: fixture self-tests.
+-- * These exercise the fake_model_server test double itself (its chunk
+-- * builders, install/uninstall of curl.spawn, delivery mechanics, and script
+-- * bookkeeping) rather than the real agent code.
+-- ****************************************************************************
 describe("FakeModelServer - chunk builders", function()
     it("content_chunk builds a valid SSE chunk", function()
         local chunk = fake.content_chunk("Hello", "assistant")
@@ -450,6 +456,12 @@ local function create_mock_chat_window()
     return chat_window
 end
 
+-- ****************************************************************************
+-- * PART B: real integration tests.
+-- * These drive the actual agent code paths (frontend.then_get_assistant_response,
+-- * AgentTrace accumulation, SSE parsing, tool router, queued messages) with the
+-- * fake server injected in place of curl.spawn.
+-- ****************************************************************************
 describe("FakeModelServer - AgentsFrontend integration", function()
     local frontend
 
