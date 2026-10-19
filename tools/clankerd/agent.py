@@ -1,12 +1,5 @@
 """LangChain agent setup for clankerd.
 
-Builds the primary brain agent with MCP tools:
-  - run_process  (background-able commands, status, notify, kill)
-  - run_xonsh    (xonsh shell + python)
-  - delegate     (spawn a subagent, optionally background)
-  - delegate_status / delegate_stop
-  - speak        (text-to-speech with the user's cloned voice)
-
 Uses persistent MCP sessions so background notifications (background/status,
 background/done) can be received after tool calls return.
 """
@@ -123,8 +116,7 @@ class ClankerClientSession(ClientSession):
 def _default_background(tools: list) -> list:
     """Make `background` default to True on any loaded tool that has it.
 
-    The MCP servers (run_process, run_xonsh, delegate) each ship with
-    `background=False` by default, but clankerd prefers to run everything in
+    The MCP servers ship with `background=False` by default, but clankerd prefers to run everything in
     the background so it stays responsive to voice input and can receive
     background/status and background/done notifications. We patch the pydantic
     field default on the loaded tool's args_schema (and rebuild) so the agent's
