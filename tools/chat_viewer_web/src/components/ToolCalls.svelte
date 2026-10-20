@@ -57,6 +57,10 @@
         return { type: 'code', code: parsed.code, language: 'python' }
       }
 
+      if (name === 'run_in_neovim' && typeof parsed.lua === 'string') {
+        return { type: 'code', code: parsed.lua, language: 'lua' }
+      }
+
       return { type: 'code', code: JSON.stringify(parsed, null, 2), language: 'json' }
     } catch {
       return { type: 'code', code: argsJson, language: 'text' }
