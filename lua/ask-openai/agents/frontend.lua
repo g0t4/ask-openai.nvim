@@ -23,6 +23,7 @@ local MessageBuilder = require("ask-openai.rewrites.message_builder")
 local prompt_parser = require("ask-openai.frontends.context.prompt_parser")
 local HLGroups = require("ask-openai.hlgroups")
 local formatters = require("ask-openai.agents.viewer.formatters")
+local response_stats = require("ask-openai.agents.viewer.response_stats")
 local ToolCallOutput = require("ask-openai.agents.tools.tool_call_output")
 local CurlRequestForTrace = require("ask-openai.agents.curl_request_for_trace")
 local RxAccumulatedMessage = require("ask-openai.agents.messages.rx")
@@ -632,47 +633,17 @@ local function update_ui_chat_viewer(trace)
             lines:append_folded_styled_text(reasoning_content, HLGroups.CHAT_REASONING)
 
             lines:append_text(content)
-            -- Show per-message timings for assistant once complete
-            if rx_message.role == 'assistant' and rx_message.last_sse and rx_message.last_sse.timings then
-                local t = rx_message.last_sse.timings
-                local parts = {}
-
-                if t.cache_n and t.cache_n > 0 then
-                    table.insert(parts, string.format('%d cached', t.cache_n))
-                end
-
-                local input = string.format('in: %d', t.prompt_n or 0)
-                if t.prompt_per_second and t.prompt_per_second > 0 then
-                    input = input .. string.format(' @ %.0f tok/s', t.prompt_per_second)
-                end
-                table.insert(parts, input)
-
-                local output = string.format('out: %d', t.predicted_n or 0)
-                if t.predicted_per_second and t.predicted_per_second > 0 then
-                    output = output .. string.format(' @ %.0f tok/s', t.predicted_per_second)
-                end
-                table.insert(parts, output)
-
-                -- draft token stats
-                if t.draft_n then
-                    local draft = string.format('draft: %d', t.draft_n_accepted)
-                    if t.draft_n_accepted then
-                        local percent = t.draft_n_accepted / t.draft_n * 100
-                        draft = draft .. string.format(' @ %.0f%%', percent)
-                    end
-                    table.insert(parts, draft)
-                end
-
-                if #parts > 0 then
-                    lines:append_styled_text(table.concat(parts, ' | '), HLGroups.CHAT_REASONING)
-                end
-            end
             lines:append_blank_line_if_last_is_not_blank() -- only if reasoning doesn't have trailing \n
         elseif #rx_message.tool_calls == 0 then
             -- gptoss120b - this works:
             --   :AskAgent testing a request, I need you to NOT say anything in response, just stop immediatley
             lines:append_text("[unexpected: empty response]")
             lines:append_blank_line()
+        end
+
+        if rx_message.role == "assistant" and rx_message.last_sse then
+            response_stats.render(lines, rx_message.last_sse)
+            lines:append_blank_line_if_last_is_not_blank()
         end
 
         for _, tool_call in ipairs(rx_message.tool_calls) do
@@ -703,14 +674,12 @@ local function update_ui_chat_viewer(trace)
         if last_message and last_message.last_sse then
             -- log:info("last_message", last_message)
             local last_sse = last_message.last_sse
-            local timings = last_sse.timings
             local footers = {}
             if last_sse.model then
                 table.insert(footers, last_sse.model)
             end
-            if timings then
-                local total_token_count =
-                    (timings.cache_n or 0) + (timings.prompt_n or 0) + (timings.predicted_n or 0)
+            local total_token_count = response_stats.total_tokens(last_sse)
+            if total_token_count then
                 AgentsFrontend.chat_window:set_token_count(total_token_count)
             end
             local footer = table.concat(footers, " | ")

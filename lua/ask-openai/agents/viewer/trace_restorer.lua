@@ -3,6 +3,7 @@ local HLGroups = require("ask-openai.hlgroups")
 local Fold = require("ask-openai.agents.viewer.fold")
 local LinesBuilder = require("ask-openai.agents.viewer.lines_builder")
 local formatters = require("ask-openai.agents.viewer.formatters")
+local response_stats = require("ask-openai.agents.viewer.response_stats")
 local ToolCallOutput = require("ask-openai.agents.tools.tool_call_output")
 local safely = require("ask-openai.helpers.safely")
 local config = require("ask-openai.config")
@@ -288,6 +289,7 @@ local function render_message(lines, msg, tool_results_by_id, should_fold_conten
         if reasoning_content ~= "" or content ~= "" or #tool_calls > 0 then
             lines:append_folded_styled_text(reasoning_content, HLGroups.CHAT_REASONING)
             lines:append_text(content)
+            response_stats.render(lines, msg)
 
             for _, tool_call_data in ipairs(tool_calls) do
                 local synthetic_tool_call = build_synthetic_tool_call(tool_call_data, tool_results_by_id)
