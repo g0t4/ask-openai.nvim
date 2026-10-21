@@ -353,8 +353,10 @@ local function ask_agent_command(opts)
         local reasoning_level = context.includes:get_reasoning_level() or config.get_agents_reasoning_level()
 
         local base_url = config.get_base_url(config_model)
-        local backend = require("ask-openai.backends.discovery").get(base_url).backend
-        local new_trace = AgentTrace:new(model_params.body_for(config_model, generic_body, reasoning_level, backend), base_url)
+        local endpoint_model_info = require("ask-openai.backends.discovery").get(base_url)
+        local request_body = model_params.body_for(config_model, generic_body, reasoning_level,
+            endpoint_model_info.backend, endpoint_model_info.actual_model_name)
+        local new_trace = AgentTrace:new(request_body, base_url)
         AgentsFrontend.trace = new_trace -- FYI `.trace` is intended for rare circumstances only, i.e. cancel action which has no context to pass a trace
         -- log:info("sending", vim.inspect(AgentsFrontend.trace))
         AgentsFrontend.then_get_assistant_response(new_trace)
