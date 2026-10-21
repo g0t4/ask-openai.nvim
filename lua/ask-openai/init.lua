@@ -3,12 +3,7 @@ local M = {}
 local config = require("ask-openai.config")
 local log = require("devtools.logs.logger").universal()
 
----@param user_options? AskOpenAIOptions
-function M.setup(user_options)
-    if user_options ~= nil then
-        vim.notify("user_options are discontinued for now", vim.log.levels.WARN)
-        log:warn("user_options are discontinued for now, you passed:", user_options)
-    end
+function M.setup()
     config.setup()
 
     require("ask-openai.cmdline.suggest").setup()
