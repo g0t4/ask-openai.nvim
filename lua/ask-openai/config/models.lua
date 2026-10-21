@@ -104,7 +104,9 @@ local MODEL_PATTERNS = {
     -- ggml-org/GLM-4.7-Flash-GGUF:Q8_0
     { pattern = "/GLM%-4.7%-Flash",     abbrev = "glm" },
     -- ggml-org/DeepSeek-V4-Flash-0731-GGUF
-    { pattern = "/DeepSeek%-V4%-Flash", abbrev = "deepseek" },
+    { pattern = "/DeepSeek%-V4-Flash", abbrev = "ds4" },
+    -- vllm deepseek-v4.1-flash setup
+    { pattern = "/DeepSeek%-V4.1-Flash", abbrev = "ds4.1" },
     { pattern = "/Muse%-Glimmer",       abbrev = "muse" },
     -- ggml-org/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-GGUF:Q4_K_M
     { pattern = "/NVIDIA%-Nemotron",    abbrev = "nemo-lightning" },
