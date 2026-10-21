@@ -532,3 +532,65 @@ def test_detect_cache_misses_real_trace() -> None:
 
     # Every generation has an expected/actual cache value available.
     assert all(state is not None for state in states[1:])
+
+
+def test_vllm_usage_metrics_keep_distinct_semantics() -> None:
+    from copy import deepcopy
+    response = {
+        "usage": {"prompt_tokens": 100, "completion_tokens": 20, "total_tokens": 120,
+                  "prompt_tokens_details": {"cached_tokens": 80},
+                  "completion_tokens_details": {"reasoning_tokens": 10}},
+        "metrics": {"time_to_first_token_ms": 118.64, "queue_time_ms": 0.02,
+                    "generation_time_ms": 52.29, "mean_itl_ms": 52.29, "tokens_per_second": 11.7,
+                    "speculative_decoding": {"num_draft_tokens": 5, "num_accepted_draft_tokens": 1,
+                                             "draft_acceptance_rate": 0.2, "mean_acceptance_length": 2}},
+    }
+    original = deepcopy(response)
+    parsed = parse_timings(response)
+    assert parsed is not None
+    assert parsed.context_tokens == 120
+    assert parsed.cache_hit_ratio == 0.8
+    assert parsed.prompt_tokens_per_second == 0  # unavailable, never derived from TTFT
+    assert parsed.predicted_tokens_per_second == 0  # overall throughput isn't decode rate
+    text = format_stats_line(parsed)
+    for label in ("in (includes cached): 100", "out: 20", "reasoning: 10", "TTFT: 118.6 ms",
+                  "decode: 52.3 ms", "overall output: 11.7 tok/s", "20.0%", "mean acceptance length: 2.0"):
+        assert label in text
+    assert "ms prompt" not in text
+    assert expected_next_cache(parsed) is None
+    assert response == original
+
+
+def test_vllm_null_metrics_still_show_usage() -> None:
+    parsed = parse_timings({"usage": {"prompt_tokens": 6, "completion_tokens": 2,
+                                     "prompt_tokens_details": None}, "metrics": None})
+    assert parsed is not None
+    text = format_stats_line(parsed)
+    assert "in (includes cached): 6" in text
+    assert "out: 2" in text
+    assert "TTFT" not in text
+    assert "tok/s" not in text
+    assert parsed.context_tokens == 8
+
+
+def test_vllm_cache_is_not_compared_with_llama_cache() -> None:
+    llama = ModelTimings(prompt_tokens=100, predicted_tokens=20, cached_tokens=80)
+    vllm = parse_timings({"usage": {"prompt_tokens": 100, "completion_tokens": 20,
+                                  "prompt_tokens_details": {"cached_tokens": 80}}})
+    assert vllm is not None
+    assert detect_cache_misses([llama, vllm, llama]) == [None, None, None]
+
+
+def test_vllm_null_optional_metrics_do_not_fabricate_values() -> None:
+    parsed = parse_timings({
+        "usage": {"prompt_tokens": 6, "completion_tokens": 2,
+                  "prompt_tokens_details": None, "completion_tokens_details": None},
+        "metrics": {"time_to_first_token_ms": None, "mean_itl_ms": None,
+                    "speculative_decoding": {"num_draft_tokens": 5, "num_accepted_draft_tokens": None}},
+    })
+    assert parsed is not None
+    text = format_stats_line(parsed)
+    assert "5 proposed" in text
+    assert "0 / 5" not in text
+    assert "TTFT" not in text
+    assert "mean ITL" not in text

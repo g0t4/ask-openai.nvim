@@ -76,20 +76,6 @@ CHAT_BOX_LEFT = box.Box(
 )
 
 
-def _parse_timings_from_dict(timings_dict: dict[str, Any] | None) -> ModelTimings | None:
-    if not timings_dict or not isinstance(timings_dict, dict):
-        return None
-    return ModelTimings(
-        prompt_tokens=timings_dict.get("prompt_n", 0),
-        predicted_tokens=timings_dict.get("predicted_n", 0),
-        cached_tokens=timings_dict.get("cache_n"),
-        draft_tokens=timings_dict.get("draft_n"),
-        draft_tokens_accepted=timings_dict.get("draft_n_accepted"),
-        prompt_ms=timings_dict.get("prompt_ms", 0.0),
-        predicted_ms=timings_dict.get("predicted_ms", 0.0),
-        prompt_tokens_per_second=timings_dict.get("prompt_per_second", 0.0),
-        predicted_tokens_per_second=timings_dict.get("predicted_per_second", 0.0),
-    )
 
 
 preapproved_file_patterns: list[re.Pattern] = []
@@ -1259,9 +1245,8 @@ def build_assistant_message(msg: dict, color: str) -> TreeWrapper:
     root = TreeWrapper.hidden_root()
 
     # Show per-message timings if present
-    msg_timings_dict = msg.get("timings")
-    if SHOW_ALL and msg_timings_dict:
-        msg_timings = _parse_timings_from_dict(msg_timings_dict)
+    if SHOW_ALL:
+        msg_timings = parse_timings(msg)
         if msg_timings:
             # Skip the compact one-liner (format_timings_display); the verbose
             # per-second stats + draft acceptance lines below are more useful.
@@ -1427,7 +1412,7 @@ def render_trace_to_console(console, messages, model_name, timings) -> None:
     _console = console
 
     # Detect per-message timings
-    has_message_timings = any(msg.get("role") == "assistant" and msg.get("timings") for msg in messages)
+    has_message_timings = any(msg.get("role") == "assistant" and parse_timings(msg) is not None for msg in messages)
     if has_message_timings:
         # Show model name only, no trace-level timings
         if model_name:
@@ -1443,14 +1428,21 @@ def render_trace_to_console(console, messages, model_name, timings) -> None:
         print_message(message, idx, requests_by_id)
 
     # ProgressBar speed summary for assistant responses
-    assistant_timings = []
-    for idx, msg in enumerate(messages, start=1):
-        if msg.get('role') == 'assistant' and msg.get('timings'):
-            timings = _parse_timings_from_dict(msg.get('timings'))
-            assistant_timings.append((idx, msg, timings))
+    all_assistant_stats = [
+        (idx, msg, parsed)
+        for idx, msg in enumerate(messages, start=1)
+        if msg.get("role") == "assistant" and (parsed := parse_timings(msg)) is not None
+    ]
+    # Keep unlike throughput measurements in separate summaries.
+    assistant_timings = [entry for entry in all_assistant_stats if entry[2].backend == "llama-server"]
+    vllm_stats = [entry for entry in all_assistant_stats if entry[2].backend == "vllm"]
     if assistant_timings:
         print_section_header('Assistant Generation Speed', 'blue')
-        cache_states = detect_cache_misses([t for _, _, t in assistant_timings])
+        all_cache_states = dict(zip(
+            (idx for idx, _, _ in all_assistant_stats),
+            detect_cache_misses([t for _, _, t in all_assistant_stats]),
+        ))
+        cache_states = [all_cache_states[idx] for idx, _, _ in assistant_timings]
         assistant_out_speeds = [t.predicted_tokens_per_second for _, _, t in assistant_timings]
         max_out_speed = max(s for s in assistant_out_speeds)
         assistant_in_speeds = [t.prompt_tokens_per_second for _, _, t in assistant_timings]
@@ -1475,7 +1467,7 @@ def render_trace_to_console(console, messages, model_name, timings) -> None:
         for (idx, msg, timings), cache_state in zip(assistant_timings, cache_states):
             in_speed = ProgressBar(total=max_in_speed, completed=timings.prompt_tokens_per_second, width=40)
             out_speed = ProgressBar(total=max_out_speed, completed=timings.predicted_tokens_per_second, width=40)
-            total_tokens = f"{_humanize_int(timings.cached_tokens + timings.prompt_tokens + timings.predicted_tokens)}"
+            total_tokens = f"{_humanize_int(timings.context_tokens)}"
             generated_tokens = _humanize_int(timings.predicted_tokens)
             cached_tokens = _humanize_int(timings.cached_tokens) if timings.cached_tokens is not None else ''
             if cache_state is None:
@@ -1507,6 +1499,43 @@ def render_trace_to_console(console, messages, model_name, timings) -> None:
             table.add_row("", "", "[bold]total[/]", "", "", "", "", "", f"{_humanize_int(total_generated)}", "", "")
         _console.print(table)
         _console.print()
+    if vllm_stats:
+        print_section_header("vLLM Generations (input includes cached tokens)", "blue")
+        from rich.table import Table
+        counts = Table(show_header=True, box=None, padding=(0, 1))
+        for header in ("message", "input", "cached", "output", "reasoning", "total", "draft accepted", "mean accept len"):
+            counts.add_column(header, justify="right")
+        metrics = Table(show_header=True, box=None, padding=(0, 1))
+        for header in ("message", "TTFT", "queue", "decode", "mean ITL", "overall output (includes prefill)"):
+            metrics.add_column(header, justify="right")
+
+        def optional_number(value, unit=""):
+            return "—" if value is None else f"{_humanize_float(value)}{unit}"
+
+        for idx, _, stats in vllm_stats:
+            ratio = (f"{stats.draft_tokens_accepted}/{stats.draft_tokens}"
+                     if stats.draft_tokens_accepted is not None and stats.draft_tokens is not None else "—")
+            if stats.formatted_acceptance_rate:
+                ratio += f" ({stats.formatted_acceptance_rate})"
+            counts.add_row(
+                f"msg #{idx}", _humanize_int(stats.prompt_tokens),
+                "—" if stats.cached_tokens is None else _humanize_int(stats.cached_tokens),
+                _humanize_int(stats.predicted_tokens),
+                "—" if stats.reasoning_tokens is None else _humanize_int(stats.reasoning_tokens),
+                _humanize_int(stats.context_tokens), ratio, optional_number(stats.mean_acceptance_length),
+            )
+            metrics.add_row(
+                f"msg #{idx}", optional_number(stats.time_to_first_token_ms, "ms"),
+                optional_number(stats.queue_time_ms, "ms"), optional_number(stats.generation_time_ms, "ms"),
+                optional_number(stats.mean_itl_ms, "ms"),
+                optional_number(stats.overall_output_tokens_per_second, " tok/s"),
+            )
+        counts.add_row("total output", "", "", _humanize_int(sum(s.predicted_tokens for _, _, s in vllm_stats)))
+        _console.print(counts)
+        _console.print()
+        _console.print(metrics)
+        _console.print()
+
     # show summaries at end since command line the last part shows first (unlike web viewer where summary is best at top)
     fim_diff = find_fim_diff(messages)
     if fim_diff:

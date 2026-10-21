@@ -18,6 +18,25 @@ class ModelTimings:
     prompt_tokens_per_second: float = 0.0
     predicted_tokens_per_second: float = 0.0
 
+    backend: str = "llama-server"
+    time_to_first_token_ms: float | None = None
+    queue_time_ms: float | None = None
+    generation_time_ms: float | None = None
+    mean_itl_ms: float | None = None
+    overall_output_tokens_per_second: float | None = None
+    reasoning_tokens: int | None = None
+    mean_acceptance_length: float | None = None
+    reported_draft_acceptance_rate: float | None = None
+
+    @property
+    def input_tokens(self) -> int:
+        """vLLM prompt usage includes cached input; llama-server prompt_n does not."""
+        return self.prompt_tokens + ((self.cached_tokens or 0) if self.backend == "llama-server" else 0)
+
+    @property
+    def context_tokens(self) -> int:
+        return self.input_tokens + self.predicted_tokens
+
     @property
     def total_tokens(self) -> int:
         """Total tokens = prompt + predicted."""
@@ -26,9 +45,9 @@ class ModelTimings:
     @property
     def cache_hit_ratio(self) -> float | None:
         """Ratio of cached tokens to total input tokens (if cache available)."""
-        if self.cached_tokens is None or self.total_tokens == 0:
+        if self.cached_tokens is None or self.input_tokens == 0:
             return None
-        return self.cached_tokens / (self.prompt_tokens + self.cached_tokens)
+        return self.cached_tokens / self.input_tokens
 
     @property
     def formatted_cache_ratio(self) -> str | None:
@@ -49,7 +68,11 @@ class ModelTimings:
             Acceptance rate as a percentage (0-100), or None if draft data
             is unavailable or draft_tokens is zero.
         """
+        if self.reported_draft_acceptance_rate is not None:
+            return self.reported_draft_acceptance_rate * 100
         if self.draft_tokens is None or self.draft_tokens == 0:
+            return None
+        if self.backend == "vllm" and self.draft_tokens_accepted is None:
             return None
         accepted = self.draft_tokens_accepted or 0
         return (accepted / self.draft_tokens) * 100
@@ -101,7 +124,7 @@ def expected_next_cache(prev: ModelTimings) -> int | None:
 
     Returns None if the prior generation has no cache data to carry forward.
     """
-    if prev.cached_tokens is None:
+    if prev.backend != "llama-server" or prev.cached_tokens is None:
         return None
     return prev.cached_tokens + prev.prompt_tokens + prev.predicted_tokens
 
@@ -125,7 +148,7 @@ def detect_cache_misses(
     states: list[CacheState | None] = []
     prev: ModelTimings | None = None
     for timings in timings_list:
-        if prev is None:
+        if prev is None or timings.backend != "llama-server":
             states.append(None)
         else:
             expected = expected_next_cache(prev)
@@ -159,7 +182,29 @@ def parse_timings(last_sse: dict[str, Any] | None) -> ModelTimings | None:
 
     timings = last_sse.get("timings")
     if not timings or not isinstance(timings, dict):
-        return None
+        usage = last_sse.get("usage")
+        if not isinstance(usage, dict) or not usage:
+            return None
+        metrics = last_sse.get("metrics") or {}
+        prompt_details = usage.get("prompt_tokens_details") or {}
+        completion_details = usage.get("completion_tokens_details") or {}
+        speculative = metrics.get("speculative_decoding") or {}
+        return ModelTimings(
+            backend="vllm",
+            prompt_tokens=usage.get("prompt_tokens") or 0,
+            predicted_tokens=usage.get("completion_tokens") or 0,
+            cached_tokens=prompt_details.get("cached_tokens"),
+            reasoning_tokens=completion_details.get("reasoning_tokens"),
+            time_to_first_token_ms=metrics.get("time_to_first_token_ms"),
+            queue_time_ms=metrics.get("queue_time_ms"),
+            generation_time_ms=metrics.get("generation_time_ms"),
+            mean_itl_ms=metrics.get("mean_itl_ms"),
+            overall_output_tokens_per_second=metrics.get("tokens_per_second"),
+            draft_tokens=speculative.get("num_draft_tokens"),
+            draft_tokens_accepted=speculative.get("num_accepted_draft_tokens"),
+            reported_draft_acceptance_rate=speculative.get("draft_acceptance_rate"),
+            mean_acceptance_length=speculative.get("mean_acceptance_length"),
+        )
 
     return ModelTimings(
         prompt_tokens=timings.get("prompt_n", 0),
@@ -209,13 +254,19 @@ def format_timings_display(timings: ModelTimings | None) -> str:
     parts: list[str] = []
     
     # Token counts: total + cached + prompt vs predicted breakdown
-    token_parts = [f"{_humanize_int(timings.total_tokens)} tokens"]
+    token_parts = [f"{_humanize_int(timings.context_tokens)} tokens"]
     
     if timings.cached_tokens is not None and timings.cached_tokens > 0:
         token_parts.insert(0, f"{_humanize_int(timings.cached_tokens)} cached")
     
     parts.append(" ".join(token_parts))
     
+    if timings.backend == "vllm":
+        if timings.time_to_first_token_ms is not None:
+            parts.append(f"{_humanize_float(timings.time_to_first_token_ms)}ms TTFT")
+        if timings.generation_time_ms is not None:
+            parts.append(f"{_humanize_float(timings.generation_time_ms)}ms decode")
+
     # Add timing info
     if timings.prompt_ms > 0:
         parts.append(f"{_humanize_float(timings.prompt_ms, 0)}ms prompt")
@@ -245,6 +296,22 @@ def format_stats_line(timings: ModelTimings | None, color: str = "dim") -> str:
     if timings.cached_tokens is not None and timings.cached_tokens > 0:
         lines.append(f"[{color}]cached: {_humanize_int(timings.cached_tokens)} tokens[/]")
 
+    if timings.backend == "vllm":
+        lines.append(f"[{color}]in (includes cached): {_humanize_int(timings.prompt_tokens)} tokens[/]")
+        lines.append(f"[{color}]out: {_humanize_int(timings.predicted_tokens)} tokens[/]")
+        if timings.reasoning_tokens is not None:
+            lines.append(f"[{color}]reasoning: {_humanize_int(timings.reasoning_tokens)} tokens[/]")
+        for label, value, unit in (
+            ("TTFT", timings.time_to_first_token_ms, "ms"),
+            ("queue", timings.queue_time_ms, "ms"),
+            ("decode", timings.generation_time_ms, "ms"),
+            ("mean ITL", timings.mean_itl_ms, "ms"),
+            ("overall output", timings.overall_output_tokens_per_second, "tok/s"),
+            ("mean acceptance length", timings.mean_acceptance_length, "tokens"),
+        ):
+            if value is not None:
+                lines.append(f"[{color}]{label}: {_humanize_float(value)} {unit}[/]")
+
     # Inbound speed
     if timings.prompt_tokens_per_second > 0:
         lines.append(f"[{color}]in: {_humanize_int(timings.prompt_tokens)} tokens @ {_humanize_float(timings.prompt_tokens_per_second)} tok/s[/]")
@@ -257,7 +324,10 @@ def format_stats_line(timings: ModelTimings | None, color: str = "dim") -> str:
     if timings.draft_tokens is not None and timings.draft_tokens > 0:
         draft_accepted = timings.draft_tokens_accepted or 0
         acceptance_rate = timings.formatted_acceptance_rate
-        if acceptance_rate:
+        if timings.backend == "vllm" and timings.draft_tokens_accepted is None:
+            suffix = f", {acceptance_rate} accepted" if acceptance_rate else ""
+            lines.append(f"[{color}]  draft: {_humanize_int(timings.draft_tokens)} proposed{suffix}[/]")
+        elif acceptance_rate:
             lines.append(f"[{color}]  draft: {acceptance_rate} accepted ({_humanize_int(draft_accepted)} / {_humanize_int(timings.draft_tokens)} tokens)[/]")
         else:
             lines.append(f"[{color}]  draft: {_humanize_int(draft_accepted)} accepted ({_humanize_int(draft_accepted)} / {_humanize_int(timings.draft_tokens)} tokens)[/]")
