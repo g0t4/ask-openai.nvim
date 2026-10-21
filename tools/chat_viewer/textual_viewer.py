@@ -22,11 +22,12 @@ from pathlib import Path
 
 from rich.console import Console
 from rich.text import Text
-from textual.app import App, ComposeResult
+from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.widgets import Footer, Header, RichLog
 
 from tools.chat_viewer import __main__ as viewer
+from tools.chat_viewer.terminal_app import TerminalSizedApp
 
 
 class RichLogFile(io.TextIOBase):
@@ -61,6 +62,9 @@ class NonAnimatedRichLog(RichLog):
     which makes page-down/arrow scrolling feel sluggish. Overriding the
     action methods to pass animate=False jumps instantly instead.
     """
+
+    def on_resize(self) -> None:
+        self.call_after_refresh(self.app._render)
 
     def action_scroll_home(self) -> None:
         if not self._allow_scroll:
@@ -103,7 +107,7 @@ class NonAnimatedRichLog(RichLog):
         self.scroll_page_down(animate=False)
 
 
-class TraceViewerApp(App):
+class TraceViewerApp(TerminalSizedApp):
     """Textual app for interactively browsing a chat trace."""
 
     TITLE = "Ask Trace Viewer"
@@ -119,6 +123,8 @@ class TraceViewerApp(App):
     RichLog {
         border: round $accent;
         background: transparent;
+        width: 100%; height: 1fr;
+        scrollbar-gutter: stable;
     }
     """
 
@@ -152,29 +158,22 @@ class TraceViewerApp(App):
 
     def _render(self) -> None:
         log = self.query_one(RichLog)
+        self.sub_title = f"{self.size.width}×{self.size.height} · {self.SUB_TITLE}"
         log.clear()
-        # Match rich's console width to the app width so long lines (header
-        # bars, command panels) use the full terminal width instead of
-        # hard-wrapping at a fixed 400 columns. Use self.size.width (not the
-        # widget's) because the RichLog isn't laid out yet during on_mount.
         console = Console(
             file=RichLogFile(log),
             soft_wrap=True,
             color_system="truecolor",
-            width=self.size.width,
+            width=max(1, log.scrollable_content_region.width),
         )
         viewer.render_trace_to_console(
-            console, self._messages, self._model_name, self._timings
+            console, self._messages, self._model_name, self._timings, full_width=True
         )
 
     def on_mount(self) -> None:
         viewer.SHOW_ALL = False
         viewer.STYLE_REASONING = True
-        self._render()
-
-    def on_resize(self) -> None:
-        # Re-render so content matches the new terminal width.
-        self._render()
+        self.call_after_refresh(self._render)
 
     def action_toggle_all(self) -> None:
         viewer.SHOW_ALL = not viewer.SHOW_ALL

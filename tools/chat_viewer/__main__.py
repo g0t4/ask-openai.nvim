@@ -1421,7 +1421,7 @@ def render_messages_to_console(console, messages, *, start_index=1, context_mess
         _console = previous_console
 
 
-def render_trace_to_console(console, messages, model_name, timings) -> None:
+def render_trace_to_console(console, messages, model_name, timings, *, full_width=False) -> None:
     """Render a full trace to the given rich Console.
 
     Shared by the CLI entrypoint (``main``) and the Textual viewer
@@ -1441,7 +1441,7 @@ def render_trace_to_console(console, messages, model_name, timings) -> None:
     else:
         print_model_info(model_name, timings)
 
-    render_messages_to_console(console, messages)
+    render_messages_to_console(console, messages, full_width=full_width)
 
     # ProgressBar speed summary for assistant responses
     all_assistant_stats = [

@@ -15,12 +15,13 @@ from pathlib import Path
 
 from rich.console import Console
 from rich.text import Text
-from textual.app import App, ComposeResult
+from textual.app import ComposeResult
 from textual.binding import Binding
 from textual.containers import VerticalScroll
 from textual.widgets import Footer, Header, Static
 
 from tools.chat_viewer import __main__ as viewer
+from tools.chat_viewer.terminal_app import TerminalSizedApp
 
 
 def default_trace_directory() -> Path:
@@ -99,7 +100,7 @@ class TraceViewport(VerticalScroll):
         self.call_after_refresh(self.app._reflow_after_resize)
 
 
-class LiveTraceViewerApp(App):
+class LiveTraceViewerApp(TerminalSizedApp):
     TITLE = "Live Agent Traces"
     BINDINGS = [
         Binding("f", "toggle_follow", "Follow latest"),
@@ -152,6 +153,7 @@ class LiveTraceViewerApp(App):
 
     def _update_title(self) -> None:
         state = "following" if self.follow_latest else "scroll paused · f to follow"
+        self.title = f"Live Agent Traces · {self.size.width}×{self.size.height}"
         if self.watcher.error:
             self.sub_title = self.watcher.error
         elif self.snapshot:
