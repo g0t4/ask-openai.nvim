@@ -354,8 +354,7 @@ local function ask_agent_command(opts)
 
         local base_url = config.get_base_url(config_model)
         local endpoint_model_info = require("ask-openai.backends.discovery").get(base_url)
-        local request_body = model_params.body_for(config_model, generic_body, reasoning_level,
-            endpoint_model_info.backend, endpoint_model_info.actual_model_name)
+        local request_body = model_params.body_for(config_model, generic_body, reasoning_level, endpoint_model_info)
         local new_trace = AgentTrace:new(request_body, base_url)
         AgentsFrontend.trace = new_trace -- FYI `.trace` is intended for rare circumstances only, i.e. cancel action which has no context to pass a trace
         -- log:info("sending", vim.inspect(AgentsFrontend.trace))

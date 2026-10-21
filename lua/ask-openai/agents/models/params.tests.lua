@@ -5,7 +5,7 @@ local params = require("ask-openai.agents.models.params")
 describe("DeepSeek actual model token defaults", function()
     local function body(actual_model_name, backend, overrides)
         return params.body_for(models.DEEPSEEK, vim.tbl_extend("force", { messages = {} }, overrides or {}),
-            models.THINKING_OFF, backend, actual_model_name)
+            models.THINKING_OFF, { backend = backend, actual_model_name = actual_model_name })
     end
 
     it("keeps the existing v4 limit and omits it only for actual v4.1 Flash", function()
@@ -14,6 +14,7 @@ describe("DeepSeek actual model token defaults", function()
         assert.is_nil(body("deepseek-v4.1-flash", "vllm").max_tokens)
         assert.is_nil(body("deepseek-ai/DeepSeek-V4.1-Flash", "llama-server").max_tokens)
         assert.equals(393216, body(nil, "unknown").max_tokens)
+        assert.equals(393216, params.body_for(models.DEEPSEEK, { messages = {} }, models.THINKING_OFF).max_tokens)
     end)
 
     it("preserves explicit overrides and vLLM usage options", function()

@@ -35,9 +35,8 @@ end
 ---@param generic_body table
 ---@param reasoning_level string
 ---@return table
----@param backend? string @Detected serving backend
----@param actual_model_name? string @Discovered server model ID; only used for explicit exceptions
-function M.body_for(config_model, generic_body, reasoning_level, backend, actual_model_name)
+---@param endpoint_model_info? EndpointModelInfo @Discovery snapshot; only used for explicit exceptions
+function M.body_for(config_model, generic_body, reasoning_level, endpoint_model_info)
     if config_model == models.GPTOSS then
         return M.body_for_gptoss(generic_body, reasoning_level)
     elseif config_model == models.GEMMA4 then
@@ -45,7 +44,7 @@ function M.body_for(config_model, generic_body, reasoning_level, backend, actual
     elseif config_model == models.QWEN then
         return M.body_for_qwen3coder(generic_body, reasoning_level)
     elseif config_model == models.DEEPSEEK then
-        return M.body_for_deepseek4flash(generic_body, reasoning_level, backend, actual_model_name)
+        return M.body_for_deepseek4flash(generic_body, reasoning_level, endpoint_model_info)
     elseif config_model == models.GLM then
         return M.body_for_glm47flash(generic_body, reasoning_level)
     elseif config_model == models.MUSE then
@@ -84,9 +83,8 @@ end
 
 ---@param request_body table
 ---@return table
----@param backend? string
----@param actual_model_name? string
-function M.body_for_deepseek4flash(request_body, effort, backend, actual_model_name)
+---@param endpoint_model_info? EndpointModelInfo
+function M.body_for_deepseek4flash(request_body, effort, endpoint_model_info)
     throw_if_no_messages(request_body)
 
     local recommended = {
@@ -129,11 +127,12 @@ function M.body_for_deepseek4flash(request_body, effort, backend, actual_model_n
     }
 
     -- Match the actual model ID, independently of config_model and backend.
+    local actual_model_name = endpoint_model_info and endpoint_model_info.actual_model_name
     if actual_model_name and actual_model_name:lower():match("deepseek%-v4%.1%-flash") then
         recommended.max_tokens = nil
     end
 
-    if backend == "vllm" then
+    if endpoint_model_info and endpoint_model_info.backend == "vllm" then
         recommended.stream_options = { include_usage = true }
     end
 
