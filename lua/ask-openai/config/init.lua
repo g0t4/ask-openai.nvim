@@ -28,7 +28,7 @@ end
 --- @class Endpoint
 --- @field base_url string
 
---- @return table { cmdline: Endpoint, qwen: Endpoint, deepseek: Endpoint, gptoss: Endpoint, gemma4: Endpoint, glm: Endpoint, muse: Endpoint, ["nemo-lightning"]: Endpoint }`
+---@return table<string, Endpoint>
 function M.get_endpoints()
     local gptoss_url = "http://build21.lan:8013"
     local qwen3_url = "http://build21.lan:8012"
@@ -46,25 +46,25 @@ function M.get_endpoints()
         cmdline = {
             base_url = gptoss_url,
         },
-        qwen = {
+        [models.QWEN] = {
             base_url = qwen3_url,
         },
         [models.DEEPSEEK] = {
             base_url = deepseek_url,
         },
-        gptoss = {
+        [models.GPTOSS] = {
             base_url = gptoss_url,
         },
-        gemma4 = {
+        [models.GEMMA4] = {
             base_url = gemma4_url,
         },
-        glm = {
+        [models.GLM] = {
             base_url = glm_url,
         },
-        muse = {
+        [models.MUSE] = {
             base_url = muse_url,
         },
-        ["nemo-lightning"] = {
+        [models.NEMO] = {
             base_url = nemo_lightning_url,
         },
     }
