@@ -1,6 +1,6 @@
 <!-- Gippity took dibs -->
 <script lang="ts">
-  import type { TraceJson, ShellTraceJson, Message } from './lib/types'
+  import type { TraceJson, ShellTraceJson, Message, ResponseStats } from './lib/types'
   import { scrollToHash, setupHashListener } from './lib/hash-nav'
   import { getTimestampInfo } from './lib/timestamp-utils'
   import MessageView from './components/MessageView.svelte'
@@ -10,13 +10,15 @@
   import FimPreview from './components/FimPreview.svelte'
   import RewritePreview from './components/RewritePreview.svelte'
   import ModelInfo from './components/ModelInfo.svelte'
+  import VllmSummary from './components/VllmSummary.svelte'
+  import { formatResponseStats } from './lib/response-stats'
   import 'highlight.js/styles/github-dark.css'
 
   let messages: Message[] = $state([])
-  let modelInfo: { model?: string; isAvailable: boolean; timings?: import('./lib/types').Timings | null } = $state({
+  let modelInfo: { model?: string; isAvailable: boolean; responseStats?: ResponseStats | null } = $state({
     model: undefined,
     isAvailable: false,
-    timings: null
+    responseStats: null
   })
   let loading = $state(true)
   let error = $state<string | null>(null)
@@ -156,6 +158,7 @@
 async function loadTrace(url: string) {
     loading = true
     error = null
+    modelInfo = { isAvailable: false, responseStats: null }
     try {
       const res = await fetch(url)
       if (!res.ok) throw new Error(`Failed to fetch: ${res.status}`)
@@ -183,13 +186,13 @@ async function loadTrace(url: string) {
           modelInfo = {
             model: shellData.response.model_name,
             isAvailable: true,
-            timings: null
+            responseStats: null
           }
         } else if (shellData.response?.model) {
           modelInfo = {
             model: shellData.response.model,
             isAvailable: true,
-            timings: null
+            responseStats: null
           }
         }
         return
@@ -213,11 +216,11 @@ async function loadTrace(url: string) {
 
       if (data.last_sse) {
         const lastSse = data.last_sse
-        if (lastSse.model) {
+        if (lastSse.model || formatResponseStats(lastSse).length) {
           modelInfo = {
             model: lastSse.model,
             isAvailable: true,
-            timings: lastSse.timings || null
+            responseStats: lastSse
           }
         }
       }
@@ -369,7 +372,8 @@ async function loadTrace(url: string) {
     <FileBrowser url={traceUrl} />
   {:else}
     {#if modelInfo.isAvailable}
-      <ModelInfo model={modelInfo.model} timings={modelInfo.timings} />
+      <ModelInfo model={modelInfo.model}
+        responseStats={messages.some(msg => msg.role === 'assistant' && formatResponseStats(msg).length) ? null : modelInfo.responseStats} />
     {/if}
 
     {#if fimData}
@@ -385,6 +389,7 @@ async function loadTrace(url: string) {
         <MessageView message={msg} index={idx + 1} />
       {/each}
     </div>
+    <VllmSummary {messages} />
     {#if assistantSpeeds.length > 0}
       <section class="mt-8">
         <h2 class="text-lg font-semibold mb-3 text-gray-200">Assistant Generation Speed</h2>

@@ -2,6 +2,7 @@
   import type { Message } from '../lib/types'
   import { getRoleColor, extractContent } from '../lib/types'
   import { getMessageId } from '../lib/hash-nav'
+  import ResponseStats from './ResponseStats.svelte'
   import ToolCalls from './ToolCalls.svelte'
   import ToolResult from './ToolResult.svelte'
   import Markdown from './Markdown.svelte'
@@ -24,25 +25,6 @@
   const reasoning = $derived(message.reasoning_content)
   const toolCalls = $derived(message.tool_calls)
   const msgId = $derived(getMessageId(index))
-  const timings = $derived(message.timings)
-
-  function humanizeInt(v: number): string { return v.toLocaleString() }
-  function humanizeFloat(v: number, d=0): string { return v.toLocaleString(undefined,{minimumFractionDigits:d,maximumFractionDigits:d}) }
-  
-  const timingsDisplay = $derived.by(() => {
-    if (!timings) return ''
-    const parts: string[] = []
-    const prompt_n = timings.prompt_n ?? 0
-    const predicted_n = timings.predicted_n ?? 0
-    const total = prompt_n + predicted_n
-    const tokenParts = [`${humanizeInt(total)} tokens`]
-    if (timings.cache_n && timings.cache_n > 0) tokenParts.unshift(`${humanizeInt(timings.cache_n)} cached`)
-    parts.push(tokenParts.join(' '))
-    if (timings.prompt_ms && timings.prompt_ms > 0) parts.push(`${humanizeFloat(timings.prompt_ms,0)}ms prompt`)
-    if (timings.predicted_ms && timings.predicted_ms > 0) parts.push(`${humanizeFloat(timings.predicted_ms,0)}ms predicted`)
-    return parts.join(' | ')
-  })
-
   // Check if this is semantic grep matches
   const isSemanticGrepMatches = $derived(
     content && content.trim().startsWith('# Semantic Grep matches:')
@@ -125,8 +107,8 @@
 
 
       <!-- Timings (assistant) -->
-      {#if role === 'assistant' && timingsDisplay}
-        <div class="mb-3 text-xs text-gray-400 font-mono">{timingsDisplay}</div>
+      {#if role === 'assistant'}
+        <ResponseStats response={message} />
       {/if}
       <!-- Tool calls (for assistant) -->
       {#if toolCalls && toolCalls.length > 0}

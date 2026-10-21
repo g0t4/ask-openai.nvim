@@ -4,9 +4,38 @@ export interface TraceJson {
   last_sse?: LastSSE
 }
 
-export interface LastSSE {
+// Raw server fields remain separate: vLLM usage includes cached input and its
+// overall throughput includes prefill, unlike llama-server's decode rate.
+export interface ResponseStats {
+  timings?: Timings | null
+  usage?: Usage | null
+  metrics?: VllmMetrics | null
+}
+
+export interface Usage {
+  prompt_tokens?: number | null
+  completion_tokens?: number | null
+  total_tokens?: number | null
+  prompt_tokens_details?: { cached_tokens?: number | null } | null
+  completion_tokens_details?: { reasoning_tokens?: number | null } | null
+}
+
+export interface VllmMetrics {
+  time_to_first_token_ms?: number | null
+  generation_time_ms?: number | null
+  queue_time_ms?: number | null
+  mean_itl_ms?: number | null
+  tokens_per_second?: number | null
+  speculative_decoding?: {
+    num_draft_tokens?: number | null
+    num_accepted_draft_tokens?: number | null
+    draft_acceptance_rate?: number | null
+    mean_acceptance_length?: number | null
+  } | null
+}
+
+export interface LastSSE extends ResponseStats {
   model?: string
-  timings?: Timings
   [key: string]: unknown
 }
 
@@ -28,7 +57,7 @@ export interface RequestBody {
   [key: string]: unknown
 }
 
-export interface Message {
+export interface Message extends ResponseStats {
   role: 'system' | 'developer' | 'user' | 'assistant' | 'tool'
   content?: string | ContentObject
   tool_calls?: ToolCall[]
@@ -36,7 +65,6 @@ export interface Message {
   reasoning_content?: string
   duration_ms?: number
   start_time_ms?: number
-  timings?: Timings
 }
 
 export interface ContentObject {
