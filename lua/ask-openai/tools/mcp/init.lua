@@ -129,7 +129,7 @@ function MCPClient:_dispatch_message(notification)
     if notification.error then
         log:error(string.format("MCP %s error response:", self.server_log_name), vim.inspect(notification.error))
     end
-    log:info("_dispatch_message", notification)
+    -- log:info("MCP:dispatch", notification)
 
     local request_id = notification.id
     if request_id then
