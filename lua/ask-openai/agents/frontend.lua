@@ -746,6 +746,7 @@ function AgentsFrontend.on_streaming_delta_update_message_history(choice, reques
         request.accumulated_model_response_messages[index_base1] = rx_accum_message
     end
 
+    -- TODO this won't work with non llama-server backends
     local is_last_sse = sse_parsed.timings
     if is_last_sse then
         rx_accum_message.last_sse = sse_parsed
@@ -823,6 +824,7 @@ end
 
 ---@type OnParsedSSE
 function AgentsFrontend.on_parsed_data_sse(sse_parsed)
+    log:info("sse", vim.inspect(sse_parsed))
     -- FYI right now this is desingned for /v1/chat/completions only
     --   I added this guard based on review of on-on_streaming_delta_update_message_history that appears (IIRC) to be using /v1/chat/completions ONLY compatible fields
     local trace = AgentsFrontend.trace
@@ -943,6 +945,7 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(trace)
                 local tool_response_message = TxChatMessage:tool_result(tool_call)
                 -- log:jsonify_compact_trace("tool_message:", tool_response_message)
                 tool_call.response_message = tool_response_message
+                log:info("tool_call", tool_call)
                 trace:add_message(tool_response_message)
 
                 if request:any_outstanding_tool_calls() or request.already_sent then

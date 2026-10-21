@@ -28,6 +28,7 @@ end
 ---@param request CurlRequest|CurlRequestForTrace
 ---@param frontend StreamingFrontend
 function M.log_sse_to_request(sse_parsed, request, frontend)
+    -- TODO this won't work with non llama-server backends
     local is_last_sse = sse_parsed.timings -- timings only on last sse
 
     local function log_raw_completion_sse()
