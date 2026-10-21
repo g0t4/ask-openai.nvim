@@ -1,75 +1,17 @@
 local local_share = require("ask-openai.config.local_share")
-local LlamaServerClient = require("ask-openai.backends.llama_cpp.llama_server_client")
-local log = require("devtools.logs.logger"):universal()
-local models = require("ask-openai.config.models")
 
 local M = {}
 
---- @class ModelCacheEntry
---- @field name string|nil @Abbreviated model name (e.g. "qwen3")
---- @field model_info ModelInfo|nil @Full model info, or nil
---- @field ts integer
+-- Latest discovery snapshot; refreshed only at startup or model selection.
+local discovery = require("ask-openai.backends.discovery")
 
---- Track in-flight fetches to avoid duplicate background tasks.
---- key: base_url, value: true
-local _fetch_in_progress = {}
-
--- cache: base_url -> ModelCacheEntry
-local _model_cache = {}
-
-local function NOOP() end
-
----@param base_url string
----@param callback ModelEntryCallback
-local function refresh_model_info_cache_for(base_url, callback)
-    callback = callback or NOOP
-
-    local model_info = LlamaServerClient.get_model_info(base_url, { connect_timeout = 1, max_time = 3 })
-    if not model_info then
-        _fetch_in_progress[base_url] = nil
-        callback({ name = "FETCH_FAILED" })
-        return
-    end
-
-    local model_name = models.abbreviate_model(model_info.name)
-
-    local entry = { name = model_name, model_info = model_info, base_url = base_url, ts = os.time() }
-    _model_cache[base_url] = entry
-    callback(entry) -- TODO or just return name?
+function M.refresh_model_info(base_url, callback)
+    if base_url then discovery.refresh(base_url, callback) end
 end
 
----@alias ModelEntryCallback fun(entry: ModelCacheEntry)
-
---- Async model name lookup (cached is sync but requires callback pattern for now)
----@param base_url string The base URL of the llama-server (e.g. "http://paxy.lan:8012")
----@param callback ModelEntryCallback
+-- Compatibility for title consumers. Reading never starts a request.
 function M.get_llama_server_model_info(base_url, callback)
-    callback = callback or NOOP
-
-    local function fetch()
-        _fetch_in_progress[base_url] = true
-        vim.schedule(function()
-            refresh_model_info_cache_for(base_url, callback)
-        end)
-    end
-
-    local cached = _model_cache[base_url]
-    if cached then
-        local cache_timeout_seconds = cached.name == nil and 1 or 120
-        local expired = os.time() - cached.ts > cache_timeout_seconds
-        if expired then
-            -- trigger background refresh while using last value
-            fetch()
-        end
-        callback(cached) -- respond with cached (albeit "expired") until refreshed
-        return
-    end
-
-    if not _fetch_in_progress[base_url] then
-        fetch()
-    end
-
-    callback({ name = "Pending..." })
+    discovery.when_ready(base_url, callback)
 end
 
 ---@class AskOpenAIOptions
@@ -139,8 +81,13 @@ end
 function M.setup()
     local_share.setup()
     vim.schedule(function()
-        -- schedule in background on startup
-        M.get_endpoints()
+        local seen = {}
+        for _, endpoint in pairs(M.get_endpoints()) do
+            if not seen[endpoint.base_url] then
+                seen[endpoint.base_url] = true
+                M.refresh_model_info(endpoint.base_url)
+            end
+        end
     end)
 end
 
@@ -150,6 +97,7 @@ M.local_share = local_share
 ---@param model string
 function M.set_agents_model(model)
     M.local_share.set_agents_model(model)
+    M.refresh_model_info(M.get_base_url(model))
 end
 
 ---@return string
@@ -159,13 +107,16 @@ end
 
 ---@return string
 function M.toggle_agents_model()
-    return M.local_share.toggle_agents_model()
+    local model = M.local_share.toggle_agents_model()
+    M.refresh_model_info(M.get_base_url(model))
+    return model
 end
 
 -- * FIM model *
 ---@param model string
 function M.set_fim_model(model)
     M.local_share.set_fim_model(model)
+    M.refresh_model_info(M.get_base_url(model))
 end
 
 ---@return string
@@ -175,13 +126,16 @@ end
 
 ---@return string
 function M.toggle_fim_model()
-    M.local_share.toggle_fim_model()
+    local model = M.local_share.toggle_fim_model()
+    M.refresh_model_info(M.get_base_url(model))
+    return model
 end
 
 -- * Rewrite model *
 ---@param model string
 function M.set_rewrite_model(model)
     M.local_share.set_rewrite_model(model)
+    M.refresh_model_info(M.get_base_url(model))
 end
 
 ---@return string
@@ -191,7 +145,9 @@ end
 
 ---@return string
 function M.toggle_rewrite_model()
-    return M.local_share.toggle_rewrite_model()
+    local model = M.local_share.toggle_rewrite_model()
+    M.refresh_model_info(M.get_base_url(model))
+    return model
 end
 
 -- * predictions *
