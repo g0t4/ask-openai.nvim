@@ -1,6 +1,13 @@
 local M = {}
 local client = require("ask-openai.backends.llama_cpp.llama_server_client")
 local models = require("ask-openai.config.models")
+---@class EndpointModelInfo
+---@field base_url? string
+---@field status "pending"|"ready"|"fetch_failed"|"no_endpoint"
+---@field backend string
+---@field actual_model_name? string @Verbatim model ID returned by the endpoint
+---@field actual_model_abbreviation? string @Display label; never a routing or params key
+---@field actual_model_info? ModelInfo
 local snapshots, generations, waiting = {}, {}, {}
 
 -- No shell, waits, timers, or synchronous HTTP on Neovim's event loop.
@@ -24,9 +31,9 @@ end
 
 function M.get(base_url)
     if type(base_url) ~= "string" or base_url == "" then
-        return { name = "NO_ENDPOINT", backend = "unknown" }
+        return { status = "no_endpoint", backend = "unknown" }
     end
-    return snapshots[base_url] or { name = "Pending...", backend = "unknown", base_url = base_url }
+    return snapshots[base_url] or { status = "pending", backend = "unknown", base_url = base_url }
 end
 
 function M.when_ready(base_url, callback)
@@ -49,8 +56,10 @@ function M.refresh(base_url, callback)
         local info = body and client.extract_model_info(body)
         local entry = {
             base_url = base_url,
-            name = info and models.abbreviate_model(info.name) or "FETCH_FAILED",
-            model_info = info,
+            status = info and "ready" or "fetch_failed",
+            actual_model_name = info and info.name or nil,
+            actual_model_abbreviation = info and models.abbreviate_actual_model_name(info.name) or nil,
+            actual_model_info = info,
             backend = body and detect(body),
         }
         local function finish()

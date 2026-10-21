@@ -1,6 +1,7 @@
 local M = {}
 
---- @alias ModelName "gptoss" | "qwen" | "glm" | "gemma4" | "deepseek" | "muse" | "nemo-lightning"
+-- Configuration keys select endpoints, params, and persisted reasoning settings.
+--- @alias ConfigModel "gptoss" | "qwen" | "glm" | "gemma4" | "ds4" | "ds41" | "muse" | "nemo-lightning"
 M.GPTOSS = "gptoss"
 M.QWEN = "qwen"
 M.GLM = "glm"
@@ -20,7 +21,7 @@ M.CYCLE = {
     M.NEMO,
 }
 
---- @type ModelName
+--- @type ConfigModel
 M.DEFAULT_MODEL = M.GPTOSS
 
 --- @type string
@@ -114,21 +115,21 @@ local MODEL_PATTERNS = {
     { pattern = "/NVIDIA%-Nemotron",    abbrev = "nemo-lightning" },
 }
 
---- Abbreviate a raw model name using pattern matching, or return the original name.
---- @param raw_model string|nil
+--- Abbreviate an actual served model ID for display; never use this as a config key.
+--- @param actual_model_name string|nil
 --- @return string
-function M.abbreviate_model(raw_model)
-    if not raw_model then
+function M.abbreviate_actual_model_name(actual_model_name)
+    if not actual_model_name then
         return "MISSING_NAME"
     end
 
     for _, entry in ipairs(MODEL_PATTERNS) do
-        if raw_model:match(entry.pattern) then
+        if actual_model_name:match(entry.pattern) then
             return entry.abbrev
         end
     end
 
-    return raw_model
+    return actual_model_name
 end
 
 return M

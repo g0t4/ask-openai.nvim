@@ -6,12 +6,12 @@ local M = {}
 -- Latest discovery snapshot; refreshed only at startup or model selection.
 local discovery = require("ask-openai.backends.discovery")
 
-function M.refresh_model_info(base_url, callback)
+function M.refresh_endpoint_model_info(base_url, callback)
     if base_url then discovery.refresh(base_url, callback) end
 end
 
--- Compatibility for title consumers. Reading never starts a request.
-function M.get_llama_server_model_info(base_url, callback)
+-- Reads discovery for an endpoint; never selects model params or starts a request.
+function M.get_endpoint_model_info(base_url, callback)
     discovery.when_ready(base_url, callback)
 end
 
@@ -70,13 +70,13 @@ function M.get_endpoints()
     }
 end
 
----@param config_model_slug string   -- this is an abbreviated string used in the config file to store which model to use for a given situation, not the same as abbreviated model name NOR full model name from llama.cpp
-function M.get_base_url(config_model_slug)
+---@param config_model ConfigModel|string @Routing/configuration key, never an actual model name
+function M.get_base_url(config_model)
     local endpoints = M.get_endpoints()
     -- Accept selections saved before the DeepSeek slug was renamed.
-    if config_model_slug == "deepseek" then config_model_slug = models.DEEPSEEK end
-    if endpoints[config_model_slug] then
-        return endpoints[config_model_slug].base_url
+    if config_model == "deepseek" then config_model = models.DEEPSEEK end
+    if endpoints[config_model] then
+        return endpoints[config_model].base_url
     end
     return nil
 end
@@ -88,7 +88,7 @@ function M.setup()
         for _, endpoint in pairs(M.get_endpoints()) do
             if not seen[endpoint.base_url] then
                 seen[endpoint.base_url] = true
-                M.refresh_model_info(endpoint.base_url)
+                M.refresh_endpoint_model_info(endpoint.base_url)
             end
         end
     end)
@@ -96,11 +96,14 @@ end
 
 M.local_share = local_share
 
+-- Model selectors below return config_model keys: endpoint routing, params, and
+-- reasoning settings. Discovered actual_model names are display/diagnostic data.
+
 -- * Agents model *
----@param model string
-function M.set_agents_model(model)
-    M.local_share.set_agents_model(model)
-    M.refresh_model_info(M.get_base_url(model))
+---@param config_model string
+function M.set_agents_model(config_model)
+    M.local_share.set_agents_model(config_model)
+    M.refresh_endpoint_model_info(M.get_base_url(config_model))
 end
 
 ---@return string
@@ -110,16 +113,16 @@ end
 
 ---@return string
 function M.toggle_agents_model()
-    local model = M.local_share.toggle_agents_model()
-    M.refresh_model_info(M.get_base_url(model))
-    return model
+    local config_model = M.local_share.toggle_agents_model()
+    M.refresh_endpoint_model_info(M.get_base_url(config_model))
+    return config_model
 end
 
 -- * FIM model *
----@param model string
-function M.set_fim_model(model)
-    M.local_share.set_fim_model(model)
-    M.refresh_model_info(M.get_base_url(model))
+---@param config_model string
+function M.set_fim_model(config_model)
+    M.local_share.set_fim_model(config_model)
+    M.refresh_endpoint_model_info(M.get_base_url(config_model))
 end
 
 ---@return string
@@ -129,16 +132,16 @@ end
 
 ---@return string
 function M.toggle_fim_model()
-    local model = M.local_share.toggle_fim_model()
-    M.refresh_model_info(M.get_base_url(model))
-    return model
+    local config_model = M.local_share.toggle_fim_model()
+    M.refresh_endpoint_model_info(M.get_base_url(config_model))
+    return config_model
 end
 
 -- * Rewrite model *
----@param model string
-function M.set_rewrite_model(model)
-    M.local_share.set_rewrite_model(model)
-    M.refresh_model_info(M.get_base_url(model))
+---@param config_model string
+function M.set_rewrite_model(config_model)
+    M.local_share.set_rewrite_model(config_model)
+    M.refresh_endpoint_model_info(M.get_base_url(config_model))
 end
 
 ---@return string
@@ -148,9 +151,9 @@ end
 
 ---@return string
 function M.toggle_rewrite_model()
-    local model = M.local_share.toggle_rewrite_model()
-    M.refresh_model_info(M.get_base_url(model))
-    return model
+    local config_model = M.local_share.toggle_rewrite_model()
+    M.refresh_endpoint_model_info(M.get_base_url(config_model))
+    return config_model
 end
 
 -- * predictions *

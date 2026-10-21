@@ -1,4 +1,3 @@
-local models = require("ask-openai.config.models")
 local config = require("ask-openai.config")
 local discovery = require("ask-openai.backends.discovery")
 local local_share = require('ask-openai.config.local_share')
@@ -28,12 +27,9 @@ local LEVEL_ICONS = {
     error = "",
 }
 
-local function discovered_model_name(configured_model)
-    local entry = discovery.get(config.get_base_url(configured_model))
-    if entry.model_info then
-        return models.abbreviate_model(entry.model_info.name)
-    end
-    return ""
+local function actual_model_abbreviation_for_config_model(config_model)
+    local entry = discovery.get(config.get_base_url(config_model))
+    return entry.actual_model_abbreviation or ""
 end
 
 function M.lualine_components()
@@ -79,20 +75,20 @@ function M.lualine_components()
 
             -- * FIM status
             local level = local_share.get_fim_reasoning_level():upper()
-            local fim_status = "p/" .. discovered_model_name(local_share.get_fim_model()) .. level:sub(1, 1)
+            local fim_status = "p/" .. actual_model_abbreviation_for_config_model(local_share.get_fim_model()) .. level:sub(1, 1)
             table.insert(icons, fim_status)
 
             -- * rewrite status
             -- btw gray out on rewrite level does not mean it is disabled, it will still work fine even when FIM is disabled
-            local rewrite_model = discovered_model_name(local_share.get_rewrite_model())
+            local rewrite_actual_model_abbreviation = actual_model_abbreviation_for_config_model(local_share.get_rewrite_model())
             local level = local_share.get_rewrite_reasoning_level():upper()
-            local rewrite_status = "r/" .. rewrite_model .. level:sub(1, 1)
+            local rewrite_status = "r/" .. rewrite_actual_model_abbreviation .. level:sub(1, 1)
             table.insert(icons, rewrite_status)
 
             -- * agents status
-            local agents_model = discovered_model_name(local_share.get_agents_model())
+            local agents_actual_model_abbreviation = actual_model_abbreviation_for_config_model(local_share.get_agents_model())
             local level = local_share.get_agents_reasoning_level():upper()
-            local agents_status = "a/" .. agents_model .. level:sub(1, 1)
+            local agents_status = "a/" .. agents_actual_model_abbreviation .. level:sub(1, 1)
             table.insert(icons, agents_status)
 
             if M.last_fim_stats then

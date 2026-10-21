@@ -31,28 +31,28 @@ local function set_enable_thinking(request_body, reasoning_level)
     return request_body
 end
 
----@param model string
+---@param config_model string @Configuration key selects params, independently of the actual served model
 ---@param generic_body table
 ---@param reasoning_level string
 ---@return table
 ---@param backend? string @Detected serving backend
-function M.body_for(model, generic_body, reasoning_level, backend)
-    if model == models.GPTOSS then
+function M.body_for(config_model, generic_body, reasoning_level, backend)
+    if config_model == models.GPTOSS then
         return M.body_for_gptoss(generic_body, reasoning_level)
-    elseif model == models.GEMMA4 then
+    elseif config_model == models.GEMMA4 then
         return M.body_for_gemma4(generic_body, reasoning_level)
-    elseif model == models.QWEN then
+    elseif config_model == models.QWEN then
         return M.body_for_qwen3coder(generic_body, reasoning_level)
-    elseif model == models.DEEPSEEK then
+    elseif config_model == models.DEEPSEEK then
         return M.body_for_deepseek4flash(generic_body, reasoning_level, backend)
-    elseif model == models.GLM then
+    elseif config_model == models.GLM then
         return M.body_for_glm47flash(generic_body, reasoning_level)
-    elseif model == models.MUSE then
+    elseif config_model == models.MUSE then
         return M.body_for_muse_glimmer(generic_body, reasoning_level)
-    elseif model == models.NEMO then
+    elseif config_model == models.NEMO then
         return M.body_for_nemo_lightning(generic_body, reasoning_level)
     end
-    error("model not supported" .. tostring(model))
+    error("model not supported" .. tostring(config_model))
 end
 
 ---@param request_body table
