@@ -127,13 +127,18 @@ function M.body_for_deepseek4flash(request_body, effort)
     local efforts = models.DEEPSEEK_REASONING_EFFORT
     if effort == efforts.OFF then
         recommended.chat_template_kwargs.enable_thinking = false
+        -- PRN reasoning_effort = "none"? is this a vLLM convention? IIRC enable_thinking is in deepseek v4's template (not sure about v4.1 flash)
     elseif effort == efforts.HIGH
-        or effort == efforts.MAX then
+        or effort == efforts.MAX
+        or effort == efforts.LOW
+        then
         recommended.chat_template_kwargs.reasoning_effort = effort
         -- else "low" => default w/o high/max system prompt mods
     elseif effort == efforts.PSM then
         local message = "PSM is for FIM only, aborting deepseek agent"
         error(message)
+    else
+        error("unexpected reasoning effort for deepseek, add it?")
     end
     -- log:info("recommended", recommended)
 
