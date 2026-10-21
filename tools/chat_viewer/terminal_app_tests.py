@@ -39,3 +39,19 @@ async def test_existing_vtt_uses_the_full_inner_width(monkeypatch):
         await pilot.resize_terminal(100, 30)
         await pilot.pause()
         assert widths[-1] == (log.scrollable_content_region.width, True)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize('live', [False, True])
+async def test_blank_areas_use_terminal_default_background(tmp_path, live):
+    from tools.chat_viewer.live_viewer import LiveTraceViewerApp
+    app = LiveTraceViewerApp(tmp_path, poll_interval=3600) if live else TraceViewerApp([
+        {'role': 'assistant', 'content': 'short message'}
+    ])
+    async with app.run_test(size=(80, 24)) as pilot:
+        await pilot.pause()
+        assert app.native_ansi_color
+        blank = app.screen.render_line(12)
+        backgrounds = [segment.style.bgcolor for segment in blank if segment.style and segment.style.bgcolor]
+        assert backgrounds
+        assert all(color.is_default for color in backgrounds)

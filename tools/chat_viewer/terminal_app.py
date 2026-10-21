@@ -6,6 +6,12 @@ from textual.app import App
 
 
 class TerminalSizedApp(App):
+    def __init__(self, *args, **kwargs):
+        # Preserve ANSI default colors rather than resolving unpainted cells to
+        # Textual's black fallback. The terminal then owns the background.
+        kwargs.setdefault("ansi_color", True)
+        super().__init__(*args, **kwargs)
+
     def get_driver_class(self):
         driver = super().get_driver_class()
         if os.name == "nt":
