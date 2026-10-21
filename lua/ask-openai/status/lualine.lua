@@ -92,7 +92,7 @@ function M.lualine_components()
                 fim_status = "GLM" .. level
                 --  TODO preserved thinking mode (or always on) per the repo it says to use this in multi turn agents (IIAC keep reasoning traces for tool calls too - interleaved reasoning before final response from model on each turn)
             end
-            fim_status = "fim/" .. fim_status
+            fim_status = "p/" .. fim_status
             table.insert(icons, fim_status)
 
             -- * rewrite status
@@ -105,7 +105,7 @@ function M.lualine_components()
             elseif rewrite_model == models.GLM then
                 rewrite_status = "GLM" .. level
             end
-            rewrite_status = "re/" .. rewrite_status
+            rewrite_status = "r/" .. rewrite_status
             table.insert(icons, rewrite_status)
 
             -- * agents status

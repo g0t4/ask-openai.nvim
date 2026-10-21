@@ -5,7 +5,8 @@ M.GPTOSS = "gptoss"
 M.QWEN = "qwen"
 M.GLM = "glm"
 M.GEMMA4 = "gemma4"
-M.DEEPSEEK = "deepseek"
+M.DEEPSEEK = "ds4"
+M.DEEPSEEK_41 = "ds41"
 M.MUSE = "muse"
 M.NEMO = "nemo-lightning"
 
@@ -83,6 +84,7 @@ M.MODEL_AUTHOR_MAP = {
     [M.GPTOSS] = "gptoss120b<wes.mcclure+gptoss120b@gmail.com>",
     [M.QWEN] = "qwen3.6-35b-a3b<wes.mcclure+qwen3.6-35b-a3b@gmail.com>",
     [M.DEEPSEEK] = "deepseek-v4-flash<wes.mcclure+deepseek-v4-flash@gmail.com>",
+    [M.DEEPSEEK_41] = "deepseek-v4.1-flash<wes.mcclure+deepseek-v4.1-flash@gmail.com>",
     [M.MUSE] = "muse-glimmer-30b-dspark<wes.mcclure+muse-glimmer-30b-dspark@gmail.com>",
 }
 
