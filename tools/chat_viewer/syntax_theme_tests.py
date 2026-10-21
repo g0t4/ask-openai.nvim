@@ -31,7 +31,7 @@ def test_process_and_xonsh_arguments_use_shared_rendering_without_bat(monkeypatc
 
     monkeypatch.setattr('tools.chat_viewer.__main__.subprocess.run', reject_subprocess)
     cases = [
-        ('run_bash', {'command_line': 'echo "hello" | cat', 'cwd': '/tmp', 'stdin_text': 'input'}, 'bash'),
+        ('run_bash', {'command_line': 'if true; then printf "hello"; fi', 'cwd': '/tmp', 'stdin_text': 'input'}, 'bash'),
         ('run_process', {'command_line': 'echo "hello" | cat', 'cwd': '/tmp', 'stdin_text': 'input'}, 'bash'),
         ('run_process', {'argv': ['echo', 'hello world'], 'cwd': '/tmp'}, 'bash'),
         ('run_xonsh', {'code': 'import os\nvalue = $(echo "hello")', 'cwd': '/tmp'}, 'xonsh'),
@@ -60,6 +60,24 @@ def test_process_and_xonsh_arguments_use_shared_rendering_without_bat(monkeypatc
         Console(file=output, width=100, force_terminal=True, no_color=False, color_system='truecolor').print(tree)
         assert '/tmp' in output.getvalue()  # remaining metadata still displayed
         assert '38;2;172;208;149' in output.getvalue()  # our string color
+        if tool == 'run_bash':
+            assert '38;2;179;148;227' in output.getvalue()  # shared keyword color
+            assert '38;2;142;203;187' in output.getvalue()  # shared builtin color
+
+
+def test_run_bash_colors_external_commands_separately_from_arguments():
+    tree = TreeWrapper.hidden_root()
+    add_tool_call_request(
+        'run_bash',
+        json.dumps({'command_line': "git status --short | jq -r '.code' trace.json"}),
+        tree,
+    )
+    output = io.StringIO()
+    Console(file=output, width=100, force_terminal=True, no_color=False, color_system='truecolor').print(tree)
+    ansi = output.getvalue()
+    assert re.search(r'38;2;130;176;223(?:;49)?mgit', ansi)
+    assert re.search(r'38;2;130;176;223(?:;49)?mjq', ansi)
+    assert re.search(r'38;2;206;206;206(?:;49)?mstatus', ansi)
 
 
 def test_apply_patch_preserves_directives_and_uses_shared_diff_colors():
