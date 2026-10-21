@@ -107,7 +107,9 @@
 
 --- my changes, i.e. storing timings for all assistant messages
 ---@class Ask_OpenAIChatCompletion_Assistant_TxChatMessage : OpenAIChatCompletion_Assistant_TxChatMessage
----@field timings LlamaServerTimings
+---@field timings? LlamaServerTimings
+---@field usage? table @Verbatim server usage
+---@field metrics? table|vim.NIL @Verbatim server metrics
 
 ---@class OpenAIChatCompletion_Assistant_TxChatMessage_ToolCallRequest
 ---@field id string

@@ -2,6 +2,8 @@ local log = require("devtools.logs.logger").universal()
 local json = require("dkjson")
 local tables = require("ask-openai.helpers.tables")
 
+local response_metadata = require("ask-openai.backends.response_metadata")
+
 local M = {
     last_done = {},
 }
@@ -28,8 +30,7 @@ end
 ---@param request CurlRequest|CurlRequestForTrace
 ---@param frontend StreamingFrontend
 function M.log_sse_to_request(sse_parsed, request, frontend)
-    -- TODO this won't work with non llama-server backends
-    local is_last_sse = sse_parsed.timings -- timings only on last sse
+    local is_last_sse = response_metadata.is_final(sse_parsed)
 
     local function log_raw_completion_sse()
         -- /v1/completions endpoint
@@ -110,13 +111,11 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
             return
         end
         local first = choices[1]
-        if not first then
+        if not first and not is_last_sse then
             return
         end
-        local delta = first.delta
-        if not delta then
-            return
-        end
+        local delta = first and first.delta or {}
+        if type(delta) ~= "table" then return end
 
         if delta.role then
             accum.role = delta.role
@@ -127,7 +126,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         if delta.content and delta.content ~= vim.NIL then
             accum.content = (accum.content or "") .. delta.content
         end
-        if first.finish_reason and first.finish_reason ~= vim.NIL then
+        if first and first.finish_reason and first.finish_reason ~= vim.NIL then
             accum.finish_reason = first.finish_reason
         end
 
@@ -138,9 +137,8 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         --  TODO see notes in AgentsFrontend to figure out where I want this
         --   and FYI this can affect any frontend, not just Agents... i.e. PredictionsFrontend using non reasoning FIM with Muse Glimmer
 
-        if sse_parsed.timings then
-            -- track timings per assistant response!
-            accum.timings = sse_parsed.timings
+        if is_last_sse then
+            response_metadata.copy(sse_parsed, accum)
         end
 
         -- PRN track tool call deltas too? on the response (for output.json)?

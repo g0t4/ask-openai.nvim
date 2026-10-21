@@ -353,7 +353,8 @@ local function ask_agent_command(opts)
         local reasoning_level = context.includes:get_reasoning_level() or config.get_agents_reasoning_level()
 
         local base_url = config.get_base_url(model)
-        local new_trace = AgentTrace:new(model_params.body_for(model, generic_body, reasoning_level), base_url)
+        local backend = require("ask-openai.backends.discovery").get(base_url).backend
+        local new_trace = AgentTrace:new(model_params.body_for(model, generic_body, reasoning_level, backend), base_url)
         AgentsFrontend.trace = new_trace -- FYI `.trace` is intended for rare circumstances only, i.e. cancel action which has no context to pass a trace
         -- log:info("sending", vim.inspect(AgentsFrontend.trace))
         AgentsFrontend.then_get_assistant_response(new_trace)
@@ -835,6 +836,12 @@ function AgentsFrontend.on_parsed_data_sse(sse_parsed)
         local message = "AgentsFrontend SSEs not supported for endpoint: " .. tostring(request.endpoint)
         log:error(message)
         vim.notify(message, vim.log.levels.ERROR)
+        return
+    end
+
+    local response_metadata = require("ask-openai.backends.response_metadata")
+    if response_metadata.capture_final(sse_parsed, request.accumulated_model_response_messages) then
+        update_ui_chat_viewer(trace)
         return
     end
 

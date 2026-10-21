@@ -35,7 +35,8 @@ end
 ---@param generic_body table
 ---@param reasoning_level string
 ---@return table
-function M.body_for(model, generic_body, reasoning_level)
+---@param backend? string @Detected serving backend
+function M.body_for(model, generic_body, reasoning_level, backend)
     if model == models.GPTOSS then
         return M.body_for_gptoss(generic_body, reasoning_level)
     elseif model == models.GEMMA4 then
@@ -43,7 +44,7 @@ function M.body_for(model, generic_body, reasoning_level)
     elseif model == models.QWEN then
         return M.body_for_qwen3coder(generic_body, reasoning_level)
     elseif model == models.DEEPSEEK then
-        return M.body_for_deepseek4flash(generic_body, reasoning_level)
+        return M.body_for_deepseek4flash(generic_body, reasoning_level, backend)
     elseif model == models.GLM then
         return M.body_for_glm47flash(generic_body, reasoning_level)
     elseif model == models.MUSE then
@@ -82,7 +83,8 @@ end
 
 ---@param request_body table
 ---@return table
-function M.body_for_deepseek4flash(request_body, effort)
+---@param backend? string
+function M.body_for_deepseek4flash(request_body, effort, backend)
     throw_if_no_messages(request_body)
 
     local recommended = {
@@ -123,6 +125,10 @@ function M.body_for_deepseek4flash(request_body, effort)
 
         chat_template_kwargs = {}
     }
+
+    if backend == "vllm" then
+        recommended.stream_options = { include_usage = true }
+    end
 
     local efforts = models.DEEPSEEK_REASONING_EFFORT
     if effort == efforts.OFF then
