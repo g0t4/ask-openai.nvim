@@ -553,7 +553,7 @@ def test_vllm_usage_metrics_keep_distinct_semantics() -> None:
     assert parsed.prompt_tokens_per_second == 0  # unavailable, never derived from TTFT
     assert parsed.predicted_tokens_per_second == 0  # overall throughput isn't decode rate
     text = format_stats_line(parsed)
-    for label in ("in (includes cached): 100", "out: 20", "reasoning: 10", "TTFT: 118.6 ms",
+    for label in ("in: 20 @ ≈168.6 tok/s", "out: 20 @ ≈363.4 tok/s", "reasoning: 10", "TTFT: 118.6 ms",
                   "decode: 52.3 ms", "overall output: 11.7 tok/s", "20.0%", "mean acceptance length: 2.0"):
         assert label in text
     assert "ms prompt" not in text
@@ -594,3 +594,34 @@ def test_vllm_null_optional_metrics_do_not_fabricate_values() -> None:
     assert "0 / 5" not in text
     assert "TTFT" not in text
     assert "mean ITL" not in text
+
+
+def test_vllm_rates_are_estimates_using_uncached_input_and_n_minus_one_output() -> None:
+    parsed = parse_timings({
+        "usage": {"prompt_tokens": 100, "completion_tokens": 11,
+                  "prompt_tokens_details": {"cached_tokens": 80}},
+        "metrics": {"time_to_first_token_ms": 200, "generation_time_ms": 1000, "mean_itl_ms": 100},
+    })
+    assert parsed is not None
+    assert parsed.estimated_input_tokens_per_second == 100
+    assert parsed.estimated_decode_tokens_per_second == 10
+    text = format_stats_line(parsed)
+    assert "in: 20 @ ≈100.0 tok/s" in text
+    assert "out: 11 @ ≈10.0 tok/s" in text
+    assert text.index("mean ITL") > text.index("out:")
+    assert parsed.context_tokens == 111
+
+
+def test_vllm_estimates_require_usable_counts_and_durations() -> None:
+    parsed = ModelTimings(backend="vllm", prompt_tokens=100, predicted_tokens=1,
+                          time_to_first_token_ms=100, generation_time_ms=0)
+    assert parsed.estimated_input_tokens_per_second is None  # no cache count
+    assert parsed.estimated_decode_tokens_per_second is None  # no decode interval
+    parsed.cached_tokens = 100
+    assert parsed.estimated_input_tokens_per_second is None  # fully cached
+    parsed.cached_tokens = 0
+    parsed.time_to_first_token_ms = 0
+    assert parsed.estimated_input_tokens_per_second is None
+    parsed.predicted_tokens = 10
+    assert parsed.estimated_decode_tokens_per_second is None
+    assert "≈" not in format_stats_line(parsed)

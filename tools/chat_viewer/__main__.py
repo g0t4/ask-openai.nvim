@@ -1522,11 +1522,14 @@ def render_trace_to_console(console, messages, model_name, timings, *, full_widt
         for header in ("message", "input", "cached", "output", "reasoning", "total", "draft accepted", "mean accept len"):
             counts.add_column(header, justify="right")
         metrics = Table(show_header=True, box=None, padding=(0, 1))
-        for header in ("message", "TTFT", "queue", "decode", "mean ITL", "overall output (includes prefill)"):
+        for header in ("message", "input rate", "TTFT", "queue", "decode rate", "decode", "mean ITL", "overall output (includes prefill)"):
             metrics.add_column(header, justify="right")
 
         def optional_number(value, unit=""):
             return "—" if value is None else f"{_humanize_float(value)}{unit}"
+
+        def estimated_rate(value):
+            return "—" if value is None else f"≈{_humanize_float(value)} tok/s"
 
         for idx, _, stats in vllm_stats:
             ratio = (f"{stats.draft_tokens_accepted}/{stats.draft_tokens}"
@@ -1541,8 +1544,9 @@ def render_trace_to_console(console, messages, model_name, timings, *, full_widt
                 _humanize_int(stats.context_tokens), ratio, optional_number(stats.mean_acceptance_length),
             )
             metrics.add_row(
-                f"msg #{idx}", optional_number(stats.time_to_first_token_ms, "ms"),
-                optional_number(stats.queue_time_ms, "ms"), optional_number(stats.generation_time_ms, "ms"),
+                f"msg #{idx}", estimated_rate(stats.estimated_input_tokens_per_second),
+                optional_number(stats.time_to_first_token_ms, "ms"), optional_number(stats.queue_time_ms, "ms"),
+                estimated_rate(stats.estimated_decode_tokens_per_second), optional_number(stats.generation_time_ms, "ms"),
                 optional_number(stats.mean_itl_ms, "ms"),
                 optional_number(stats.overall_output_tokens_per_second, " tok/s"),
             )

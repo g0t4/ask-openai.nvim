@@ -29,6 +29,31 @@ class ModelTimings:
     reported_draft_acceptance_rate: float | None = None
 
     @property
+    def uncached_prompt_tokens(self) -> int | None:
+        if self.backend == "llama-server":
+            return self.prompt_tokens
+        if self.cached_tokens is None or not 0 <= self.cached_tokens <= self.prompt_tokens:
+            return None
+        return self.prompt_tokens - self.cached_tokens
+
+    @property
+    def estimated_input_tokens_per_second(self) -> float | None:
+        uncached = self.uncached_prompt_tokens
+        if (self.backend != "vllm" or uncached is None or uncached <= 0
+                or self.time_to_first_token_ms is None or self.time_to_first_token_ms <= 0):
+            return None
+        # TTFT includes first-token work and other overhead, not pure prefill.
+        return uncached * 1000 / self.time_to_first_token_ms
+
+    @property
+    def estimated_decode_tokens_per_second(self) -> float | None:
+        if (self.backend != "vllm" or self.predicted_tokens <= 1
+                or self.generation_time_ms is None or self.generation_time_ms <= 0):
+            return None
+        # Decode duration starts at the first token: N tokens span N-1 intervals.
+        return (self.predicted_tokens - 1) * 1000 / self.generation_time_ms
+
+    @property
     def input_tokens(self) -> int:
         """vLLM prompt usage includes cached input; llama-server prompt_n does not."""
         return self.prompt_tokens + ((self.cached_tokens or 0) if self.backend == "llama-server" else 0)
@@ -297,13 +322,21 @@ def format_stats_line(timings: ModelTimings | None, color: str = "dim") -> str:
         lines.append(f"[{color}]cached: {_humanize_int(timings.cached_tokens)} tokens[/]")
 
     if timings.backend == "vllm":
-        lines.append(f"[{color}]in (includes cached): {_humanize_int(timings.prompt_tokens)}[/]")
-        lines.append(f"[{color}]out: {_humanize_int(timings.predicted_tokens)}[/]")
+        uncached = timings.uncached_prompt_tokens
+        input_label = "in (includes cached)" if uncached is None else "in"
+        input_count = timings.prompt_tokens if uncached is None else uncached
+        input_rate = timings.estimated_input_tokens_per_second
+        input_speed = f" @ ≈{_humanize_float(input_rate)} tok/s" if input_rate is not None else ""
+        lines.append(f"[{color}]{input_label}: {_humanize_int(input_count)}{input_speed}[/]")
+        for label, value in (("TTFT", timings.time_to_first_token_ms), ("queue", timings.queue_time_ms)):
+            if value is not None:
+                lines.append(f"[{color}]{label}: {_humanize_float(value)} ms[/]")
+        output_rate = timings.estimated_decode_tokens_per_second
+        output_speed = f" @ ≈{_humanize_float(output_rate)} tok/s" if output_rate is not None else ""
+        lines.append(f"[{color}]out: {_humanize_int(timings.predicted_tokens)}{output_speed}[/]")
         if timings.reasoning_tokens is not None:
             lines.append(f"[{color}]reasoning: {_humanize_int(timings.reasoning_tokens)} tokens[/]")
         for label, value, unit in (
-            ("TTFT", timings.time_to_first_token_ms, "ms"),
-            ("queue", timings.queue_time_ms, "ms"),
             ("decode", timings.generation_time_ms, "ms"),
             ("mean ITL", timings.mean_itl_ms, "ms"),
             ("overall output", timings.overall_output_tokens_per_second, "tok/s"),
