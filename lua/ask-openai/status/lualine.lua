@@ -78,46 +78,21 @@ function M.lualine_components()
             -- end
 
             -- * FIM status
-            local fim_status = local_share.get_fim_model()
             local level = local_share.get_fim_reasoning_level():upper()
-            if fim_status == models.GPTOSS then
-                fim_status = "gptoss" .. level:sub(1, 1)
-            elseif fim_status == models.QWEN then
-                fim_status = "qwen" .. level
-            elseif fim_status == models.GEMMA4 then
-                fim_status = "gemma4" .. level
-            elseif fim_status == models.DEEPSEEK then
-                fim_status = "deepseek" .. level
-            elseif fim_status == models.GLM then
-                fim_status = "GLM" .. level
-                --  TODO preserved thinking mode (or always on) per the repo it says to use this in multi turn agents (IIAC keep reasoning traces for tool calls too - interleaved reasoning before final response from model on each turn)
-            end
-            fim_status = "p/" .. fim_status
+            local fim_status = "p/" .. local_share.get_fim_model() .. level:sub(1, 1)
             table.insert(icons, fim_status)
 
             -- * rewrite status
             -- btw gray out on rewrite level does not mean it is disabled, it will still work fine even when FIM is disabled
             local rewrite_model = local_share.get_rewrite_model()
             local level = local_share.get_rewrite_reasoning_level():upper()
-            local rewrite_status = rewrite_model .. level
-            if rewrite_model == models.GPTOSS then
-                rewrite_status = rewrite_status .. level:sub(1, 1)
-            elseif rewrite_model == models.GLM then
-                rewrite_status = "GLM" .. level
-            end
-            rewrite_status = "r/" .. rewrite_status
+            local rewrite_status = "r/" .. rewrite_model .. level:sub(1, 1)
             table.insert(icons, rewrite_status)
 
             -- * agents status
             local agents_model = local_share.get_agents_model()
             local level = local_share.get_agents_reasoning_level():upper()
-            local agents_status = agents_model .. level
-            if agents_model == models.GPTOSS then
-                agents_status = agents_status .. level:sub(1, 1)
-            elseif agents_model == models.GLM then
-                agents_status = "GLM"
-            end
-            agents_status = "a/" .. agents_status
+            local agents_status = "a/" .. agents_model .. level:sub(1, 1)
             table.insert(icons, agents_status)
 
             if M.last_fim_stats then
