@@ -112,7 +112,7 @@ class LiveTraceViewerApp(TerminalSizedApp):
     Screen { layout: vertical; }
     #transcript {
         width: 100%; height: 1fr;
-        border: round $accent; background: transparent;
+        border: none; background: transparent;
         scrollbar-gutter: stable;
     }
     .trace-message { width: 100%; height: auto; background: transparent; }

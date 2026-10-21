@@ -121,7 +121,7 @@ class TraceViewerApp(TerminalSizedApp):
 
     CSS = """
     RichLog {
-        border: round $accent;
+        border: none;
         background: transparent;
         width: 100%; height: 1fr;
         scrollbar-gutter: stable;
