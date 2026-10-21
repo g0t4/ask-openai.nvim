@@ -1,4 +1,5 @@
 local local_share = require("ask-openai.config.local_share")
+local models = require("ask-openai.config.models")
 
 local M = {}
 
@@ -48,7 +49,7 @@ function M.get_endpoints()
         qwen = {
             base_url = qwen3_url,
         },
-        deepseek = {
+        [models.DEEPSEEK] = {
             base_url = deepseek_url,
         },
         gptoss = {
@@ -72,6 +73,8 @@ end
 ---@param config_model_slug string   -- this is an abbreviated string used in the config file to store which model to use for a given situation, not the same as abbreviated model name NOR full model name from llama.cpp
 function M.get_base_url(config_model_slug)
     local endpoints = M.get_endpoints()
+    -- Accept selections saved before the DeepSeek slug was renamed.
+    if config_model_slug == "deepseek" then config_model_slug = models.DEEPSEEK end
     if endpoints[config_model_slug] then
         return endpoints[config_model_slug].base_url
     end

@@ -23,18 +23,25 @@ local function detect(body)
 end
 
 function M.get(base_url)
+    if type(base_url) ~= "string" or base_url == "" then
+        return { name = "NO_ENDPOINT", backend = "unknown" }
+    end
     return snapshots[base_url] or { name = "Pending...", backend = "unknown", base_url = base_url }
 end
 
 function M.when_ready(base_url, callback)
     callback(M.get(base_url))
-    if not snapshots[base_url] then
+    if type(base_url) == "string" and base_url ~= "" and not snapshots[base_url] then
         waiting[base_url] = waiting[base_url] or {}
         table.insert(waiting[base_url], callback)
     end
 end
 
 function M.refresh(base_url, callback)
+    if type(base_url) ~= "string" or base_url == "" then
+        if callback then callback(M.get(base_url)) end
+        return
+    end
     local generation = (generations[base_url] or 0) + 1
     generations[base_url] = generation
     snapshots[base_url] = nil -- never retain stale data after a switch or failure

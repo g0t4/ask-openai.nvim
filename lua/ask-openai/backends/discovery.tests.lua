@@ -11,6 +11,27 @@ describe("backend discovery", function()
         package.loaded["ask-openai.backends.llama_cpp.llama_server_client"] = original_client
         package.loaded["ask-openai.backends.discovery"] = original_discovery
     end)
+    it("reports missing endpoints without indexing nil or starting a request", function()
+        package.loaded["ask-openai.backends.llama_cpp.llama_server_client"] = {}
+        vim.system = function() error("unexpected HTTP request") end
+        local d = require("ask-openai.backends.discovery")
+        local result
+        d.when_ready(nil, function(entry) result = entry end)
+        assert.equals("NO_ENDPOINT", result.name)
+        assert.equals("unknown", result.backend)
+        d.refresh(nil, function(entry) result = entry end)
+        assert.equals("NO_ENDPOINT", result.name)
+        assert.equals("NO_ENDPOINT", d.get("").name)
+    end)
+
+    it("resolves the renamed DeepSeek selection and its legacy slug", function()
+        package.loaded["ask-openai.backends.llama_cpp.llama_server_client"] = {}
+        local config = require("ask-openai.config")
+        local models = require("ask-openai.config.models")
+        assert.is_string(config.get_base_url(models.DEEPSEEK))
+        assert.equals(config.get_base_url(models.DEEPSEEK), config.get_base_url("deepseek"))
+    end)
+
     it("probes asynchronously, detects servers, rejects stale responses and clears failures", function()
         package.loaded['ask-openai.backends.llama_cpp.llama_server_client'] = {
          extract_model_info = function(body) local m = (body.data or {})[1]; return m and { name = m.id } end,
