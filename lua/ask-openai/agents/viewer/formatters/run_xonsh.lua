@@ -1,5 +1,4 @@
 local log = require("devtools.logs.logger").universal()
-local HLGroups = require("ask-openai.hlgroups")
 local safely = require("ask-openai.helpers.safely")
 local base = require("ask-openai.agents.viewer.formatters.base")
 
@@ -76,38 +75,6 @@ local function append_args(lines, args_json, decoded_args)
     end
 end
 
---- Append the MCP-style tool result (STDOUT / STDERR / generic text) to the lines.
----
----@param lines LinesBuilder
----@param tool_call ToolCall
-local function append_result(lines, tool_call)
-    local output = tool_call.call_output
-    if not output or not output.result or not output.result.content then
-        return
-    end
-
-    ---@type MCP_ContentBlock[]
-    local content = output.result.content
-    for _, block in ipairs(content) do
-        local name = block.name
-        local text = tostring(block.text or "")
-
-        if name == "STDOUT" or name == "STDERR" then
-            if text and #text > 0 then
-                lines:append_text_fold_if_long(name, text)
-            end
-        elseif block.type == "text" then
-            if name and #name > 0 then
-                lines:append_text(name .. ": " .. text)
-            else
-                lines:append_text(text)
-            end
-        else
-            lines:append_unexpected_text("  UNEXPECTED type: \n" .. vim.inspect(block))
-        end
-    end
-end
-
 ---@type ToolCallFormatter
 function M.format(lines, tool_call, message)
     local args_json = tool_call["function"].arguments
@@ -128,7 +95,7 @@ function M.format(lines, tool_call, message)
     end
 
     -- * tool result
-    append_result(lines, tool_call)
+    base.render_tool_result(lines, tool_call)
 end
 
 return M

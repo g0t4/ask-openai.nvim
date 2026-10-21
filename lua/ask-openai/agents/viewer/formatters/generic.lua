@@ -1,5 +1,3 @@
-local log = require("devtools.logs.logger").universal()
-local HLGroups = require("ask-openai.hlgroups")
 local safely = require("ask-openai.helpers.safely")
 local base = require("ask-openai.agents.viewer.formatters.base")
 
@@ -87,84 +85,7 @@ function M.format(lines, tool_call, message)
         return
     end
 
-    -- TODO add failure recovery to building messages for logs... do not kill things b/c a formatter failed!
-    --  allow agent to continue even if formatters are FUUUUU
-
-    -- * show error if the tool call failed
-    local output = tool_call.call_output
-    if output and output.error then
-        local error_message = output.error.message
-        if error_message then
-            local is_mcp_like_output = output:is_mcp()
-            if is_mcp_like_output then
-                lines:append_unexpected_text("ERROR: " .. error_message)
-            else
-                lines:append_text("ERROR: " .. error_message)
-            end
-        end
-        return
-    end
-
-    local is_mcp_like_output = output and output:is_mcp()
-    if is_mcp_like_output then
-        ---@type MCP_ContentBlock[]
-        local content = output.result.content
-        if type(content) == "string" then
-            -- TODO add generic formatter that reverse parses flattened content (i.e. after restore, perhaps eventually we'll flatten ahead of formatting entirely even on initial request's response?)
-            lines:append_text_fold_if_long("", content)
-            return
-        end
-
-        local multiple_outputs = #content > 1
-        for _, output in ipairs(content) do
-            local name = output.name
-            local text = tostring(output.text or "")
-            -- * skip binary media types (e.g. images) to avoid dumping base64 payloads
-            if output.type == "image" then
-                lines:append_text("[ image omitted ]")
-                goto continue
-            end
-            if not text then
-                -- PRN log and/or skip?
-                if name then
-                    lines:append_text(name)
-                else
-                    lines:append_text("[ empty text ]")
-                end
-            elseif name == "STDOUT" then
-                if text then
-                    lines:append_text_fold_if_long("STDOUT", text)
-                end
-            else
-                -- GENERIC output type
-                if (name == nil or name == "") and multiple_outputs then
-                    name = "[NO NAME] and multiple outputs" -- heads up for now so I can identify scenarios/tools, can remove this later
-                end
-                if output.type == "text" then
-                    local is_multi_line = text:match("\n")
-                    if is_multi_line then
-                        if name then
-                            lines:append_text(name .. ":")
-                        end
-                        lines:append_text(text)
-                    else
-                        -- single line
-                        if name then
-                            lines:append_text(name .. ": " .. text)
-                        else
-                            lines:append_text(text)
-                        end
-                    end
-                else
-                    lines:append_unexpected_text("  UNEXPECTED type: \n" .. vim.inspect(output))
-                end
-            end
-            ::continue::
-        end
-    else
-        lines:append_unexpected_text("TODO NON-MCP tool result generic formatting"
-            .. "\n" .. vim.inspect(output))
-    end
+    base.render_tool_result(lines, tool_call)
 end
 
 return M

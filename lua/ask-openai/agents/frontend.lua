@@ -933,15 +933,15 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(trace)
                 tool_call.call_output.duration_ms = tool_call_duration_ms
                 log:trace("tool_call_output", vim.inspect(tool_call_output))
 
-                -- * triggers UI updates to show tool results
-                update_ui_chat_viewer(trace)
-
                 -- * map tool result to a new TxChatMessage (to send back to model)
                 local tool_response_message = TxChatMessage:tool_result(tool_call)
                 -- log:jsonify_compact_trace("tool_message:", tool_response_message)
                 tool_call.response_message = tool_response_message
                 log:info("tool_call", tool_call)
                 trace:add_message(tool_response_message)
+
+                -- Render the same flattened response content sent to the model.
+                update_ui_chat_viewer(trace)
 
                 if request:any_outstanding_tool_calls() or request.already_sent then
                     return

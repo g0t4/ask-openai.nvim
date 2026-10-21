@@ -1,4 +1,3 @@
-local HLGroups = require("ask-openai.hlgroups")
 local base = require("ask-openai.agents.viewer.formatters.base")
 local safely = require("ask-openai.helpers.safely")
 
@@ -32,15 +31,7 @@ function M.format(lines, tool_call, message)
         return
     end
 
-    -- tool result
-    local output = tool_call.call_output
-    if output and output.result and output.result.content then
-        for _, content in ipairs(output.result.content) do
-            if content.text and #content.text > 0 then
-                lines:append_text(content.text)
-            end
-        end
-    end
+    base.render_tool_result(lines, tool_call)
 end
 
 return M

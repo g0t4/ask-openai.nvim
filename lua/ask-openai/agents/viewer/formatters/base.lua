@@ -113,6 +113,36 @@ function M.render_progress(lines, tool_call, is_done)
     end
 end
 
+local function append_response_text(lines, text)
+    local text_lines = vim.split(text, "\n")
+    if #text_lines > 6 then
+        lines:append_lines(vim.list_slice(text_lines, 1, 3))
+        lines:append_folded_styled_lines(vim.list_slice(text_lines, 4), "")
+    else
+        lines:append_text(text)
+    end
+end
+
+--- Render the already-built model-bound tool response without flattening it again.
+---@param lines LinesBuilder
+---@param tool_call ToolCall
+function M.render_tool_result(lines, tool_call)
+    local response_message = tool_call.response_message
+    if not response_message then return end
+    local content = response_message.content
+    if type(content) == "string" then
+        append_response_text(lines, content)
+    elseif type(content) == "table" then
+        for _, block in ipairs(content) do
+            if block.type == "text" then
+                append_response_text(lines, block.text or "")
+            elseif block.type == "image_url" then
+                lines:append_text("[ image omitted ]")
+            end
+        end
+    end
+end
+
 function M.add_generic_header(lines, tool_call, header)
     local func = tool_call["function"]
     local header = header or func.name or ""

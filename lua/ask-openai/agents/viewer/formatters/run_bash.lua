@@ -1,5 +1,4 @@
 local log = require("devtools.logs.logger").universal()
-local HLGroups = require("ask-openai.hlgroups")
 local safely = require("ask-openai.helpers.safely")
 local argv_formatter = require("ask-openai.agents.viewer.formatters.argv_formatter")
 local base = require("ask-openai.agents.viewer.formatters.base")
@@ -81,47 +80,7 @@ function M.format(lines, tool_call, message)
         return
     end
 
-    -- * tool result
-    local has_structured_content = tool_call.call_output.result.structuredContent
-    if has_structured_content then
-        --- https://modelcontextprotocol.io/specification/2025-06-18/server/tools#tool-result
-
-        -- * TESTING:
-        -- - date command is one liner
-        -- - `ls -R` for lots of output
-
-        ---@type MCP_ContentBlock[]
-        local structuredContent = tool_call.call_output.result.structuredContent
-        local keys = vim.tbl_keys(structuredContent)
-        log:info("structuredContent", structuredContent)
-        for _, key_raw in ipairs(keys) do
-            local value = structuredContent[key_raw]
-            if type(value) ~= "string" then
-                log:warn("unexpected value type in run_bash/run_xonsh formatter... heads up in case you want to handle it different, key:" .. key_raw, ", value:", value)
-                value = vim.inspect(value)
-            end
-            local skip = value == vim.NIL
-            if not skip then
-                local display_key = key_raw:upper()
-                if display_key == "STDOUT" or display_key == "STDERR" then
-                    lines:append_text_fold_if_long(display_key, tostring(value))
-                else
-                    local is_multi_line = value:match("\n")
-                    if is_multi_line then
-                        lines:append_text(display_key)
-                        lines:append_text(value)
-                    else
-                        -- single line
-                        lines:append_text(display_key .. ": " .. value)
-                    end
-                end
-            end
-        end
-    else
-        lines:append_text("unexpected tool result type in run_bash/run_xonsh formatter")
-        lines:append_text(vim.inspect(tool_call.call_output))
-        log:error("unexpected tool result type in run_bash/run_xonsh formatter", tool_call.call_output)
-    end
+    base.render_tool_result(lines, tool_call)
 end
 
 return M

@@ -1,4 +1,3 @@
-local HLGroups = require("ask-openai.hlgroups")
 local safely = require("ask-openai.helpers.safely")
 local base = require("ask-openai.agents.viewer.formatters.base")
 
@@ -91,44 +90,7 @@ function M.format(lines, tool_call, message)
         return
     end
 
-    -- * tool result
-    local output = tool_call.call_output
-    local is_mcp = output and output.result and output.result.content
-    if is_mcp then
-        ---@type MCP_ContentBlock[]
-        local content = output.result.content
-
-        local multiple_outputs = #content > 1
-        for _, output in ipairs(content) do
-            local name = output.name
-            local text = tostring(output.text or "")
-            if not text then
-                if name then
-                    lines:append_text(name)
-                else
-                    lines:append_text("[ empty text ]")
-                end
-            elseif output.type == "text" then
-                local is_multi_line = text:match("\n")
-                if is_multi_line then
-                    if name then
-                        lines:append_text(name .. ":")
-                        lines:append_text(text)
-                    else
-                        lines:append_text(text)
-                    end
-                else
-                    if name then
-                        lines:append_text(name .. ": " .. text)
-                    else
-                        lines:append_text(text)
-                    end
-                end
-            else
-                lines:append_unexpected_text("  UNEXPECTED type: \n" .. vim.inspect(output))
-            end
-        end
-    end
+    base.render_tool_result(lines, tool_call)
 end
 
 return M

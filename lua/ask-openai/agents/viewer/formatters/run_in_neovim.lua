@@ -1,4 +1,3 @@
-local HLGroups = require("ask-openai.hlgroups")
 local safely = require("ask-openai.helpers.safely")
 local base = require("ask-openai.agents.viewer.formatters.base")
 
@@ -27,9 +26,7 @@ function M.format(lines, tool_call, message)
         return
     end
 
-    -- currently expression result is the only item in the content list, using an MCP like output though with type/name... ignore that and just get the value to display
-    local first_content = tool_call.call_output.result.content[1]
-    lines:append_text(first_content.text)
+    base.render_tool_result(lines, tool_call)
 end
 
 return M
