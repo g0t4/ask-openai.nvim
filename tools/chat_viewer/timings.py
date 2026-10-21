@@ -297,8 +297,8 @@ def format_stats_line(timings: ModelTimings | None, color: str = "dim") -> str:
         lines.append(f"[{color}]cached: {_humanize_int(timings.cached_tokens)} tokens[/]")
 
     if timings.backend == "vllm":
-        lines.append(f"[{color}]in (includes cached): {_humanize_int(timings.prompt_tokens)} tokens[/]")
-        lines.append(f"[{color}]out: {_humanize_int(timings.predicted_tokens)} tokens[/]")
+        lines.append(f"[{color}]in (includes cached): {_humanize_int(timings.prompt_tokens)}[/]")
+        lines.append(f"[{color}]out: {_humanize_int(timings.predicted_tokens)}[/]")
         if timings.reasoning_tokens is not None:
             lines.append(f"[{color}]reasoning: {_humanize_int(timings.reasoning_tokens)} tokens[/]")
         for label, value, unit in (
@@ -314,11 +314,11 @@ def format_stats_line(timings: ModelTimings | None, color: str = "dim") -> str:
 
     # Inbound speed
     if timings.prompt_tokens_per_second > 0:
-        lines.append(f"[{color}]in: {_humanize_int(timings.prompt_tokens)} tokens @ {_humanize_float(timings.prompt_tokens_per_second)} tok/s[/]")
+        lines.append(f"[{color}]in: {_humanize_int(timings.prompt_tokens)} @ {_humanize_float(timings.prompt_tokens_per_second)} tok/s[/]")
 
     # Outbound speed
     if timings.predicted_tokens_per_second > 0:
-        lines.append(f"[{color}]out: {_humanize_int(timings.predicted_tokens)} tokens @ {_humanize_float(timings.predicted_tokens_per_second)} tok/s[/]")
+        lines.append(f"[{color}]out: {_humanize_int(timings.predicted_tokens)} @ {_humanize_float(timings.predicted_tokens_per_second)} tok/s[/]")
 
     # Draft tokens (speculative decoding / MTP)
     if timings.draft_tokens is not None and timings.draft_tokens > 0:
