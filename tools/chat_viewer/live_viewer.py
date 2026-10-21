@@ -93,6 +93,12 @@ def unchanged_prefix(previous: list[dict], current: list[dict]) -> int:
     return min(len(previous), len(current))
 
 
+class TraceViewport(VerticalScroll):
+    def on_resize(self) -> None:
+        # Listen to the viewport itself, after its new layout dimensions exist.
+        self.call_after_refresh(self.app._reflow_after_resize)
+
+
 class LiveTraceViewerApp(App):
     TITLE = "Live Agent Traces"
     BINDINGS = [
@@ -102,8 +108,13 @@ class LiveTraceViewerApp(App):
         Binding("q", "quit", "Quit"),
     ]
     CSS = """
-    #transcript { border: round $accent; background: transparent; }
-    .trace-message { height: auto; background: transparent; }
+    Screen { layout: vertical; }
+    #transcript {
+        width: 100%; height: 1fr;
+        border: round $accent; background: transparent;
+        scrollbar-gutter: stable;
+    }
+    .trace-message { width: 100%; height: auto; background: transparent; }
     """
 
     def __init__(self, directory: Path, poll_interval: float = 0.25) -> None:
@@ -115,6 +126,7 @@ class LiveTraceViewerApp(App):
         self._polling = False
         self._live_view_mounted = False
         self._render_lock = asyncio.Lock()
+        self._rendered_viewport_width: int | None = None
 
     def get_css_variables(self) -> dict[str, str]:
         variables = super().get_css_variables()
@@ -124,7 +136,7 @@ class LiveTraceViewerApp(App):
 
     def compose(self) -> ComposeResult:
         yield Header()
-        yield VerticalScroll(Static("Waiting for an agent trace…", id="waiting"), id="transcript")
+        yield TraceViewport(Static("Waiting for an agent trace…", id="waiting"), id="transcript")
         yield Footer()
 
     async def on_mount(self) -> None:
@@ -159,11 +171,13 @@ class LiveTraceViewerApp(App):
 
     def _message_widget(self, snapshot: TraceSnapshot, index: int) -> Static:
         output = io.StringIO()
-        console = Console(file=output, width=max(20, self.size.width - 4),
+        transcript = self.query_one("#transcript", VerticalScroll)
+        self._rendered_viewport_width = max(1, transcript.scrollable_content_region.width)
+        console = Console(file=output, width=self._rendered_viewport_width,
                           color_system="truecolor", force_terminal=True)
         try:
             viewer.render_messages_to_console(console, [snapshot.messages[index]], start_index=index + 1,
-                                              context_messages=snapshot.messages)
+                                              context_messages=snapshot.messages, full_width=True)
         except Exception as error:
             console.print(f"Unable to render message #{index + 1}: {error}", markup=False, style="red")
         widget = Static(Text.from_ansi(output.getvalue()), id=f"message-{index}", classes="trace-message")
@@ -195,9 +209,11 @@ class LiveTraceViewerApp(App):
         else:
             self.call_after_refresh(transcript.scroll_to, y=scroll_y, animate=False)
 
-    async def on_resize(self) -> None:
+    async def _reflow_after_resize(self) -> None:
         if self._live_view_mounted and self.snapshot:
-            await self.update_trace(self.snapshot, full=True)
+            width = max(1, self.query_one("#transcript", VerticalScroll).scrollable_content_region.width)
+            if width != self._rendered_viewport_width:
+                await self.update_trace(self.snapshot, full=True)
 
     async def action_toggle_all(self) -> None:
         viewer.SHOW_ALL = not viewer.SHOW_ALL

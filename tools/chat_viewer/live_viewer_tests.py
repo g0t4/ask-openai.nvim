@@ -139,3 +139,42 @@ async def test_startup_and_timer_automatically_follow_new_saves(tmp_path):
                 break
         assert app.snapshot.path == second
         assert len(app.query_one('#transcript').children) == 1
+
+
+def test_live_renderer_can_fill_a_wide_terminal_without_changing_cli_bubbles():
+    message = {"role": "assistant", "content": "wide content " * 80}
+    output = StringIO()
+    viewer.render_messages_to_console(Console(file=output, width=180), [message], full_width=True)
+    assert max(len(line.rstrip()) for line in output.getvalue().splitlines()) > 150
+    output = StringIO()
+    viewer.render_messages_to_console(Console(file=output, width=180), [message])
+    assert max(len(line.rstrip()) for line in output.getvalue().splitlines()) <= 100
+
+
+@pytest.mark.asyncio
+async def test_live_transcript_fills_terminal_and_reflows_after_resize(tmp_path, monkeypatch):
+    save(tmp_path / 'wide-trace.json', [{"role":"assistant", "content":"long message " * 1000}], 1000)
+    widths = []
+    original_render = viewer.render_messages_to_console
+    def capture_width(console, *args, **kwargs):
+        widths.append(console.width)
+        return original_render(console, *args, **kwargs)
+    monkeypatch.setattr(viewer, 'render_messages_to_console', capture_width)
+    app = LiveTraceViewerApp(tmp_path, poll_interval=3600)
+    async with app.run_test(size=(160, 50)) as pilot:
+        await pilot.pause()
+        transcript = app.query_one('#transcript', VerticalScroll)
+        assert transcript.region.width == 160
+        assert transcript.region.height == 48  # one header and one footer row
+        assert widths[-1] == transcript.scrollable_content_region.width
+        assert widths[-1] > 100
+        await pilot.resize_terminal(220, 60)
+        await pilot.pause()
+        assert transcript.region.width == 220
+        assert transcript.region.height == 58
+        assert widths[-1] == transcript.scrollable_content_region.width
+        await pilot.resize_terminal(60, 20)
+        await pilot.pause()
+        assert transcript.region.width == 60
+        assert transcript.region.height == 18
+        assert widths[-1] == transcript.scrollable_content_region.width

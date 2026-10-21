@@ -1351,14 +1351,14 @@ def is_model_input(role: str) -> bool:
     """
     return role in ("user", "user_raw", "tool", "system", "developer")
 
-def print_message_panel(title: str, color: str, content: TreeWrapper, align: str) -> None:
+def print_message_panel(title: str, color: str, content: TreeWrapper, align: str, *, full_width: bool = False) -> None:
     """Render a single message as an aligned panel for a chat-like layout.
 
     User messages are right-aligned, everything else left-aligned. The panel is
     capped at a readable width so short messages read as bubbles instead of
     spanning the full terminal width.
     """
-    max_width = max(20, min(_console.width - 4, 100))
+    max_width = _console.width if full_width else max(20, min(_console.width - 4, 100))
     # Open speech-bubble look: keep the border on the side the message hugs.
     chat_box = CHAT_BOX_RIGHT if align == "right" else CHAT_BOX_LEFT
     panel = Panel(
@@ -1375,7 +1375,7 @@ def print_message_panel(title: str, color: str, content: TreeWrapper, align: str
     _console.print()  # blank line between messages
 
 
-def print_message(msg: dict, idx: int, requests_by_id: dict[str, dict[str, Any]]):
+def print_message(msg: dict, idx: int, requests_by_id: dict[str, dict[str, Any]], *, full_width: bool = False):
     msg = deepcopy(msg) # some builders progressively strip the key/value pairs and then use a final generic dump for the rest, so clone first so we don't wipe out the message that we might need to use elsewhere
     role = msg.get("role", "").lower()
     display_role = get_display_role(role)
@@ -1399,10 +1399,10 @@ def print_message(msg: dict, idx: int, requests_by_id: dict[str, dict[str, Any]]
         return
 
     align = "right" if is_model_input(role) else "left"
-    print_message_panel(title, color, root, align)
+    print_message_panel(title, color, root, align, full_width=full_width)
 
 
-def render_messages_to_console(console, messages, *, start_index=1, context_messages=None) -> None:
+def render_messages_to_console(console, messages, *, start_index=1, context_messages=None, full_width=False) -> None:
     """Render one or more messages using the same formatting as a full trace.
 
     Pass the full history as context_messages when rendering a changed suffix,
@@ -1416,7 +1416,7 @@ def render_messages_to_console(console, messages, *, start_index=1, context_mess
             messages if context_messages is None else context_messages
         )
         for index, message in enumerate(messages, start=start_index):
-            print_message(message, index, requests_by_id)
+            print_message(message, index, requests_by_id, full_width=full_width)
     finally:
         _console = previous_console
 
