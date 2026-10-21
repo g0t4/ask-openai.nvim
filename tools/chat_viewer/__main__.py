@@ -80,6 +80,7 @@ CHAT_BOX_LEFT = box.Box(
 
 preapproved_file_patterns: list[re.Pattern] = []
 SHOW_ALL = False
+SHOW_STATS = False
 # When False, agent reasoning is rendered verbatim (no inline markdown styling)
 # for the rare case where a long/ambiguous block is easier to read as-is.
 STYLE_REASONING = True
@@ -1245,7 +1246,7 @@ def build_assistant_message(msg: dict, color: str) -> TreeWrapper:
     root = TreeWrapper.hidden_root()
 
     # Show per-message timings if present
-    if SHOW_ALL:
+    if SHOW_ALL or SHOW_STATS:
         msg_timings = parse_timings(msg)
         if msg_timings:
             # Skip the compact one-liner (format_timings_display); the verbose
@@ -1401,6 +1402,25 @@ def print_message(msg: dict, idx: int, requests_by_id: dict[str, dict[str, Any]]
     print_message_panel(title, color, root, align)
 
 
+def render_messages_to_console(console, messages, *, start_index=1, context_messages=None) -> None:
+    """Render one or more messages using the same formatting as a full trace.
+
+    Pass the full history as context_messages when rendering a changed suffix,
+    so tool results still resolve their originating request.
+    """
+    global _console
+    previous_console = _console
+    _console = console
+    try:
+        requests_by_id = build_tool_call_requests_by_id(
+            messages if context_messages is None else context_messages
+        )
+        for index, message in enumerate(messages, start=start_index):
+            print_message(message, index, requests_by_id)
+    finally:
+        _console = previous_console
+
+
 def render_trace_to_console(console, messages, model_name, timings) -> None:
     """Render a full trace to the given rich Console.
 
@@ -1421,11 +1441,7 @@ def render_trace_to_console(console, messages, model_name, timings) -> None:
     else:
         print_model_info(model_name, timings)
 
-    # * precompute the tool_call_id -> request lookup so tool result messages can
-    #   reference their request (function name + arguments) for formatting
-    requests_by_id = build_tool_call_requests_by_id(messages)
-    for idx, message in enumerate(messages, start=1):
-        print_message(message, idx, requests_by_id)
+    render_messages_to_console(console, messages)
 
     # ProgressBar speed summary for assistant responses
     all_assistant_stats = [
@@ -1557,8 +1573,10 @@ def main() -> None:
         "trace_file",
         nargs="?",
         default=None,
-        help="path to trace file (or stdin if omitted)",
+        help="path to trace file (stdin when piped; live agent viewer when omitted)",
     )
+    parser.add_argument("--watch", nargs="?", const="", metavar="DIRECTORY",
+                        help="follow the newest agent trace in DIRECTORY (default: Neovim agent state directory)")
     parser.add_argument("--all", action="store_true", help="show all content (no exclusions)")
     parser.add_argument("--html", action="store_true", help="export rendered output as HTML")
     parser.add_argument(
@@ -1581,6 +1599,14 @@ def main() -> None:
     html_path: str | None = None
 
     load_preapproved_files()
+
+    if args.watch is not None or (not args.trace_file and sys.stdin.isatty() and not export_html):
+        if args.trace_file or export_html:
+            parser.error("--watch cannot be combined with a trace file or --html")
+        from tools.chat_viewer.live_viewer import run_live, default_trace_directory
+        directory = Path(args.watch).expanduser() if args.watch else default_trace_directory()
+        run_live(directory, show_all=SHOW_ALL, style_reasoning=STYLE_REASONING)
+        return
 
     trace_file_path = Path(args.trace_file) if args.trace_file else None
 
