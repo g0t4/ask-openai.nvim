@@ -29,7 +29,7 @@ end
 
 function M.format(response)
     response = object(response)
-    local counts, timing_parts = {}, {}
+    local counts, timing_parts, output_details = {}, {}, {}
     if type(response.timings) == "table" then
         local timings = response.timings
         add_number(counts, "cached: ", timings.cache_n)
@@ -42,27 +42,33 @@ function M.format(response)
                 counts[#counts + 1] = text
             end
         end
-        add_draft(counts, timings.draft_n, timings.draft_n_accepted)
+        add_draft(output_details, timings.draft_n, timings.draft_n_accepted)
     else
         local usage, metrics = object(response.usage), object(response.metrics)
         local prompt_details = object(usage.prompt_tokens_details)
         add_number(counts, "cached: ", prompt_details.cached_tokens)
         add_number(counts, "in (includes cached): ", usage.prompt_tokens)
         add_number(counts, "out: ", usage.completion_tokens)
-        add_number(counts, "reasoning: ", object(usage.completion_tokens_details).reasoning_tokens)
+        local reasoning_tokens = object(usage.completion_tokens_details).reasoning_tokens
+        if type(reasoning_tokens) == "number" and reasoning_tokens > 0 then
+            add_number(output_details, "reasoning: ", reasoning_tokens)
+        end
         local speculative = object(metrics.speculative_decoding)
-        add_draft(counts, speculative.num_draft_tokens, speculative.num_accepted_draft_tokens,
+        add_draft(output_details, speculative.num_draft_tokens, speculative.num_accepted_draft_tokens,
             speculative.draft_acceptance_rate)
-        add_number(counts, "mean acceptance length: ", speculative.mean_acceptance_length, "%.2f")
+        add_number(output_details, "  mean acceptance length: ", speculative.mean_acceptance_length, "%.2f")
         add_number(timing_parts, "TTFT: ", metrics.time_to_first_token_ms, "%.1f ms")
-        add_number(timing_parts, "queue: ", metrics.queue_time_ms, "%.1f ms")
-        add_number(timing_parts, "decode: ", metrics.generation_time_ms, "%.1f ms")
-        add_number(timing_parts, "mean ITL: ", metrics.mean_itl_ms, "%.1f ms")
+        if type(metrics.queue_time_ms) == "number" and metrics.queue_time_ms >= 0.05 then
+            add_number(timing_parts, "queue: ", metrics.queue_time_ms, "%.1f ms")
+        end
+        add_number(output_details, "decode: ", metrics.generation_time_ms, "%.1f ms")
+        add_number(output_details, "mean ITL: ", metrics.mean_itl_ms, "%.1f ms")
         -- vLLM's tokens_per_second includes prefill; it isn't decode throughput.
         add_number(timing_parts, "overall output: ", metrics.tokens_per_second, "%.1f tok/s")
     end
     local lines = {}
     if #counts > 0 then lines[#lines + 1] = table.concat(counts, " | ") end
+    for _, text in ipairs(output_details) do lines[#lines + 1] = "  " .. text end
     if #timing_parts > 0 then lines[#lines + 1] = table.concat(timing_parts, " | ") end
     return lines
 end

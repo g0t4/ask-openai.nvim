@@ -48,6 +48,8 @@ export function formatResponseStats(response?: ResponseStats | null): string[] {
     ] as const) {
       if (value != null) lines.push(`${label}: ${humanizeInt(value)} tokens${rate != null && rate > 0 ? ` @ ${humanizeFloat(rate)} tok/s` : ''}`)
     }
+    const acceptance = draftAcceptance(response)
+    if (acceptance) lines.push(`  draft: ${acceptance}`)
     if (t.prompt_ms != null) lines.push(`prompt: ${humanizeFloat(t.prompt_ms)} ms`)
     if (t.predicted_ms != null) lines.push(`decode: ${humanizeFloat(t.predicted_ms)} ms`)
   } else {
@@ -55,21 +57,24 @@ export function formatResponseStats(response?: ResponseStats | null): string[] {
     const m = response.metrics
     count('cached', u?.prompt_tokens_details?.cached_tokens)
     count('in (includes cached)', u?.prompt_tokens)
+    if (m?.time_to_first_token_ms != null) lines.push(`TTFT: ${humanizeFloat(m.time_to_first_token_ms)} ms`)
+    if (m?.queue_time_ms != null && m.queue_time_ms >= 0.05) lines.push(`queue: ${humanizeFloat(m.queue_time_ms)} ms`)
     count('out', u?.completion_tokens)
-    count('reasoning', u?.completion_tokens_details?.reasoning_tokens)
+    const reasoning = u?.completion_tokens_details?.reasoning_tokens
+    if (reasoning != null && reasoning > 0) count('  reasoning', reasoning)
+    const acceptance = draftAcceptance(response)
+    if (acceptance) lines.push(`  draft: ${acceptance}`)
+    const meanAcceptance = m?.speculative_decoding?.mean_acceptance_length
+    if (meanAcceptance != null) lines.push(`    mean acceptance length: ${humanizeFloat(meanAcceptance)} tokens`)
     for (const [label, value, unit] of [
-      ['TTFT', m?.time_to_first_token_ms, 'ms'], ['queue', m?.queue_time_ms, 'ms'],
-      ['decode', m?.generation_time_ms, 'ms'], ['mean ITL', m?.mean_itl_ms, 'ms'],
-      ['overall output (includes prefill)', m?.tokens_per_second, 'tok/s'],
-      ['mean acceptance length', m?.speculative_decoding?.mean_acceptance_length, 'tokens']
+      ['  decode', m?.generation_time_ms, 'ms'], ['  mean ITL', m?.mean_itl_ms, 'ms'],
+      ['overall output (includes prefill)', m?.tokens_per_second, 'tok/s']
     ] as const) {
       if (value != null) lines.push(`${label}: ${humanizeFloat(value)} ${unit}`)
     }
   }
   const total = totalTokens(response)
   if (total != null) lines.push(`total: ${humanizeInt(total)} tokens`)
-  const acceptance = draftAcceptance(response)
-  if (acceptance) lines.push(`draft: ${acceptance}`)
   return lines
 }
 

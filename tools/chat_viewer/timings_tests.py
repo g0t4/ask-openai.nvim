@@ -625,3 +625,27 @@ def test_vllm_estimates_require_usable_counts_and_durations() -> None:
     parsed.predicted_tokens = 10
     assert parsed.estimated_decode_tokens_per_second is None
     assert "≈" not in format_stats_line(parsed)
+
+
+def test_vllm_output_details_nested_and_zero_noise_hidden() -> None:
+    from copy import deepcopy
+    for queue in (None, 0, 0.02, 1.25):
+        for reasoning in (None, 0, 7):
+            response = {
+                "usage": {"prompt_tokens": 100, "completion_tokens": 20,
+                          "completion_tokens_details": {"reasoning_tokens": reasoning}},
+                "metrics": {"queue_time_ms": queue, "generation_time_ms": 50,
+                            "mean_itl_ms": 2.5, "speculative_decoding": {
+                                "num_draft_tokens": 10, "num_accepted_draft_tokens": 5,
+                                "mean_acceptance_length": 2}},
+            }
+            original = deepcopy(response)
+            text = format_stats_line(parse_timings(response))
+            assert ("queue:" in text) == (queue is not None and queue >= 0.05)
+            assert ("reasoning:" in text) == (reasoning == 7)
+            if reasoning:
+                assert "]  reasoning: 7 tokens" in text
+            assert text.index("out:") < text.index("]  draft:") < text.index("]    mean acceptance length:")
+            assert "]  decode: 50.0 ms" in text
+            assert "]  mean ITL: 2.5 ms" in text
+            assert response == original

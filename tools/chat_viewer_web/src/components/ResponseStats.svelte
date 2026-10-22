@@ -6,7 +6,7 @@
 </script>
 
 {#if lines.length}
-  <div class="my-3 grid gap-x-6 gap-y-1 sm:grid-cols-2 text-xs text-gray-400 font-mono">
-    {#each lines as line}<div>{line}</div>{/each}
+  <div class="my-3 flex flex-col gap-1 text-xs text-gray-400 font-mono">
+    {#each lines as line}<div class="whitespace-pre-wrap">{line}</div>{/each}
   </div>
 {/if}

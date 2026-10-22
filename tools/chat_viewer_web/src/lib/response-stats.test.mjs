@@ -13,9 +13,11 @@ test('vLLM per-generation stats retain raw semantics and count cached input once
   const original = structuredClone(response)
   const text = formatResponseStats(response).join('\n')
   for (const part of ['in (includes cached): 100', 'out: 20', 'reasoning: 10', 'TTFT: 118.6 ms',
-    'queue: 0.0 ms', 'decode: 52.3 ms', 'overall output (includes prefill): 11.7 tok/s', '1/5 (20.0% accepted)']) {
+    'decode: 52.3 ms', 'overall output (includes prefill): 11.7 tok/s', '1/5 (20.0% accepted)']) {
     assert.ok(text.includes(part), text)
   }
+  assert.ok(!text.includes('queue:'))
+  assert.ok(text.includes('\n  reasoning: 10'))
   assert.equal(totalTokens(response), 120)
   assert.deepEqual(response, original)
   assert.deepEqual(vllmGenerations([{role:'user'}, response, {...response}]).map(row => row.index), [2, 3])
@@ -40,4 +42,25 @@ test('llama-server keeps native prefill/decode rates and additive cache counts',
   assert.ok(!text.includes('NaN'))
   assert.equal(totalTokens(response), 110)
   assert.deepEqual(vllmGenerations([response]), [])
+})
+
+test('output details nest under output and zero queue/reasoning are hidden', () => {
+  for (const queue of [null, 0, 0.02, 1.25]) {
+    for (const reasoning of [null, 0, 7]) {
+      const response = {usage: {completion_tokens: 20, completion_tokens_details: {reasoning_tokens: reasoning}},
+        metrics: {queue_time_ms: queue, generation_time_ms: 50, mean_itl_ms: 2.5,
+          speculative_decoding: {num_draft_tokens: 10, num_accepted_draft_tokens: 5, mean_acceptance_length: 2}}}
+      const original = structuredClone(response)
+      const lines = formatResponseStats(response)
+      assert.equal(lines.some(line => line.startsWith('queue:')), queue != null && queue >= 0.05)
+      assert.equal(lines.some(line => line.includes('reasoning:')), reasoning === 7)
+      if (reasoning) assert.ok(lines.includes('  reasoning: 7 tokens'))
+      const draftIndex = lines.findIndex(line => line.startsWith('  draft:'))
+      assert.ok(draftIndex > lines.indexOf('out: 20 tokens'))
+      assert.equal(lines[draftIndex + 1], '    mean acceptance length: 2.0 tokens')
+      assert.ok(lines.includes('  decode: 50.0 ms'))
+      assert.ok(lines.includes('  mean ITL: 2.5 ms'))
+      assert.deepEqual(response, original)
+    }
+  }
 })

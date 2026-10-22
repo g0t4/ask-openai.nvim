@@ -14,10 +14,12 @@ describe("raw backend response statistics display", function()
         local original = vim.deepcopy(response)
         local rendered = table.concat(stats.format(response), "\n")
         for _, expected in ipairs({ "cached: 80", "in (includes cached): 100", "out: 20", "reasoning: 10",
-            "TTFT: 118.6 ms", "queue: 0.0 ms", "decode: 52.3 ms", "mean ITL: 52.3 ms",
+            "TTFT: 118.6 ms", "decode: 52.3 ms", "mean ITL: 52.3 ms",
             "overall output: 11.7 tok/s", "draft: 1/5 accepted @ 20%", "mean acceptance length: 2.00" }) do
             assert.is_truthy(rendered:find(expected, 1, true), rendered)
         end
+        assert.is_nil(rendered:find("queue:", 1, true))
+        assert.is_truthy(rendered:find("\n  reasoning: 10", 1, true))
         assert.is_nil(rendered:find("prefill", 1, true))
         assert.equals(120, stats.total_tokens(response)) -- cached is already included
         assert.same(original, response)
@@ -41,4 +43,24 @@ describe("raw backend response statistics display", function()
         assert.same({}, stats.format({ usage = vim.NIL, metrics = { time_to_first_token_ms = vim.NIL } }))
         assert.is_nil(stats.total_tokens({}))
     end)
+    it("nests output details and hides zero or rounded-zero queue and reasoning", function()
+        for _, queue in ipairs({ 0, 0.02, 1.25 }) do
+            for _, reasoning in ipairs({ 0, 7 }) do
+                local response = { usage = { completion_tokens = 20,
+                    completion_tokens_details = { reasoning_tokens = reasoning } },
+                    metrics = { queue_time_ms = queue, generation_time_ms = 50, mean_itl_ms = 2.5,
+                        speculative_decoding = { num_draft_tokens = 10, num_accepted_draft_tokens = 5,
+                            mean_acceptance_length = 2 } } }
+                local original = vim.deepcopy(response)
+                local text = table.concat(stats.format(response), "\n")
+                assert.equals(queue >= 0.05, text:find("queue:", 1, true) ~= nil)
+                assert.equals(reasoning > 0, text:find("reasoning:", 1, true) ~= nil)
+                if reasoning > 0 then assert.is_truthy(text:find("\n  reasoning: 7", 1, true)) end
+                assert.is_truthy(text:find("\n  draft: 5/10 accepted @ 50%\n    mean acceptance length: 2.00", 1, true))
+                assert.is_truthy(text:find("\n  decode: 50.0 ms\n  mean ITL: 2.5 ms", 1, true))
+                assert.same(original, response)
+            end
+        end
+    end)
+
 end)

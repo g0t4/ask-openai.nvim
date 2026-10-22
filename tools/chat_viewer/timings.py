@@ -329,21 +329,13 @@ def format_stats_line(timings: ModelTimings | None, color: str = "dim") -> str:
         input_speed = f" @ ≈{_humanize_float(input_rate)} tok/s" if input_rate is not None else ""
         lines.append(f"[{color}]{input_label}: {_humanize_int(input_count)}{input_speed}[/]")
         for label, value in (("TTFT", timings.time_to_first_token_ms), ("queue", timings.queue_time_ms)):
-            if value is not None:
+            if value is not None and (label != "queue" or value >= 0.05):
                 lines.append(f"[{color}]{label}: {_humanize_float(value)} ms[/]")
         output_rate = timings.estimated_decode_tokens_per_second
         output_speed = f" @ ≈{_humanize_float(output_rate)} tok/s" if output_rate is not None else ""
         lines.append(f"[{color}]out: {_humanize_int(timings.predicted_tokens)}{output_speed}[/]")
-        if timings.reasoning_tokens is not None:
-            lines.append(f"[{color}]reasoning: {_humanize_int(timings.reasoning_tokens)} tokens[/]")
-        for label, value, unit in (
-            ("decode", timings.generation_time_ms, "ms"),
-            ("mean ITL", timings.mean_itl_ms, "ms"),
-            ("overall output", timings.overall_output_tokens_per_second, "tok/s"),
-            ("mean acceptance length", timings.mean_acceptance_length, "tokens"),
-        ):
-            if value is not None:
-                lines.append(f"[{color}]{label}: {_humanize_float(value)} {unit}[/]")
+        if timings.reasoning_tokens is not None and timings.reasoning_tokens > 0:
+            lines.append(f"[{color}]  reasoning: {_humanize_int(timings.reasoning_tokens)} tokens[/]")
 
     # Inbound speed
     if timings.prompt_tokens_per_second > 0:
@@ -364,6 +356,17 @@ def format_stats_line(timings: ModelTimings | None, color: str = "dim") -> str:
             lines.append(f"[{color}]  draft: {acceptance_rate} accepted ({_humanize_int(draft_accepted)} / {_humanize_int(timings.draft_tokens)} tokens)[/]")
         else:
             lines.append(f"[{color}]  draft: {_humanize_int(draft_accepted)} accepted ({_humanize_int(draft_accepted)} / {_humanize_int(timings.draft_tokens)} tokens)[/]")
+
+    if timings.backend == "vllm":
+        if timings.mean_acceptance_length is not None:
+            lines.append(f"[{color}]    mean acceptance length: {_humanize_float(timings.mean_acceptance_length)} tokens[/]")
+        for label, value, unit in (
+            ("  decode", timings.generation_time_ms, "ms"),
+            ("  mean ITL", timings.mean_itl_ms, "ms"),
+            ("overall output", timings.overall_output_tokens_per_second, "tok/s"),
+        ):
+            if value is not None:
+                lines.append(f"[{color}]{label}: {_humanize_float(value)} {unit}[/]")
 
     duration = timings.prompt_ms + timings.predicted_ms
     if duration > 0:
