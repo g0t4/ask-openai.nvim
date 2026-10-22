@@ -36,6 +36,7 @@ end
 ---@param request CurlRequestForTrace
 function AgentTrace:set_last_request(request)
     self.last_request = request
+    require("ask-openai.agents.live_trace_stream").begin_request(self, request)
 end
 
 ---@param message TxChatMessage
@@ -48,6 +49,7 @@ function AgentTrace:add_message(message)
         error(error_message)
     end
     table.insert(self.messages, message)
+    require("ask-openai.agents.live_trace_stream").changed(self)
 end
 
 ---@return table body

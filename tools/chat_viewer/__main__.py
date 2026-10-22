@@ -1245,6 +1245,22 @@ def build_raw_completion_message(msg: dict) -> TreeWrapper | None:
 def build_assistant_message(msg: dict, color: str) -> TreeWrapper:
     root = TreeWrapper.hidden_root()
 
+    if msg.get("_partial"):
+        # Incomplete Markdown and tool arguments are displayed verbatim.
+        reasoning = msg.get("reasoning_content")
+        if reasoning:
+            node = root.add(Text("💭 reasoning", style="bright_black italic"))
+            node.add_no_markup(reasoning, style="bright_black italic")
+            root.blank_line()
+        if msg.get("content"):
+            root.add_no_markup(msg["content"])
+        for call in msg.get("tool_calls", []) or []:
+            function = call.get("function") or {}
+            # Preserve the recognizable SSE boundary without parsing partial JSON.
+            root.add_no_markup(function.get("name") or "tool call")
+            root.add_no_markup(function.get("arguments") or "")
+        return root
+
     # Show per-message timings if present
     if SHOW_ALL or SHOW_STATS:
         msg_timings = parse_timings(msg)

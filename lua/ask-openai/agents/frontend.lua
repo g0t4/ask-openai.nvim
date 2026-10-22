@@ -37,6 +37,7 @@ local context_builder = require("ask-openai.agents.context_builder")
 local trace_restorer = require("ask-openai.agents.viewer.trace_restorer")
 local ansi = require("devtools.ansi")
 local safely = require("ask-openai.helpers.safely")
+local live_trace_stream = require("ask-openai.agents.live_trace_stream")
 
 ---@class AgentsFrontend : StreamingFrontend
 local AgentsFrontend = {}
@@ -510,6 +511,7 @@ end
 
 ---@type ExplainError
 function AgentsFrontend.explain_error(text)
+    live_trace_stream.stop(AgentsFrontend.trace, "error")
     vim.schedule(function()
         -- TEST this with:
         -- 1. remove --jinja from llama-server service
@@ -812,6 +814,7 @@ function AgentsFrontend.on_parsed_data_sse(sse_parsed)
 
     local response_metadata = require("ask-openai.backends.response_metadata")
     if response_metadata.capture_final(sse_parsed, request.accumulated_model_response_messages) then
+        live_trace_stream.changed(trace, sse_parsed.model)
         update_ui_chat_viewer(trace)
         return
     end
@@ -821,6 +824,7 @@ function AgentsFrontend.on_parsed_data_sse(sse_parsed)
     end
     local first_choice = sse_parsed.choices[1]
     AgentsFrontend.on_streaming_delta_update_message_history(first_choice, request, sse_parsed)
+    live_trace_stream.changed(trace, sse_parsed.model)
     update_ui_chat_viewer(trace)
 end
 
@@ -862,6 +866,7 @@ function AgentsFrontend.on_curl_exited_successfully()
                 AgentsFrontend.chat_window:stop_spinner("Agent Finished")
             end
         end
+        live_trace_stream.finish_request(trace, reached_final_message and "idle" or "tools")
         AgentsFrontend.clear_undos()
 
         -- * If the agent finished (final message) and there are queued messages (user or tool completions)
@@ -1045,6 +1050,8 @@ function AgentsFrontend.abort_request()
         return
     end
 
+    live_trace_stream.stop(trace, "cancelled")
+
     -- * mark THIS request cancelled so a finishing tool call won't resume the agent
     if trace.last_request then
         trace.last_request.cancelled = true
@@ -1103,6 +1110,7 @@ function AgentsFrontend.interrupt_agent()
     local trace = AgentsFrontend.trace
     -- * capture the request being interrupted BEFORE then_get_assistant_response replaces it
     local interrupted_request = trace and trace.last_request
+    live_trace_stream.stop(trace, "interrupted")
 
     -- * stop the agent like cancel/escape does, marking THIS request cancelled so any
     --   still-running tool call's result is ignored (future requests are unaffected)

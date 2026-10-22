@@ -1,6 +1,7 @@
 """Follow the most recently saved agent trace using the shared Python renderer.
 
 Run ``python -m tools.chat_viewer.live_viewer [directory]`` or ``view_trace --watch``.
+Unix socket streams add in-progress tokens; saved traces remain the recovery path.
 Only changed message suffixes are replaced; unchanged widgets retain their state.
 """
 from __future__ import annotations
@@ -22,6 +23,7 @@ from textual.widgets import Footer, Header, Static
 
 from tools.chat_viewer import __main__ as viewer
 from tools.chat_viewer.terminal_app import TerminalSizedApp
+from tools.chat_viewer.live_stream import TraceSocketSubscriber, StreamSnapshot
 
 
 def default_trace_directory() -> Path:
@@ -42,9 +44,12 @@ class TraceDirectoryWatcher:
     are retried without discarding the displayed snapshot.
     """
     def __init__(self, directory: Path) -> None:
-        self.directory = directory.expanduser()
+        self.directory = directory.expanduser().resolve()
         self._loaded_signature = None
         self.error: str | None = None
+
+    def invalidate(self) -> None:
+        self._loaded_signature = None
 
     def poll(self) -> TraceSnapshot | None:
         candidates = []
@@ -128,6 +133,12 @@ class LiveTraceViewerApp(TerminalSizedApp):
         self._live_view_mounted = False
         self._render_lock = asyncio.Lock()
         self._rendered_viewport_width: int | None = None
+        self._stream_sources: dict[Path, StreamSnapshot] = {}
+        self._pending_stream: tuple[Path, StreamSnapshot] | None = None
+        self._displayed_source: Path | None = None
+        self._newest_update_at = 0.0
+        self.subscriber = TraceSocketSubscriber(self.watcher.directory, self._receive_stream, self._disconnect_stream)
+        self._subscriber_task: asyncio.Task | None = None
 
     def get_css_variables(self) -> dict[str, str]:
         variables = super().get_css_variables()
@@ -147,14 +158,22 @@ class LiveTraceViewerApp(TerminalSizedApp):
         self.query_one("#transcript").focus()
         self.set_interval(self.poll_interval, self.poll_directory)
         await self.poll_directory()
+        self._subscriber_task = asyncio.create_task(self.subscriber.run())
+        self.set_interval(0.1, self.poll_stream)
 
-    def on_unmount(self) -> None:
+    async def on_unmount(self) -> None:
+        if self._subscriber_task:
+            self._subscriber_task.cancel()
+            await asyncio.gather(self._subscriber_task, return_exceptions=True)
         viewer.SHOW_ALL, viewer.STYLE_REASONING, viewer.SHOW_STATS = self._previous_render_options
 
     def _update_title(self) -> None:
         state = "following" if self.follow_latest else "scroll paused · f to follow"
         self.title = f"Live Agent Traces · {self.size.width}×{self.size.height}"
-        if self.watcher.error:
+        if self._displayed_source in self._stream_sources:
+            stream = self._stream_sources[self._displayed_source]
+            self.sub_title = f"{stream.path.name} · {stream.model_name or 'unknown model'} · live: {stream.status} · {state}"
+        elif self.watcher.error:
             self.sub_title = self.watcher.error
         elif self.snapshot:
             self.sub_title = f"{self.snapshot.path.name} · {self.snapshot.model_name or 'unknown model'} · {state}"
@@ -166,10 +185,45 @@ class LiveTraceViewerApp(TerminalSizedApp):
         try:
             snapshot = await asyncio.to_thread(self.watcher.poll)
             if snapshot is not None:
-                await self.update_trace(snapshot)
+                active_stream = self._stream_sources.get(self._displayed_source)
+                # Disk saves can lag the live assistant or contain its previous turn.
+                if active_stream is None or active_stream.path != snapshot.path:
+                    try:
+                        modified_at = snapshot.path.stat().st_mtime
+                    except OSError:
+                        modified_at = 0.0
+                    if modified_at >= self._newest_update_at:
+                        self._newest_update_at = modified_at
+                        self._displayed_source = None
+                        await self.update_trace(snapshot)
             self._update_title()
         finally:
             self._polling = False
+
+    def _receive_stream(self, source: Path, snapshot: StreamSnapshot) -> None:
+        self._stream_sources[source] = snapshot
+        if snapshot.updated_at >= self._newest_update_at:
+            self._newest_update_at = snapshot.updated_at
+            self._pending_stream = (source, snapshot)
+
+    def _disconnect_stream(self, source: Path) -> None:
+        self._stream_sources.pop(source, None)
+        if self._pending_stream and self._pending_stream[0] == source:
+            self._pending_stream = None
+        if self._displayed_source == source:
+            self._displayed_source = None
+            self._newest_update_at = 0.0
+            # Retry even an unchanged save after losing the live connection.
+            self.watcher.invalidate()
+        self._update_title()
+
+    async def poll_stream(self) -> None:
+        pending, self._pending_stream = self._pending_stream, None
+        if pending:
+            source, stream = pending
+            if source in self._stream_sources and stream.updated_at >= self._newest_update_at:
+                self._displayed_source = source
+                await self.update_trace(TraceSnapshot(stream.path, stream.messages, stream.model_name))
 
     def _message_widget(self, snapshot: TraceSnapshot, index: int) -> Static:
         output = io.StringIO()
