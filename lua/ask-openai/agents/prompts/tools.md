@@ -16,10 +16,9 @@ and attaches them as image inputs in a following user message. Native MCP image
 results are attached automatically too. A file path or ordinary base64 text alone
 does not attach an image. Do not paste the payload in your own response or assume
 you have seen the image before receiving the attached image input.
-Tool output has a size limit. Resize/compress images first: keep the encoded URI
-under 120 KB (roughly 90 KB image bytes). If output reports `stdout_truncated`,
-the image was not attached; produce a smaller image and retry. Do not invent
-output-limit arguments that are absent from the tool schema.
+The command server returns full stdout/stderr, so image payloads do not need an
+output-limit argument. If another tool reports `stdout_truncated`, its incomplete
+image cannot be attached; use `run_bash` to print the complete data URI instead.
 
 ## Git repos
 
