@@ -885,6 +885,7 @@ end
 ---@param trace AgentTrace
 function AgentsFrontend.run_tools_and_send_results_back_to_the_model(trace)
     local request = trace.last_request
+    local image_messages = {}
     for _, rx_message in ipairs(request.accumulated_model_response_messages or {}) do
         for _, tool_call in ipairs(rx_message.tool_calls) do
             -- FYI primary interaction (seam) between RxAccumulatedMessage and TxChatMessage (for tool result messages)
@@ -909,7 +910,10 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(trace)
                 log:trace("tool_call_output", vim.inspect(tool_call_output))
 
                 -- * map tool result to a new TxChatMessage (to send back to model)
-                local tool_response_message = TxChatMessage:tool_result(tool_call)
+                local tool_response_message, image_message = TxChatMessage:tool_result(tool_call)
+                if image_message then
+                    image_messages[#image_messages + 1] = image_message
+                end
                 -- log:jsonify_compact_trace("tool_message:", tool_response_message)
                 tool_call.response_message = tool_response_message
                 log:info("tool_call", tool_call)
@@ -923,15 +927,23 @@ function AgentsFrontend.run_tools_and_send_results_back_to_the_model(trace)
                 end
                 request.already_sent = true
 
+                -- Finish every tool reply before injecting user-role image inputs.
+                for _, message in ipairs(image_messages) do
+                    trace:add_message(message)
+                end
+
                 local queued_messages = AgentsFrontend.queued_messages
                 AgentsFrontend.queued_messages = {}
 
                 vim.schedule(function()
+                    if #queued_messages > 0 then
+                        AgentsFrontend.redraw_queued_messages()
+                    end
+                    for _, message in ipairs(image_messages) do
+                        display_user_message_in_chat(plumbing.content_to_display_text(message.content))
+                    end
                     -- * tack on any queued messages (user + tool completions, in arrival order)
                     if #queued_messages > 0 then
-                        -- * clear queued messages in chat_window
-                        AgentsFrontend.redraw_queued_messages()
-
                         -- * show queued messages in chat_window and add them to the trace
                         for _, message in ipairs(queued_messages) do
                             if message.role == "user" then

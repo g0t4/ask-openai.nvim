@@ -34,25 +34,25 @@ end
 
 ---@param tool_call ToolCall
 ---@return OpenAIChatCompletion_ToolResult_TxChatMessage
+---@return TxChatMessage? image_message
 function TxChatMessage:tool_result(tool_call)
     -- FYI see NOTES.md for "fix" => removed `|tojson` from jinja template for message.content
 
     -- * required: role, content, tool_call_id - docs https://platform.openai.com/docs/api-reference/chat/create#chat_create-messages-tool_message
     -- * Unwrap the MCP result into plain text so the model sees raw output
     --   instead of a JSON string wrapping JSON-escaped text (JSON-in-JSON).
-    local content = plumbing.flatten_tool_result_to_text(tool_call.call_output.result)
+    local content, image_urls = plumbing.tool_result_content(tool_call.call_output.result)
 
-    -- If the MCP result carried image(s), forward them to a vision-capable
-    -- model as image_url content blocks. Tool messages accept a content array
-    -- (verified against llama-server), so the image stays attached to its
-    -- tool result instead of being collapsed to a "[image: image/png]" string.
-    local image_urls = plumbing.extract_image_data_urls(tool_call.call_output.result)
+    -- vLLM's DeepSeek template drops image placeholders in tool messages.
+    -- Return a separate user message; the frontend adds it after all tool replies.
+    local image_message
     if #image_urls > 0 then
-        local content_blocks = { { type = "text", text = content } }
+        local name = tool_call["function"] and tool_call["function"].name or "tool"
+        local content_blocks = { { type = "text", text = "Images returned by " .. name .. " (tool_call_id: " .. tool_call.id .. ")." } }
         for _, url in ipairs(image_urls) do
             content_blocks[#content_blocks + 1] = { type = "image_url", image_url = { url = url } }
         end
-        content = content_blocks
+        image_message = TxChatMessage:user(content_blocks)
     end
 
     self = TxChatMessage:new(TX_MESSAGE_ROLES.TOOL, content) --[[@as OpenAIChatCompletion_ToolResult_TxChatMessage]]
@@ -75,7 +75,7 @@ function TxChatMessage:tool_result(tool_call)
     -- PRN add a way to strip these when sending to server? does it matter?
     self.progress_notifications = tool_call.progress_notifications
 
-    return self
+    return self, image_message
 end
 
 ---@param tool_call_id string

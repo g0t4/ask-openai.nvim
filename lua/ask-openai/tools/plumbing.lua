@@ -210,4 +210,42 @@ function M.extract_image_data_urls(result)
     return urls
 end
 
+--- Extract images from both MCP blocks and contiguous base64 data URIs in text.
+--- Keep large encoded payloads out of the text-token stream and chat display.
+---@param result MCP_CallToolResult
+---@return string text
+---@return string[] image_urls
+function M.tool_result_content(result)
+    local urls, seen = {}, {}
+    local function add(url)
+        if not seen[url] then
+            seen[url] = true
+            urls[#urls + 1] = url
+        end
+    end
+    local text = M.flatten_tool_result_to_text(result)
+    text = text:gsub("data:image/[%w.+%-]+;base64,[%w+/]+=*", function(url)
+        add(url)
+        return "[image attached below]"
+    end)
+    for _, url in ipairs(M.extract_image_data_urls(result)) do
+        add(url)
+    end
+    return text, urls
+end
+
+--- Render multimodal messages without printing their encoded image payloads.
+function M.content_to_display_text(content)
+    if type(content) ~= "table" then return content or "" end
+    local parts = {}
+    for _, block in ipairs(content) do
+        if block.type == "text" then
+            parts[#parts + 1] = block.text or ""
+        elseif block.type == "image_url" then
+            parts[#parts + 1] = "[ image omitted ]"
+        end
+    end
+    return table.concat(parts, "\n\n")
+end
+
 return M

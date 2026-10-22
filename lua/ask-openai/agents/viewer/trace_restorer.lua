@@ -267,11 +267,12 @@ local function render_message(lines, msg, tool_results_by_id, should_fold_conten
 
     -- * user messages: show role header + content
     if role == "user" then
+        local content = require("ask-openai.tools.plumbing").content_to_display_text(msg.content)
         lines:append_role_header("user")
         if should_fold_content then
-            lines:append_folded_styled_text(msg.content or "", "")
+            lines:append_folded_styled_text(content, "")
         else
-            lines:append_text(msg.content or "")
+            lines:append_text(content)
         end
         lines:append_blank_line()
         return

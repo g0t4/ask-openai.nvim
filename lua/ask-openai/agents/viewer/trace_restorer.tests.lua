@@ -32,6 +32,25 @@ describe("restoring flattened tool messages", function()
         vim.api.nvim_buf_delete(buffer, { force = true })
     end)
 
+    it("renders image messages without payloads and retains image inputs for follow-up", function()
+        local content = {
+            { type = "text", text = "Images returned by run_bash." },
+            { type = "image_url", image_url = { url = "data:image/png;base64,PRIVATE" } },
+        }
+        restorer.load_trace = function()
+            return { request_body = { messages = {
+                { role = "user", content = content },
+                { role = "assistant", content = "I can see the image." },
+            } } }
+        end
+        assert.is_true(restorer.restore_session("unused"))
+        assert.is_true(vim.wait(1000, function() return frontend.trace ~= nil end, 10))
+        local rendered = table.concat(vim.api.nvim_buf_get_lines(buffer, 0, -1, false), "\n")
+        assert.is_truthy(rendered:find("[ image omitted ]", 1, true), rendered)
+        assert.is_nil(rendered:find("PRIVATE", 1, true))
+        assert.same(content, frontend.trace.messages[1].content)
+    end)
+
     it("renders saved output verbatim and retains it for follow-up", function()
         local text = 'STDOUT: plain output\nJSON looking text: {"keep":"verbatim"}'
         local tool_message = { role = "tool", tool_call_id = "call", content = text, duration_ms = 42 }
