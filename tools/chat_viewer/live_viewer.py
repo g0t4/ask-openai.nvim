@@ -154,7 +154,7 @@ class LiveTraceViewerApp(TerminalSizedApp):
     async def on_mount(self) -> None:
         self._live_view_mounted = True
         self._previous_render_options = (viewer.SHOW_ALL, viewer.STYLE_REASONING, viewer.SHOW_STATS)
-        viewer.SHOW_STATS = True
+        viewer.SHOW_STATS = False
         self.query_one("#transcript").focus()
         self.set_interval(self.poll_interval, self.poll_directory)
         await self.poll_directory()
@@ -298,8 +298,9 @@ def run_live(directory: Path, *, show_all: bool = False, style_reasoning: bool =
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("directory", nargs="?", type=Path, default=default_trace_directory())
+    parser.add_argument("--all", action="store_true", help="Show all content and timing statistics")
     args = parser.parse_args(argv)
-    run_live(args.directory)
+    run_live(args.directory, show_all=args.all)
 
 
 if __name__ == "__main__":

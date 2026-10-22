@@ -8,7 +8,8 @@ No port, extra service, or configuration is required.
 The viewer shows role, reasoning, content, and tool arguments while a response is
 in progress. Reasoning and content remain separate; partial text and arguments
 are literal, with no Markdown interpretation or JSON parsing. Completed messages
-switch to the normal renderer, including tool formatting and response statistics.
+switch to the normal renderer, including tool formatting. Timing statistics are hidden in watch mode unless
+`--all` is passed (or all content is enabled with `a`).
 Tool results use the same flattened messages as the model and saved traces.
 
 Socket updates are coalesced to at most 20 per second and terminal redraws to
