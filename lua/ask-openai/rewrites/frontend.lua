@@ -16,6 +16,7 @@ local CurlRequest = require("ask-openai.backends.curl_request")
 local human = require("devtools.humanize")
 local tool_router = require("ask-openai.tools.router")
 local model_params = require("ask-openai.agents.models.params")
+local discovery = require("ask-openai.backends.discovery")
 local MessageBuilder = require("ask-openai.rewrites.message_builder")
 local HLGroups = require("ask-openai.hlgroups")
 local harmony = require("ask-openai.backends.models.gptoss.tokenizer").harmony
@@ -459,10 +460,12 @@ local function ask_rewrite_command(opts)
 
         local model = config.get_rewrite_model()
         local reasoning_level = context.includes:get_reasoning_level() or config.get_rewrite_reasoning_level()
+        local base_url = config.get_base_url(model)
+        local endpoint_model_info = discovery.get(base_url)
 
         RewriteFrontend.last_request = CurlRequest:new({
-            body = model_params.body_for(model, generic_body, reasoning_level),
-            base_url = config.get_base_url(model),
+            body = model_params.body_for(model, generic_body, reasoning_level, endpoint_model_info),
+            base_url = base_url,
             endpoint = CompletionsEndpoints.v1_chat_completions,
             type = "rewrite",
         })
