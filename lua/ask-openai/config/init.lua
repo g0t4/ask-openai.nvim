@@ -34,7 +34,7 @@ function M.get_endpoints()
     local qwen3_url = "http://build21.lan:8012"
     local gemma4_url = "http://build21.lan:8011"
     local glm_url = "http://ask.lan:8010"
-    local deepseek_url = "http://ask.lan:8014"
+    local deepseek_url = "http://ask.lan:8013" -- deepseek-v4-flash-exp is running w/ vllm on 8013, go back to 8014 when done with this test
     local muse_url = "http://build21.lan:8016"
     local nemo_lightning_url = "http://build21.lan:8017"
 

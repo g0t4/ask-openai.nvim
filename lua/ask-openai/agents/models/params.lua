@@ -97,7 +97,7 @@ function M.body_for_deepseek4flash(request_body, effort, endpoint_model_info)
         top_p = 0.95, -- flash-0731 recommends 0.95 for agent use ase, otherwise 1.0
         -- top_p = 1.0,
 
-        max_tokens = 393216, -- v4 default; v4.1 uses the server default below
+        -- max_tokens = 393216, -- v4 default; v4.1 uses the server default below
 
         -- llama.cpp's jinja featuers to try:
         -- - supports system prompt addition (concatenates into one system prompt for you, can have multiple too)
