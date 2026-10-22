@@ -1,5 +1,6 @@
 local log = require("devtools.logs.logger"):universal()
 local values = require("ask-openai.helpers.values")
+local response_reasoning = require("ask-openai.backends.response_reasoning")
 
 -- logic for parsing SSEs from all completion backends
 
@@ -138,8 +139,7 @@ function parse_sse_v1_chat_completions(sse)
         --   - 2+ SSEs are for reasoning and use reasoning_content until thinking is complete (these don't even set the content field, so it's nil in this case)
         content = values.empty_for_nil(delta.content),
 
-        -- FYI I have yet to seel reasoning_content come back with vim.NIL (and maybe not even nil?)
-        reasoning_content = values.empty_for_nil(delta.reasoning_content),
+        reasoning_content = values.empty_for_nil(response_reasoning.get_content(delta)),
 
         -- FYI finish_reason is vim.NIL until it is set (end of completion)
         finish_reason = finish_reason,

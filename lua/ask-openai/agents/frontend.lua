@@ -24,6 +24,7 @@ local prompt_parser = require("ask-openai.frontends.context.prompt_parser")
 local HLGroups = require("ask-openai.hlgroups")
 local formatters = require("ask-openai.agents.viewer.formatters")
 local response_stats = require("ask-openai.agents.viewer.response_stats")
+local response_reasoning = require("ask-openai.backends.response_reasoning")
 local ToolCallOutput = require("ask-openai.agents.tools.tool_call_output")
 local CurlRequestForTrace = require("ask-openai.agents.curl_request_for_trace")
 local RxAccumulatedMessage = require("ask-openai.agents.messages.rx")
@@ -730,9 +731,9 @@ function AgentsFrontend.on_streaming_delta_update_message_history(choice, reques
         rx_accum_message._verbatim_content = (rx_accum_message._verbatim_content or "") .. choice.delta.content
     end
 
-    if choice.delta.reasoning_content ~= nil and choice.delta.reasoning_content ~= vim.NIL then
-        rx_accum_message.reasoning_content =
-            (rx_accum_message.reasoning_content or "") .. choice.delta.reasoning_content
+    local reasoning_content = response_reasoning.get_content(choice.delta)
+    if reasoning_content ~= nil then
+        rx_accum_message.reasoning_content = (rx_accum_message.reasoning_content or "") .. reasoning_content
     end
 
     if choice.finish_reason ~= nil then

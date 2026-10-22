@@ -60,6 +60,7 @@ _G.CompletionsEndpoints = {
 ---@field role? string -- IIRC set on first SSE
 ---@field content? string|vim.NIL
 ---@field reasoning_content? string|vim.NIL
+---@field reasoning? string|vim.NIL -- vLLM field, normalized to reasoning_content internally
 ---@field index? integer
 ---@field __verbose? LlamaServerVerbose -- only chat completions has __verbose in my current testing
 

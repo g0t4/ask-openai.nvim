@@ -56,7 +56,8 @@
 ---@field refusal string
 ---@field role string
 ---@field tool_calls OpenAIChoiceDeltaToolCall[]|nil
----@field reasoning_content string|nil -- llama.cpp only?
+---@field reasoning_content string|nil -- llama-server
+---@field reasoning string|nil -- vLLM
 
 --- docs: https://platform.openai.com/docs/api-reference/chat-streaming/streaming#chat_streaming-streaming-choices-delta-tool_calls
 ---@class OpenAIChoiceDeltaToolCall

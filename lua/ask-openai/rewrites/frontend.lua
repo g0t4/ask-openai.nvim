@@ -3,6 +3,7 @@ local local_share = require("ask-openai.config.local_share")
 local models = require("ask-openai.config.models")
 local config = require("ask-openai.config")
 local curl = require("ask-openai.backends.curl")
+local response_reasoning = require("ask-openai.backends.response_reasoning")
 local log = require("devtools.logs.logger").universal()
 local text_helpers = require("ask-openai.helpers.text")
 local Selection = require("ask-openai.helpers.selection")
@@ -143,8 +144,7 @@ local function get_extract_generated_text_func(endpoint)
             end
             local content = choice.delta.content or ""
             if content == vim.NIL then content = "" end
-            local reasoning = choice.delta.reasoning_content or ""
-            if reasoning == vim.NIL then reasoning = "" end
+            local reasoning = response_reasoning.get_content(choice.delta) or ""
             return content, reasoning
         end
     end

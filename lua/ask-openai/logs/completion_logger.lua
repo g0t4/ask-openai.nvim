@@ -3,6 +3,7 @@ local json = require("dkjson")
 local tables = require("ask-openai.helpers.tables")
 
 local response_metadata = require("ask-openai.backends.response_metadata")
+local response_reasoning = require("ask-openai.backends.response_reasoning")
 
 local M = {
     last_done = {},
@@ -120,8 +121,9 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         if delta.role then
             accum.role = delta.role
         end
-        if delta.reasoning_content and delta.reasoning_content ~= vim.NIL then
-            accum.reasoning_content = (accum.reasoning_content or "") .. delta.reasoning_content
+        local reasoning_content = response_reasoning.get_content(delta)
+        if reasoning_content ~= nil then
+            accum.reasoning_content = (accum.reasoning_content or "") .. reasoning_content
         end
         if delta.content and delta.content ~= vim.NIL then
             accum.content = (accum.content or "") .. delta.content
