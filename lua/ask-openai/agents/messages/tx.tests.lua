@@ -60,4 +60,21 @@ describe("tool image messages", function()
         assert.equals("ERROR", tool.content)
         assert.equals("data:image/png;base64,aGVsbG8=", image.content[2].image_url.url)
     end)
+
+    it("rejects truncated stdout even when its prefix is valid base64", function()
+        local tool, image = result({ structuredContent = {
+            stdout = "data:image/jpeg;base64,aGVsbG8=", stdout_truncated = true, stdout_bytes = 244984,
+        } })
+        assert.is_nil(image)
+        assert.is_truthy(tool.content:find("image not attached: tool output was truncated", 1, true))
+        assert.is_nil(tool.content:find("base64,aGV", 1, true))
+    end)
+
+    it("rejects incomplete or incorrectly padded base64 instead of sending a bad image", function()
+        for _, payload in ipairs({ "a", "aGVsbG8", "aGVsbG8===", "abcd=efgh" }) do
+            local tool, image = result({ content = { { type = "text", text = "data:image/png;base64," .. payload } } })
+            assert.is_nil(image, payload)
+            assert.is_truthy(tool.content:find("invalid or incomplete base64", 1, true), payload)
+        end
+    end)
 end)

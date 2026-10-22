@@ -224,7 +224,18 @@ function M.tool_result_content(result)
         end
     end
     local text = M.flatten_tool_result_to_text(result)
+    local structured = type(result) == "table" and result.structuredContent
+    local truncated = type(structured) == "table"
+        and (structured.stdout_truncated == true or structured.stderr_truncated == true)
     text = text:gsub("data:image/[%w.+%-]+;base64,[%w+/]+=*", function(url)
+        if truncated then
+            return "[image not attached: tool output was truncated; resize/compress the image and print a complete data URI]"
+        end
+        local payload = url:match(";base64,(.*)$")
+        local valid, decoded = pcall(vim.base64.decode, payload)
+        if not valid or vim.base64.encode(decoded) ~= payload then
+            return "[image not attached: invalid or incomplete base64; print a complete, unwrapped data URI]"
+        end
         add(url)
         return "[image attached below]"
     end)
