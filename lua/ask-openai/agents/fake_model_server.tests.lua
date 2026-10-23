@@ -499,9 +499,9 @@ describe("FakeModelServer - AgentsFrontend integration", function()
         -- (update_ui_chat_viewer and on_curl_exited_successfully use vim.schedule)
         vim.wait(500)
 
-        if frontend.chat_window and frontend.chat_window.buffer
-            and frontend.chat_window.buffer.buffer_number then
-            pcall(vim.api.nvim_buf_delete, frontend.chat_window.buffer.buffer_number, { force = true })
+        if frontend.chat_window and frontend.chat_window:buffer()
+            and frontend.chat_window:buffer().buffer_number then
+            pcall(vim.api.nvim_buf_delete, frontend.chat_window:buffer().buffer_number, { force = true })
         end
 
         frontend.chat_window = nil
@@ -543,7 +543,7 @@ describe("FakeModelServer - AgentsFrontend integration", function()
         -- * wes testing
         vim.wait(1) -- defer to make sure buffer is updated (vim.schedule/defer_fn calls inside of handlers)
         -- without wait, buffer will be empty as there's been no updates to it yet
-        vim.print(frontend.chat_window.buffer:get_lines_from(0))
+        vim.print(frontend.chat_window:buffer():get_lines_from(0))
     end)
 
     it("accumulates reasoning content separately", function()
@@ -855,7 +855,7 @@ describe("FakeModelServer - AgentsFrontend integration", function()
 
         -- Wait for the scheduled display of the background completion.
         ok = vim.wait(1000, function()
-            local text = frontend.chat_window.buffer:get_lines_from(0)
+            local text = frontend.chat_window:buffer():get_lines_from(0)
             return text:find("done", 1, true) ~= nil
         end, 10)
 
@@ -863,7 +863,7 @@ describe("FakeModelServer - AgentsFrontend integration", function()
         tool_router.send_tool_call_router = original_send_tool_call_router
         fake.set_on_request_started(nil)
 
-        local text = frontend.chat_window.buffer:get_lines_from(0)
+        local text = frontend.chat_window:buffer():get_lines_from(0)
         print(text)
         assert.is_true(ok,
             "chat window should show 'done' for a background/done notification. Got:\n" .. text)

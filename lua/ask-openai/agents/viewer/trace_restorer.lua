@@ -343,8 +343,8 @@ local function apply_marks_and_folds(bufnr, ns_id, lines)
 
     -- * clear any prior folds on this buffer (from previous restore)
     local chat_window = require("ask-openai.agents.frontend").chat_window
-    if chat_window and chat_window.buffer then
-        chat_window.buffer.folds = {}
+    if chat_window and chat_window:buffer() then
+        chat_window:buffer().folds = {}
     end
 
     -- Apply marks/extmarks and build fold ranges
@@ -365,8 +365,8 @@ local function apply_marks_and_folds(bufnr, ns_id, lines)
             local fold_end_line_base1 = mark.end_line_base0
             local fold = Fold:new(fold_start_line_base1, fold_end_line_base1)
 
-            if chat_window and chat_window.buffer then
-                table.insert(chat_window.buffer.folds, fold)
+            if chat_window and chat_window:buffer() then
+                table.insert(chat_window:buffer().folds, fold)
             end
         end
     end
@@ -488,7 +488,7 @@ local function setup_trace_for_followup(tx_messages)
 
     -- Set the offset for where streaming messages will be drawn
     -- TODO when I hide this behind chat_window, remove setting this here... this should be a chat_window only construct IMO (and it can handle one or more physical windows)
-    AgentsFrontend.current_turn_start_line_base0 = AgentsFrontend.chat_window.buffer:get_line_count() - 1
+    AgentsFrontend.current_turn_start_line_base0 = AgentsFrontend.chat_window:buffer():get_line_count() - 1
 
     log:info("Trace restored and ready for follow-up with " .. #tx_messages .. " messages")
 end

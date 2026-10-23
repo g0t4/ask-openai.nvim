@@ -78,7 +78,7 @@ function M.run_simulation(opts)
 
     -- Reuse the same buffer name as the real chat window so it looks identical.
     local window = AgentWindow:new()
-    window.buffer:clear()
+    window:buffer():clear()
     window:mark_agent_running(true)
     window:ensure_spinner_running("SIMULATED LONG TRACE")
     window:open()
@@ -111,7 +111,7 @@ function M.run_simulation(opts)
         if mode == "replace" then
             -- replicate the real per-token full-buffer rewrite from the turn start
             local builder = build_full_turn_builder(accumulated, marks_ns_id)
-            window.buffer:replace_with_styled_lines_after(turn_start_line_base0, builder)
+            window:buffer():replace_with_styled_lines_after(turn_start_line_base0, builder)
         else
             -- just append the newest chunk (eliminates the rewrite as a factor)
             local LinesBuilder = require("ask-openai.agents.viewer.lines_builder")

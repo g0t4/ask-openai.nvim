@@ -4,16 +4,16 @@ local should = require('devtools.tests.should')
 local describe = require('devtools.tests.describe')
 local test_buffers = require('devtools.tests.buffers')
 -- system under test:
-local BufferController = require('ask-openai.agents.viewer.buffers')
+local BufferController = require('ask-openai.rewrites.BufferController')
 local Fold = require('ask-openai.agents.viewer.fold')
 local LinesBuilder = require('ask-openai.agents.viewer.lines_builder')
 
 --- Create a fresh BufferController backed by a new test buffer with the given lines.
 ---@param lines string[]
----@return BufferController
+---@return BufferController0Indexed
 local function new_buffer_controller_with_lines(lines)
     local bufnr = test_buffers.new_buffer_with_lines(lines)
-    return BufferController.new(bufnr)
+    return BufferController.for_buffer(bufnr)
 end
 
 --- Build a LinesBuilder preloaded with the given lines (no marks/folds).
@@ -25,13 +25,13 @@ local function new_lines_builder(lines)
     return builder
 end
 
-describe("BufferController.new", function()
+describe("BufferController.for_buffer", function()
     it("should make a new instance", function()
-        local controller = BufferController.new(1)
+        local controller = BufferController.for_buffer(1)
         assert(controller ~= nil)
         expect(controller.buffer_number == 1)
 
-        local controller2 = BufferController.new(2)
+        local controller2 = BufferController.for_buffer(2)
         expect(controller2.buffer_number == 2)
 
         expect(controller ~= BufferController)
@@ -97,7 +97,7 @@ describe("BufferController:get_line_count", function()
         it("nvim_create_buf", function()
             -- make sure the phantom line is not due to new_buffer_controller_with_lines
             local bufnr = vim.api.nvim_create_buf(false, true)
-            local controller = BufferController.new(bufnr)
+            local controller = BufferController.for_buffer(bufnr)
             should.be_equal(1, controller:get_line_count())
         end)
 

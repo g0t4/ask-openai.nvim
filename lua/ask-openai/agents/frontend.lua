@@ -395,7 +395,7 @@ end
 ---@param trace AgentTrace
 function AgentsFrontend.then_get_assistant_response(trace)
     -- * conversation turns (track start line for streaming chunks)
-    AgentsFrontend.current_turn_start_line_base0 = AgentsFrontend.chat_window.buffer:get_line_count()
+    AgentsFrontend.current_turn_start_line_base0 = AgentsFrontend.chat_window:buffer():get_line_count()
 
     AgentsFrontend.chat_window:mark_agent_running(true)
     AgentsFrontend.chat_window:ensure_spinner_running("agenting...")
@@ -534,7 +534,7 @@ function _G.MyAgentWindowFoldingForLine(line_num_base1)
     --
     -- FYI read docs about return values for expr:
     --   https://neovim.io/doc/user/fold.html#fold-expr
-    local folds = AgentsFrontend.chat_window.buffer.folds or {}
+    local folds = AgentsFrontend.chat_window:buffer().folds or {}
     for _, fold in ipairs(folds) do
         if line_num_base1 >= fold.start_line_base1 and line_num_base1 <= fold.end_line_base1 then
             return '1' -- inside first level fold
@@ -551,7 +551,7 @@ function AgentsFrontend.clear_undos()
     -- a stray space and shoving the user's cursor right by one on every tool call.
 
     -- TODO remove this when we move to a read only history window
-    local buffer = AgentsFrontend.chat_window and AgentsFrontend.chat_window.buffer
+    local buffer = AgentsFrontend.chat_window and AgentsFrontend.chat_window:buffer()
     if not buffer then
         return
     end
@@ -566,7 +566,7 @@ function AgentsFrontend.clear_undos()
     vim.api.nvim_buf_set_lines(bufnr, 0, 1, false, first_line)
 
     vim.bo[bufnr].undolevels = previous_undo_level
-    local buffer = AgentsFrontend.chat_window and AgentsFrontend.chat_window.buffer
+    local buffer = AgentsFrontend.chat_window and AgentsFrontend.chat_window:buffer()
 end
 
 --- Open the chat viewer window (creating the instance/keymaps if needed).
@@ -649,7 +649,7 @@ local function update_ui_chat_viewer(trace)
         lines.marks_ns_id = request.marks_ns_id -- ?? generate namespace here in lines builder? lines:gen_mark_ns()? OR do it on first downstream use?
         -- TODO lets redo the chat window to have virtual sections and allow for easier re-rendering of only what has changed... maybe even allow the submission of blocks/lines of text per "message" and not need to worry about where it lands? just a message # + lines array?
         -- log:info(ansi.yellow("clear after current_turn_start_line_base0"), AgentsFrontend.current_turn_start_line_base0)
-        AgentsFrontend.chat_window.buffer:replace_with_styled_lines_after(AgentsFrontend.current_turn_start_line_base0, lines)
+        AgentsFrontend.chat_window:buffer():replace_with_styled_lines_after(AgentsFrontend.current_turn_start_line_base0, lines)
 
         -- * re-pin any queued user messages to the bottom (the replace wiped the prior queued section)
         AgentsFrontend.queued_section_start_line_base0 = nil -- replace above already wiped out previous display
@@ -1175,7 +1175,7 @@ function AgentsFrontend.redraw_queued_messages()
         log:warn("redraw_queued_messages was called when there's no chat_window (should not happen)")
         return
     end
-    local buffer = AgentsFrontend.chat_window.buffer
+    local buffer = AgentsFrontend.chat_window:buffer()
     local bufnr = buffer.buffer_number
 
     -- * drop any previously rendered queued section (a viewer update wiped it, marker is stale)
