@@ -57,7 +57,7 @@ function WindowController0Indexed:buffer()
     -- nvim_helpers.dump_windows()
     -- nvim_helpers.dump_buffers()
     local buffer_number = vim.api.nvim_win_get_buf(self.window_id)
-    return BufferController0Indexed:new(buffer_number)
+    return BufferController0Indexed:for_buffer(buffer_number)
 end
 
 function WindowController0Indexed:get_node_at_cursor()

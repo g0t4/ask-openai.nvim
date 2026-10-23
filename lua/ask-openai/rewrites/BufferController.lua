@@ -11,7 +11,7 @@ local BufferController0Indexed = {}
 BufferController0Indexed.__index = BufferController0Indexed
 
 ---@param buffer_number integer
-function BufferController0Indexed:new(buffer_number)
+function BufferController0Indexed:for_buffer(buffer_number)
     self = setmetatable(self, BufferController0Indexed)
     self.buffer_number = buffer_number
     return self
