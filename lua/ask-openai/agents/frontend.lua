@@ -38,6 +38,7 @@ local trace_restorer = require("ask-openai.agents.viewer.trace_restorer")
 local ansi = require("devtools.ansi")
 local safely = require("ask-openai.helpers.safely")
 local live_trace_stream = require("ask-openai.agents.live_trace_stream")
+local values = require("ask-openai.helpers.values")
 
 ---@class AgentsFrontend : StreamingFrontend
 local AgentsFrontend = {}
@@ -689,6 +690,12 @@ function AgentsFrontend.on_streaming_delta_update_message_history(choice, reques
         return
     end
 
+    -- scrub goddamn vim.NIL (sglang is null happy, returns nul on like every field every time)
+    -- TODO perhaps I want to nil_ify for sglang only or? would this cause me any grief?
+    log:info("choice before nilify", choice)
+    choice = values.nil_ify(choice)
+    log:info("choice after nilify", choice)
+
     -- * lookup or create message
     -- FYI this is not well vetted for multi message responses, in fact is this using choice.index for message.index?!
     --   that said, one message per request is it... unless I am doing something funky with the raw prompt to trigger mulitple messages?
@@ -734,7 +741,7 @@ function AgentsFrontend.on_streaming_delta_update_message_history(choice, reques
     end
 
     local calls = choice.delta.tool_calls
-    if not calls then
+    if calls == nil then
         return
     end
 
@@ -754,6 +761,9 @@ function AgentsFrontend.on_streaming_delta_update_message_history(choice, reques
         end
 
         local func = call_delta["function"] -- FYI "function" is keyword (lua)
+        log:info("func before nilify", func)
+        func = values.nil_ify(func)
+        log:info("func after nilify", func)
         if func ~= nil then
             parsed_call["function"] = parsed_call["function"] or {}
 
