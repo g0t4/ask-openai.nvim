@@ -696,6 +696,8 @@ function AgentsFrontend.on_streaming_delta_update_message_history(choice, reques
     -- scrub goddamn vim.NIL (sglang is null happy, returns nul on like every field every time)
     choice = values.nil_ify(choice)
     -- log:info("choice after nilify", choice)
+    -- FYI have model on sglang run `date` command => vim.NIL in several fields (function.name is first that blows up => then calls itself is vim.NIL on some SSEs... yikes so yeah scrub it all righ there...)
+    --   FYI I tested this with GLM 5.3 Flash on sglang
 
     -- * lookup or create message
     -- FYI this is not well vetted for multi message responses, in fact is this using choice.index for message.index?!
