@@ -307,7 +307,6 @@ local function ask_agent_command(opts)
         TxChatMessage:system(system)
     }
 
-    -- ? context.includes.open_files
     if context.includes.yanks and context.yanks then
         -- PRN anything I want to show about auto context? (not just yanks)
         table.insert(messages, TxChatMessage:user_context(context.yanks.content))

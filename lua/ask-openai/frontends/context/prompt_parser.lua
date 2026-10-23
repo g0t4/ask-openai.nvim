@@ -8,7 +8,6 @@ local M = {}
 ---@class ParsedIncludes
 ---@field yanks boolean
 ---@field current_file boolean
----@field open_files boolean
 ---@field ctags? boolean
 ---@field matching_ctags? boolean
 ---@field norag? boolean
@@ -30,7 +29,6 @@ function Includes.new(initial)
     local self = {
         yanks = initial.yanks or false,
         current_file = initial.current_file or false,
-        open_files = initial.open_files or false,
         ctags = initial.ctags,
         matching_ctags = initial.matching_ctags,
         norag = initial.norag or false,
@@ -69,7 +67,6 @@ end
 M.slash_commands = {
     YANKS            = "/yanks",
     FILE             = "/file",
-    OPEN_FILES       = "/WIP_open_files",
     TOOLS            = "/tools",
     SELECTION        = "/selection",
     TEMPLATE_ONLY    = "/WIP_template",
@@ -240,7 +237,6 @@ function M.render(prompt)
     M.slash_command_to_field = {
         [M.slash_commands.YANKS] = "yanks",
         [M.slash_commands.FILE] = "current_file",
-        [M.slash_commands.OPEN_FILES] = "open_files",
         [M.slash_commands.TOOLS] = "use_tools",
         [M.slash_commands.TEMPLATE_ONLY] = "apply_template_only",
         [M.slash_commands.SELECTION] = "include_selection",

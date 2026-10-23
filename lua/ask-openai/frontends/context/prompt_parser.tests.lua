@@ -127,9 +127,7 @@ describe("render", function()
         ensure_detects("high", "reasoning_high")
         ensure_detects("off", "reasoning_off")
 
-        ensure_detects("commits")
         ensure_detects("file", "current_file")
-        ensure_detects("WIP_open_files", "open_files")
         ensure_detects("selection", "include_selection")
         ensure_detects("tools", "use_tools")
         ensure_detects("WIP_template", "apply_template_only")
@@ -203,11 +201,8 @@ describe("render", function()
 
         describe("support static slash commands", function()
             local cases = {
-                { "all" },
                 { "yanks" },
-                { "commits" },
                 { "file",           "current_file" },
-                { "WIP_open_files", "open_files" },
                 { "tools",          "use_tools" },
                 { "WIP_template",   "apply_template_only" },
                 { "selection",      "include_selection" },

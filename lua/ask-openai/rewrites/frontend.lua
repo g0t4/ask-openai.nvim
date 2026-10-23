@@ -426,10 +426,6 @@ local function ask_rewrite_command(opts)
 
             table.insert(messages, message)
         end
-        if context.includes.open_files then
-            -- TODO! /files => open_files
-            -- FYI buffers.get_text_in_all_buffers()
-        end
         if context.includes.yanks and context.yanks then
             table.insert(messages, TxChatMessage:user_context(context.yanks.content))
         end
