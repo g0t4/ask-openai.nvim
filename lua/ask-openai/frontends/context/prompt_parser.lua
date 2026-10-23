@@ -15,7 +15,6 @@ local M = {}
 ---@field matching_ctags? boolean
 ---@field norag? boolean
 ---@field project? boolean
----@field git_diff? boolean
 ---@field rendered_prompt string
 ---@field use_tools? boolean
 ---@field apply_template_only? boolean
@@ -40,7 +39,6 @@ function Includes.new(initial)
         matching_ctags = initial.matching_ctags,
         norag = initial.norag or false,
         project = initial.project or false,
-        git_diff = initial.git_diff or false,
         rendered_prompt = initial.rendered_prompt or "",
         use_tools = initial.use_tools or false,
         apply_template_only = initial.apply_template_only or false,

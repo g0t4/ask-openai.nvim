@@ -2,7 +2,6 @@ local yanks = require("ask-openai.frontends.context.yanks")
 local ctags = require("ask-openai.frontends.context.ctags")
 -- local changelists = require("ask-openai.frontends.context.changelists")
 -- local inspect = require("ask-openai.frontends.context.inspect")
-local git_diff = require("ask-openai.frontends.context.git_diff")
 local matching_ctags = require("ask-openai.frontends.context.matching_ctags")
 local prompt_parser = require("ask-openai.frontends.context.prompt_parser")
 local project = require("ask-openai.frontends.context.project")
@@ -42,9 +41,6 @@ function CurrentContext:items(prompt, always_include)
     if includes.yanks then
         items.yanks = yanks.get_context_item()
     end
-    -- if includes.commits then
-    --     items.commits = git_diff.get_context_items()
-    -- end
     -- if includes.ctags then
     --     items.ctags = ctags.get_context_items()
     -- end
@@ -64,7 +60,6 @@ function CurrentContext.toggle_trace_context_command(prompt)
     CurrentContext.tracing = not CurrentContext.tracing
 
     yanks.tracing = CurrentContext.tracing
-    git_diff.tracing = CurrentContext.tracing
     ctags.tracing = CurrentContext.tracing
     matching_ctags.tracing = CurrentContext.tracing
     project.tracing = CurrentContext.tracing
@@ -77,7 +72,6 @@ end
 
 function CurrentContext.setup()
     yanks.setup()
-    git_diff.setup()
     -- TODO git outstanding changes == edits! let LS handle that? then encode and query it too?
     ctags.setup()
     matching_ctags.setup()
