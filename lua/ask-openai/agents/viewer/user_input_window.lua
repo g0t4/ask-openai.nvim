@@ -2,6 +2,9 @@ local FloatWindow = require("ask-openai.helpers.float_window")
 local layout = require("ask-openai.agents.viewer.layout")
 local HLGroups = require("ask-openai.hlgroups")
 
+-- TODO! I'd like this to use a BufferController or similar
+--  i.e. to set the initial_lines in agents/frontend.lua
+
 ---@class UserInputWindow : FloatWindow
 ---@field buffer_number number
 ---@field win_id number
