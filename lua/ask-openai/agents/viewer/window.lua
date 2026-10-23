@@ -69,7 +69,7 @@ function AgentWindow:new()
     local instance = FloatWindow.new(AgentWindow, opts)
     instance._model_name = nil
 
-    instance.buffer = BufferController:new(instance.buffer_number)
+    instance.buffer = BufferController.new(instance.buffer_number)
     instance.buffer.win_id = instance.win_id
 
     -- * buffer local keymaps
