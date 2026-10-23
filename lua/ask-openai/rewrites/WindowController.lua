@@ -50,6 +50,15 @@ function WindowController0Indexed:set_cursor_position(row, column)
     vim.api.nvim_win_set_cursor(self.window_id, { row + 1, column })
 end
 
+function WindowController0Indexed:set_cursor_at_end_of_last_line()
+    local buffer = self:buffer()
+    local num_lines_base1 = vim.api.nvim_buf_line_count(buffer.buffer_number)
+    local lines = buffer:get_all_lines()
+    local len_of_last_line_base0 = #lines[#lines] -- TODO add a get_line_base1/0()
+
+    vim.api.nvim_win_set_cursor(self.window_id, { num_lines_base1, len_of_last_line_base0 })
+end
+
 function WindowController0Indexed:buffer()
     -- old troubleshooting code for some issues around invalid window_ids
     -- logs.trace('getting buffer for window ' .. self.window_id)

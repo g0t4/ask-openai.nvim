@@ -1281,13 +1281,7 @@ function AgentsFrontend.ensure_user_input_window_is_open(focus)
         local win = WindowController0Indexed.for_window(AgentsFrontend.user_input_window.win_id)
         local buffer = win:buffer()
         buffer:set_text("/tools ")
-
-        -- TODO move to a helper now
-        local num_lines_base1 = buffer:num_lines()
-        local lines = buffer:get_all_lines()
-        local len_of_last_line_base0 = #lines[#lines] -- TODO add a get_line_base1/0()
-
-        vim.api.nvim_win_set_cursor(win.window_id, { num_lines_base1, len_of_last_line_base0 })
+        win:set_cursor_at_end_of_last_line()
     end
 
     -- * always (re)bind the close keymaps so they apply even on a reused input buffer

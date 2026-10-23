@@ -38,6 +38,7 @@ end
 --- even when another window (e.g. the user input box) has focus. Never scrolls
 --- the current/focused window, so a redraw can't steal the user's typing cursor.
 function BufferController:scroll_cursor_to_end_of_buffer()
+    -- TODO THIS BELONGS ON WINDOW NOT BUFFER
     local win_id = self:get_window_id()
     if not win_id then
         return
