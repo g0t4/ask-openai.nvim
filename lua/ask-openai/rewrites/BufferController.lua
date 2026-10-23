@@ -17,11 +17,6 @@ function BufferController0Indexed:new(buffer_number)
     return self
 end
 
-function BufferController0Indexed:new_for_current_buffer()
-    -- PRN add a caching mechanism to avoid recreating the controller? if perf issues
-    return BufferController0Indexed:new(vim.api.nvim_get_current_win())
-end
-
 function BufferController0Indexed:buftype()
     return vim.bo[self.buffer_number].buftype
 end
