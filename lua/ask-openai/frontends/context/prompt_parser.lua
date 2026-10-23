@@ -6,7 +6,6 @@ local models = require("ask-openai.config.models")
 local M = {}
 
 ---@class ParsedIncludes
----@field all boolean
 ---@field yanks boolean
 ---@field current_file boolean
 ---@field open_files boolean
@@ -29,7 +28,6 @@ M.Includes = Includes
 ---@return ParsedIncludes
 function Includes.new(initial)
     local self = {
-        all = initial.all or false,
         yanks = initial.yanks or false,
         current_file = initial.current_file or false,
         open_files = initial.open_files or false,
@@ -70,7 +68,6 @@ end
 -- expose the slash commands list publicly for reuse elsewhere
 M.slash_commands = {
     YANKS            = "/yanks",
-    ALL              = "/all",
     FILE             = "/file",
     OPEN_FILES       = "/WIP_open_files",
     TOOLS            = "/tools",
@@ -241,7 +238,6 @@ function M.render(prompt)
 
     ---@type table<string, string>
     M.slash_command_to_field = {
-        [M.slash_commands.ALL] = "all",
         [M.slash_commands.YANKS] = "yanks",
         [M.slash_commands.FILE] = "current_file",
         [M.slash_commands.OPEN_FILES] = "open_files",
@@ -270,14 +266,6 @@ function M.render(prompt)
             vim.notify("missing field for slash command: " .. command, vim.log.levels.ERROR)
             log:error("missing field for slash command: " .. command)
         end
-    end
-
-    -- propagate the effect of /all
-    if includes.all then
-        -- defaults for /all:
-        includes.yanks = true
-        includes.current_file = true
-        includes.open_files = true
     end
 
     includes.rendered_prompt = rendered_prompt
