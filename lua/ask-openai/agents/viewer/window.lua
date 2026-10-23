@@ -1,17 +1,15 @@
 local LinesBuilder = require("ask-openai.agents.viewer.lines_builder")
-local BufferController = require("ask-openai.agents.viewer.buffers")
 local HLGroups = require("ask-openai.hlgroups")
 local FloatWindow = require("ask-openai.helpers.float_window")
 local TokenBadge = require("ask-openai.agents.viewer.token_badge")
 local layout = require("ask-openai.agents.viewer.layout")
+local log = require("devtools.logs.logger"):universal()
 
 --- Unicode spinner frames for smooth animation.
 local SPINNER_FRAMES = { '⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏' }
 
 ---@class AgentWindow : FloatWindow
----@field buffer_number number
----@field buffer BufferController
----@field win_id number
+---@field window_id number
 ---@field _model_name string
 ---@field _spinner_handle? table -- vim.loop.timer_t handle
 ---@field _spinner_idx number
@@ -20,8 +18,8 @@ local SPINNER_FRAMES = { '⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧',
 ---@field _token_badge? TokenBadge
 ---@field _last_token_count? integer
 local AgentWindow = {}
-local class_mt = { __index = FloatWindow } -- inherit FloatWindow behavior too
-setmetatable(AgentWindow, class_mt)
+setmetatable(AgentWindow, { __index = FloatWindow })
+AgentWindow.__index = AgentWindow -- technically not needed for singleton but doesn't hurt
 
 --- Fill the usable screen above the user input box (full width, no centering).
 --- The input box reserves `layout.INPUT_HEIGHT` content rows at the bottom of the
@@ -55,8 +53,9 @@ function AgentWindow.window_config(opts)
     }
 end
 
----@param model_name string
-function AgentWindow:new()
+function AgentWindow.new()
+    -- FYI this is not really "new" per se... b/c AgentWindow is a single instance but that is in how the consumers use this, we could easily make this multi instance (i.e. multiple agents)
+
     ---@type FloatWindowOptions
     local opts = {
         filetype = "markdown",
@@ -66,15 +65,13 @@ function AgentWindow:new()
     -- NOTE: pass `AgentWindow` as the receiver so the instance inherits from this class
     -- from the start (giving us our top-filling window_config) on the initial open,
     -- rather than opening centered via FloatWindow and re-parenting after.
+    -- FYI only ever one AgentWindow, hence using it as a singleton here when subclassing it from FloatWindow
     local instance = FloatWindow.new(AgentWindow, opts)
     instance._model_name = nil
 
-    instance.buffer = BufferController.new(instance.buffer_number)
-    instance.buffer.win_id = instance.win_id
-
     -- * buffer local keymaps
     vim.keymap.set('n', '<leader>c', function() instance:clear() end,
-        { buffer = instance.buffer_number, desc = "clear the chat window, and eventually the message history" })
+        { buffer = instance:buffer().buffer_number, desc = "clear the chat window, and eventually the message history" })
 
     -- manually trigger LSP attach, b/c scratch buffers are normally not auto attached
     local client = vim.lsp.get_clients({ name = "ask_ls" })[1]
@@ -102,21 +99,21 @@ end
 --- visible regardless of scrolling.
 ---@param total_tokens integer
 function AgentWindow:set_token_count(total_tokens)
-    if not self.win_id or not vim.api.nvim_win_is_valid(self.win_id) then
+    if not self.window_id or not vim.api.nvim_win_is_valid(self.window_id) then
         return
     end
     self._last_token_count = total_tokens
-    if not self._token_badge or self._token_badge.anchor_win_id ~= self.win_id then
+    if not self._token_badge or self._token_badge.anchor_win_id ~= self.window_id then
         if self._token_badge then
             self._token_badge:hide()
         end
-        self._token_badge = TokenBadge:new(self.win_id)
+        self._token_badge = TokenBadge:new(self.window_id)
     end
     self._token_badge:show_token_count(total_tokens)
 end
 
 --- Hide the token badge (e.g. on window close).
-function AgentWindow:hide_token_badge()
+function AgentWindow:_hide_token_badge()
     if self._token_badge then
         self._token_badge:hide()
     end
@@ -151,7 +148,7 @@ end
 
 ---@param base_title? string -- optional static text to display alongside the spinner
 function AgentWindow:ensure_spinner_running(base_title)
-    if not self.win_id or not vim.api.nvim_win_is_valid(self.win_id) then
+    if not self.window_id or not vim.api.nvim_win_is_valid(self.window_id) then
         return
     end
 
@@ -174,7 +171,7 @@ function AgentWindow:ensure_spinner_running(base_title)
 
             -- Must schedule into normal event loop since nvim_win_is_valid can't be called in fast events
             vim.schedule(function()
-                if not vim.api.nvim_win_is_valid(self.win_id) then
+                if not vim.api.nvim_win_is_valid(self.window_id) then
                     handle:stop()
                     return
                 end
@@ -216,32 +213,29 @@ end
 
 ---@param lines LinesBuilder
 function AgentWindow:append_styled_lines(lines)
-    self.buffer:append_styled_lines(lines)
+    local buffer = self:buffer()
+    buffer:append_styled_lines(lines)
 end
 
 --- clear the window contents only (not message history)
 function AgentWindow:clear()
-    self.buffer:clear()
+    self:buffer():clear()
 end
 
 function AgentWindow:close()
     -- stop the spinner animation before closing
     self:stop_spinner()
-    self:hide_token_badge()
+    self:_hide_token_badge()
     -- close OUR window specifically (not `0`, which is whatever has focus, e.g. the input box)
-    if self.win_id and vim.api.nvim_win_is_valid(self.win_id) then
-        pcall(vim.api.nvim_win_close, self.win_id, true)
+    if self.window_id and vim.api.nvim_win_is_valid(self.window_id) then
+        pcall(vim.api.nvim_win_close, self.window_id, true)
     end
-    self.win_id = nil
+    self.window_id = nil
 end
 
 function AgentWindow:open()
     FloatWindow.open(self)
-    -- * track the owning window on the buffer so cursor/scroll ops work even when
-    --   another window (e.g. the user input box) has focus
-    if self.buffer then
-        self.buffer.win_id = self.win_id
-    end
+    -- TODO any issues with buffer()?
     self:ensure_spinner_running() -- it will stop itself
     -- * restore the token badge if we have a count from a prior session
     if self._last_token_count then

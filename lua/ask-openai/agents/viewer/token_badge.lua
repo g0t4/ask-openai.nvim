@@ -27,6 +27,9 @@ end
 local TokenBadge = {}
 TokenBadge.__index = TokenBadge
 
+-- TODO can't this inherit from FloatWindow too so it is controllable?
+--   if so then remove the hide() below and lets pull up hide into FloatWindow or even WindowController0Indexed
+
 ---@param anchor_win_id integer -- the window the badge is pinned to (top-right)
 ---@return TokenBadge
 function TokenBadge:new(anchor_win_id)

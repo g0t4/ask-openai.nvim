@@ -1,15 +1,19 @@
 local FloatWindow = require("ask-openai.helpers.float_window")
 local layout = require("ask-openai.agents.viewer.layout")
 local HLGroups = require("ask-openai.hlgroups")
-local WindowController0Indexed = require("ask-openai.rewrites.WindowController")
 
 ---@class UserInputWindow : FloatWindow
 ---@field buffer_number number
----@field win_id number
+---@field window_id number
 ---@field opts FloatWindowOptions
 local UserInputWindow = {}
-local class_mt = { __index = FloatWindow } -- inherit FloatWindow behavior too
-setmetatable(UserInputWindow, class_mt)
+setmetatable(UserInputWindow, { __index = FloatWindow })
+UserInputWindow.__index = UserInputWindow -- only needed if UserInputWindow is not a singleton, so instances can access its methods and fields
+-- rule:
+--   look for key on table `instance[key]` directly
+--   look for key in __index
+--   look for key in get_metatable(obj).__index
+--   FYI best way to see prototype chain (if you will) is to print it in neovim `:lua foo` => shows each level of _index and its methods/fields
 
 --- Position the input box at the bottom of the usable float area, full width.
 --- The chat (history) window fills the space above it (see window.lua), so the
@@ -43,10 +47,12 @@ function UserInputWindow.new()
     local opts = {
         filetype = "text",
         buffer_name = "AskAgentInput",
+        window_id = nil, -- not set until FloatWindow opened
     }
 
     -- NOTE: pass `UserInputWindow` as the receiver so the created instance inherits
     -- from this class (giving us the bottom-positioned window_config), not FloatWindow.
+    -- UserInputWindow is technicall a singleton here, so it is kinda odd to have a `.new()` for it
     local instance = FloatWindow.new(UserInputWindow, opts)
 
     -- Scratch buffers are not automatically attached, but we want LSP features (tool calls, semantic_grep telescope)
@@ -58,18 +64,12 @@ function UserInputWindow.new()
     return instance
 end
 
-function UserInputWindow:open()
-    -- call super type's open
-    FloatWindow.open(self)
-    self.controller = WindowController0Indexed.for_window(self.win_id)
-end
-
 --- Close the input window but keep its buffer (so typed text is preserved).
 function UserInputWindow:hide()
-    if self.win_id and vim.api.nvim_win_is_valid(self.win_id) then
-        pcall(vim.api.nvim_win_close, self.win_id, true)
+    if self.window_id and vim.api.nvim_win_is_valid(self.window_id) then
+        pcall(vim.api.nvim_win_close, self.window_id, true)
     end
-    self.win_id = nil
+    self.window_id = nil
 end
 
 return UserInputWindow

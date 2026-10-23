@@ -573,8 +573,7 @@ end
 --- Does NOT open the user input window (callers compose the pair).
 function AgentsFrontend.ensure_chat_window_open()
     if AgentsFrontend.chat_window == nil then
-        local window = AgentWindow:new()
-        AgentsFrontend.chat_window = window
+        AgentsFrontend.chat_window = AgentWindow.new()
 
         -- * lookup model name (to show in title)
         local config_model = config.get_agents_model()
@@ -1244,8 +1243,8 @@ function AgentsFrontend.ensure_user_input_window_is_open(focus)
     -- * the user input window always opens alongside the chat viewer
     AgentsFrontend.ensure_chat_window_open()
 
-    local is_new = AgentsFrontend.user_input_window == nil
-    if is_new then
+    local no_user_window = AgentsFrontend.user_input_window == nil
+    if no_user_window then
         AgentsFrontend.user_input_window = UserInputWindow.new()
 
         local bufnr = AgentsFrontend.user_input_window.buffer_number
@@ -1276,8 +1275,8 @@ function AgentsFrontend.ensure_user_input_window_is_open(focus)
 
     AgentsFrontend.user_input_window:open()
 
-    if is_new then
-        local win = AgentsFrontend.user_input_window.controller
+    if no_user_window then
+        local win = AgentsFrontend.user_input_window
         local buffer = win:buffer()
         buffer:set_text("/tools ")
         win:set_cursor_at_end_of_last_line()
@@ -1291,12 +1290,11 @@ function AgentsFrontend.ensure_user_input_window_is_open(focus)
     vim.keymap.set("n", "<F8>", AgentsFrontend.close_agent_windows,
         { buffer = bufnr, desc = "close all agent windows" })
 
-    if is_new or focus then
+    if no_user_window or focus then
         pcall(function()
             local win = AgentsFrontend.user_input_window
-            if vim.api.nvim_win_is_valid(win.win_id) then
-                vim.api.nvim_set_current_win(win.win_id)
-                -- vim.api.nvim_win_set_cursor(win.win_id, { 1, 0 })
+            if vim.api.nvim_win_is_valid(win.window_id) then
+                vim.api.nvim_set_current_win(win.window_id)
                 vim.cmd("startinsert")
             end
         end)

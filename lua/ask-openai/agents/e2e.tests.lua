@@ -138,7 +138,7 @@ describe("E2E - AskAgent /tools with date question", function()
         -- * Verify: chat window exists and has content
         assert.is_not_nil(frontend.chat_window, "Chat window was not created")
         assert.is_true(
-            vim.api.nvim_win_is_valid(frontend.chat_window.win_id),
+            vim.api.nvim_win_is_valid(frontend.chat_window.window_id),
             "Chat window is not valid"
         )
 
@@ -206,7 +206,7 @@ describe("E2E - AskAgent queued user message in dedicated input window", functio
         frontend.ensure_user_input_window_is_open()
         assert.is_not_nil(frontend.user_input_window, "User input window was not created")
         assert.is_true(
-            vim.api.nvim_win_is_valid(frontend.user_input_window.win_id),
+            vim.api.nvim_win_is_valid(frontend.user_input_window.window_id),
             "User input window is not valid"
         )
 

@@ -176,9 +176,9 @@ function M.open()
     -- * check if instance already exists and is valid
     if M._instance ~= nil then
         local instance = M._instance
-        if instance.win_id and vim.api.nvim_win_is_valid(instance.win_id) then
+        if instance.window_id and vim.api.nvim_win_is_valid(instance.window_id) then
             -- Window is already open, just bring it to focus
-            vim.api.nvim_set_current_win(instance.win_id)
+            vim.api.nvim_set_current_win(instance.window_id)
             return instance
         end
         -- Window was closed but buffer still exists; clean up old instance
@@ -197,13 +197,13 @@ function M.open()
     ---@class SessionRestoreList : FloatWindow
     ---@field sessions SessionEntry[]
     ---@field selected_idx integer
-    local instance_mt = { __index = FloatWindow }
+
     local instance = setmetatable(FloatWindow:new({
         width_ratio = 0.5,
         height_ratio = 0.5,
         filetype = "markdown",
         buffer_name = "AskSessionRestore",
-    }), instance_mt)
+    }), { __index = FloatWindow }) -- FYI make sure leaf instances set their metatable (or something does it for them!)
 
     instance.sessions = sessions
     instance.selected_idx = 1

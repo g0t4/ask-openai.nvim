@@ -1,4 +1,5 @@
 local BufferController0Indexed = require('ask-openai.rewrites.BufferController')
+local log = require("devtools.logs.logger"):universal()
 
 ---This entire class operates on 0-indexed row and column positions
 ---   if that seems wrong I'll go to all 1-indexed
@@ -7,18 +8,30 @@ local BufferController0Indexed = require('ask-openai.rewrites.BufferController')
 ---@class WindowController0Indexed
 ---@field window_id integer
 local WindowController0Indexed = {}
+-- just add setmetatable if you want to have a new super type for this too
 WindowController0Indexed.__index = WindowController0Indexed
 
 ---@param window_id integer
-function WindowController0Indexed.for_window(window_id)
-    local instance = setmetatable({}, WindowController0Indexed)
+function WindowController0Indexed:new(window_id)
+    assert(self ~= nil) -- I want everything to pass self (force it so "inheritance" works)
+    -- inherit the functionality of self
+    -- local instance = setmetatable(self, WindowController0Indexed)
+    local instance = self -- assume self already has __index that points to WindowController0Indexed
     instance.window_id = window_id
     return instance
 end
 
-function WindowController0Indexed.new_for_current_window()
+---@param window_id integer
+function WindowController0Indexed.standalone_controller_for(window_id)
+    -- intentionally pass new table here b/c this method is intended for standalone controller instances (not inheriting, use new for that)
+    local instance = WindowController0Indexed.new({}, window_id)
+    setmetatable(instance, WindowController0Indexed) -- works b/c we set WindowController0Indexed.__index to itself above
+    return instance
+end
+
+function WindowController0Indexed.standalone_controller_for_current_window()
     local current_window_id = vim.api.nvim_get_current_win()
-    return WindowController0Indexed.for_window(current_window_id)
+    return WindowController0Indexed.standalone_controller_for(current_window_id)
 end
 
 ---@return integer row_base0 # 0-indexed

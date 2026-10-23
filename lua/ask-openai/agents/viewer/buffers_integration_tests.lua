@@ -77,7 +77,7 @@ function M.run_simulation(opts)
     local AgentWindow = require("ask-openai.agents.viewer.window")
 
     -- Reuse the same buffer name as the real chat window so it looks identical.
-    local window = AgentWindow:new()
+    local window = AgentWindow.new()
     window:buffer():clear()
     window:mark_agent_running(true)
     window:ensure_spinner_running("SIMULATED LONG TRACE")
@@ -94,7 +94,7 @@ function M.run_simulation(opts)
     local started_at_ms = vim.uv.hrtime() / 1e6
 
     timer:start(0, write_interval_ms, vim.schedule_wrap(function()
-        if not vim.api.nvim_win_is_valid(window.win_id) then
+        if not vim.api.nvim_win_is_valid(window.window_id) then
             -- window was closed mid-run; bail out cleanly
             timer:stop()
             timer:close()

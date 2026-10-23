@@ -1,9 +1,14 @@
 local log = require("devtools.logs.logger"):universal()
----@class FloatWindow
+local WindowController0Indexed = require("ask-openai.rewrites.WindowController")
+
+---@class FloatWindow : WindowController0Indexed
 ---@field buffer_number? integer
----@field win_id? integer
 ---@field opts FloatWindowOptions
 local FloatWindow = {}
+setmetatable(FloatWindow, { __index = WindowController0Indexed })
+FloatWindow.__index = FloatWindow
+-- float window now subclasses WindowController0Indexed
+--  IOTW it is a controllable window!
 
 --- Find a buffer by name, or nil if not found.
 ---
@@ -58,10 +63,12 @@ end
 ---
 ---@param opts FloatWindowOptions
 ---@param initial_lines? string[]
----@return FloatWindow
 function FloatWindow:new(opts, initial_lines)
-    local instance_mt = { __index = self }
-    local instance = setmetatable({ opts = opts, }, instance_mt)
+    -- FYI! I decided to keep setmetadata/__index out of the new() heirarchy for window types... NBD if you want to add it back but don't fuck up subclassing
+    -- when possible limit new to field initialization, save all inheritance out of here b/c it can become confusing if conflated
+    --  and push setting metatable to the leaf most type (wherever the instance's table is first created)
+    local instance = self -- self allows for subclassing where the caller would handle inheritance, not me here
+    instance.opts = opts
 
     -- * reuse existing buffer if one with the same name exists (prevents E95 on reopen)
     if opts.buffer_name then
@@ -96,18 +103,22 @@ function FloatWindow:new(opts, initial_lines)
         vim.api.nvim_buf_set_lines(instance.buffer_number, 0, -1, false, initial_lines)
     end
 
-    instance:open()
-
+    FloatWindow.open(instance)
+    -- critical to call super type's new as well, and after open so we have the window id
+    WindowController0Indexed.new(instance, instance.window_id) -- init window controller fields!
     return instance
 end
 
---- Open (or reopen) the float window.
+--- Open (or reopen) the window.
+--- TODO rename ensure_open?
 --- If the window is already open, does nothing.
 --- If the window was closed but buffer exists, reopens it.
 function FloatWindow:open()
-    if self.win_id and vim.api.nvim_win_is_valid(self.win_id) then
+    local window_is_already_open = self.window_id and vim.api.nvim_win_is_valid(self.window_id)
+    if window_is_already_open then
         return
     end
+    -- window is not open (never open, or closed) => so, open it
 
     if not self.buffer_number or not vim.api.nvim_buf_is_valid(self.buffer_number) then
         log:error("FloatWindow:open called with invalid buffer")
@@ -121,27 +132,27 @@ function FloatWindow:open()
     local winhighlight = initial_config.winhighlight
     initial_config.winhighlight = nil
 
-    self.win_id = vim.api.nvim_open_win(self.buffer_number, true, initial_config)
+    self.window_id = vim.api.nvim_open_win(self.buffer_number, true, initial_config)
 
     if winhighlight then
-        vim.api.nvim_set_option_value('winhighlight', winhighlight, { win = self.win_id })
+        vim.api.nvim_set_option_value('winhighlight', winhighlight, { win = self.window_id })
     end
 
     -- * make window resizable
-    local group_id = vim.api.nvim_create_augroup("float_window_" .. self.win_id, { clear = true })
+    local group_id = vim.api.nvim_create_augroup("float_window_" .. self.window_id, { clear = true })
     vim.api.nvim_create_autocmd("VimResized", {
         group = group_id,
         callback = function()
-            if not vim.api.nvim_win_is_valid(self.win_id) then return end
+            if not vim.api.nvim_win_is_valid(self.window_id) then return end
             local resized_config = self.window_config(self.opts)
             -- `winhighlight` is not a valid nvim_win_set_config key (it's a win option)
             resized_config.winhighlight = nil
-            vim.api.nvim_win_set_config(self.win_id, resized_config)
+            vim.api.nvim_win_set_config(self.window_id, resized_config)
         end,
     })
     vim.api.nvim_create_autocmd("WinClosed", {
         group = group_id,
-        pattern = tostring(self.win_id),
+        pattern = tostring(self.window_id),
         callback = function()
             -- when THIS window closes, drop its autocmds
             pcall(vim.api.nvim_del_augroup_by_id, group_id)
@@ -153,14 +164,14 @@ end
 --- Resize the window from window_config (e.g. when the user input box grows to
 --- fit a long prompt, or the chat shrinks to make room).
 function FloatWindow:resize()
-    if not self.win_id or not vim.api.nvim_win_is_valid(self.win_id) then return end
+    if not self.window_id or not vim.api.nvim_win_is_valid(self.window_id) then return end
     local config = self.window_config(self.opts)
     -- `winhighlight` is a window option, not an nvim_win_set_config key.
     local winhighlight = config.winhighlight
     config.winhighlight = nil
-    vim.api.nvim_win_set_config(self.win_id, config)
+    vim.api.nvim_win_set_config(self.window_id, config)
     if winhighlight then
-        vim.api.nvim_set_option_value('winhighlight', winhighlight, { win = self.win_id })
+        vim.api.nvim_set_option_value('winhighlight', winhighlight, { win = self.window_id })
     end
 end
 
@@ -168,9 +179,9 @@ end
 --- This fully cleans up the instance so it can be recreated fresh on next open().
 function FloatWindow:close()
     -- * close window if valid
-    if self.win_id and vim.api.nvim_win_is_valid(self.win_id) then
-        vim.api.nvim_win_close(self.win_id, true)
-        self.win_id = nil
+    if self.window_id and vim.api.nvim_win_is_valid(self.window_id) then
+        vim.api.nvim_win_close(self.window_id, true)
+        self.window_id = nil
     end
 
     -- * delete buffer if valid (prevents E95 on next open)
@@ -183,15 +194,15 @@ end
 ---@param title string
 function FloatWindow:set_title(title)
     vim.schedule(function()
-        local win_is_valid = self.win_id and vim.api.nvim_win_is_valid(self.win_id)
+        local win_is_valid = self.window_id and vim.api.nvim_win_is_valid(self.window_id)
         if not title or not win_is_valid then
-            log:warn("Cannot set title", { win_id = self.win_id, title = title, })
+            log:warn("Cannot set title", { win_id = self.window_id, title = title, })
             return
         end
         local config = {}
         config.title = " " .. title .. " "
         config.title_pos = "center"
-        vim.api.nvim_win_set_config(self.win_id, config)
+        vim.api.nvim_win_set_config(self.window_id, config)
     end)
 end
 
@@ -199,15 +210,15 @@ end
 ---@param footer string
 function FloatWindow:set_footer(footer)
     vim.schedule(function()
-        local win_is_valid = self.win_id and vim.api.nvim_win_is_valid(self.win_id)
+        local win_is_valid = self.window_id and vim.api.nvim_win_is_valid(self.window_id)
         if not footer or not win_is_valid then
-            log:warn("Cannot set footer", { win_id = self.win_id, footer = footer, })
+            log:warn("Cannot set footer", { win_id = self.window_id, footer = footer, })
             return
         end
         local config = {}
         config.footer = " " .. footer .. " "
         config.footer_pos = "center"
-        vim.api.nvim_win_set_config(self.win_id, config)
+        vim.api.nvim_win_set_config(self.window_id, config)
     end)
 end
 

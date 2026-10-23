@@ -17,7 +17,7 @@ BufferController0Indexed.__index = BufferController0Indexed
 function BufferController0Indexed.for_buffer(buffer_number)
     local instance = setmetatable({}, BufferController0Indexed)
     instance.buffer_number = buffer_number
-    instance.win_id = nil
+    instance.win_id = nil -- TODO buffer should not track window b/c it can be in many!!!! albeit for my use cases that is not the case
     instance.folds = {}
     return instance
 end
