@@ -9,7 +9,7 @@ require("ask-openai.frontends.context.inspect")
 local BufferController = {}
 
 function BufferController:new(buffer_number)
-    self = setmetatable({}, { __index = BufferController })
+    local self = setmetatable({}, { __index = BufferController })
     self.buffer_number = buffer_number
     self.win_id = nil
     self.folds = {}

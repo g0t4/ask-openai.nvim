@@ -24,6 +24,18 @@ local function new_lines_builder(lines)
     builder:append_lines(lines)
     return builder
 end
+describe("BufferController:new", function()
+    it("should make a new instance", function()
+        local controller = BufferController:new(1)
+        assert(controller ~= nil)
+        expect(controller.buffer_number == 1)
+
+        local controller2 = BufferController:new(2)
+        expect(controller2.buffer_number == 2)
+
+        expect(controller ~= BufferController)
+    end)
+end)
 
 describe("BufferController:get_lines_from", function()
     describe("start at first line (0)", function()
