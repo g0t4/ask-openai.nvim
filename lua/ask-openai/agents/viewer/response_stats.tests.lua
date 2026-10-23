@@ -13,9 +13,9 @@ describe("raw backend response statistics display", function()
         }
         local original = vim.deepcopy(response)
         local rendered = table.concat(stats.format(response), "\n")
-        for _, expected in ipairs({ "cached: 80", "in (includes cached): 100", "out: 20", "reasoning: 10",
+        for _, expected in ipairs({ "cached: 80", "in: 20", "out: 20", "reasoning: 10",
             "TTFT: 118.6 ms", "decode: 52.3 ms", "mean ITL: 52.3 ms",
-            "overall output: 11.7 tok/s", "draft: 1/5 accepted @ 20%", "mean acceptance length: 2.00" }) do
+            "draft: 1/5 accepted @ 20.0%", "mean acceptance length: 2.00" }) do
             assert.is_truthy(rendered:find(expected, 1, true), rendered)
         end
         assert.is_nil(rendered:find("queue:", 1, true))
@@ -56,11 +56,24 @@ describe("raw backend response statistics display", function()
                 assert.equals(queue >= 0.05, text:find("queue:", 1, true) ~= nil)
                 assert.equals(reasoning > 0, text:find("reasoning:", 1, true) ~= nil)
                 if reasoning > 0 then assert.is_truthy(text:find("\n  reasoning: 7", 1, true)) end
-                assert.is_truthy(text:find("\n  draft: 5/10 accepted @ 50%\n    mean acceptance length: 2.00", 1, true))
+                assert.is_truthy(text:find("\n  draft: 5/10 accepted @ 50.0%\n    mean acceptance length: 2.00", 1, true))
                 assert.is_truthy(text:find("\n  decode: 50.0 ms\n  mean ITL: 2.5 ms", 1, true))
                 assert.same(original, response)
             end
         end
+    end)
+
+    it("shows SGLang usage and speculative fields without inventing phase timings", function()
+        local response = { usage = { prompt_tokens = 100, completion_tokens = 20, reasoning_tokens = 7,
+            prompt_tokens_details = { cached_tokens = 80 } }, sglext = { spec_tokens_details = {
+                spec_num_correct_drafts = 12, spec_num_proposed_drafts = 18,
+                spec_accept_rate = 2/3, spec_accept_length = 8/3 } } }
+        local text = table.concat(stats.format(response), "\n")
+        for _, expected in ipairs({ "in: 20", "out: 20", "reasoning: 7", "12/18 accepted @ 66.7%",
+            "mean acceptance length: 2.67" }) do assert.is_truthy(text:find(expected, 1, true), text) end
+        assert.is_nil(text:find("TTFT", 1, true))
+        assert.is_nil(text:find("overall", 1, true))
+        assert.equals(120, stats.total_tokens(response))
     end)
 
 end)

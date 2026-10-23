@@ -554,7 +554,7 @@ def test_vllm_usage_metrics_keep_distinct_semantics() -> None:
     assert parsed.predicted_tokens_per_second == 0  # overall throughput isn't decode rate
     text = format_stats_line(parsed)
     for label in ("in: 20 @ ≈168.6 tok/s", "out: 20 @ ≈363.4 tok/s", "reasoning: 10", "TTFT: 118.6 ms",
-                  "decode: 52.3 ms", "overall output: 11.7 tok/s", "20.0%", "mean acceptance length: 2.0"):
+                  "decode: 52.3 ms", "20.0%", "mean acceptance length: 2.0"):
         assert label in text
     assert "ms prompt" not in text
     assert expected_next_cache(parsed) == 120
@@ -649,3 +649,29 @@ def test_vllm_output_details_nested_and_zero_noise_hidden() -> None:
             assert "]  decode: 50.0 ms" in text
             assert "]  mean ITL: 2.5 ms" in text
             assert response == original
+
+
+def test_sglang_openai_extensions_and_native_metadata_are_verbatim():
+    from copy import deepcopy
+    response = {'response_backend':'sglang', 'usage':{'prompt_tokens':100,'completion_tokens':20,
+        'reasoning_tokens':7,'prompt_tokens_details':{'cached_tokens':80}},
+        'sglext':{'spec_tokens_details':{'spec_num_correct_drafts':12,'spec_num_proposed_drafts':18,
+                                       'spec_accept_rate':2/3,'spec_accept_length':8/3}}}
+    original = deepcopy(response)
+    stats = parse_timings(response)
+    assert stats.backend == 'sglang'
+    assert stats.uncached_prompt_tokens == 20
+    assert stats.reasoning_tokens == 7
+    assert stats.draft_tokens == 18 and stats.draft_tokens_accepted == 12
+    assert stats.formatted_acceptance_rate == '66.7%'
+    assert stats.mean_acceptance_length == 8/3
+    assert stats.estimated_input_tokens_per_second is None
+    assert stats.estimated_decode_tokens_per_second is None
+    text = format_stats_line(stats)
+    assert 'in: 20' in text and 'reasoning: 7' in text and '66.7%' in text
+    assert 'TTFT' not in text and 'tok/s' not in text and 'overall' not in text
+    assert response == original
+    assert parse_timings({'meta_info':{'prompt_tokens':100,'completion_tokens':20,'cached_tokens':80}}).uncached_prompt_tokens == 20
+    # Never attribute a multi-choice speculative array to a single assistant.
+    response['sglext']['spec_tokens_details'] = [original['sglext']['spec_tokens_details']] * 2
+    assert parse_timings(response).draft_tokens is None

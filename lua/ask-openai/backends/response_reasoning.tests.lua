@@ -20,8 +20,9 @@ describe("backend reasoning field normalization", function()
             local original = vim.deepcopy(sse)
             assert.equals(case.expected, response_reasoning.get_content(choice.delta))
             assert.equals(case.expected or "", parse_sse_v1_chat_completions(sse).reasoning_content)
+            assert.same(original, sse)
             local request = { accumulated_model_response_messages = {} }
-            frontend.on_streaming_delta_update_message_history(choice, request, sse)
+            frontend.on_streaming_delta_update_message_history(vim.deepcopy(choice), request, sse)
             local message = request.accumulated_model_response_messages[1]
             assert.equals(case.expected, message.reasoning_content)
             assert.is_nil(message.reasoning)
@@ -41,4 +42,14 @@ describe("backend reasoning field normalization", function()
         assert.equals("first second third", message.reasoning_content)
         assert.equals("answer", message.content)
     end)
+    it("ignores SGLang's metadata-only SSEs in the text parser", function()
+        for _, sse in ipairs({ { choices = {}, usage = { completion_tokens = 3 } },
+            { choices = {}, sglext = { spec_tokens_details = {} } } }) do
+            local parsed = parse_sse_v1_chat_completions(sse)
+            assert.equals("", parsed.content)
+            assert.equals("", parsed.reasoning_content)
+            assert.is_false(parsed.done)
+        end
+    end)
+
 end)

@@ -111,6 +111,10 @@ function parse_sse_v1_chat_completions(sse)
         log:info("skipping SSE with error b/c that will be handled elsewhere", sse)
         return nil
     end
+    if type(sse.choices) == "table" and next(sse.choices) == nil
+        and require("ask-openai.backends.response_metadata").is_final(sse) then
+        return { content = "", reasoning_content = "", done = false }
+    end
     if not sse.choices or not sse.choices[1] then
         log:error("SSE is missing choices", sse)
         -- leave as hard stop error b/c I don't think this ever happens... but error will help me figure out if it does!

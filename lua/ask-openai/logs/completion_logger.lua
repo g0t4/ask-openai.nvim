@@ -118,7 +118,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         local delta = first and first.delta or {}
         if type(delta) ~= "table" then return end
 
-        if delta.role then
+        if delta.role and delta.role ~= vim.NIL then
             accum.role = delta.role
         end
         local reasoning_content = response_reasoning.get_content(delta)
@@ -141,6 +141,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
 
         if is_last_sse then
             response_metadata.copy(sse_parsed, accum)
+            request.response_metadata_sse = response_metadata.merge(request.response_metadata_sse, sse_parsed)
         end
 
         -- PRN track tool call deltas too? on the response (for output.json)?
@@ -150,9 +151,10 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
             return
         end
 
+        local final_sse = request.response_metadata_sse or sse_parsed
         -- store for convenient access in-memory, that way if smth fails on save I can still see it here
         M.last_done = {
-            sse_parsed = sse_parsed,
+            sse_parsed = final_sse,
             request = request,
             frontend = frontend,
         }
@@ -161,7 +163,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         -- FYI it is possible the distill in AgentsFrontend has a difference that you need to keep, if so then call save_trace from that spot and not here just for AgentsFrontend (find a way to pass last_sse, that's the only complexity)
         table.insert(messages_snapshot, accum)
         vim.schedule(function()
-            M.save_trace(request, frontend, messages_snapshot, sse_parsed, {})
+            M.save_trace(request, frontend, messages_snapshot, final_sse, {})
         end)
     end
 

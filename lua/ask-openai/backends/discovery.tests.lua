@@ -69,4 +69,19 @@ describe("backend discovery", function()
         assert.is_nil(d.get('http://test').actual_model_abbreviation)
 
     end)
+    it("recognizes SGLang's owned_by field without extra probes", function()
+        package.loaded["ask-openai.backends.llama_cpp.llama_server_client"] = {
+            extract_model_info = function(body) return { name = body.data[1].id } end }
+        local calls = 0
+        vim.system = function(_, _, callback)
+            calls = calls + 1
+            callback({ code = 0, stdout = vim.json.encode({ data = { { id = "glm-5.3-flash", owned_by = "sglang" } } }) .. "\n200" })
+        end
+        local d = require("ask-openai.backends.discovery")
+        d.refresh("http://sglang")
+        assert.is_true(vim.wait(1000, function() return d.get("http://sglang").status == "ready" end, 10))
+        assert.equals("sglang", d.get("http://sglang").backend)
+        assert.equals(1, calls)
+    end)
+
 end)

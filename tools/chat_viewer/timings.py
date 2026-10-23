@@ -97,7 +97,7 @@ class ModelTimings:
             return self.reported_draft_acceptance_rate * 100
         if self.draft_tokens is None or self.draft_tokens == 0:
             return None
-        if self.backend == "vllm" and self.draft_tokens_accepted is None:
+        if self.backend != "llama-server" and self.draft_tokens_accepted is None:
             return None
         accepted = self.draft_tokens_accepted or 0
         return (accepted / self.draft_tokens) * 100
@@ -209,12 +209,36 @@ def parse_timings(last_sse: dict[str, Any] | None) -> ModelTimings | None:
     timings = last_sse.get("timings")
     if not timings or not isinstance(timings, dict):
         usage = last_sse.get("usage")
+        native_meta = last_sse.get("meta_info") or {}
+        if not isinstance(usage, dict) and isinstance(native_meta, dict) and "prompt_tokens" in native_meta:
+            usage = {"prompt_tokens": native_meta.get("prompt_tokens"),
+                     "completion_tokens": native_meta.get("completion_tokens"),
+                     "prompt_tokens_details": {"cached_tokens": native_meta.get("cached_tokens")},
+                     "reasoning_tokens": native_meta.get("reasoning_tokens")}
         if not isinstance(usage, dict) or not usage:
             return None
         metrics = last_sse.get("metrics") or {}
         prompt_details = usage.get("prompt_tokens_details") or {}
         completion_details = usage.get("completion_tokens_details") or {}
         speculative = metrics.get("speculative_decoding") or {}
+        sglext = last_sse.get("sglext") or {}
+        is_sglang = (last_sse.get("response_backend") == "sglang" or bool(sglext)
+                     or bool(native_meta) or "reasoning_tokens" in usage)
+        if is_sglang:
+            spec = sglext.get("spec_tokens_details") or native_meta
+            # Multiple choices have distinct speculative stats; don't pick one.
+            if not isinstance(spec, dict):
+                spec = {}
+            return ModelTimings(
+                backend="sglang", prompt_tokens=usage.get("prompt_tokens") or 0,
+                predicted_tokens=usage.get("completion_tokens") or 0,
+                cached_tokens=prompt_details.get("cached_tokens"),
+                reasoning_tokens=usage.get("reasoning_tokens"),
+                draft_tokens=spec.get("spec_num_proposed_drafts"),
+                draft_tokens_accepted=spec.get("spec_num_correct_drafts"),
+                reported_draft_acceptance_rate=spec.get("spec_accept_rate"),
+                mean_acceptance_length=spec.get("spec_accept_length"),
+            )
         return ModelTimings(
             backend="vllm",
             prompt_tokens=usage.get("prompt_tokens") or 0,
@@ -287,7 +311,7 @@ def format_timings_display(timings: ModelTimings | None) -> str:
     
     parts.append(" ".join(token_parts))
     
-    if timings.backend == "vllm":
+    if timings.backend in ("vllm", "sglang"):
         if timings.time_to_first_token_ms is not None:
             parts.append(f"{_humanize_float(timings.time_to_first_token_ms)}ms TTFT")
         if timings.generation_time_ms is not None:
@@ -322,7 +346,7 @@ def format_stats_line(timings: ModelTimings | None, color: str = "dim") -> str:
     if timings.cached_tokens is not None and timings.cached_tokens > 0:
         lines.append(f"[{color}]cached: {_humanize_int(timings.cached_tokens)} tokens[/]")
 
-    if timings.backend == "vllm":
+    if timings.backend in ("vllm", "sglang"):
         uncached = timings.uncached_prompt_tokens
         input_label = "in (includes cached)" if uncached is None else "in"
         input_count = timings.prompt_tokens if uncached is None else uncached
@@ -350,7 +374,7 @@ def format_stats_line(timings: ModelTimings | None, color: str = "dim") -> str:
     if timings.draft_tokens is not None and timings.draft_tokens > 0:
         draft_accepted = timings.draft_tokens_accepted or 0
         acceptance_rate = timings.formatted_acceptance_rate
-        if timings.backend == "vllm" and timings.draft_tokens_accepted is None:
+        if timings.backend != "llama-server" and timings.draft_tokens_accepted is None:
             suffix = f", {acceptance_rate} accepted" if acceptance_rate else ""
             lines.append(f"[{color}]  draft: {_humanize_int(timings.draft_tokens)} proposed{suffix}[/]")
         elif acceptance_rate:
@@ -358,13 +382,12 @@ def format_stats_line(timings: ModelTimings | None, color: str = "dim") -> str:
         else:
             lines.append(f"[{color}]  draft: {_humanize_int(draft_accepted)} accepted ({_humanize_int(draft_accepted)} / {_humanize_int(timings.draft_tokens)} tokens)[/]")
 
-    if timings.backend == "vllm":
+    if timings.backend in ("vllm", "sglang"):
         if timings.mean_acceptance_length is not None:
             lines.append(f"[{color}]    mean acceptance length: {_humanize_float(timings.mean_acceptance_length)} tokens[/]")
         for label, value, unit in (
             ("  decode", timings.generation_time_ms, "ms"),
             ("  mean ITL", timings.mean_itl_ms, "ms"),
-            ("overall output", timings.overall_output_tokens_per_second, "tok/s"),
         ):
             if value is not None:
                 lines.append(f"[{color}]{label}: {_humanize_float(value)} {unit}[/]")

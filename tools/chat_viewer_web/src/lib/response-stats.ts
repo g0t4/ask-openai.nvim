@@ -20,12 +20,35 @@ export function totalTokens(response?: ResponseStats | null): number | undefined
   }
 }
 
-export function draftAcceptance(response: ResponseStats): string | undefined {
+export function normalizeStats(response?: ResponseStats | null) {
+  if (!response || (!response.timings && !response.usage)) return null
   const t = response.timings
-  const s = response.metrics?.speculative_decoding
-  const proposed = t ? t.draft_n : s?.num_draft_tokens
-  const accepted = t ? t.draft_n_accepted : s?.num_accepted_draft_tokens
-  const rate = t ? undefined : s?.draft_acceptance_rate
+  const u = response.usage
+  const m = response.metrics
+  const backend = t ? 'llama-server' : response.response_backend === 'sglang' || response.sglext || u?.reasoning_tokens != null ? 'sglang' : 'vllm'
+  const cached = t ? t.cache_n : u?.prompt_tokens_details?.cached_tokens
+  const prompt = t ? t.prompt_n : u?.prompt_tokens
+  const newInput = t ? prompt : cached != null && prompt != null && cached >= 0 && cached <= prompt ? prompt - cached : undefined
+  const output = t ? t.predicted_n : u?.completion_tokens
+  const spec = response.sglext?.spec_tokens_details
+  const sg = spec && !Array.isArray(spec) ? spec : undefined
+  const proposed = t ? t.draft_n : sg ? sg.spec_num_proposed_drafts : m?.speculative_decoding?.num_draft_tokens
+  const accepted = t ? t.draft_n_accepted : sg ? sg.spec_num_correct_drafts : m?.speculative_decoding?.num_accepted_draft_tokens
+  const acceptanceRate = sg ? sg.spec_accept_rate : m?.speculative_decoding?.draft_acceptance_rate
+  const inputMs = t ? t.prompt_ms : backend === 'vllm' ? m?.time_to_first_token_ms : undefined
+  const outputMs = t ? t.predicted_ms : backend === 'vllm' ? m?.generation_time_ms : undefined
+  const inputRate = t ? t.prompt_per_second : newInput != null && newInput > 0 && inputMs != null && inputMs > 0 ? newInput * 1000 / inputMs : undefined
+  const outputRate = t ? t.predicted_per_second : output != null && output > 1 && outputMs != null && outputMs > 0 ? (output - 1) * 1000 / outputMs : undefined
+  return { backend, cached, prompt, newInput, output, proposed, accepted, acceptanceRate, inputMs, outputMs, inputRate, outputRate,
+    reasoning: u?.completion_tokens_details?.reasoning_tokens ?? u?.reasoning_tokens,
+    meanAccept: sg ? sg.spec_accept_length : m?.speculative_decoding?.mean_acceptance_length,
+    totalInput: t && prompt != null ? prompt + (cached ?? 0) : prompt }
+}
+
+export function draftAcceptance(response: ResponseStats): string | undefined {
+  const stats = normalizeStats(response)
+  if (!stats) return undefined
+  const { proposed, accepted, acceptanceRate: rate } = stats
   const percentage = rate != null ? rate * 100
     : proposed != null && proposed > 0 && accepted != null ? accepted / proposed * 100 : undefined
   const ratio = proposed != null && accepted != null ? `${humanizeInt(accepted)}/${humanizeInt(proposed)}`
@@ -35,50 +58,31 @@ export function draftAcceptance(response: ResponseStats): string | undefined {
 }
 
 export function formatResponseStats(response?: ResponseStats | null): string[] {
-  if (!response) return []
+  const s = normalizeStats(response)
+  if (!s || !response) return []
   const lines: string[] = []
   const count = (label: string, value?: number | null) => {
     if (value != null) lines.push(`${label}: ${humanizeInt(value)} tokens`)
   }
-  if (response.timings) {
-    const t = response.timings
-    count('cached', t.cache_n)
-    for (const [label, value, rate] of [
-      ['in', t.prompt_n, t.prompt_per_second], ['out', t.predicted_n, t.predicted_per_second]
-    ] as const) {
-      if (value != null) lines.push(`${label}: ${humanizeInt(value)} tokens${rate != null && rate > 0 ? ` @ ${humanizeFloat(rate)} tok/s` : ''}`)
-    }
-    const acceptance = draftAcceptance(response)
-    if (acceptance) lines.push(`  draft: ${acceptance}`)
-    if (t.prompt_ms != null) lines.push(`prompt: ${humanizeFloat(t.prompt_ms)} ms`)
-    if (t.predicted_ms != null) lines.push(`decode: ${humanizeFloat(t.predicted_ms)} ms`)
-  } else {
-    const u = response.usage
-    const m = response.metrics
-    count('cached', u?.prompt_tokens_details?.cached_tokens)
-    count('in (includes cached)', u?.prompt_tokens)
-    if (m?.time_to_first_token_ms != null) lines.push(`TTFT: ${humanizeFloat(m.time_to_first_token_ms)} ms`)
-    if (m?.queue_time_ms != null && m.queue_time_ms >= 0.05) lines.push(`queue: ${humanizeFloat(m.queue_time_ms)} ms`)
-    count('out', u?.completion_tokens)
-    const reasoning = u?.completion_tokens_details?.reasoning_tokens
-    if (reasoning != null && reasoning > 0) count('  reasoning', reasoning)
-    const acceptance = draftAcceptance(response)
-    if (acceptance) lines.push(`  draft: ${acceptance}`)
-    const meanAcceptance = m?.speculative_decoding?.mean_acceptance_length
-    if (meanAcceptance != null) lines.push(`    mean acceptance length: ${humanizeFloat(meanAcceptance)} tokens`)
-    for (const [label, value, unit] of [
-      ['  decode', m?.generation_time_ms, 'ms'], ['  mean ITL', m?.mean_itl_ms, 'ms'],
-      ['overall output (includes prefill)', m?.tokens_per_second, 'tok/s']
-    ] as const) {
-      if (value != null) lines.push(`${label}: ${humanizeFloat(value)} ${unit}`)
-    }
-  }
-  const total = totalTokens(response)
-  if (total != null) lines.push(`total: ${humanizeInt(total)} tokens`)
+  count('cached', s.cached)
+  const rate = (value?: number | null) => value != null && value > 0 ? ` @ ${s.backend === 'llama-server' ? '' : '≈'}${humanizeFloat(value)} tok/s` : ''
+  const inputLabel = s.newInput == null ? 'in (includes cached)' : 'in'
+  const input = s.newInput ?? s.prompt
+  if (input != null) lines.push(`${inputLabel}: ${humanizeInt(input)} tokens${rate(s.inputRate)}`)
+  if (response.metrics?.time_to_first_token_ms != null) lines.push(`TTFT: ${humanizeFloat(response.metrics.time_to_first_token_ms)} ms`)
+  if (response.metrics?.queue_time_ms != null && response.metrics.queue_time_ms >= 0.05) lines.push(`queue: ${humanizeFloat(response.metrics.queue_time_ms)} ms`)
+  if (s.output != null) lines.push(`out: ${humanizeInt(s.output)} tokens${rate(s.outputRate)}`)
+  if (s.reasoning != null && s.reasoning > 0) count('  reasoning', s.reasoning)
+  const acceptance = draftAcceptance(response)
+  if (acceptance) lines.push(`  draft: ${acceptance}`)
+  if (s.meanAccept != null) lines.push(`    mean acceptance length: ${humanizeFloat(s.meanAccept)} tokens`)
+  if (s.inputMs != null && s.backend === 'llama-server') lines.push(`prompt: ${humanizeFloat(s.inputMs)} ms`)
+  if (s.outputMs != null) lines.push(`  decode: ${humanizeFloat(s.outputMs)} ms`)
+  if (response.metrics?.mean_itl_ms != null) lines.push(`  mean ITL: ${humanizeFloat(response.metrics.mean_itl_ms)} ms`)
   return lines
 }
 
 export function vllmGenerations(messages: Message[]): { index: number; response: Message }[] {
-  return messages.flatMap((response, index) => response.role === 'assistant' && response.usage && !response.timings
+  return messages.flatMap((response, index) => response.role === 'assistant' && normalizeStats(response)?.backend === 'vllm'
     ? [{ index: index + 1, response }] : [])
 }

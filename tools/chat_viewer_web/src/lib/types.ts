@@ -10,6 +10,9 @@ export interface ResponseStats {
   timings?: Timings | null
   usage?: Usage | null
   metrics?: VllmMetrics | null
+  response_backend?: string
+  sglext?: { spec_tokens_details?: SglangSpeculative | SglangSpeculative[] | null; cached_tokens_details?: unknown } | null
+  meta_info?: Record<string, unknown> | null
 }
 
 export interface Usage {
@@ -18,6 +21,15 @@ export interface Usage {
   total_tokens?: number | null
   prompt_tokens_details?: { cached_tokens?: number | null } | null
   completion_tokens_details?: { reasoning_tokens?: number | null } | null
+  reasoning_tokens?: number | null
+}
+
+export interface SglangSpeculative {
+  spec_num_proposed_drafts?: number
+  spec_num_correct_drafts?: number
+  spec_accept_rate?: number
+  spec_accept_length?: number
+  [key: string]: unknown
 }
 
 export interface VllmMetrics {

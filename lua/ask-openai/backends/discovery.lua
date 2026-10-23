@@ -26,6 +26,7 @@ local function detect(body)
     for _, model in ipairs(type(body.data) == "table" and body.data or {}) do
         if model.owned_by == "llamacpp" then return "llama-server" end
         if model.owned_by == "vllm" then return "vllm" end
+        if model.owned_by == "sglang" then return "sglang" end
     end
 end
 

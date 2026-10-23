@@ -1,6 +1,7 @@
 -- Display raw backend statistics without treating unlike timing fields as aliases.
 local M = {}
 local HLGroups = require("ask-openai.hlgroups")
+local response_speculative = require("ask-openai.backends.response_speculative")
 
 local function object(value)
     return type(value) == "table" and value or {}
@@ -22,7 +23,7 @@ local function add_draft(parts, proposed, accepted, acceptance_rate)
         end
     end
     if type(acceptance_rate) == "number" then
-        text = text .. string.format(" @ %.0f%%", acceptance_rate * 100)
+        text = text .. string.format(" @ %.1f%%", acceptance_rate * 100)
     end
     parts[#parts + 1] = text
 end
@@ -47,24 +48,26 @@ function M.format(response)
         local usage, metrics = object(response.usage), object(response.metrics)
         local prompt_details = object(usage.prompt_tokens_details)
         add_number(counts, "cached: ", prompt_details.cached_tokens)
-        add_number(counts, "in (includes cached): ", usage.prompt_tokens)
+        if type(usage.prompt_tokens) == "number" and type(prompt_details.cached_tokens) == "number"
+            and prompt_details.cached_tokens >= 0 and prompt_details.cached_tokens <= usage.prompt_tokens then
+            add_number(counts, "in: ", usage.prompt_tokens - prompt_details.cached_tokens)
+        else
+            add_number(counts, "in (includes cached): ", usage.prompt_tokens)
+        end
         add_number(counts, "out: ", usage.completion_tokens)
-        local reasoning_tokens = object(usage.completion_tokens_details).reasoning_tokens
+        local reasoning_tokens = object(usage.completion_tokens_details).reasoning_tokens or usage.reasoning_tokens
         if type(reasoning_tokens) == "number" and reasoning_tokens > 0 then
             add_number(output_details, "reasoning: ", reasoning_tokens)
         end
-        local speculative = object(metrics.speculative_decoding)
-        add_draft(output_details, speculative.num_draft_tokens, speculative.num_accepted_draft_tokens,
-            speculative.draft_acceptance_rate)
-        add_number(output_details, "  mean acceptance length: ", speculative.mean_acceptance_length, "%.2f")
+        local proposed, accepted, rate, mean = response_speculative.get(response)
+        add_draft(output_details, proposed, accepted, rate)
+        add_number(output_details, "  mean acceptance length: ", mean, "%.2f")
         add_number(timing_parts, "TTFT: ", metrics.time_to_first_token_ms, "%.1f ms")
         if type(metrics.queue_time_ms) == "number" and metrics.queue_time_ms >= 0.05 then
             add_number(timing_parts, "queue: ", metrics.queue_time_ms, "%.1f ms")
         end
         add_number(output_details, "decode: ", metrics.generation_time_ms, "%.1f ms")
         add_number(output_details, "mean ITL: ", metrics.mean_itl_ms, "%.1f ms")
-        -- vLLM's tokens_per_second includes prefill; it isn't decode throughput.
-        add_number(timing_parts, "overall output: ", metrics.tokens_per_second, "%.1f tok/s")
     end
     local lines = {}
     if #counts > 0 then lines[#lines + 1] = table.concat(counts, " | ") end

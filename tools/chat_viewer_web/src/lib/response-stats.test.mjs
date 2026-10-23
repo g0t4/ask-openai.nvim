@@ -12,8 +12,8 @@ test('vLLM per-generation stats retain raw semantics and count cached input once
   }
   const original = structuredClone(response)
   const text = formatResponseStats(response).join('\n')
-  for (const part of ['in (includes cached): 100', 'out: 20', 'reasoning: 10', 'TTFT: 118.6 ms',
-    'decode: 52.3 ms', 'overall output (includes prefill): 11.7 tok/s', '1/5 (20.0% accepted)']) {
+  for (const part of ['in: 20', 'out: 20', 'reasoning: 10', 'TTFT: 118.6 ms',
+    'decode: 52.3 ms', '1/5 (20.0% accepted)']) {
     assert.ok(text.includes(part), text)
   }
   assert.ok(!text.includes('queue:'))
@@ -63,4 +63,18 @@ test('output details nest under output and zero queue/reasoning are hidden', () 
       assert.deepEqual(response, original)
     }
   }
+})
+
+test('SGLang fields render through the shared stats adapter without fabricated timings', () => {
+  const response = {usage:{prompt_tokens:100,completion_tokens:20,reasoning_tokens:7,prompt_tokens_details:{cached_tokens:80}},
+    sglext:{spec_tokens_details:{spec_num_correct_drafts:12,spec_num_proposed_drafts:18,spec_accept_rate:2/3,spec_accept_length:8/3}}}
+  const original = structuredClone(response)
+  const text = formatResponseStats(response).join('\n')
+  for (const value of ['in: 20', 'out: 20', 'reasoning: 7', '12/18 (66.7% accepted)', 'mean acceptance length: 2.7']) {
+    assert.ok(text.includes(value), text)
+  }
+  assert.ok(!text.includes('TTFT'))
+  assert.ok(!text.includes('tok/s'))
+  assert.deepEqual(vllmGenerations([{role:'assistant',...response}]), [])
+  assert.deepEqual(response, original)
 })

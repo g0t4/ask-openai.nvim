@@ -37,6 +37,13 @@ end
 ---@return table
 ---@param endpoint_model_info? EndpointModelInfo @Discovery snapshot; only used for explicit exceptions
 function M.body_for(config_model, generic_body, reasoning_level, endpoint_model_info)
+    if endpoint_model_info and endpoint_model_info.backend == "sglang" then
+        generic_body = vim.tbl_deep_extend("force", {}, generic_body, {
+            stream_options = { include_usage = true },
+            return_spec_tokens_details = true,
+            return_cached_tokens_details = true,
+        })
+    end
     if config_model == models.GPTOSS then
         return M.body_for_gptoss(generic_body, reasoning_level)
     elseif config_model == models.GEMMA4 then
