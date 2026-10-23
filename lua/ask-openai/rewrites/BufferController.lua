@@ -73,6 +73,11 @@ function BufferController0Indexed:get_node_at_position(row, column)
     --   and convenient (i.e. class tracks buffer number)
 end
 
+function BufferController0Indexed:set_text(text)
+    local lines = vim.split(text, "\n")
+    self:replace_lines(0, -1, lines)
+end
+
 ---@param start_row_base0 integer 0-indexed, set start=end to insert new_lines
 ---@param end_row_inclusive_base0 integer 0-indexed, end-EXCLUSIV
 ---@param new_lines string[]
@@ -100,6 +105,7 @@ function BufferController0Indexed:replace_lines(start_row_base0, end_row_inclusi
     --    - bug that caused seemingly duplicated last line (b/c not replaced, so regenerated unchanged => duplicates it)
 end
 
+--- inherently base1
 function BufferController0Indexed:num_lines()
     return vim.api.nvim_buf_line_count(self.buffer_number)
 end

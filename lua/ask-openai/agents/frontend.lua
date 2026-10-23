@@ -1277,16 +1277,17 @@ function AgentsFrontend.ensure_user_input_window_is_open(focus)
     AgentsFrontend.user_input_window:open()
 
     if is_new then
-        local win = AgentsFrontend.user_input_window
-        -- set "/tools " as input prompt
-        local initial_lines = { "/tools " }
-        vim.api.nvim_buf_set_lines(win.buffer_number, 0, 1, false, initial_lines)
-        vim.api.nvim_buf_set_option(win.buffer_number, 'modifiable', true)
-        -- rewrite as move to end of buffer contents
-        local len_of_lst_line_base1 = #initial_lines[1]
-        local len_of_last_line_base0 = len_of_lst_line_base1 - 1 -- after last char
-        local num_lines_base1 = #initial_lines
-        vim.api.nvim_win_set_cursor(win.win_id, { num_lines_base1, len_of_last_line_base0 })
+        local WindowController0Indexed = require("ask-openai.rewrites.WindowController")
+        local win = WindowController0Indexed.for_window(AgentsFrontend.user_input_window.win_id)
+        local buffer = win:buffer()
+        buffer:set_text("/tools ")
+
+        -- TODO move to a helper now
+        local num_lines_base1 = buffer:num_lines()
+        local lines = buffer:get_all_lines()
+        local len_of_last_line_base0 = #lines[#lines] -- TODO add a get_line_base1/0()
+
+        vim.api.nvim_win_set_cursor(win.window_id, { num_lines_base1, len_of_last_line_base0 })
     end
 
     -- * always (re)bind the close keymaps so they apply even on a reused input buffer
