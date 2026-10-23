@@ -142,6 +142,7 @@ class CacheState:
 def expected_next_cache(prev: ModelTimings) -> int | None:
     """Expected ``cache_n`` for the request following ``prev``'s generation.
 
+    Use total input (cached plus new), so OpenAI prompt usage is not double counted.
     Every token the model saw or produced in the prior generation should be
     available in the prompt cache for the next one:
 
@@ -149,9 +150,9 @@ def expected_next_cache(prev: ModelTimings) -> int | None:
 
     Returns None if the prior generation has no cache data to carry forward.
     """
-    if prev.backend != "llama-server" or prev.cached_tokens is None:
+    if prev.cached_tokens is None:
         return None
-    return prev.cached_tokens + prev.prompt_tokens + prev.predicted_tokens
+    return prev.input_tokens + prev.predicted_tokens
 
 
 def detect_cache_misses(
@@ -173,7 +174,7 @@ def detect_cache_misses(
     states: list[CacheState | None] = []
     prev: ModelTimings | None = None
     for timings in timings_list:
-        if prev is None or timings.backend != "llama-server":
+        if prev is None or timings.backend != prev.backend:
             states.append(None)
         else:
             expected = expected_next_cache(prev)

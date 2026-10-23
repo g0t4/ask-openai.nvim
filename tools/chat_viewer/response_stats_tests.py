@@ -20,8 +20,8 @@ def test_usage_metrics_render_per_message_summary_and_trace_fallback(monkeypatch
     text = output.getvalue()
     assert "overall output: 11.7 tok/s" in text
     assert "TTFT: 118.6 ms" in text
-    assert "vLLM Generations" in text
-    assert "120" in text
+    assert "vLLM assistant timings" in text
+    assert "total out tokens" in text
     assert "Assistant Generation Speed" not in text
     # Top-level-only last_sse data uses the same parser and display.
     output = StringIO()
@@ -41,6 +41,6 @@ def test_mixed_backends_and_missing_cache_render_without_crashing(monkeypatch):
     output = StringIO()
     viewer.render_trace_to_console(Console(file=output, width=300, color_system=None), messages, None, None)
     text = output.getvalue()
-    assert "Assistant Generation Speed" in text
-    assert "vLLM Generations" in text
+    assert "llama-server assistant timings" in text
+    assert "vLLM assistant timings" in text
     assert "MISS" not in text

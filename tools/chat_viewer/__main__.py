@@ -20,7 +20,6 @@ from wes_syntax import syntax as themed_syntax
 from rich.panel import Panel
 from rich.pretty import Pretty, pprint
 from rich.text import Text
-from rich.progress_bar import ProgressBar
 from rich.tree import Tree
 from rich.segment import Segment
 import rich
@@ -1470,118 +1469,23 @@ def render_trace_to_console(console, messages, model_name, timings, *, full_widt
 
     render_messages_to_console(console, messages, full_width=full_width)
 
-    # ProgressBar speed summary for assistant responses
-    all_assistant_stats = [
-        (idx, msg, parsed)
-        for idx, msg in enumerate(messages, start=1)
-        if msg.get("role") == "assistant" and (parsed := parse_timings(msg)) is not None
-    ]
-    # Keep unlike throughput measurements in separate summaries.
-    llama_server_timings = [entry for entry in all_assistant_stats if entry[2].backend == "llama-server"]
-    vllm_stats = [entry for entry in all_assistant_stats if entry[2].backend == "vllm"]
-    if llama_server_timings:
-        print_section_header('llama-server assistant timings', 'blue')
-        all_cache_states = dict(zip(
-            (idx for idx, _, _ in all_assistant_stats),
-            detect_cache_misses([t for _, _, t in all_assistant_stats]),
-        ))
-        cache_states = [all_cache_states[idx] for idx, _, _ in llama_server_timings]
-        assistant_out_speeds = [t.predicted_tokens_per_second for _, _, t in llama_server_timings]
-        max_out_speed = max(s for s in assistant_out_speeds)
-        assistant_in_speeds = [t.prompt_tokens_per_second for _, _, t in llama_server_timings]
-        max_in_speed = max(s for s in assistant_in_speeds)
-        from rich.table import Table
-        table = Table(show_header=True, box=None, padding=(0, 1))
-        table.add_column(justify='left', header='in speed')
-        table.add_column(justify='left', header='out speed')
-        table.add_column(justify='left')
-        table.add_column(justify='right', header="in speed")
-        table.add_column(justify='right', header="out speed")
-        table.add_column(justify='right', header="in time")
-        table.add_column(justify='right', header="out time")
-        table.add_column(justify='right', header="total tokens")
-        table.add_column(justify='right', header="generated")
-        table.add_column(justify='right', header="cached")
-        table.add_column(justify='left', header="cache miss")
-        has_draft = any(t.draft_tokens for _, _, t in llama_server_timings if t.draft_tokens)
-        if has_draft:
-            table.add_column(justify='right', header='draft accept')
-            table.add_column(justify='left', header='draft ratio')
-        for (idx, msg, timings), cache_state in zip(llama_server_timings, cache_states):
-            in_speed = ProgressBar(total=max_in_speed, completed=timings.prompt_tokens_per_second, width=40)
-            out_speed = ProgressBar(total=max_out_speed, completed=timings.predicted_tokens_per_second, width=40)
-            total_tokens = f"{_humanize_int(timings.context_tokens)}"
-            generated_tokens = _humanize_int(timings.predicted_tokens)
-            cached_tokens = _humanize_int(timings.cached_tokens) if timings.cached_tokens is not None else ''
-            if cache_state is None:
-                cache_miss = ''
-            elif cache_state.is_cache_miss:
-                cache_miss = f"[red]MISS {cache_state.formatted_missing_tokens}[/]"
-            else:
-                cache_miss = "[green]ok[/]"
-            label = f'[dim]msg #{idx}[/]'
-            in_label = f'{timings.prompt_tokens_per_second:.1f} tok/s'
-            out_label = f'{timings.predicted_tokens_per_second:.1f} tok/s'
-            in_time = f'{_humanize_float(timings.prompt_ms, 0)}ms'
-            out_time = f'{_humanize_float(timings.predicted_ms, 0)}ms'
-            if has_draft:
-                draft_accept = timings.formatted_acceptance_rate or ''
-                if timings.draft_tokens:
-                    accepted = timings.draft_tokens_accepted or 0
-                    ratio = f"{accepted} / {timings.draft_tokens}"
-                else:
-                    ratio = ''
-                table.add_row(in_speed, out_speed, label, in_label, out_label, in_time, out_time, total_tokens, generated_tokens, cached_tokens, cache_miss, draft_accept, ratio)
-            else:
-                table.add_row(in_speed, out_speed, label, in_label, out_label, in_time, out_time, total_tokens, generated_tokens, cached_tokens, cache_miss)
-        # total row: sum of agent-generated tokens across all assistant responses
-        total_generated = sum(t.predicted_tokens for _, _, t in llama_server_timings)
-        if has_draft:
-            table.add_row("", "", "[bold]total[/]", "", "", "", "", "", f"{_humanize_int(total_generated)}", "", "", "", "")
-        else:
-            table.add_row("", "", "[bold]total[/]", "", "", "", "", "", f"{_humanize_int(total_generated)}", "", "")
-        _console.print(table)
+    from tools.chat_viewer.timings_summary import build_timings_summary
+    assistant_ordinal = 0
+    summaries = {}
+    for message in messages:
+        if message.get("role") != "assistant":
+            continue
+        assistant_ordinal += 1
+        stats = parse_timings(message)
+        if stats is not None:
+            summaries.setdefault(stats.backend, []).append((assistant_ordinal, stats))
+    names = {"llama-server": "llama-server", "vllm": "vLLM", "sglang": "SGLang"}
+    for backend, entries in summaries.items():
+        print_section_header(f"{names.get(backend, backend)} assistant timings", "blue")
+        _console.print(build_timings_summary(entries, backend))
         _console.print()
-    if vllm_stats:
-        print_section_header("vLLM assistant stats", "blue")
-        from rich.table import Table
-        counts = Table(show_header=True, box=None, padding=(0, 1))
-        for header in ("message", "input", "cached", "output", "reasoning", "total", "draft accepted", "mean accept len"):
-            counts.add_column(header, justify="right")
-        metrics = Table(show_header=True, box=None, padding=(0, 1))
-        for header in ("message", "input rate", "TTFT", "queue", "decode rate", "decode", "mean ITL", "overall output (includes prefill)"):
-            metrics.add_column(header, justify="right")
-
-        def optional_number(value, unit=""):
-            return "—" if value is None else f"{_humanize_float(value)}{unit}"
-
-        def estimated_rate(value):
-            return "—" if value is None else f"≈{_humanize_float(value)} tok/s"
-
-        for idx, _, stats in vllm_stats:
-            ratio = (f"{stats.draft_tokens_accepted}/{stats.draft_tokens}"
-                     if stats.draft_tokens_accepted is not None and stats.draft_tokens is not None else "—")
-            if stats.formatted_acceptance_rate:
-                ratio += f" ({stats.formatted_acceptance_rate})"
-            counts.add_row(
-                f"msg #{idx}", _humanize_int(stats.prompt_tokens),
-                "—" if stats.cached_tokens is None else _humanize_int(stats.cached_tokens),
-                _humanize_int(stats.predicted_tokens),
-                "—" if stats.reasoning_tokens is None else _humanize_int(stats.reasoning_tokens),
-                _humanize_int(stats.context_tokens), ratio, optional_number(stats.mean_acceptance_length),
-            )
-            metrics.add_row(
-                f"msg #{idx}", estimated_rate(stats.estimated_input_tokens_per_second),
-                optional_number(stats.time_to_first_token_ms, "ms"), optional_number(stats.queue_time_ms, "ms"),
-                estimated_rate(stats.estimated_decode_tokens_per_second), optional_number(stats.generation_time_ms, "ms"),
-                optional_number(stats.mean_itl_ms, "ms"),
-                optional_number(stats.overall_output_tokens_per_second, " tok/s"),
-            )
-        counts.add_row("total output", "", "", _humanize_int(sum(s.predicted_tokens for _, _, s in vllm_stats)))
-        _console.print(counts)
-        _console.print()
-        _console.print(metrics)
-        _console.print()
+    # Consider optional TTFT, queue time, and mean ITL columns in a future view.
+    # vLLM's overall output rate includes prefill and is intentionally omitted.
 
     # show summaries at end since command line the last part shows first (unlike web viewer where summary is best at top)
     fim_diff = find_fim_diff(messages)

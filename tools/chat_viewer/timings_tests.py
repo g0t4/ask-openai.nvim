@@ -557,7 +557,7 @@ def test_vllm_usage_metrics_keep_distinct_semantics() -> None:
                   "decode: 52.3 ms", "overall output: 11.7 tok/s", "20.0%", "mean acceptance length: 2.0"):
         assert label in text
     assert "ms prompt" not in text
-    assert expected_next_cache(parsed) is None
+    assert expected_next_cache(parsed) == 120
     assert response == original
 
 
