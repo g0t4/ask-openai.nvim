@@ -40,7 +40,7 @@ function UserInputWindow.window_config(opts)
 end
 
 ---@return UserInputWindow
-function UserInputWindow:new()
+function UserInputWindow.new()
     ---@type FloatWindowOptions
     local opts = {
         filetype = "text",

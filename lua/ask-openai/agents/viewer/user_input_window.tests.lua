@@ -8,7 +8,7 @@ local UserInputWindow = require("ask-openai.agents.viewer.user_input_window")
 describe("UserInputWindow", function()
     it("creates a new UserInputWindow instance", function()
         local UserInputWindow = require("ask-openai.agents.viewer.user_input_window")
-        local win = UserInputWindow:new()
+        local win = UserInputWindow.new()
         assert.is_table(win)
         assert.are_equal(win.opts.buffer_name, "AskAgentInput")
 

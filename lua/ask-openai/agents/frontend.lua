@@ -1247,7 +1247,7 @@ function AgentsFrontend.ensure_user_input_window_is_open(focus)
 
     local is_new = AgentsFrontend.user_input_window == nil
     if is_new then
-        AgentsFrontend.user_input_window = UserInputWindow:new()
+        AgentsFrontend.user_input_window = UserInputWindow.new()
 
         local bufnr = AgentsFrontend.user_input_window.buffer_number
 
