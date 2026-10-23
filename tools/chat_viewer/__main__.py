@@ -1477,18 +1477,18 @@ def render_trace_to_console(console, messages, model_name, timings, *, full_widt
         if msg.get("role") == "assistant" and (parsed := parse_timings(msg)) is not None
     ]
     # Keep unlike throughput measurements in separate summaries.
-    assistant_timings = [entry for entry in all_assistant_stats if entry[2].backend == "llama-server"]
+    llama_server_timings = [entry for entry in all_assistant_stats if entry[2].backend == "llama-server"]
     vllm_stats = [entry for entry in all_assistant_stats if entry[2].backend == "vllm"]
-    if assistant_timings:
+    if llama_server_timings:
         print_section_header('Assistant Generation Speed', 'blue')
         all_cache_states = dict(zip(
             (idx for idx, _, _ in all_assistant_stats),
             detect_cache_misses([t for _, _, t in all_assistant_stats]),
         ))
-        cache_states = [all_cache_states[idx] for idx, _, _ in assistant_timings]
-        assistant_out_speeds = [t.predicted_tokens_per_second for _, _, t in assistant_timings]
+        cache_states = [all_cache_states[idx] for idx, _, _ in llama_server_timings]
+        assistant_out_speeds = [t.predicted_tokens_per_second for _, _, t in llama_server_timings]
         max_out_speed = max(s for s in assistant_out_speeds)
-        assistant_in_speeds = [t.prompt_tokens_per_second for _, _, t in assistant_timings]
+        assistant_in_speeds = [t.prompt_tokens_per_second for _, _, t in llama_server_timings]
         max_in_speed = max(s for s in assistant_in_speeds)
         from rich.table import Table
         table = Table(show_header=True, box=None, padding=(0, 1))
@@ -1503,11 +1503,11 @@ def render_trace_to_console(console, messages, model_name, timings, *, full_widt
         table.add_column(justify='right', header="generated")
         table.add_column(justify='right', header="cached")
         table.add_column(justify='left', header="cache miss")
-        has_draft = any(t.draft_tokens for _, _, t in assistant_timings if t.draft_tokens)
+        has_draft = any(t.draft_tokens for _, _, t in llama_server_timings if t.draft_tokens)
         if has_draft:
             table.add_column(justify='right', header='draft accept')
             table.add_column(justify='left', header='draft ratio')
-        for (idx, msg, timings), cache_state in zip(assistant_timings, cache_states):
+        for (idx, msg, timings), cache_state in zip(llama_server_timings, cache_states):
             in_speed = ProgressBar(total=max_in_speed, completed=timings.prompt_tokens_per_second, width=40)
             out_speed = ProgressBar(total=max_out_speed, completed=timings.predicted_tokens_per_second, width=40)
             total_tokens = f"{_humanize_int(timings.context_tokens)}"
@@ -1535,7 +1535,7 @@ def render_trace_to_console(console, messages, model_name, timings, *, full_widt
             else:
                 table.add_row(in_speed, out_speed, label, in_label, out_label, in_time, out_time, total_tokens, generated_tokens, cached_tokens, cache_miss)
         # total row: sum of agent-generated tokens across all assistant responses
-        total_generated = sum(t.predicted_tokens for _, _, t in assistant_timings)
+        total_generated = sum(t.predicted_tokens for _, _, t in llama_server_timings)
         if has_draft:
             table.add_row("", "", "[bold]total[/]", "", "", "", "", "", f"{_humanize_int(total_generated)}", "", "", "", "")
         else:
