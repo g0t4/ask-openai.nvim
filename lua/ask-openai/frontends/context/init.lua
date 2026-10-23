@@ -6,7 +6,6 @@ local matching_ctags = require("ask-openai.frontends.context.matching_ctags")
 local prompt_parser = require("ask-openai.frontends.context.prompt_parser")
 local project = require("ask-openai.frontends.context.project")
 local messages = require("devtools.messages")
-local cmds = require("ask-openai.frontends.context.cmds")
 -- local learn_diagnostics = require("ask-openai.frontends.context.coc.learn.diagnostics")
 -- local coc_context = require("ask-openai.frontends.context.coc.context")
 
