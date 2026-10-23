@@ -9,11 +9,13 @@ require("ask-openai.frontends.context.inspect")
 local BufferController = {}
 
 function BufferController.new(buffer_number)
-    local self = setmetatable({}, { __index = BufferController })
-    self.buffer_number = buffer_number
-    self.win_id = nil
-    self.folds = {}
-    return self
+    -- FYI not "subclassing" this (BufferController) so don't use `:new`... use `.new` to avoid confusion
+    -- also switch to `instance` as name in this `ctor`
+    local instance = setmetatable({}, { __index = BufferController })
+    instance.buffer_number = buffer_number
+    instance.win_id = nil
+    instance.folds = {}
+    return instance
 end
 
 --- Resolve the window currently displaying this buffer, preferring the tracked

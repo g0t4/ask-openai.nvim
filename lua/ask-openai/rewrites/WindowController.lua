@@ -11,9 +11,9 @@ WindowController0Indexed.__index = WindowController0Indexed
 
 ---@param window_id integer
 function WindowController0Indexed.for_window(window_id)
-    local win = setmetatable({}, WindowController0Indexed)
-    win.window_id = window_id
-    return win
+    local instance = setmetatable({}, WindowController0Indexed)
+    instance.window_id = window_id
+    return instance
 end
 
 function WindowController0Indexed.new_for_current_window()

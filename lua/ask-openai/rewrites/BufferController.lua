@@ -12,9 +12,9 @@ BufferController0Indexed.__index = BufferController0Indexed
 
 ---@param buffer_number integer
 function BufferController0Indexed.for_buffer(buffer_number)
-    local self = setmetatable({}, BufferController0Indexed)
-    self.buffer_number = buffer_number
-    return self
+    local instance = setmetatable({}, BufferController0Indexed)
+    instance.buffer_number = buffer_number
+    return instance
 end
 
 function BufferController0Indexed:buftype()
