@@ -104,6 +104,8 @@ local MODEL_PATTERNS = {
     { pattern = "/gpt%-oss",            abbrev = "gptoss" },
     -- google/gemma-4-26B-A4B-it-qat-q4_0-gguf
     { pattern = "/gemma%-4",            abbrev = "gemma4" },
+    -- glm-5.3-flash
+    { pattern = "glm-5.3-flash",     abbrev = "glm" },
     -- ggml-org/GLM-4.7-Flash-GGUF:Q8_0
     { pattern = "/GLM%-4.7%-Flash",     abbrev = "glm" },
     -- ggml-org/DeepSeek-V4-Flash-0731-GGUF
