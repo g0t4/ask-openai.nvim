@@ -33,7 +33,6 @@ function CurrentContext:items(prompt, always_include)
     -- allow override to force include context items
     always_include = always_include or {}
     includes.yanks = includes.yanks or (always_include.yanks == true)
-    includes.commits = includes.commits or (always_include.commits == true)
     includes.matching_ctags = includes.matching_ctags or (always_include.matching_ctags == true)
     includes.project = includes.project or (always_include.project == true)
 

@@ -433,11 +433,6 @@ local function ask_rewrite_command(opts)
         if context.includes.yanks and context.yanks then
             table.insert(messages, TxChatMessage:user_context(context.yanks.content))
         end
-        if context.includes.commits and context.commits then
-            for _, commit in pairs(context.commits) do
-                table.insert(messages, TxChatMessage:user_context(commit.content))
-            end
-        end
         if context.includes.project and context.project then
             -- TODO does any of this belong in the system_message?
             vim.iter(context.project)

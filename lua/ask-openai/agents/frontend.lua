@@ -312,11 +312,6 @@ local function ask_agent_command(opts)
         -- PRN anything I want to show about auto context? (not just yanks)
         table.insert(messages, TxChatMessage:user_context(context.yanks.content))
     end
-    if context.includes.commits and context.commits then
-        for _, commit in pairs(context.commits) do
-            table.insert(messages, TxChatMessage:user_context(commit.content))
-        end
-    end
     if context.includes.project and context.project then
         -- TODO does any of this belong in the system_message?
         --  ? actually test if repeating some of this here helps

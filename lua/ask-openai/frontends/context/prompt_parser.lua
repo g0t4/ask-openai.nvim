@@ -8,7 +8,6 @@ local M = {}
 ---@class ParsedIncludes
 ---@field all boolean
 ---@field yanks boolean
----@field commits boolean
 ---@field current_file boolean
 ---@field open_files boolean
 ---@field ctags? boolean
@@ -32,7 +31,6 @@ function Includes.new(initial)
     local self = {
         all = initial.all or false,
         yanks = initial.yanks or false,
-        commits = initial.commits or false,
         current_file = initial.current_file or false,
         open_files = initial.open_files or false,
         ctags = initial.ctags,
@@ -73,7 +71,6 @@ end
 M.slash_commands = {
     YANKS            = "/yanks",
     ALL              = "/all",
-    COMMITS          = "/commits",
     FILE             = "/file",
     OPEN_FILES       = "/WIP_open_files",
     TOOLS            = "/tools",
@@ -246,7 +243,6 @@ function M.render(prompt)
     M.slash_command_to_field = {
         [M.slash_commands.ALL] = "all",
         [M.slash_commands.YANKS] = "yanks",
-        [M.slash_commands.COMMITS] = "commits",
         [M.slash_commands.FILE] = "current_file",
         [M.slash_commands.OPEN_FILES] = "open_files",
         [M.slash_commands.TOOLS] = "use_tools",
@@ -280,7 +276,6 @@ function M.render(prompt)
     if includes.all then
         -- defaults for /all:
         includes.yanks = true
-        includes.commits = true
         includes.current_file = true
         includes.open_files = true
     end
