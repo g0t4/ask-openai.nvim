@@ -697,6 +697,17 @@ def build_user_message(msg: dict) -> TreeWrapper | None:
     if not raw_content:
         return build_empty_user_message(msg)
 
+    if isinstance(raw_content, list):
+        root = TreeWrapper.hidden_root()
+        for item in raw_content:
+            if item.get("type") == "image_url":
+                _add_mcp_image_item(root, deepcopy(item))
+            elif item.get("type") == "text":
+                text_tree = build_user_message({"content": item.get("text", "")})
+                if text_tree is not None:
+                    root.children.extend(text_tree.children)
+        return root
+
     # this method exists to make explicit there are two builders for user messages by dispatching one here)
     # FYI can add more if they arise in future (special user message types)
 
@@ -962,7 +973,7 @@ def build_mcp_tool_result(root: TreeWrapper, content: Any) -> bool:
 
         if item_type == "image_url":
             _add_mcp_image_item(root, item)
-            return True
+            continue
 
         if name:
             root.add(f"[white]{name}:[/]")
