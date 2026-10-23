@@ -20,7 +20,6 @@ local M = {}
 ---@field use_tools? boolean
 ---@field apply_template_only? boolean
 ---@field include_selection? boolean
----@field readonly? boolean
 ---@field reasoning_low? boolean
 ---@field reasoning_medium? boolean
 ---@field reasoning_high? boolean
@@ -46,7 +45,6 @@ function Includes.new(initial)
         use_tools = initial.use_tools or false,
         apply_template_only = initial.apply_template_only or false,
         include_selection = initial.include_selection or false,
-        readonly = initial.readonly or false,
         reasoning_low = initial.reasoning_low or false,
         reasoning_medium = initial.reasoning_medium or false,
         reasoning_high = initial.reasoning_high or false,
@@ -84,7 +82,6 @@ M.slash_commands = {
     SELECTION        = "/selection",
     TEMPLATE_ONLY    = "/WIP_template",
     NORAG            = "/norag",
-    READONLY         = "/readonly",
 
     -- coordinator mode (primary agent only, no tool calls beyond subagent)
     COORDINATOR      = "/coordinator",
@@ -255,7 +252,6 @@ function M.render(prompt)
         [M.slash_commands.FILE] = "current_file",
         [M.slash_commands.OPEN_FILES] = "open_files",
         [M.slash_commands.TOOLS] = "use_tools",
-        [M.slash_commands.READONLY] = "readonly",
         [M.slash_commands.TEMPLATE_ONLY] = "apply_template_only",
         [M.slash_commands.SELECTION] = "include_selection",
         [M.slash_commands.NORAG] = "norag",

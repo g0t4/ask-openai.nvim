@@ -18,7 +18,7 @@ describe("register_replacement_command", function()
             test_replacer_called = true
             return "REPLACED_VALUE"
         end)
-        
+
         local includes = prompt_parser.render("/test_replace foo bar")
         assert.is_true(test_replacer_called, "replacer function should be called when command is present")
         assert.are_equal("REPLACED_VALUE foo bar", includes.rendered_prompt)
@@ -30,7 +30,7 @@ describe("register_replacement_command", function()
             test_replacer_called = true
             return "SHOULD_NOT_APPEAR"
         end)
-        
+
         local includes = prompt_parser.render("foo bar")
         assert.is_false(test_replacer_called, "replacer function should NOT be called when command is absent")
         assert.are_equal("foo bar", includes.rendered_prompt)
@@ -42,7 +42,7 @@ describe("register_replacement_command", function()
             count = count + 1
             return "VAL"
         end)
-        
+
         local includes = prompt_parser.render("/test_multi foo /test_multi bar /test_multi")
         assert.are_equal(1, count, "replacer should only be called once per render cycle")
         assert.are_equal("VAL foo VAL bar VAL", includes.rendered_prompt)
@@ -54,7 +54,7 @@ describe("register_replacement_command", function()
             test_replacer_called = true
             return "BOUND_VAL"
         end)
-        
+
         local includes = prompt_parser.render("foo/test_bound bar")
         assert.is_false(test_replacer_called, "replacer should not be called without word boundary")
         assert.are_equal("foo/test_bound bar", includes.rendered_prompt)
@@ -132,7 +132,6 @@ describe("render", function()
         ensure_detects("WIP_open_files", "open_files")
         ensure_detects("selection", "include_selection")
         ensure_detects("tools", "use_tools")
-        ensure_detects("readonly")
         ensure_detects("WIP_template", "apply_template_only")
         ensure_detects("norag")
     end)
@@ -210,7 +209,6 @@ describe("render", function()
                 { "file",           "current_file" },
                 { "WIP_open_files", "open_files" },
                 { "tools",          "use_tools" },
-                { "readonly" },
                 { "WIP_template",   "apply_template_only" },
                 { "selection",      "include_selection" },
                 { "norag" },

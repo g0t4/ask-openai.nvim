@@ -242,17 +242,7 @@ local function ask_agent_command(opts)
             system = system .. "\n\n" .. table.concat(tool_provided_instructs, "\n")
         end
 
-        -- If readonly mode, remove editing tools like apply_patch
-        if context.includes.readonly then
-            local filtered = {}
-            for _, tool in ipairs(tool_definitions) do
-                local name = tool["function"] and tool["function"].name or nil
-                if name ~= "apply_patch" then
-                    table.insert(filtered, tool)
-                end
-            end
-            tool_definitions = filtered
-        end
+        log:info("tool_definitions", tool_definitions)
     else
         system = system:gsub("INSERT_CWD", "")
     end
