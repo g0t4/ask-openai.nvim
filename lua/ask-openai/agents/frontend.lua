@@ -690,11 +690,12 @@ function AgentsFrontend.on_streaming_delta_update_message_history(choice, reques
         return
     end
 
-    -- scrub goddamn vim.NIL (sglang is null happy, returns nul on like every field every time)
     -- TODO perhaps I want to nil_ify for sglang only or? would this cause me any grief?
-    log:info("choice before nilify", choice)
+    -- TODO! do I want to nil_ify anything else besides the choice object? entire sse?
+    -- log:info("choice before nilify", choice)
+    -- scrub goddamn vim.NIL (sglang is null happy, returns nul on like every field every time)
     choice = values.nil_ify(choice)
-    log:info("choice after nilify", choice)
+    -- log:info("choice after nilify", choice)
 
     -- * lookup or create message
     -- FYI this is not well vetted for multi message responses, in fact is this using choice.index for message.index?!
@@ -761,9 +762,7 @@ function AgentsFrontend.on_streaming_delta_update_message_history(choice, reques
         end
 
         local func = call_delta["function"] -- FYI "function" is keyword (lua)
-        log:info("func before nilify", func)
         func = values.nil_ify(func)
-        log:info("func after nilify", func)
         if func ~= nil then
             parsed_call["function"] = parsed_call["function"] or {}
 
