@@ -10,7 +10,7 @@ local WindowController0Indexed = {}
 WindowController0Indexed.__index = WindowController0Indexed
 
 ---@param window_id integer
-function WindowController0Indexed.new(window_id)
+function WindowController0Indexed.for_window(window_id)
     local win = setmetatable({}, WindowController0Indexed)
     win.window_id = window_id
     return win
@@ -18,7 +18,7 @@ end
 
 function WindowController0Indexed.new_for_current_window()
     local current_window_id = vim.api.nvim_get_current_win()
-    return WindowController0Indexed.new(current_window_id)
+    return WindowController0Indexed.for_window(current_window_id)
 end
 
 ---@return integer row_base0 # 0-indexed
