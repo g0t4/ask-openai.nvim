@@ -54,7 +54,8 @@ function WindowController0Indexed:set_cursor_at_end_of_last_line()
     local buffer = self:buffer()
     local num_lines_base1 = vim.api.nvim_buf_line_count(buffer.buffer_number)
     local last_line_base0 = num_lines_base1 - 1
-    local len_of_last_line_base0 = #vim.api.nvim_buf_get_lines(buffer.buffer_number, last_line_base0, last_line_base0 + 1, false)[1]
+    local last_line = vim.api.nvim_buf_get_lines(buffer.buffer_number, last_line_base0, last_line_base0 + 1, false)[1]
+    local len_of_last_line_base0 = #last_line
 
     vim.api.nvim_win_set_cursor(self.window_id, { num_lines_base1, len_of_last_line_base0 })
 end
