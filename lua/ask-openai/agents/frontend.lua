@@ -1276,6 +1276,19 @@ function AgentsFrontend.ensure_user_input_window_is_open(focus)
 
     AgentsFrontend.user_input_window:open()
 
+    if is_new then
+        local win = AgentsFrontend.user_input_window
+        -- set "/tools " as input prompt
+        local initial_lines = { "/tools " }
+        vim.api.nvim_buf_set_lines(win.buffer_number, 0, 1, false, initial_lines)
+        vim.api.nvim_buf_set_option(win.buffer_number, 'modifiable', true)
+        -- rewrite as move to end of buffer contents
+        local len_of_lst_line_base1 = #initial_lines[1]
+        local len_of_last_line_base0 = len_of_lst_line_base1 - 1 -- after last char
+        local num_lines_base1 = #initial_lines
+        vim.api.nvim_win_set_cursor(win.win_id, { num_lines_base1, len_of_last_line_base0 })
+    end
+
     -- * always (re)bind the close keymaps so they apply even on a reused input buffer
     local bufnr = AgentsFrontend.user_input_window.buffer_number
     vim.keymap.set({ "i", "n" }, "<C-c>", function()
@@ -1289,7 +1302,7 @@ function AgentsFrontend.ensure_user_input_window_is_open(focus)
             local win = AgentsFrontend.user_input_window
             if vim.api.nvim_win_is_valid(win.win_id) then
                 vim.api.nvim_set_current_win(win.win_id)
-                vim.api.nvim_win_set_cursor(win.win_id, { 1, 0 })
+                -- vim.api.nvim_win_set_cursor(win.win_id, { 1, 0 })
                 vim.cmd("startinsert")
             end
         end)
