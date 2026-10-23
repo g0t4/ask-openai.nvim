@@ -1,9 +1,7 @@
 local FloatWindow = require("ask-openai.helpers.float_window")
 local layout = require("ask-openai.agents.viewer.layout")
 local HLGroups = require("ask-openai.hlgroups")
-
--- TODO! I'd like this to use a BufferController or similar
---  i.e. to set the initial_lines in agents/frontend.lua
+local WindowController0Indexed = require("ask-openai.rewrites.WindowController")
 
 ---@class UserInputWindow : FloatWindow
 ---@field buffer_number number
@@ -58,6 +56,12 @@ function UserInputWindow.new()
     end
 
     return instance
+end
+
+function UserInputWindow:open()
+    -- call super type's open
+    FloatWindow.open(self)
+    self.controller = WindowController0Indexed.for_window(self.win_id)
 end
 
 --- Close the input window but keep its buffer (so typed text is preserved).

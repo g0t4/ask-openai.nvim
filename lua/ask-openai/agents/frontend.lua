@@ -38,7 +38,6 @@ local trace_restorer = require("ask-openai.agents.viewer.trace_restorer")
 local ansi = require("devtools.ansi")
 local safely = require("ask-openai.helpers.safely")
 local live_trace_stream = require("ask-openai.agents.live_trace_stream")
-local WindowController0Indexed = require("ask-openai.rewrites.WindowController")
 
 ---@class AgentsFrontend : StreamingFrontend
 local AgentsFrontend = {}
@@ -1278,7 +1277,7 @@ function AgentsFrontend.ensure_user_input_window_is_open(focus)
     AgentsFrontend.user_input_window:open()
 
     if is_new then
-        local win = WindowController0Indexed.for_window(AgentsFrontend.user_input_window.win_id)
+        local win = AgentsFrontend.user_input_window.controller
         local buffer = win:buffer()
         buffer:set_text("/tools ")
         win:set_cursor_at_end_of_last_line()
