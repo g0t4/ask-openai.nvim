@@ -1480,7 +1480,7 @@ def render_trace_to_console(console, messages, model_name, timings, *, full_widt
     llama_server_timings = [entry for entry in all_assistant_stats if entry[2].backend == "llama-server"]
     vllm_stats = [entry for entry in all_assistant_stats if entry[2].backend == "vllm"]
     if llama_server_timings:
-        print_section_header('Assistant Generation Speed', 'blue')
+        print_section_header('llama-server assistant timings', 'blue')
         all_cache_states = dict(zip(
             (idx for idx, _, _ in all_assistant_stats),
             detect_cache_misses([t for _, _, t in all_assistant_stats]),
@@ -1543,7 +1543,7 @@ def render_trace_to_console(console, messages, model_name, timings, *, full_widt
         _console.print(table)
         _console.print()
     if vllm_stats:
-        print_section_header("vLLM Generations (input includes cached tokens)", "blue")
+        print_section_header("vLLM assistant stats", "blue")
         from rich.table import Table
         counts = Table(show_header=True, box=None, padding=(0, 1))
         for header in ("message", "input", "cached", "output", "reasoning", "total", "draft accepted", "mean accept len"):
