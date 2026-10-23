@@ -2,6 +2,7 @@ local apply_patch_tool = require("ask-openai.tools.inproc.apply_patch")
 local plumbing = require("ask-openai.tools.plumbing")
 local semantic_grep_tool = require("ask-openai.tools.inproc.semantic_grep")
 local run_in_neovim_tool = require("ask-openai.tools.inproc.run_in_neovim")
+local open_image_tool = require("ask-openai.tools.inproc.open_image")
 
 local M = {}
 
@@ -11,6 +12,7 @@ M.tools_available = {
     -- TODO setup so tools available can be model dependent (i.e. gptoss gets apply_patch)
     apply_patch = apply_patch_tool.ToolDefinition,
     run_in_neovim = run_in_neovim_tool.ToolDefinition,
+    open_image = open_image_tool.ToolDefinition,
     --   TODO setup slash commands that can trigger tools like run_in_neovim
 }
 
@@ -38,6 +40,9 @@ function M.send_tool_call(tool_call, callback)
     end
     if name == "apply_patch" then
         return apply_patch_tool.call(parsed_args, callback)
+    end
+    if name == "open_image" then
+        return open_image_tool.call(parsed_args, callback)
     end
     if name == "run_in_neovim" then
         return run_in_neovim_tool.call(parsed_args, callback)
