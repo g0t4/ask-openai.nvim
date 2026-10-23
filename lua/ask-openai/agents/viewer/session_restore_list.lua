@@ -198,12 +198,14 @@ function M.open()
     ---@field sessions SessionEntry[]
     ---@field selected_idx integer
 
-    local instance = setmetatable(FloatWindow:new({
+    local instance = {}
+    setmetatable(instance, { __index = FloatWindow }) -- set before calling new
+    FloatWindow.new(instance, {
         width_ratio = 0.5,
         height_ratio = 0.5,
         filetype = "markdown",
         buffer_name = "AskSessionRestore",
-    }), { __index = FloatWindow }) -- FYI make sure leaf instances set their metatable (or something does it for them!)
+    })
 
     instance.sessions = sessions
     instance.selected_idx = 1
