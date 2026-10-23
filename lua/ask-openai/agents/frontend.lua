@@ -762,7 +762,6 @@ function AgentsFrontend.on_streaming_delta_update_message_history(choice, reques
         end
 
         local func = call_delta["function"] -- FYI "function" is keyword (lua)
-        func = values.nil_ify(func)
         if func ~= nil then
             parsed_call["function"] = parsed_call["function"] or {}
 
