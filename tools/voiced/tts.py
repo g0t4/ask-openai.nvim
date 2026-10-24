@@ -7,6 +7,7 @@ and plays streamed PCM on the local machine. File synthesis still returns WAV.
 from __future__ import annotations
 
 import logging
+import queue
 import tempfile
 import threading
 import time
@@ -26,6 +27,10 @@ DEFAULT_VOICE_DIR = Path(__file__).parent / "voices" / "wes"
 DEFAULT_VOICE_REF = DEFAULT_VOICE_DIR / "wes_ref.wav"
 # On the remote server, this is the path to the same reference
 SERVER_VOICE_REF = "/home/wes/repos/github/g0t4/ask-openai.nvim/tools/voiced/voices/wes/wes_ref.wav"
+
+
+class SpeechCancelled(Exception):
+    """The owner cancelled a queued or playing speech operation."""
 
 
 class TTSClient:
@@ -73,60 +78,150 @@ class TTSClient:
         lang: str = "en",
         speaker_file: Optional[str] = None,
     ) -> Path:
-        """Play PCM as it arrives; also save a complete WAV for inspection."""
+        """Play one utterance through the same queued player used for segments."""
+        return self.speak_segments([text], lang=lang, speaker_file=speaker_file)
+
+    def speak_segments(
+        self, segments, lang="en", speaker_file=None, *, stop_event=None, on_event=None,
+    ) -> Path:
+        """Synthesize sequential text segments ahead of one continuous player.
+
+        The producer can prepare the next sentence during playback. PCM is split
+        into at most 4096-sample packets; twelve queued packets bound prefetch to
+        about two seconds at 24 kHz. Silence fills genuine text/network gaps.
+        """
         import sounddevice as sd
 
-        payload = {"text": text, "lang": lang}
-        if speaker_file:
-            payload["speaker_file"] = speaker_file
-        # Background acknowledgments and foreground speech share the output device.
-        with _PLAYBACK_LOCK:
-            started = time.monotonic()
-            tmp_path = None
+        stop = stop_event if stop_event is not None else threading.Event()
+        packets = queue.Queue(maxsize=12)
+        started = time.monotonic()
+
+        def event(name, **fields):
+            if on_event:
+                on_event(name, elapsed=time.monotonic() - started, **fields)
+
+        def put(packet):
+            while not stop.is_set():
+                try:
+                    packets.put(packet, timeout=0.05)
+                    return True
+                except queue.Full:
+                    pass
+            return False
+
+        def produce():
+            rate = None
             try:
-                with httpx.stream(
-                    "POST", f"{self._base_url}/tts/stream", json=payload,
-                    timeout=self._timeout,
-                ) as response:
-                    response.raise_for_status()
-                    if response.headers.get("X-Audio-Format") != "s16le" or response.headers.get("X-Audio-Channels") != "1":
-                        raise ValueError("Expected mono PCM16LE from TTS server")
-                    rate = int(response.headers["X-Audio-Sample-Rate"])
-                    if not 8000 <= rate <= 192000:
-                        raise ValueError("Invalid TTS sample rate")
-                    with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
-                        tmp_path = Path(tmp.name)
-                    with wave.open(str(tmp_path), "wb") as wav, sd.RawOutputStream(
-                        samplerate=rate, channels=1, dtype="int16", latency="low",
-                    ) as audio:
-                        wav.setnchannels(1)
-                        wav.setsampwidth(2)
-                        wav.setframerate(rate)
+                for index, text in enumerate(segments):
+                    if stop.is_set():
+                        return
+                    if not text.strip():
+                        continue
+                    payload = {"text": text, "lang": lang}
+                    if speaker_file:
+                        payload["speaker_file"] = speaker_file
+                    event("synthesis_started", segment=index)
+                    with httpx.stream(
+                        "POST", f"{self._base_url}/tts/stream", json=payload,
+                        timeout=self._timeout,
+                    ) as response:
+                        response.raise_for_status()
+                        if response.headers.get("X-Audio-Format") != "s16le" or response.headers.get("X-Audio-Channels") != "1":
+                            raise ValueError("Expected mono PCM16LE from TTS server")
+                        current_rate = int(response.headers["X-Audio-Sample-Rate"])
+                        if not 8000 <= current_rate <= 192000 or (rate is not None and rate != current_rate):
+                            raise ValueError("Invalid or changed TTS sample rate")
+                        rate = current_rate
                         pending = b""
                         first = True
                         for chunk in response.iter_bytes():
-                            # HTTP boundaries can split a 16-bit sample.
+                            if stop.is_set():
+                                return
                             data = pending + chunk
                             aligned = len(data) & ~1
                             pending = data[aligned:]
-                            if not aligned:
-                                continue
                             data = data[:aligned]
-                            wav.writeframesraw(data)
-                            if first:
-                                LOG.info("TTS first playback write: %.3fs", time.monotonic() - started)
+                            if data and first:
+                                event("first_pcm", segment=index)
                                 first = False
-                            if audio.write(data):
-                                LOG.warning("TTS playback underrun")
+                            for offset in range(0, len(data), 8192):
+                                if not put((rate, data[offset:offset + 8192])):
+                                    return
                         if pending or first:
                             raise ValueError("TTS returned incomplete or empty PCM")
-                        # RawOutputStream.__exit__ stops and drains queued samples.
+                    event("synthesis_finished", segment=index)
+                put(None)
+            except Exception as error:
+                put(error)
+
+        with _PLAYBACK_LOCK:
+            if stop.is_set():
+                raise SpeechCancelled("Speech cancelled before playback")
+            producer = threading.Thread(target=produce, name="tts-prefetch", daemon=True)
+            producer.start()
+            tmp_path = None
+            try:
+                while True:
+                    if stop.is_set():
+                        raise SpeechCancelled("Speech cancelled")
+                    try:
+                        packet = packets.get(timeout=0.05)
+                        break
+                    except queue.Empty:
+                        pass
+                if isinstance(packet, Exception):
+                    raise packet
+                if packet is None:
+                    raise ValueError("TTS returned incomplete or empty PCM")
+                rate, data = packet
+                with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
+                    tmp_path = Path(tmp.name)
+                with wave.open(str(tmp_path), "wb") as wav, sd.RawOutputStream(
+                    samplerate=rate, channels=1, dtype="int16", latency="low",
+                ) as audio:
+                    wav.setnchannels(1)
+                    wav.setsampwidth(2)
+                    wav.setframerate(rate)
+                    event("playback_started")
+                    LOG.info("TTS first playback write: %.3fs", time.monotonic() - started)
+                    gap = False
+                    while True:
+                        if stop.is_set():
+                            raise SpeechCancelled("Speech cancelled")
+                        wav.writeframesraw(data)
+                        if audio.write(data):
+                            event("playback_underrun")
+                            LOG.warning("TTS playback underrun")
+                        try:
+                            packet = packets.get_nowait()
+                        except queue.Empty:
+                            # Keep the device clock running if the next sentence
+                            # is still arriving. Do not restart the output device.
+                            if not gap:
+                                event("playback_waiting")
+                            gap = True
+                            data = bytes(max(1, rate // 50) * 2)  # 20 ms silence
+                            continue
+                        if isinstance(packet, Exception):
+                            raise packet
+                        if packet is None:
+                            break
+                        if gap:
+                            event("playback_resumed")
+                            gap = False
+                        _, data = packet
+                event("playback_finished")
                 LOG.info("TTS playback complete: %.3fs", time.monotonic() - started)
                 return tmp_path
             except BaseException:
                 if tmp_path is not None:
                     tmp_path.unlink(missing_ok=True)
                 raise
+            finally:
+                stop.set()
+                # The segment iterator must honor stop_event. HTTP reads retain
+                # their timeout; cancellation is checked between received chunks.
+                producer.join(timeout=self._timeout + 1)
 
 
 def speak(

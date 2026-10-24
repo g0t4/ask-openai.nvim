@@ -11,9 +11,10 @@ import json
 import os
 import threading
 from typing import Any
-from typing import Union
+from typing import Literal, Union
 
 from langchain.agents import create_agent
+from langchain.tools import ToolRuntime
 from langchain_core.messages import SystemMessage
 from langchain_core.messages import HumanMessage
 from langchain_core.runnables import RunnableConfig
@@ -36,10 +37,11 @@ from mcp.types import (
     TaskStatusNotification,
     ToolListChangedNotification,
 )
-from pydantic import RootModel
+from pydantic import BaseModel, Field, RootModel, create_model
 
 from tools.clankerd.logger import get_logger
 from tools.clankerd.trace import TraceWriter
+from tools.clankerd.speech_stream import CURRENT_SPEECH, SpeechCoordinator
 from tools.voiced.tts import SERVER_VOICE_REF, TTSClient
 
 logger = get_logger(__name__)
@@ -141,8 +143,14 @@ def _default_background(tools: list) -> list:
     return tools
 
 
-@tool
-async def speak(text: str, lang: str = "en", background: bool = False) -> str:
+class SpeakArguments(BaseModel):
+    lang: str = Field(default="en", description="Emit language before text to enable early speech.")
+    background: bool = False
+    text: str = Field(description="Speech text, preferably punctuated complete sentences.")
+
+
+@tool(args_schema=SpeakArguments)
+async def speak(text: str, lang: str = "en", background: bool = False, runtime: ToolRuntime = None) -> str:
     """Speak text out loud using text-to-speech (TTS).
 
     Uses the user's cloned voice (Wes). The audio is played on the local
@@ -157,6 +165,10 @@ async def speak(text: str, lang: str = "en", background: bool = False) -> str:
             can continue working immediately.
     """
     try:
+        streaming = CURRENT_SPEECH.get()
+        if streaming is not None and runtime is not None and runtime.tool_call_id:
+            await streaming.complete(runtime.tool_call_id, text, lang, background)
+            return f"{'Queued' if background else 'Spoke'}: {text!r}"
         if background:
             # Fire-and-forget: don't block on the TTS request.
             def _speak_async():
@@ -232,6 +244,7 @@ Wes communicates primarily via speech that is transcribed. If you are mid-though
 
 - If you can answer immediately, just answer.
 - If you need time to think or do research, just fire-and-forget a `speak` call with `background=True` saying something like "one sec" so Wes knows you'll get back to him.
+- For `speak`, emit `lang` and `background` before `text` in the JSON arguments. Emit natural, punctuated sentences. Speech can begin at sentence boundaries while you are still generating the rest of the text.
 
 Wes likes to talk in spurts. He will follow up with further information as he stews on the problem. Be ready to change course!
 
@@ -383,10 +396,20 @@ class ClankerAgent:
         self._model = None
         self._sessions: dict[str, PersistentMCPSession] = {}
         self._on_background_notification = on_background_notification
+        self._speech = SpeechCoordinator(trace=trace)
+        self._speech_enabled = os.environ.get("CLANKERD_STREAM_SPEECH", "1").lower() not in ("0", "false", "off")
 
     async def setup(self) -> None:
         """Initialize persistent MCP sessions and build the agent."""
-        all_tools = [speak, restart_daemon]
+        local_speak = speak
+        if self._speech_enabled and self._speech.language:
+            language = self._speech.language
+            schema = create_model(
+                "PinnedLanguageSpeech", __base__=SpeakArguments,
+                lang=(Literal[language], Field(default=language, description="Language fixed for early streamed speech.")),
+            )
+            local_speak = speak.model_copy(update={"args_schema": schema})
+        all_tools = [local_speak, restart_daemon]
 
         # Start persistent sessions so background notifications can be received
         for name, conn in MCP_SERVERS.items():
@@ -438,6 +461,7 @@ class ClankerAgent:
 
     async def shutdown(self) -> None:
         """Close all persistent MCP sessions."""
+        await self._speech.shutdown()
         for name, session in self._sessions.items():
             await session.stop()
         self._sessions.clear()
@@ -481,6 +505,9 @@ class ClankerAgent:
         last_ai_content = ""
         tool_start_count = 0
         current_tool: dict[str, Any] = {}
+        speech_token = CURRENT_SPEECH.set(self._speech if self._speech_enabled else None)
+        model_runs = set()
+        interrupted = False
 
         try:
             # Run the agent with astream_events for clean event handling.
@@ -536,12 +563,21 @@ class ClankerAgent:
                         )
 
                 elif event_type == "on_chat_model_stream":
+                    model_run = event.get("run_id")
+                    model_runs.add(model_run)
                     chunk = event.get("data", {}).get("chunk", None)
                     if chunk:
+                        if self._speech_enabled:
+                            self._speech.feed(model_run, getattr(chunk, "tool_call_chunks", []) or [])
                         if hasattr(chunk, "content") and chunk.content:
                             last_ai_content += chunk.content
 
+                elif event_type == "on_chat_model_end":
+                    if self._speech_enabled:
+                        self._speech.model_end(event.get("run_id"))
+
         except asyncio.CancelledError:
+            interrupted = True
             logger.info("agent run cancelled for message: %s", content)
             if self._trace:
                 self._trace.event(
@@ -551,10 +587,14 @@ class ClankerAgent:
                 )
             raise
         except Exception as error:
+            interrupted = True
             logger.exception("agent run error: %s", error)
             if self._trace:
                 self._trace.event("agent_error", error=str(error))
             return f"ERROR: {error}"
+        finally:
+            self._speech.end_run(model_runs, cancelled=interrupted)
+            CURRENT_SPEECH.reset(speech_token)
 
         logger.info("agent response: %s", last_ai_content)
         if self._trace:

@@ -110,7 +110,9 @@ Voice cloning uses `tools/voiced/voices/wes/wes_ref.wav`. Startup silently
 synthesizes "Ready." to warm the voice encoder and generation kernels before
 opening the HTTP listener; no startup audio is played.
 
-Each **complete** `speak` tool call supplies text to the server. During generation,
+The server receives complete text segments. Clankerd can extract sentences from
+streamed `speak` arguments before the full tool call is complete (see the
+clankerd README for language and boundary policies). During audio generation,
 the worker decodes every six audio frames while preserving vocoder state. It
 sends newly generated samples immediately; the model and projection stay loaded,
 and inference state resets between utterances. The HTTP server streams mono,
@@ -118,8 +120,8 @@ and inference state resets between utterances. The HTTP server streams mono,
 client feeds these bytes to a `sounddevice.RawOutputStream` and also saves a WAV
 for inspection. HTTP chunks may split audio samples; the client aligns them.
 
-`synthesize()` and `POST /tts` still return a complete WAV. No text or tool-call
-argument streaming is involved. The process-local playback lock serializes
+`synthesize()` and `POST /tts` still return a complete WAV. Individual TTS requests
+do not accept incremental text. The process-local playback lock serializes
 foreground and background speech. The server accepts one generation at a time
 and returns 429 for overlapping requests from other clients. Disconnects or
 worker failures invalidate the worker; the next request reloads it. Interrupted
@@ -197,5 +199,6 @@ the first client playback write):
   running the daemon (grant it to your terminal / the daemon's host app).
   Without it, use `:VoicedStart` / `:VoicedStop` or the socket commands.
 - The TTS server needs build21 to be reachable from the mac (`build21.lan`).
-- Streaming text/tool-call arguments into TTS is a separate future step; current
-  audio streaming starts from the complete text supplied to `speak()`.
+- Clankerd's argument-stream handler queues complete sentence segments for TTS.
+  Continuous incremental text input into one TTS generation context remains a
+  separate future step.

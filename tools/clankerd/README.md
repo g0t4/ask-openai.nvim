@@ -66,6 +66,70 @@ llama-server at `http://paxy.lan:8014` (override via
 Clankerd keeps its local tool when an MCP server exports the same name; this
 ensures playback runs in clankerd's Mac environment rather than an MCP venv.
 
+## Streaming speak arguments
+
+Clankerd observes `on_chat_model_stream` tool-call deltas. A handler specific to
+`speak` decodes stable prefixes of the JSON `text` string, including fragmented
+escapes and Unicode surrogate pairs. It releases punctuated sentences as they
+arrive and flushes a final unpunctuated tail when the string closes. Common
+abbreviations and decimal points are kept together. This is a boundary heuristic,
+not a linguistic sentence parser.
+
+Each tool-call ID owns one speech session. Calls enter a FIFO; each session
+contains a text-segment queue. One producer synthesizes segments sequentially
+while a player consumes a bounded PCM queue through one output device stream.
+Prefetch is limited to twelve 4096-sample packets (about two seconds at 24 kHz).
+If text or audio stalls, the player sends silence and records a waiting/resumed
+event. It does not close and reopen the audio device between sentences.
+
+The normal LangGraph `speak` execution receives its injected tool-call ID and
+joins this same session. It validates the final text/language against the streamed
+prefix and never resubmits the full text. Foreground calls wait for playback;
+background calls return after their remaining text is queued. Cancellation stops
+queued segments and playback; an in-flight HTTP read remains subject to its read
+timeout. Audio already heard cannot be retracted if a later argument is invalid.
+Deduplication covers a live session; the in-memory queue is not a durable replay
+ledger across process restarts.
+
+Language must be known before early speech starts. By default, language is dynamic:
+if a provider sends `text` before `lang`, speech waits for the language field, or
+for completed arguments to supply the English default. The current DeepSeek
+endpoint was observed to emit text first despite ordering instructions. Setting
+`CLANKERD_SPEECH_LANGUAGE=en` fixes the language for the session and constrains the
+model's speech tool schema to English; sentences can then start without waiting
+for a trailing language field. Other fixed language codes can be configured the
+same way. This setting deliberately disables per-call language switching.
+
+- `CLANKERD_STREAM_SPEECH=0`: disable argument interception for whole-call comparison.
+- `CLANKERD_SPEECH_BOUNDARY=sentence`: default; `clause` also splits at commas, colons and semicolons.
+- `CLANKERD_SPEECH_LANGUAGE=en`: optional fixed language; unset permits dynamic language.
+
+Each segment is a separate TTS request, retaining the loaded model and cloned
+voice but resetting its linguistic/prosodic context. Sentence boundaries are the
+default quality compromise; this does not implement continuous text input into
+one TTS generation context.
+
+Trace files contain `speech_stream_started`, `speech_segment_ready`,
+`speech_synthesis_started`, `speech_first_pcm`, `speech_playback_started`,
+waiting/resumed, underrun, cancellation, and playback-finished events keyed by
+tool-call ID. Synthesis-finished means the client drained that segment's audio;
+bounded prefetch can delay that event relative to actual GPU completion.
+
+A live DeepSeek/ToolNode/TTS test with pinned English received the first sentence
+at 0.949 s and its first PCM at 1.189 s, before tool arguments completed at
+1.491 s. The first audio-device write was at 1.634 s: device startup is a separate
+cost, so first PCM and audible-start latency must not be conflated. The six
+sentences played once through one output stream, and final ToolNode execution
+joined the already-running session. These are one-run timings, not a benchmark.
+
+Tests use an isolated state directory so socket tests cannot replace live sockets:
+
+```bash
+XDG_STATE_HOME="$(mktemp -d)" .venv/bin/pytest -q \
+    tools/clankerd/test_speech_stream.py tools/clankerd/test_tool_names.py \
+    tools/voiced/test_tts_streaming.py
+```
+
 ## Supervisor
 
 Use the `clankersupervisor` to manage both daemons (voiced + clankerd) as

@@ -1,6 +1,7 @@
 """Streaming protocol regressions; no model or audio hardware required."""
 import io
 import sys
+import struct
 import threading
 import types
 import wave
@@ -65,8 +66,11 @@ def test_playback_begins_before_generation_finishes(monkeypatch):
         path = TTSClient("127.0.0.1", port).speak("test")
     try:
         with wave.open(str(path)) as wav:
-            assert wav.getnframes() == 200
-            assert wav.readframes(200) == b"".join(frames)
+            data = wav.readframes(wav.getnframes())
+            assert data == b"".join(frames)
+            # A delayed next segment may insert silence while keeping the same
+            # output device open. No speech samples may be dropped or replayed.
+            assert [x for (x,) in struct.iter_unpack("<h", data) if x] == [1] * 100 + [2] * 100
     finally:
         path.unlink()
 
@@ -182,4 +186,79 @@ def test_client_aligns_split_samples_and_rejects_truncation(monkeypatch, tmp_pat
     Response.pieces = [b"\x01\x00\x02"]
     with pytest.raises(ValueError, match="incomplete or empty"):
         TTSClient().speak("test")
+    assert list(tmp_path.iterdir()) == []
+
+
+def test_segments_prefetch_next_request_and_keep_one_output_stream(monkeypatch):
+    second_requested = threading.Event()
+    requests = []
+    outputs = []
+    played = []
+
+    class Worker:
+        @contextmanager
+        def stream(self, text, *args):
+            requests.append(text)
+            if len(requests) == 2:
+                second_requested.set()
+            yield 24000, iter([bytes([len(requests), 0]) * 100])
+
+    class Output:
+        def __init__(self, **kwargs):
+            outputs.append(self)
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            pass
+
+        def write(self, data):
+            played.append(data)
+            assert second_requested.wait(2), "next synthesis waited for playback to finish"
+            return False
+
+    monkeypatch.setitem(sys.modules, "sounddevice", types.SimpleNamespace(RawOutputStream=Output))
+    with server(Worker()) as port:
+        path = TTSClient("127.0.0.1", port).speak_segments(["First.", "Second."])
+    try:
+        assert requests == ["First.", "Second."]
+        assert len(outputs) == 1
+        assert [x for (x,) in struct.iter_unpack("<h", b"".join(played)) if x] == [1] * 100 + [2] * 100
+    finally:
+        path.unlink()
+
+
+def test_cancel_segment_stream_stops_player_and_removes_partial_wav(monkeypatch, tmp_path):
+    import tools.voiced.tts as tts
+    stop = threading.Event()
+
+    class Worker:
+        @contextmanager
+        def stream(self, *args):
+            yield 24000, iter([b"\x01\x00" * 100])
+
+    class Output:
+        def __init__(self, **kwargs):
+            pass
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *args):
+            pass
+
+        def write(self, data):
+            stop.set()
+            return False
+
+    def segments():
+        yield "First."
+        while not stop.wait(.01):
+            pass
+
+    monkeypatch.setitem(sys.modules, "sounddevice", types.SimpleNamespace(RawOutputStream=Output))
+    monkeypatch.setattr(tts.tempfile, "tempdir", str(tmp_path))
+    with server(Worker()) as port, pytest.raises(tts.SpeechCancelled):
+        TTSClient("127.0.0.1", port).speak_segments(segments(), stop_event=stop)
     assert list(tmp_path.iterdir()) == []
