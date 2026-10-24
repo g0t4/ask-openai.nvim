@@ -1,0 +1,85 @@
+--- a/tools/mtmd/models/models.h
++++ b/tools/mtmd/models/models.h
+@@ -248,8 +248,8 @@
+ };
+ 
+ struct clip_graph_qwen3tts_gen : clip_graph {
+-    clip_graph_qwen3tts_gen(clip_ctx * ctx, const clip_image_f32 & img, clip_gen_process_type gen_process, int top_k, float top_p)
+-        : clip_graph(ctx, img), gen_process(gen_process), top_k(top_k), top_p(top_p) {}
++    clip_graph_qwen3tts_gen(clip_ctx * ctx, const clip_image_f32 & img, clip_gen_process_type gen_process, int top_k, float top_p, int n_frames)
++        : clip_graph(ctx, img), gen_process(gen_process), top_k(top_k), top_p(top_p), n_frames(n_frames) {}
+     ggml_cgraph * build() override;
+ 
+     // which sub-graph build() constructs, fixed at graph-build time
+@@ -258,6 +258,7 @@
+     // sampling params, fixed at graph-build time (GEN_CODE only)
+     int   top_k;
+     float top_p;
++    int n_frames; // actual decoder batch length, independent of the attention window
+ 
+     //
+     // code_gen: backbone hidden state + sampled code0 -> 16 RVQ codes
+--- a/tools/mtmd/models/qwen3tts-gen.cpp
++++ b/tools/mtmd/models/qwen3tts-gen.cpp
+@@ -739,7 +739,9 @@
+     cb(out_embd, "gen_audio_out", -1);
+ 
+     // ---- CLIP_GEN_PROCESS_GEN_WAV: 16 RVQ codes -> raw PCM ----
+-    const int n_frames = hparams.wav_tfm_swa; // frames per batch, == the attention window
++    // Persist state after real frames only; padding advances convolution and
++    // attention state past the audio returned to the caller.
++    const int n_frames = this->n_frames;
+ 
+     ggml_tensor * inp_codes = ggml_new_tensor_2d(ctx0, GGML_TYPE_I32, n_frames, n_codes);
+     ggml_set_name(inp_codes, "inp_codes");
+--- a/tools/mtmd/clip.cpp
++++ b/tools/mtmd/clip.cpp
+@@ -1153,7 +1153,10 @@
+                 const auto  gen_process = params ? params->gen_process : CLIP_GEN_PROCESS_GEN_CODE;
+                 const int   top_k = params ? params->top_k : 50;
+                 const float top_p = params ? params->top_p : 1.0f;
+-                builder = std::make_unique<clip_graph_qwen3tts_gen>(ctx, img, gen_process, top_k, top_p);
++                const int n_codes = ctx->model.gen_code_head_w->ne[2] + 1;
++                const int n_frames = params && params->codes
++                    ? (int) (params->codes->size() / n_codes) : ctx->model.hparams.wav_tfm_swa;
++                builder = std::make_unique<clip_graph_qwen3tts_gen>(ctx, img, gen_process, top_k, top_p, n_frames);
+             } break;
+         case PROJECTOR_TYPE_YOUTUVL:
+             {
+@@ -5451,7 +5454,7 @@
+                 if (params->gen_process == CLIP_GEN_PROCESS_GEN_WAV) {
+                     GGML_ASSERT(params->codes != nullptr);
+ 
+-                    // frame-major input to group-major, rear-padded with code 0 up to one window
++                    // Frame-major input to group-major, with no fictitious padded frames.
+                     const int64_t n_codes  = model.gen_code_head_w->ne[2] + 1;
+                     const int64_t n_frames_w = hparams.wav_tfm_swa;
+                     const int64_t n_frames   = (int64_t) params->codes->size() / n_codes;
+@@ -5472,10 +5475,10 @@
+                         }
+                     }
+ 
+-                    std::vector<int32_t> codes(n_frames_w * n_codes, 0);
++                    std::vector<int32_t> codes(n_frames * n_codes, 0);
+                     for (int64_t f = 0; f < n_frames; f++) {
+                         for (int64_t g = 0; g < n_codes; g++) {
+-                            codes[g * n_frames_w + f] = (*params->codes)[f * n_codes + g];
++                            codes[g * n_frames + f] = (*params->codes)[f * n_codes + g];
+                         }
+                     }
+                     set_input_i32("inp_codes", codes);
+@@ -6001,14 +6004,6 @@
+         out_audio.resize(ggml_nelements(audio));
+         ggml_backend_tensor_get(audio, out_audio.data(), 0, ggml_nbytes(audio));
+ 
+-        // drop the tail audio that comes from the code-0 rear padding
+-        const int64_t n_codes    = params->codes ? model.gen_code_head_w->ne[2] + 1 : 0;
+-        const int64_t n_frames_w = hparams.wav_tfm_swa;
+-        const int64_t n_frames   = params->codes ? (int64_t) params->codes->size() / n_codes : n_frames_w;
+-        if (n_frames < n_frames_w) {
+-            const size_t hop = out_audio.size() / n_frames_w;
+-            out_audio.resize((size_t) n_frames * hop);
+-        }
+     }
+     if (params->state_out != nullptr) {
+         auto & state_out = *params->state_out;

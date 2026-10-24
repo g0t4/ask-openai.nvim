@@ -1,0 +1,16 @@
+[Unit]
+Description=Resident Qwen3-TTS with streaming PCM (llama.cpp)
+After=network.target
+
+[Service]
+Environment=CUDA_DEVICE_ORDER=PCI_BUS_ID
+Environment=CUDA_VISIBLE_DEVICES=0
+EnvironmentFile=%h/.config/voiced-tts.env
+ExecStart=%h/repos/github/g0t4/ask-openai.nvim/.venv/bin/python3 %h/repos/github/g0t4/ask-openai.nvim/tools/voiced/tts_server.py --host 0.0.0.0 --port 8020 --chunk-frames 6 --worker %h/.local/lib/voiced-tts/voiced-tts-worker -- -m ${TTS_MODEL} -mm ${TTS_MMPROJ} -ngl 99 -c 8192 -n 2048 -t 8
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=10
+KillMode=control-group
+
+[Install]
+WantedBy=default.target

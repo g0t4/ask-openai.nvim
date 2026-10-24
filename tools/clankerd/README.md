@@ -62,6 +62,10 @@ Requires the `voiced` daemon to be running (for transcriptions) and the
 llama-server at `http://paxy.lan:8014` (override via
 `CLANKERD_LLAMA_SERVER_URL`).
 
+`speak` plays streamed PCM from the resident Qwen3-TTS service on build21.
+Clankerd keeps its local tool when an MCP server exports the same name; this
+ensures playback runs in clankerd's Mac environment rather than an MCP venv.
+
 ## Supervisor
 
 Use the `clankersupervisor` to manage both daemons (voiced + clankerd) as

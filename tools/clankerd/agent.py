@@ -403,6 +403,13 @@ class ClankerAgent:
                 session.session,
                 server_name=name,
             )
+            # MCP's agents server also offers "speak". Keep the local tool:
+            # its playback dependencies belong to clankerd's Mac environment.
+            existing = {t.name for t in all_tools}
+            shadowed = [t.name for t in tools if t.name in existing]
+            if shadowed:
+                logger.info("skipping duplicate MCP tools from %s: %s", name, shadowed)
+            tools = [t for t in tools if t.name not in existing]
             tools = _default_background(tools)
             all_tools.extend(tools)
             logger.info("loaded %d tools from %s", len(tools), name)
