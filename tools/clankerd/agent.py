@@ -46,8 +46,12 @@ from tools.voiced.tts import SERVER_VOICE_REF, TTSClient
 
 logger = get_logger(__name__)
 
+# NOTE: this is an OpenAI-compatible endpoint, so base_url MUST include the
+# `/v1` prefix. BaseChatOpenAI POSTs to `{base_url}/chat/completions`; without
+# `/v1` the request lands on `/chat/completions` and the server returns
+# `404 {"detail":"Not Found"}` (no useful detail, hence the confusing error).
 LLAMA_SERVER_BASE_URL = os.environ.get(
-    "CLANKERD_LLAMA_SERVER_URL", "http://paxy.lan:8014"
+    "CLANKERD_LLAMA_SERVER_URL", "http://paxy.lan:8014/v1"
 )
 
 # MCP server configs, mirroring lua/ask-openai/tools/mcp/init.lua
