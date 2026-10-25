@@ -13,6 +13,7 @@ import threading
 from typing import Any
 from typing import Literal, Union
 
+import httpx
 from langchain.agents import create_agent
 from langchain.tools import ToolRuntime
 from langchain_core.messages import SystemMessage
@@ -53,6 +54,24 @@ logger = get_logger(__name__)
 LLAMA_SERVER_BASE_URL = os.environ.get(
     "CLANKERD_LLAMA_SERVER_URL", "http://paxy.lan:8014/v1"
 )
+
+
+async def _discover_model(base_url: str) -> str:
+    """Return the first model id reported by the llama-server's `/v1/models`.
+
+    ChatLlamaServer extends BaseChatOpenAI, which defaults `model_name` to
+    `gpt-3.5-turbo` when none is supplied — a name the server rejects with a
+    404. Discover the real model so we don't hardcode a deployment-specific name.
+    """
+    url = base_url.rstrip("/") + "/models"
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(url)
+        resp.raise_for_status()
+        data = resp.json()
+    models = data.get("data", [])
+    if not models:
+        raise RuntimeError(f"no models reported by {url}")
+    return models[0]["id"]
 
 # MCP server configs, mirroring lua/ask-openai/tools/mcp/init.lua
 MCP_SERVERS: dict[str, dict[str, Any]] = {
@@ -441,8 +460,14 @@ class ClankerAgent:
             all_tools.extend(tools)
             logger.info("loaded %d tools from %s", len(tools), name)
 
+        # Pick a model name explicitly: BaseChatOpenAI defaults to
+        # `gpt-3.5-turbo` when none is passed, which llama-server rejects.
+        model_name = os.environ.get(
+            "CLANKERD_LLAMA_SERVER_MODEL"
+        ) or await _discover_model(LLAMA_SERVER_BASE_URL)
+        logger.info("using llama-server model: %s", model_name)
         self._model = ChatLlamaServer(
-            base_url=LLAMA_SERVER_BASE_URL, api_key="foo"
+            base_url=LLAMA_SERVER_BASE_URL, api_key="foo", model_name=model_name
         )
 
         # Use a persistent SQLite checkpointer so the conversation thread
