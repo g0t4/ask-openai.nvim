@@ -1,4 +1,4 @@
-import type { Message, ResponseStats } from './types'
+import type { Message, ResponseStats, SglangTiming } from './types'
 
 export function humanizeInt(value: number): string { return value.toLocaleString() }
 export function humanizeFloat(value: number): string {
@@ -9,7 +9,7 @@ export function optionalMetric(value: number | null | undefined, unit = ''): str
 }
 
 export function totalTokens(response?: ResponseStats | null): number | undefined {
-  if (response?.timings) {
+  if (response?.timings && !Array.isArray(response.timings.choices)) {
     const t = response.timings
     return (t.cache_n ?? 0) + (t.prompt_n ?? 0) + (t.predicted_n ?? 0)
   }
@@ -18,28 +18,41 @@ export function totalTokens(response?: ResponseStats | null): number | undefined
   if (usage?.prompt_tokens != null && usage.completion_tokens != null) {
     return usage.prompt_tokens + usage.completion_tokens
   }
+  const stats = normalizeStats(response)
+  if (stats?.prompt != null && stats.output != null) return stats.prompt + stats.output
 }
 
 export function normalizeStats(response?: ResponseStats | null) {
-  if (!response || (!response.timings && !response.usage)) return null
-  const t = response.timings
-  const u = response.usage
+  if (!response || (!response.timings && !response.usage && !response.meta_info)) return null
+  const choices = response.timings?.choices
+  const patched = Array.isArray(choices)
+  const native = response.meta_info as SglangTiming | undefined
+  const sgTiming = patched ? (choices.length === 1 ? choices[0] : undefined) : native
+  const t = patched ? undefined : response.timings
+  const u = response.usage ?? (sgTiming ? {
+    prompt_tokens: sgTiming.prompt_tokens, completion_tokens: sgTiming.completion_tokens,
+    prompt_tokens_details: { cached_tokens: sgTiming.cached_tokens }, reasoning_tokens: sgTiming.reasoning_tokens
+  } : undefined)
   const m = response.metrics
-  const backend = t ? 'llama-server' : response.response_backend === 'sglang' || response.sglext || u?.reasoning_tokens != null ? 'sglang' : 'vllm'
-  const cached = t ? t.cache_n : u?.prompt_tokens_details?.cached_tokens
+  const backend = t ? 'llama-server' : patched || native || response.response_backend === 'sglang' || response.sglext || u?.reasoning_tokens != null ? 'sglang' : 'vllm'
+  const cached = t ? t.cache_n : (u?.prompt_tokens_details?.cached_tokens ?? sgTiming?.cached_tokens)
   const prompt = t ? t.prompt_n : u?.prompt_tokens
   const newInput = t ? prompt : cached != null && prompt != null && cached >= 0 && cached <= prompt ? prompt - cached : undefined
   const output = t ? t.predicted_n : u?.completion_tokens
-  const spec = response.sglext?.spec_tokens_details
+  const spec = sgTiming ?? response.sglext?.spec_tokens_details
   const sg = spec && !Array.isArray(spec) ? spec : undefined
   const proposed = t ? t.draft_n : sg ? sg.spec_num_proposed_drafts : m?.speculative_decoding?.num_draft_tokens
   const accepted = t ? t.draft_n_accepted : sg ? sg.spec_num_correct_drafts : m?.speculative_decoding?.num_accepted_draft_tokens
   const acceptanceRate = sg ? sg.spec_accept_rate : m?.speculative_decoding?.draft_acceptance_rate
-  const inputMs = t ? t.prompt_ms : backend === 'vllm' ? m?.time_to_first_token_ms : undefined
-  const outputMs = t ? t.predicted_ms : backend === 'vllm' ? m?.generation_time_ms : undefined
+  const ms = (n?: number) => n != null && n >= 0 ? n * 1000 : undefined
+  const ttft = backend === 'sglang' ? ms(sgTiming?.first_token_latency) : m?.time_to_first_token_ms
+  const queueMs = backend === 'sglang' ? ms(sgTiming?.queue_time) : m?.queue_time_ms
+  const elapsed = ms(sgTiming?.e2e_latency)
+  const inputMs = t ? t.prompt_ms : ttft
+  const outputMs = t ? t.predicted_ms : backend === 'sglang' ? elapsed != null && ttft != null && elapsed >= ttft ? elapsed - ttft : undefined : m?.generation_time_ms
   const inputRate = t ? t.prompt_per_second : newInput != null && newInput > 0 && inputMs != null && inputMs > 0 ? newInput * 1000 / inputMs : undefined
-  const outputRate = t ? t.predicted_per_second : output != null && output > 1 && outputMs != null && outputMs > 0 ? (output - 1) * 1000 / outputMs : undefined
-  return { backend, cached, prompt, newInput, output, proposed, accepted, acceptanceRate, inputMs, outputMs, inputRate, outputRate,
+  const outputRate = t ? t.predicted_per_second : sgTiming?.decode_throughput != null && sgTiming.decode_throughput > 0 ? sgTiming.decode_throughput : output != null && output > 1 && outputMs != null && outputMs > 0 ? (output - 1) * 1000 / outputMs : undefined
+  return { backend, ttft, queueMs, cached, prompt, newInput, output, proposed, accepted, acceptanceRate, inputMs, outputMs, inputRate, outputRate,
     reasoning: u?.completion_tokens_details?.reasoning_tokens ?? u?.reasoning_tokens,
     meanAccept: sg ? sg.spec_accept_length : m?.speculative_decoding?.mean_acceptance_length,
     totalInput: t && prompt != null ? prompt + (cached ?? 0) : prompt }
@@ -69,8 +82,8 @@ export function formatResponseStats(response?: ResponseStats | null): string[] {
   const inputLabel = s.newInput == null ? 'in (includes cached)' : 'in'
   const input = s.newInput ?? s.prompt
   if (input != null) lines.push(`${inputLabel}: ${humanizeInt(input)} tokens${rate(s.inputRate)}`)
-  if (response.metrics?.time_to_first_token_ms != null) lines.push(`TTFT: ${humanizeFloat(response.metrics.time_to_first_token_ms)} ms`)
-  if (response.metrics?.queue_time_ms != null && response.metrics.queue_time_ms >= 0.05) lines.push(`queue: ${humanizeFloat(response.metrics.queue_time_ms)} ms`)
+  if (s.ttft != null) lines.push(`TTFT: ${humanizeFloat(s.ttft)} ms`)
+  if (s.queueMs != null && s.queueMs >= 0.05) lines.push(`queue: ${humanizeFloat(s.queueMs)} ms`)
   if (s.output != null) lines.push(`out: ${humanizeInt(s.output)} tokens${rate(s.outputRate)}`)
   if (s.reasoning != null && s.reasoning > 0) count('  reasoning', s.reasoning)
   const acceptance = draftAcceptance(response)

@@ -43,6 +43,10 @@ function M.body_for(config_model, generic_body, reasoning_level, endpoint_model_
             return_spec_tokens_details = true,
             return_cached_tokens_details = true,
         })
+        -- Local GLM deployment has the opt-in final-SSE timing overlay.
+        if endpoint_model_info.actual_model_name == "glm-5.3-flash" then
+            generic_body = default_to_recommended(generic_body, { return_timings = true })
+        end
     end
     if config_model == models.GPTOSS then
         return M.body_for_gptoss(generic_body, reasoning_level)

@@ -675,3 +675,30 @@ def test_sglang_openai_extensions_and_native_metadata_are_verbatim():
     # Never attribute a multi-choice speculative array to a single assistant.
     response['sglext']['spec_tokens_details'] = [original['sglext']['spec_tokens_details']] * 2
     assert parse_timings(response).draft_tokens is None
+
+
+def test_sglang_final_sse_timings_and_usage():
+    import json
+    from pathlib import Path
+    event = json.loads((Path(__file__).parent / 'fixtures/sglang-sse-timings.json').read_text())
+    stats = parse_timings(event)
+    assert stats.backend == 'sglang'
+    assert stats.input_tokens == 1000 and stats.uncached_prompt_tokens == 200
+    assert stats.time_to_first_token_ms == 400 and stats.queue_time_ms == 10
+    assert stats.generation_time_ms == 500
+    assert stats.estimated_input_tokens_per_second == 500
+    assert stats.estimated_decode_tokens_per_second == 200
+    assert stats.draft_tokens_accepted == 80 and stats.mean_acceptance_length == 3.2
+    assert stats.reasoning_tokens == 20
+    display = format_stats_line(stats)
+    assert '200.0 tok/s' in display and '400.0 ms' in display
+    del event['usage']
+    stats = parse_timings(event)
+    assert stats.backend == 'sglang' and stats.predicted_tokens == 101
+    event['timings']['choices'].append(dict(event['timings']['choices'][0], index=1))
+    event['usage'] = {'prompt_tokens': 1000, 'completion_tokens': 202}
+    stats = parse_timings(event)
+    assert stats.backend == 'sglang' and stats.predicted_tokens == 202
+    assert stats.time_to_first_token_ms is None
+    assert stats.estimated_decode_tokens_per_second is None
+    assert stats.draft_tokens is None

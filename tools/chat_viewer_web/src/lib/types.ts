@@ -51,7 +51,20 @@ export interface LastSSE extends ResponseStats {
   [key: string]: unknown
 }
 
+export interface SglangTiming extends SglangSpeculative {
+  index?: number
+  prompt_tokens?: number
+  completion_tokens?: number
+  cached_tokens?: number
+  reasoning_tokens?: number
+  e2e_latency?: number
+  first_token_latency?: number
+  queue_time?: number
+  decode_throughput?: number
+}
+
 export interface Timings {
+  choices?: SglangTiming[]
   prompt_n?: number
   predicted_n?: number
   cache_n?: number

@@ -39,7 +39,7 @@ class ModelTimings:
     @property
     def estimated_input_tokens_per_second(self) -> float | None:
         uncached = self.uncached_prompt_tokens
-        if (self.backend != "vllm" or uncached is None or uncached <= 0
+        if (self.backend not in ("vllm", "sglang") or uncached is None or uncached <= 0
                 or self.time_to_first_token_ms is None or self.time_to_first_token_ms <= 0):
             return None
         # TTFT includes first-token work and other overhead, not pure prefill.
@@ -47,7 +47,9 @@ class ModelTimings:
 
     @property
     def estimated_decode_tokens_per_second(self) -> float | None:
-        if (self.backend != "vllm" or self.predicted_tokens <= 1
+        if self.backend == "sglang" and self.predicted_tokens_per_second > 0:
+            return self.predicted_tokens_per_second
+        if (self.backend not in ("vllm", "sglang") or self.predicted_tokens <= 1
                 or self.generation_time_ms is None or self.generation_time_ms <= 0):
             return None
         # Decode duration starts at the first token: N tokens span N-1 intervals.
@@ -207,9 +209,18 @@ def parse_timings(last_sse: dict[str, Any] | None) -> ModelTimings | None:
         return None
 
     timings = last_sse.get("timings")
-    if not timings or not isinstance(timings, dict):
+    sglang_choices = timings.get("choices") if isinstance(timings, dict) else None
+    patched_sglang = isinstance(sglang_choices, list)
+    # Usage can aggregate choices. Never attach one choice's timings to that total.
+    single_choice = (sglang_choices[0] if patched_sglang and len(sglang_choices) == 1
+                     and isinstance(sglang_choices[0], dict) else {})
+    if patched_sglang or not timings or not isinstance(timings, dict):
         usage = last_sse.get("usage")
-        native_meta = last_sse.get("meta_info") or {}
+        native_meta = single_choice or last_sse.get("meta_info") or {}
+        if not native_meta and isinstance(last_sse.get("choices"), list):
+            choices = last_sse["choices"]
+            if len(choices) == 1 and isinstance(choices[0], dict):
+                native_meta = choices[0].get("meta_info") or {}
         if not isinstance(usage, dict) and isinstance(native_meta, dict) and "prompt_tokens" in native_meta:
             usage = {"prompt_tokens": native_meta.get("prompt_tokens"),
                      "completion_tokens": native_meta.get("completion_tokens"),
@@ -222,18 +233,31 @@ def parse_timings(last_sse: dict[str, Any] | None) -> ModelTimings | None:
         completion_details = usage.get("completion_tokens_details") or {}
         speculative = metrics.get("speculative_decoding") or {}
         sglext = last_sse.get("sglext") or {}
-        is_sglang = (last_sse.get("response_backend") == "sglang" or bool(sglext)
+        is_sglang = (patched_sglang or last_sse.get("response_backend") == "sglang" or bool(sglext)
                      or bool(native_meta) or "reasoning_tokens" in usage)
         if is_sglang:
-            spec = sglext.get("spec_tokens_details") or native_meta
+            spec = native_meta or sglext.get("spec_tokens_details") or {}
+            def milliseconds(key):
+                value = native_meta.get(key)
+                return value * 1000 if isinstance(value, (int, float)) and value >= 0 else None
+            ttft = milliseconds("first_token_latency")
+            elapsed = milliseconds("e2e_latency")
+            decode = elapsed - ttft if elapsed is not None and ttft is not None and elapsed >= ttft else None
             # Multiple choices have distinct speculative stats; don't pick one.
             if not isinstance(spec, dict):
                 spec = {}
             return ModelTimings(
                 backend="sglang", prompt_tokens=usage.get("prompt_tokens") or 0,
                 predicted_tokens=usage.get("completion_tokens") or 0,
-                cached_tokens=prompt_details.get("cached_tokens"),
+                cached_tokens=prompt_details.get("cached_tokens", native_meta.get("cached_tokens")),
                 reasoning_tokens=usage.get("reasoning_tokens"),
+                time_to_first_token_ms=ttft, queue_time_ms=milliseconds("queue_time"),
+                generation_time_ms=decode,
+                predicted_tokens_per_second=native_meta.get("decode_throughput") or 0,
+                mean_itl_ms=(1000 / native_meta["decode_throughput"]
+                             if (native_meta.get("decode_throughput") or 0) > 0 else None),
+                overall_output_tokens_per_second=(usage.get("completion_tokens", 0) * 1000 / elapsed
+                                                  if elapsed and elapsed > 0 else None),
                 draft_tokens=spec.get("spec_num_proposed_drafts"),
                 draft_tokens_accepted=spec.get("spec_num_correct_drafts"),
                 reported_draft_acceptance_rate=spec.get("spec_accept_rate"),
@@ -367,7 +391,7 @@ def format_stats_line(timings: ModelTimings | None, color: str = "dim") -> str:
         lines.append(f"[{color}]in: {_humanize_int(timings.prompt_tokens)} @ {_humanize_float(timings.prompt_tokens_per_second)} tok/s[/]")
 
     # Outbound speed
-    if timings.predicted_tokens_per_second > 0:
+    if timings.backend == "llama-server" and timings.predicted_tokens_per_second > 0:
         lines.append(f"[{color}]out: {_humanize_int(timings.predicted_tokens)} @ {_humanize_float(timings.predicted_tokens_per_second)} tok/s[/]")
 
     # Draft tokens (speculative decoding / MTP)
