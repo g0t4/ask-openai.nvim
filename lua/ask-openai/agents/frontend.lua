@@ -161,6 +161,7 @@ end
 ---@param opts {args:string}
 local function ask_agent_command(opts)
     local user_prompt = opts.args
+    AgentsFrontend.is_ask_agent_cmd = true -- TODO make something less sloppy?
 
     -- * Warn if MCP servers haven't finished initializing (tools may be missing)
     local mcp_ready = mcp.ready
@@ -1285,7 +1286,7 @@ function AgentsFrontend.ensure_user_input_window_is_open(focus)
 
     AgentsFrontend.user_input_window:open()
 
-    if no_user_window then
+    if no_user_window and not AgentsFrontend.is_ask_agent_cmd then
         local win = AgentsFrontend.user_input_window
         local buffer = win:buffer()
         buffer:set_text("/tools ")
