@@ -113,7 +113,10 @@ function M.http(request)
                 if inner_err:find("ECANCELED") then
                     log:info("ECANCELED detected, turn this into an ignore if it is tied to close, BTW tcp_handle:is_closing():", tcp_handle:is_closing())
                 end
-                log:error('tcp_handle:connect failed', inner_err, request)
+
+                local who = request.host .. ' on port ' .. request.port
+                local message = 'tcp_handle:connect failed ' .. who .. ' : ' .. inner_err
+                log:error(message, request)
                 log:info('  FYI tcp_handle:is_closing()', tcp_handle:is_closing())
                 if tcp_handle:is_closing() then
                     log:info("  tcp_handle already closing, not calling close again")
@@ -121,7 +124,7 @@ function M.http(request)
                     -- TODO centralize one spot to avoid calling close twice
                     tcp_handle:close()
                 end
-                return request.on_done('tcp_handle:connect failed: ' .. inner_err)
+                return request.on_done(message)
             end
 
             local body_json = ""
