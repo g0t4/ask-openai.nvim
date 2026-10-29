@@ -29,23 +29,29 @@ def green(text: str) -> str:
 def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str) -> Table:
     """Entries carry assistant-only ordinal numbers, including unmeasured turns."""
 
-    split_output = backend != 'llama-server'
     table = Table(show_header=True, box=None, padding=(0, 1), row_styles=['', 'dim'])
+    table.caption = 'Durations are summed phase times, not elapsed agent wall time.'
 
     # * headers
     headers = ['cached', 'in']
+
+    split_output = backend != 'llama-server'
     if split_output:
         headers += ['reasoning', 'final', 'thinking %']
-    headers += ['out' if split_output else 'out', 'draft', 'mean accept len',
-                'in', 'out', '#']
+
+    headers += ['out' if split_output else 'out', 'draft', 'mean accept len', 'in', 'out', '#']
+
     for header in headers:
         table.add_column(header, justify='right', no_wrap=True)
 
     # * per message timing rows
-    cache_states = detect_cache_misses([stats for _, stats in entries])
+    #
+    # initialize:
     total_in = total_out = total_reasoning = total_final = 0
     known_in = known_reasoning = True
     in_durations, out_durations = [], []
+
+    cache_states = detect_cache_misses([stats for _, stats in entries])
     for (ordinal, stats), cache in zip(entries, cache_states):
         new_tokens = stats.uncached_prompt_tokens
         native = backend == 'llama-server'
@@ -99,5 +105,5 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
               _duration(sum(out_durations)) if all(v is not None for v in out_durations) else '—', 'total']
     table.add_section()
     table.add_row(*total, style='bold')
-    table.caption = 'Durations are summed phase times, not elapsed agent wall time.'
+
     return table
