@@ -1395,14 +1395,14 @@ def print_message_panel(title: str, color: str, content: TreeWrapper, align: str
     available_width = max(1, int(_console.width * 0.9 + 0.5))
     if full_width:
         # Full width: panel spans nearly the whole terminal (90%).
-        max_width = available_width
+        max_panel_width = available_width
     else:
         # Bubble mode: cap at a readable width (100 cols max), leaving a small
         # margin from the terminal edge, but never shrink below 20 cols.
         max_bubble_width = min(_console.width - 4, 100)
         max_bubble_width = max(40, max_bubble_width)
         # Also don't let the bubble exceed the 90% available width.
-        max_width = min(available_width, max_bubble_width)
+        max_panel_width = min(available_width, max_bubble_width)
     # Open speech-bubble look: keep the border on the side the message hugs.
     chat_box = CHAT_BOX_RIGHT if align == "right" else CHAT_BOX_LEFT
     panel = Panel(
@@ -1411,7 +1411,7 @@ def print_message_panel(title: str, color: str, content: TreeWrapper, align: str
         title_align="right" if align == "right" else "left",
         border_style=color,
         padding=(1, 2),
-        width=max_width,
+        width=max_panel_width, # this is a max, not an actual width
         expand=False,
         # box=chat_box,
     )
