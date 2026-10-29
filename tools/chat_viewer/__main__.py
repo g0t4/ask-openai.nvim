@@ -958,7 +958,12 @@ def build_mcp_tool_result(root: TreeWrapper, content: Any) -> bool:
         # Flattened MCP output: the tool result content is already a plain
         # string (nested JSON was flattened for the agent). Render it verbatim
         # (no markup interpretation, real newlines preserved).
-        root.add_no_markup(content)
+        rendered = Text(content)
+        for match in reversed(list(re.finditer(r"(?m)^[ \t]*EXIT_CODE:[ \t]*([^\r\n]*)", content))):
+            success = match.group(1).strip() == "0"
+            indicator = Text(" " if success else " ", style="green" if success else "red")
+            rendered = rendered[:match.start()] + indicator + rendered[match.start():]
+        root.add(rendered)
         return True
 
     has_mcp_content_list = isinstance(content, list)
