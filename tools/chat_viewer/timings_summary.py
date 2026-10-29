@@ -65,13 +65,15 @@ def build_timings_summary(entries: list[TimingEntry], backend: str) -> Table:
     table.add_column('cached', justify='right')
     table.add_column('in', justify='right')
     table.add_column('out', justify='right')
+    dim_not_bold = 'dim not bold'
     if show_out_split_columns:
-        table.add_column('reasoning', justify='right', header_style='dim not bold')
-        table.add_column('final', justify='right', header_style='dim not bold')
+        table.add_column('reasoning', justify='right', header_style=dim_not_bold)
+        table.add_column('final', justify='right', header_style=dim_not_bold)
     if show_draft_column:
-        table.add_column('draft', justify='right')
+        table.add_column('draft', justify='right', header_style=dim_not_bold)
     if show_mean_accept_len_column:
-        table.add_column('accept\nlen', justify='right', no_wrap=True)
+        table.add_column('accept\nlen', justify='right', no_wrap=True, header_style=dim_not_bold)
+
     table.add_column('in', justify='right')
     table.add_column('out', justify='right')
     table.add_column('') # message number, no need for a header
@@ -136,12 +138,12 @@ def build_timings_summary(entries: list[TimingEntry], backend: str) -> Table:
                 cell_draft = f'{_count(stats.draft_tokens_accepted)}/{_count(stats.draft_tokens)}'
                 if stats.formatted_acceptance_rate:
                     cell_draft += f' {stats.formatted_acceptance_rate}'
-                message_row.append(cell_draft)
+                message_row.append(dim(cell_draft))
             else:
-                message_row.append('—')
+                message_row.append(dim('—'))
         if show_mean_accept_len_column:
             cell_mean_accept_len = '—' if stats.mean_acceptance_length is None else f'{stats.mean_acceptance_length:.2f}'
-            message_row.append(cell_mean_accept_len)
+            message_row.append(dim(cell_mean_accept_len))
 
         cell_in_duration = _duration(input_ms)
         cell_out_duration = _duration(output_ms)
@@ -173,7 +175,6 @@ def build_timings_summary(entries: list[TimingEntry], backend: str) -> Table:
         total_for_final = _count(total_final) if show_total_for_reasoning else '—'
         total_row.extend([dim(total_for_reasoning), dim(total_for_final)])
 
-    # both are empty, this is the ugly part about one total_row definition below
     if show_draft_column:
         total_row.append('')
     if show_mean_accept_len_column:
