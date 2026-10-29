@@ -54,17 +54,17 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
     cache_states = detect_cache_misses([stats for _, stats in entries])
     for (ordinal, stats), cache in zip(entries, cache_states):
         new_in_tokens = stats.uncached_prompt_tokens
-        native = backend == 'llama-server'
-        input_rate = stats.prompt_tokens_per_second if native else stats.estimated_input_tokens_per_second
-        output_rate = stats.predicted_tokens_per_second if native else stats.estimated_decode_tokens_per_second
-        input_ms = stats.prompt_ms if native else stats.time_to_first_token_ms
-        output_ms = stats.predicted_ms if native else stats.generation_time_ms
+        exact_stats = backend == 'llama-server'
+        input_rate = stats.prompt_tokens_per_second if exact_stats else stats.estimated_input_tokens_per_second
+        output_rate = stats.predicted_tokens_per_second if exact_stats else stats.estimated_decode_tokens_per_second
+        input_ms = stats.prompt_ms if exact_stats else stats.time_to_first_token_ms
+        output_ms = stats.predicted_ms if exact_stats else stats.generation_time_ms
         cached = _count(stats.cached_tokens)
         if stats.formatted_cache_ratio is not None:
             cached += dim(f'\n{stats.formatted_cache_ratio} hit')
         if cache:
             cached += red(f'\nMISS {cache.formatted_missing_tokens}') if cache.is_cache_miss else green('\nok')
-        row = [cached, _tokens_rate(new_in_tokens, input_rate, not native)]
+        row = [cached, _tokens_rate(new_in_tokens, input_rate, not exact_stats)]
         reasoning = stats.reasoning_tokens
         valid_reasoning = reasoning is not None and 0 <= reasoning <= stats.predicted_tokens
         if split_output:
@@ -82,7 +82,7 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
             draft = f'{_count(stats.draft_tokens_accepted)}/{_count(stats.draft_tokens)}'
             if stats.formatted_acceptance_rate:
                 draft += f' {stats.formatted_acceptance_rate}'
-        row += [_tokens_rate(stats.predicted_tokens, output_rate, not native), draft,
+        row += [_tokens_rate(stats.predicted_tokens, output_rate, not exact_stats), draft,
                 '—' if stats.mean_acceptance_length is None else f'{stats.mean_acceptance_length:.2f}',
                 _duration(input_ms), _duration(output_ms), f'#{ordinal}']
         table.add_row(*row)
