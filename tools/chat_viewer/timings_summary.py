@@ -103,8 +103,7 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
         cell_ordinal = f'#{ordinal}'
         message_row += [
             cell_out,
-            cell_draft,
-            cell_mean_accept_len,
+            cell_draft, cell_mean_accept_len,
             cell_in_duration, cell_out_duration,
             cell_ordinal,
         ]
