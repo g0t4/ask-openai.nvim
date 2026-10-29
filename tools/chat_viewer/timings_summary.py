@@ -147,20 +147,22 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
     total_for_out_duration = _duration(sum(out_durations)) if all(v is not None for v in out_durations) else '—'
 
     # both are empty, this is the ugly part about one total_row definition below
-    totals_for_draft = []
-    if has_draft:
-        totals_for_draft += ['']
-    if has_accept_len:
-        totals_for_draft += ['']
-
     total_row = [
-        total_for_cached, total_for_in,
+        total_for_cached,
+        total_for_in,
         *totals_split_out,
         _count(total_out),
-        *totals_for_draft,
-        total_for_in_duration, total_for_out_duration,
-        'total',
     ]
+    if has_draft:
+        total_row.append('')
+    if has_accept_len:
+        total_row.append('')
+
+    total_row.extend([
+        total_for_in_duration,
+        total_for_out_duration,
+        'total',
+    ])
 
     table.add_section()
     table.add_row(*total_row, style='bold')
