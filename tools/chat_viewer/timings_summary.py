@@ -213,11 +213,15 @@ def build_timings_summary(entries: list[TimingEntry], backend: str) -> Table:
         out_durations.append(output_ms)
 
     # * totals row
+    # overall speeds = token-weighted (== time-weighted) average across the measured turns
+    read_rate = _aggregate_rate(total_in, in_durations)
+    write_rate = _aggregate_rate(total_out, out_durations)
+
     total_for_cached = 'total'
-    total_for_in = _count(total_in) if show_total_for_in else '—'
+    total_for_in = _tokens_rate(total_in, read_rate) if show_total_for_in else '—'
     total_row = [total_for_cached, total_for_in]
 
-    total_for_out = _count(total_out)
+    total_for_out = _tokens_rate(total_out, write_rate)
     total_row.append(total_for_out)
 
     if show_out_split_columns:
@@ -253,8 +257,6 @@ def build_timings_summary(entries: list[TimingEntry], backend: str) -> Table:
     table.add_row(*total_row, style='bold')
 
     # * book anchor blurb (appended to the caption, which renders at the end of the table)
-    read_rate = _aggregate_rate(total_in, in_durations)
-    write_rate = _aggregate_rate(total_out, out_durations)
     table.caption = (
         'Durations are summed phase times, not elapsed agent wall time.\n'
         + _book_anchor_blurb(read_rate, write_rate)
