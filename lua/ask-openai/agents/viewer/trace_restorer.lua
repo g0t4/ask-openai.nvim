@@ -10,6 +10,9 @@ local config = require("ask-openai.config")
 
 local M = {}
 
+-- The thinking emoji shown before reasoning content (matches the Python chat viewer).
+local THINKING_EMOJI = "💭"
+
 --- List all entries in a directory using uv.fs_opendir.
 ---
 ---@param dir_path string
@@ -288,7 +291,9 @@ local function render_message(lines, msg, tool_results_by_id, should_fold_conten
 
         -- Only add role header content if there's something to show
         if reasoning_content ~= "" or content ~= "" or #tool_calls > 0 then
-            lines:append_folded_styled_text(reasoning_content, HLGroups.CHAT_REASONING)
+            if reasoning_content ~= "" then
+                lines:append_folded_styled_text(THINKING_EMOJI .. reasoning_content, HLGroups.CHAT_REASONING)
+            end
             lines:append_text(content)
             response_stats.render(lines, msg)
 

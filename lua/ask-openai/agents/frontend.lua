@@ -40,6 +40,9 @@ local safely = require("ask-openai.helpers.safely")
 local live_trace_stream = require("ask-openai.agents.live_trace_stream")
 local values = require("ask-openai.helpers.values")
 
+-- The thinking emoji shown before reasoning content (matches the Python chat viewer).
+local THINKING_EMOJI = "💭"
+
 ---@class AgentsFrontend : StreamingFrontend
 local AgentsFrontend = {}
 
@@ -631,7 +634,9 @@ local function update_ui_chat_viewer(trace)
             -- ONLY add role header IF there is content (or reasoning) to show... otherwise just show tool_call(s)
             lines:append_role_header(rx_message.role)
 
-            lines:append_folded_styled_text(reasoning_content, HLGroups.CHAT_REASONING)
+            if reasoning_content ~= "" then
+                lines:append_folded_styled_text(THINKING_EMOJI .. reasoning_content, HLGroups.CHAT_REASONING)
+            end
 
             lines:append_text(content)
             lines:append_blank_line_if_last_is_not_blank() -- only if reasoning doesn't have trailing \n
