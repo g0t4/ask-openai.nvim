@@ -50,7 +50,7 @@ def build_timings_summary(entries: list[TimingEntry], backend: str) -> Table:
         box = None,
         # box=box.SIMPLE, # results in line under header and extra blank above totals row b/c of add_section()
         padding=(0, 1),
-        row_styles=['', 'dim'],
+        # row_styles=['', 'dim'],
     )
     table.caption = 'Durations are summed phase times, not elapsed agent wall time.'
 
