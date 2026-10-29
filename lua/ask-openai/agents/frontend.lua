@@ -42,7 +42,7 @@ local values = require("ask-openai.helpers.values")
 
 ---@class AgentsFrontend : StreamingFrontend
 local AgentsFrontend = {
-    COURSE_PROMPTS = "demo2",
+    -- COURSE_PROMPTS = "demo2",
 }
 
 ---@type TxChatMessage[] -- messages awaiting delivery to the model (user messages and tool completions, in arrival order)
@@ -245,7 +245,7 @@ local function ask_agent_command(opts)
         local course_tools_only = AgentsFrontend.COURSE_PROMPTS ~= nil
         local allowed_tool_names
         if course_tools_only then
-            -- TODO any others?
+            -- TODO any others for investigations? or by demo #?
             allowed_tool_names = { "run_bash", "run_xonsh" }
         elseif coordinator_flag then
             allowed_tool_names = { "delegate" }
