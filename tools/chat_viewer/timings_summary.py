@@ -25,10 +25,10 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
     headers = ['cached tokens', 'in tokens']
     if split_output:
         headers += ['reasoning tokens', 'final tokens', 'thinking %']
-    headers += ['total out tokens' if split_output else 'out tokens', 'draft', 'mean accept len',
+    headers += ['out tokens' if split_output else 'out tokens', 'draft', 'mean accept len',
                 'in duration', 'out duration', '#']
     for header in headers:
-        table.add_column(header.replace(' ', '\n'), justify='right', no_wrap=False)
+        table.add_column(header, justify='right', no_wrap=False)
     cache_states = detect_cache_misses([stats for _, stats in entries])
     total_in = total_out = total_reasoning = total_final = 0
     known_in = known_reasoning = True

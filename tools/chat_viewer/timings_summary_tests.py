@@ -14,7 +14,7 @@ def test_vllm_summary_uses_new_input_and_reasoning_split_and_sums_durations():
         'metrics':{'time_to_first_token_ms':100, 'generation_time_ms':1990}})
     table = build_timings_summary([(1, first), (3, second)], 'vllm')
     assert [c.header.replace('\n', ' ') for c in table.columns] == ['cached tokens','in tokens','reasoning tokens','final tokens',
-        'thinking %','total out tokens','draft','mean accept len','in duration','out duration','#']
+        'thinking %','out tokens','draft','mean accept len','in duration','out duration','#']
     cells = [list(column._cells) for column in table.columns]
     assert cells[1] == ['200 @ ≈1,000.0 tok/s', '200 @ ≈2,000.0 tok/s', '400']
     assert cells[5][-1] == '300'
