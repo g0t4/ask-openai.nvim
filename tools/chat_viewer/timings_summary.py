@@ -20,6 +20,12 @@ def _tokens_rate(count, rate, estimated=False):
 def dim(text: str) -> str:
     return f"[dim]{text}[/]"
 
+def red(text: str) -> str:
+    return f"[red]{text}[/]"
+
+def green(text: str) -> str:
+    return f"[green]{text}[/]"
+
 def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str) -> Table:
     """Entries carry assistant-only ordinal numbers, including unmeasured turns."""
     split_output = backend != 'llama-server'
@@ -46,7 +52,7 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
         if stats.formatted_cache_ratio is not None:
             cached += dim(f'\n{stats.formatted_cache_ratio} hit')
         if cache:
-            cached += f'\n[red]MISS {cache.formatted_missing_tokens}[/]' if cache.is_cache_miss else '\n[green]ok[/]'
+            cached += red(f'\nMISS {cache.formatted_missing_tokens}') if cache.is_cache_miss else green('\nok')
         row = [cached, _tokens_rate(new_tokens, input_rate, not native)]
         reasoning = stats.reasoning_tokens
         valid_reasoning = reasoning is not None and 0 <= reasoning <= stats.predicted_tokens
