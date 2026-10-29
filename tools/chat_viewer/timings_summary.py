@@ -41,8 +41,8 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
 
     has_out_token_split = backend != 'llama-server' # vllm/sglang give us reasoning vs final split within output tokens
     # llama-server doesn't expose mean accept len at all... and then models w/o draft would not have draft stats at all
-    has_draft = any([e[1].draft_tokens is not None for e in entries])
-    has_accept_len = any([e[1].mean_acceptance_length is not None for e in entries])
+    show_draft_column = any([e[1].draft_tokens is not None for e in entries])
+    show_mean_accept_len_column = any([e[1].mean_acceptance_length is not None for e in entries])
 
     # * headers
     table.add_column('cached', justify='right')
@@ -52,9 +52,9 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
         table.add_column('final', justify='right')
         table.add_column('thinking %', justify='right')
     table.add_column('out', justify='right')
-    if has_draft:
+    if show_draft_column:
         table.add_column('draft', justify='right')
-    if has_accept_len:
+    if show_mean_accept_len_column:
         table.add_column('accept\nlen', justify='right', no_wrap=True)
     table.add_column('in', justify='right')
     table.add_column('out', justify='right')
@@ -106,7 +106,7 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
 
         # draft tokens
         cells_draft = []
-        if has_draft:
+        if show_draft_column:
             if stats.draft_tokens is not None:
                 cell_draft = f'{_count(stats.draft_tokens_accepted)}/{_count(stats.draft_tokens)}'
                 if stats.formatted_acceptance_rate:
@@ -114,7 +114,7 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
                 cells_draft += [ cell_draft ]
             else:
                 cells_draft += [ '—' ] # if we have draft stats but not for this message (would be strange, but possible)
-        if has_accept_len:
+        if show_mean_accept_len_column:
             cell_mean_accept_len = '—' if stats.mean_acceptance_length is None else f'{stats.mean_acceptance_length:.2f}'
             cells_draft += [ cell_mean_accept_len ]
 
@@ -151,9 +151,9 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
     total_row.append(total_for_out)
 
     # both are empty, this is the ugly part about one total_row definition below
-    if has_draft:
+    if show_draft_column:
         total_row.append('')
-    if has_accept_len:
+    if show_mean_accept_len_column:
         total_row.append('')
 
     # Deliberately avoid averaging per-request rates or summing cumulative cache counts.
