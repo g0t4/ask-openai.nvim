@@ -94,8 +94,12 @@ def build_timings_summary(entries: list[TimingEntry], backend: str) -> Table:
 
         # cached tokens
         cell_cached = _count(stats.cached_tokens)
-        if cache:
-            cell_cached += red(f'\nMISS {cache.formatted_missing_tokens}') if cache.is_cache_miss else green('\nok')
+        # TODO look into caching with vllm and sglang... the expected/actual difference is almost never aligned so showing MISS every time is not that useful until I understand why and if I want to distill that into a MISS / delta
+        #  TODO if I don't find a good use for HIT/MISS then get rid of it here
+        if backend == "llama-server" and cache and cache.is_cache_miss:
+            # for llama-server only mark MISSes so I can investigate or at least so I don't mostly see `ok`/green when that' useless to know if it basically happens all the time
+            #  no news (no ok) == good news!
+            cell_cached += red(f'\nMISS {cache.formatted_missing_tokens}')
 
         # rates
         estimated_rates = backend == 'llama-server'
