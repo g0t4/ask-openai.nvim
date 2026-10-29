@@ -33,13 +33,15 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
     table.caption = 'Durations are summed phase times, not elapsed agent wall time.'
 
     # * headers
-    headers = ['cached', 'in']
-
     has_out_token_split = backend != 'llama-server'
-    if has_out_token_split:
-        headers += ['reasoning', 'final', 'thinking %']
-
-    headers += ['out' if has_out_token_split else 'out', 'draft', 'mean accept len', 'in', 'out', '#']
+    headers = [
+        'cached', 'in',
+        *(['reasoning', 'final', 'thinking %'] if has_out_token_split else []),
+        'out' if has_out_token_split else 'out',
+        'draft', 'mean accept len',
+        'in', 'out', # durations
+        '#' # ordinal
+    ]
 
     for header in headers:
         table.add_column(header, justify='right', no_wrap=True)
