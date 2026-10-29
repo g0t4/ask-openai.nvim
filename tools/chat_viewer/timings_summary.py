@@ -91,6 +91,7 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
 
         # conditionally show output breakdown (reasoning vs final)
         reasoning_count = stats.reasoning_tokens
+        # TODO do we ever have a case where reasoning_count > stats.predicted_tokens? how about we just warn if it happens and think about it when we have a real example
         valid_reasoning = reasoning_count is not None and 0 <= reasoning_count <= stats.predicted_tokens
         if show_out_split_columns:
             final_count = stats.predicted_tokens - reasoning_count if valid_reasoning else None
