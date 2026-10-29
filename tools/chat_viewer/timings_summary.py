@@ -117,17 +117,17 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
 
     # * totals row
     total_for_in = _count(total_in) if known_in else '—'
-    total = ['', total_for_in]
+    total_row = ['', total_for_in]
     if split_output:
         total_for_percent = f'{total_reasoning / total_out * 100:.1f}%' if known_reasoning and total_out else '—'
         total_for_reasoning = _count(total_reasoning) if known_reasoning else '—'
         total_for_final = _count(total_final) if known_reasoning else '—'
-        total += [total_for_reasoning, total_for_final, total_for_percent]
+        total_row += [total_for_reasoning, total_for_final, total_for_percent]
     # Deliberately avoid averaging per-request rates or summing cumulative cache counts.
-    total += [_count(total_out), '', '',
+    total_row += [_count(total_out), '', '',
               _duration(sum(in_durations)) if all(v is not None for v in in_durations) else '—',
               _duration(sum(out_durations)) if all(v is not None for v in out_durations) else '—', 'total']
     table.add_section()
-    table.add_row(*total, style='bold')
+    table.add_row(*total_row, style='bold')
 
     return table
