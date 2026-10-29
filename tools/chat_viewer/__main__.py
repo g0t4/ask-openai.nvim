@@ -1393,7 +1393,7 @@ def print_message_panel(
     align: str,
     *,
     full_width: bool = False,
-    min_panel_width: int = 0,
+    min_panel_width: int = 50,
 ) -> None:
     """Render a single message as an aligned panel for a chat-like layout.
 
