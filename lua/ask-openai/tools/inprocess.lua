@@ -8,20 +8,23 @@ local M = {}
 
 ---@type OpenAITool[]
 M.tools_available = {
-    semantic_grep = semantic_grep_tool.ToolDefinition,
+    semantic_grep_tool.ToolDefinition,
     -- TODO setup so tools available can be model dependent (i.e. gptoss gets apply_patch)
-    apply_patch = apply_patch_tool.ToolDefinition,
-    run_in_neovim = run_in_neovim_tool.ToolDefinition,
-    open_image = open_image_tool.ToolDefinition,
-    --   TODO setup slash commands that can trigger tools like run_in_neovim
+    apply_patch_tool.ToolDefinition,
+    run_in_neovim_tool.ToolDefinition,
+    open_image_tool.ToolDefinition,
 }
-
 
 ---@param tool_name string
 ---@return boolean
 function M.handles_tool(tool_name)
-    local tool = M.tools_available[tool_name]
-    return tool ~= nil
+    for _, inprocess_tool in ipairs(M.tools_available) do
+        local name = inprocess_tool["function"].name
+        if name == tool_name then
+            return true
+        end
+    end
+    return false
 end
 
 ---@alias InProcessToolCall

@@ -444,8 +444,7 @@ local function build_followup_params()
     local model_name = config.get_agents_model()
     local base_url = config.get_base_url(model_name)
 
-    -- Build tool definitions (same as a fresh request)
-    local tool_definitions, _ = tool_router.openai_tools(false)
+    local tool_definitions, _ = tool_router.openai_tools()
 
     -- Build params similar to ask_agent_command but without system message
     local params = {

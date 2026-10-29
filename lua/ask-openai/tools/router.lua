@@ -8,54 +8,50 @@ local safely = require("ask-openai.helpers.safely")
 
 local M = {}
 
----@param coordinator_only boolean # primary agent will not have any tool calls beyond spinning up a subagent!
-function M.openai_tools(coordinator_only)
+---@param allowed_tool_names? string[]
+function M.openai_tools(allowed_tool_names)
     -- * inject system message instructions based on available tools
-    local function _openai_tools(coordinator_only)
+    local function _openai_tools()
         ---@type OpenAITool[]
         local tools = {}
         local system_instructs = {}
 
-        if coordinator_only then
-            log:info("COORDINATOR_ONLY")
-            -- * coordinator only gets the "agents" tool (for spawning subagents)
-            local delegate_tool = mcp.tools_available["delegate"]
-            if delegate_tool then
-                table.insert(tools, mcp.openai_tool(delegate_tool))
-            end
-            return tools, system_instructs
-        end
-
+        -- * MCP tools
         for name, mcp_tool in pairs(mcp.tools_available) do
-            table.insert(tools, mcp.openai_tool(mcp_tool))
-            local tool_instructs = mcp.get_system_message_instructions(name)
-            if tool_instructs then
-                table.insert(system_instructs, tool_instructs)
+            if allowed_tool_names == nil or vim.tbl_contains(allowed_tool_names, name) then
+                table.insert(tools, mcp.openai_tool(mcp_tool))
+                local tool_instructs = mcp.get_system_message_instructions(name)
+                if tool_instructs then
+                    table.insert(system_instructs, tool_instructs)
+                end
             end
         end
 
-        for _, inprocess_tool in pairs(inprocess.tools_available) do
+        -- * inprocess tools
+        for _, inprocess_tool in ipairs(inprocess.tools_available) do
             -- PRN push this into inprocess module like mcp/init.lua above?
-
-            if inprocess_tool["function"].name == "semantic_grep" then
-                -- somewhat strange but neovim invocations are rooted in the current buffer,
-                -- so I have to use that to dictate some tool availability even though agent‑like
-                -- requests are buffer independent... since my LS client is tied to a buffer in
-                -- neovim, gotta roll with it! NBD TBH
-                if client.is_lsp_client_available() then
+            local name = inprocess_tool["function"].name
+            if allowed_tool_names == nil or vim.tbl_contains(allowed_tool_names, name) then
+                if name == "semantic_grep" then
+                    -- somewhat strange but neovim invocations are rooted in the current buffer,
+                    -- so I have to use that to dictate some tool availability even though agent‑like
+                    -- requests are buffer independent... since my LS client is tied to a buffer in
+                    -- neovim, gotta roll with it! NBD TBH
+                    if client.is_lsp_client_available() then
+                        table.insert(tools, inprocess_tool)
+                    end
+                else
                     table.insert(tools, inprocess_tool)
-                end
-            else
-                table.insert(tools, inprocess_tool)
-                if inprocess_tool["function"].name == "apply_patch" then
-                    table.insert(system_instructs, apply_patch_tool.get_system_message_instructions())
+                    if name == "apply_patch" then
+                        table.insert(system_instructs, apply_patch_tool.get_system_message_instructions())
+                    end
                 end
             end
         end
 
         return tools, system_instructs
     end
-    local tools, system_instructs = _openai_tools(coordinator_only)
+    local tools, system_instructs = _openai_tools()
     local names = vim.iter(tools)
         :map(function(tool) return tool["function"].name end)
         :join(', ')

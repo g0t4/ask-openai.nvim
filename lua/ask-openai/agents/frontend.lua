@@ -41,7 +41,9 @@ local live_trace_stream = require("ask-openai.agents.live_trace_stream")
 local values = require("ask-openai.helpers.values")
 
 ---@class AgentsFrontend : StreamingFrontend
-local AgentsFrontend = {}
+local AgentsFrontend = {
+    COURSE_PROMPTS = "demo2",
+}
 
 ---@type TxChatMessage[] -- messages awaiting delivery to the model (user messages and tool completions, in arrival order)
 AgentsFrontend.queued_messages = {}
@@ -217,6 +219,9 @@ local function ask_agent_command(opts)
     use_tools = context.includes.use_tools or false
 
     local system = get_file("~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/agents/prompts/system_message.md")
+    if AgentsFrontend.COURSE_PROMPTS then
+        system = get_file("~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/agents/prompts/course/" .. AgentsFrontend.COURSE_PROMPTS .. ".system.md")
+    end
     -- PRN "NEVER add copyright or license headers unless specifically requested."
 
     local tool_definitions
@@ -229,22 +234,28 @@ local function ask_agent_command(opts)
         local cwd_text = context_builder.build_git_context(cwd, repo_root)
         system = system:gsub("INSERT_CWD", cwd_text)
 
-        -- * tool instructions
-        local tool_instructions = get_file("~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/agents/prompts/tools.md")
+        -- * tool instructions (only if in system message)
         local current_model = config.get_agents_model()
         local commit_author = models.MODEL_AUTHOR_MAP[current_model] or "unknown<unknown@example.com>"
-        tool_instructions = tool_instructions:gsub("INSERT_COMMIT_AUTHOR", commit_author)
-        system = system .. "\n\n" .. tool_instructions
+        system = system:gsub("INSERT_COMMIT_AUTHOR", commit_author)
 
         local tool_provided_instructs
         -- Pass coordinator flag based on slash command "coordinator"
         local coordinator_flag = context.includes.coordinator or false
-        tool_definitions, tool_provided_instructs = tool_router.openai_tools(coordinator_flag)
+        local course_tools_only = AgentsFrontend.COURSE_PROMPTS ~= nil
+        local allowed_tool_names
+        if course_tools_only then
+            -- TODO any others?
+            allowed_tool_names = { "run_bash", "run_xonsh" }
+        elseif coordinator_flag then
+            allowed_tool_names = { "delegate" }
+        end
+        tool_definitions, tool_provided_instructs = tool_router.openai_tools(allowed_tool_names)
         if tool_provided_instructs then
             system = system .. "\n\n" .. table.concat(tool_provided_instructs, "\n")
         end
 
-        log:info("tool_definitions", tool_definitions)
+        -- log:info("tool_definitions", tool_definitions)
     else
         system = system:gsub("INSERT_CWD", "")
     end
