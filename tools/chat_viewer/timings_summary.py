@@ -48,7 +48,7 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
     #
     # initialize:
     total_in = total_out = total_reasoning = total_final = 0
-    known_in = known_reasoning = True
+    show_total_for_in = known_reasoning = True
     in_durations, out_durations = [], []
 
     cache_states = detect_cache_misses([stats for _, stats in entries])
@@ -109,7 +109,7 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
         table.add_row(*message_row)
 
         # running totals
-        known_in &= new_in_tokens is not None
+        show_total_for_in &= new_in_tokens is not None
         total_in += new_in_tokens or 0
         total_out += stats.predicted_tokens
         in_durations.append(input_ms)
@@ -117,7 +117,7 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
 
     # * totals row
     total_for_cached = ''
-    total_for_in = _count(total_in) if known_in else '—'
+    total_for_in = _count(total_in) if show_total_for_in else '—'
 
     totals_split_out = []
     if split_output:
