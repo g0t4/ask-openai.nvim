@@ -92,13 +92,14 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
 
         # conditionally show output breakdown (reasoning vs final)
         reasoning_count = stats.reasoning_tokens
-        # TODO do we ever have a case where reasoning_count > stats.predicted_tokens? how about we just warn if it happens and think about it when we have a real example
-        reasoning_out_of_bounds = 0 <= (reasoning_count or 0) <= stats.predicted_tokens
-        valid_reasoning = reasoning_count is not None and reasoning_out_of_bounds
+        valid_reasoning = reasoning_count is not None
+        reasoning_out_of_bounds = 0 <= (reasoning_count or 0) <= stats.predicted_tokens # or 0 handles None gracefully
         if reasoning_out_of_bounds:
+            # PRN if this ever arises we can address it at the time
+            # and for now I want to show the reasoning_count below even if "out of bounds" b/c there is a value returned so we need to show that
             rich.print(f"[red] UNEXPECTED, reasoning_count is outside of expected bounds: 0 <= {reasoning_count=} <= {stats.predicted_tokens=}[/]")
         if show_out_split_columns:
-            final_count = stats.predicted_tokens - reasoning_count if valid_reasoning else None
+            final_count = stats.predicted_tokens - reasoning_count if valid_reasoning else None # just let it go negative, that's fine if there is an out of bounds
             think_percent = f'{reasoning_count / stats.predicted_tokens * 100:.1f}%' if valid_reasoning and stats.predicted_tokens else '—'
 
             message_row.append(dim(_count(reasoning_count if valid_reasoning else None)))
