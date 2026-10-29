@@ -29,7 +29,8 @@ def green(text: str) -> str:
 def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str) -> Table:
     """Entries carry assistant-only ordinal numbers, including unmeasured turns."""
 
-    table = Table(show_header=True, box=None, padding=(0, 1), row_styles=['', 'dim'])
+    from rich import box
+    table = Table(show_header=True, box=box.SIMPLE, padding=(0, 1), row_styles=['', 'dim'])
     table.caption = 'Durations are summed phase times, not elapsed agent wall time.'
 
     # * headers
