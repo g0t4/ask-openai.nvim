@@ -135,7 +135,7 @@ class TraceViewerApp(TerminalSizedApp):
         messages: list[dict],
         model_name: str | None = None,
         timings=None,
-        max_width: int = 120,
+        max_width: int = 160,
     ) -> None:
         super().__init__()
         self.max_width = max_width
@@ -183,7 +183,7 @@ class TraceViewerApp(TerminalSizedApp):
 
     def action_toggle_width(self) -> None:
         self.width_capped = not self.width_capped
-        self.set_transcript_width(self.query_one(RichLog), (self.max_width or 120) if self.width_capped else 0)
+        self.set_transcript_width(self.query_one(RichLog), (self.max_width or 160) if self.width_capped else 0)
         self.call_after_refresh(self._render)
 
     def action_toggle_all(self) -> None:
@@ -205,7 +205,7 @@ def main(argv: list[str] | None = None) -> None:
         default=None,
         help="path to trace file (or stdin if omitted)",
     )
-    parser.add_argument("--max-width", type=viewer.parse_max_width, default=120, help="transcript width cap (default: 120; 0 for full width)")
+    parser.add_argument("--max-width", type=viewer.parse_max_width, default=160, help="transcript width cap (default: 160; 0 for full width)")
     argcomplete.autocomplete(parser)
     args = parser.parse_args(argv)
 

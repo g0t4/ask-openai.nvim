@@ -124,7 +124,7 @@ class LiveTraceViewerApp(TerminalSizedApp):
     .trace-message { width: 100%; height: auto; background: transparent; }
     """
 
-    def __init__(self, directory: Path, poll_interval: float = 0.25, *, max_width: int = 120) -> None:
+    def __init__(self, directory: Path, poll_interval: float = 0.25, *, max_width: int = 160) -> None:
         super().__init__()
         self.max_width = max_width
         self.width_capped = bool(max_width)
@@ -277,7 +277,7 @@ class LiveTraceViewerApp(TerminalSizedApp):
 
     def action_toggle_width(self) -> None:
         self.width_capped = not self.width_capped
-        self.set_transcript_width(self.query_one("#transcript"), (self.max_width or 120) if self.width_capped else 0)
+        self.set_transcript_width(self.query_one("#transcript"), (self.max_width or 160) if self.width_capped else 0)
         self.call_after_refresh(self._reflow_after_resize)
 
     async def action_toggle_all(self) -> None:
@@ -297,7 +297,7 @@ class LiveTraceViewerApp(TerminalSizedApp):
             self.query_one("#transcript", VerticalScroll).scroll_end(animate=False, x_axis=False)
 
 
-def run_live(directory: Path, *, show_all: bool = False, style_reasoning: bool = True, max_width: int = 120) -> None:
+def run_live(directory: Path, *, show_all: bool = False, style_reasoning: bool = True, max_width: int = 160) -> None:
     viewer.SHOW_ALL = show_all
     viewer.STYLE_REASONING = style_reasoning
     viewer.load_preapproved_files()
@@ -308,7 +308,7 @@ def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("directory", nargs="?", type=Path, default=default_trace_directory())
     parser.add_argument("--all", action="store_true", help="Show all content and timing statistics")
-    parser.add_argument("--max-width", type=viewer.parse_max_width, default=120, help="transcript width cap (default: 120; 0 for full width)")
+    parser.add_argument("--max-width", type=viewer.parse_max_width, default=160, help="transcript width cap (default: 160; 0 for full width)")
     args = parser.parse_args(argv)
     run_live(args.directory, show_all=args.all, max_width=args.max_width)
 

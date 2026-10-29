@@ -33,14 +33,14 @@ async def test_existing_vtt_caps_centers_and_toggles_width(monkeypatch):
     async with app.run_test(size=(180, 50)) as pilot:
         await pilot.pause()
         log = app.query_one(RichLog)
-        assert log.region.width == 120
-        assert log.region.x == 30
+        assert log.region.width == 160
+        assert log.region.x == 10
         await pilot.press("w")
         await pilot.pause()
         assert log.region.width == 180
         await pilot.press("w")
         await pilot.pause()
-        assert log.region.width == 120
+        assert log.region.width == 160
         assert log.region.height == 48
         assert widths[-1] == (log.scrollable_content_region.width, True)
         await pilot.resize_terminal(100, 30)
@@ -71,8 +71,8 @@ async def test_live_width_cap_toggle_and_narrow_terminal(tmp_path):
     async with app.run_test(size=(180, 40)) as pilot:
         await pilot.pause()
         transcript = app.query_one('#transcript')
-        assert transcript.region.width == 120
-        assert transcript.region.x == 30
+        assert transcript.region.width == 160
+        assert transcript.region.x == 10
         await pilot.press('w')
         await pilot.pause()
         assert transcript.region.width == 180

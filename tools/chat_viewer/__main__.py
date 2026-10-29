@@ -1549,7 +1549,7 @@ def main() -> None:
     parser.add_argument("--watch", nargs="?", const="", metavar="DIRECTORY",
                         help="follow the newest agent trace in DIRECTORY (default: Neovim agent state directory)")
     parser.add_argument("--all", action="store_true", help="show all content (no exclusions)")
-    parser.add_argument("--max-width", type=parse_max_width, default=120, help="transcript width cap (default: 120; 0 for full width)")
+    parser.add_argument("--max-width", type=parse_max_width, default=160, help="transcript width cap (default: 160; 0 for full width)")
     parser.add_argument("--html", action="store_true", help="export rendered output as HTML")
     parser.add_argument(
         "--no-reasoning-style",
