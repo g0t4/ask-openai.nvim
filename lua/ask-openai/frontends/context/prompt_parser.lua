@@ -8,6 +8,7 @@ local M = {}
 ---@class ParsedIncludes
 ---@field yanks boolean
 ---@field current_file boolean
+---@field COURSE_PROMPT boolean
 ---@field ctags? boolean
 ---@field matching_ctags? boolean
 ---@field norag? boolean
@@ -22,6 +23,7 @@ local M = {}
 ---@field reasoning_off? boolean
 local Includes = {}
 Includes.__index = Includes
+Includes.COURSE_PROMPT = "demo2"
 M.Includes = Includes
 
 ---@return ParsedIncludes

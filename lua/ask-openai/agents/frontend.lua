@@ -41,9 +41,7 @@ local live_trace_stream = require("ask-openai.agents.live_trace_stream")
 local values = require("ask-openai.helpers.values")
 
 ---@class AgentsFrontend : StreamingFrontend
-local AgentsFrontend = {
-    -- COURSE_PROMPTS = "demo2",
-}
+local AgentsFrontend = {}
 
 ---@type TxChatMessage[] -- messages awaiting delivery to the model (user messages and tool completions, in arrival order)
 AgentsFrontend.queued_messages = {}
@@ -219,11 +217,12 @@ local function ask_agent_command(opts)
     use_tools = context.includes.use_tools or false
 
     local system = get_file("~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/agents/prompts/system_message.md")
-    if AgentsFrontend.COURSE_PROMPTS then
-        system = get_file("~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/agents/prompts/course/" .. AgentsFrontend.COURSE_PROMPTS .. ".system.md")
+    if context.includes.COURSE_PROMPT then
+        system = get_file("~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/agents/prompts/course/" .. context.includes.COURSE_PROMPT .. ".system.md")
     end
     -- PRN "NEVER add copyright or license headers unless specifically requested."
 
+    local is_not_course_prompt = context.includes.COURSE_PROMPT == nil
     local tool_definitions
     if use_tools then
         -- PRN build out more detailed guidance: review Claude Code and Codex prompts
@@ -242,7 +241,7 @@ local function ask_agent_command(opts)
         local tool_provided_instructs
         -- Pass coordinator flag based on slash command "coordinator"
         local coordinator_flag = context.includes.coordinator or false
-        local course_tools_only = AgentsFrontend.COURSE_PROMPTS ~= nil
+        local course_tools_only = not is_not_course_prompt
         local allowed_tool_names
         if course_tools_only then
             -- TODO any others for investigations? or by demo #?
@@ -281,7 +280,7 @@ local function ask_agent_command(opts)
 
     local user_message = cleaned_prompt
     local code_context = nil
-    if selection then
+    if is_not_course_prompt and selection then
         local file_name = files.get_file_relative_path(code_bufnr)
         -- include line range in the filename like foo.py:10-20
         local start_line = selection:start_line_1indexed()
@@ -301,7 +300,7 @@ local function ask_agent_command(opts)
         user_message = user_message .. "\n\n" .. code_context
     end
 
-    if context.includes.current_file then
+    if is_not_course_prompt and context.includes.current_file then
         local entire_file_message = MessageBuilder:new()
             :plain_text("FYI, here is my current buffer in Neovim. Use this as context for my request:")
             :md_current_buffer(code_bufnr)
@@ -320,11 +319,11 @@ local function ask_agent_command(opts)
         TxChatMessage:system(system)
     }
 
-    if context.includes.yanks and context.yanks then
+    if is_not_course_prompt and context.includes.yanks and context.yanks then
         -- PRN anything I want to show about auto context? (not just yanks)
         table.insert(messages, TxChatMessage:user_context(context.yanks.content))
     end
-    if context.includes.project and context.project then
+    if is_not_course_prompt and context.includes.project and context.project then
         -- TODO does any of this belong in the system_message?
         --  ? actually test if repeating some of this here helps
         --    i.e. my global project instructions include not touching unrelated code too
@@ -362,7 +361,7 @@ local function ask_agent_command(opts)
     end
 
     -- log:error("context.includes", vim.inspect(context.includes))
-    if config.is_rag_enabled() and not context.includes.norag and rag_client.is_rag_supported_in_current_file(code_bufnr) then
+    if is_not_course_prompt and config.is_rag_enabled() and not context.includes.norag and rag_client.is_rag_supported_in_current_file(code_bufnr) then
         local this_rag_request_id, rag_cancel -- declare in advance for closure
 
         ---@param rag_response SemanticGrepWithTimeoutResponseObj -- for lack of better name, stick with it
