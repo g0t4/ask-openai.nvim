@@ -82,6 +82,7 @@ def build_timings_summary(entries: list[TimingEntry], backend: str) -> Table:
     #
     # initialize:
     total_in = total_out = total_reasoning = total_final = 0
+    total_drafted = total_accepted = 0
     show_total_for_in = show_total_for_reasoning = True
     in_durations, out_durations = [], []
 
@@ -136,6 +137,8 @@ def build_timings_summary(entries: list[TimingEntry], backend: str) -> Table:
         if show_draft_column:
             if stats.draft_tokens is not None:
                 cell_draft = f'{_count(stats.draft_tokens_accepted)}/{_count(stats.draft_tokens)}'
+                total_drafted += stats.draft_tokens or 0
+                total_accepted += stats.draft_tokens_accepted or 0
                 if stats.formatted_acceptance_rate:
                     cell_draft += f' {stats.formatted_acceptance_rate}'
                 message_row.append(dim(cell_draft))
@@ -176,10 +179,13 @@ def build_timings_summary(entries: list[TimingEntry], backend: str) -> Table:
         total_row.extend([dim(total_for_reasoning), dim(total_for_final)])
 
     if show_draft_column:
-        # TODO we can sum up draft tokens too and the percent
-        total_row.append('')
+        if total_drafted:
+            total_acceptance_rate = f"{(total_accepted/total_drafted*100):.1f}%"
+        else:
+            total_acceptance_rate = ''
+        total_row.append(f'{_count(total_accepted)}/{_count(total_drafted)} {total_acceptance_rate}'.strip())
     if show_mean_accept_len_column:
-        # TODO can't we avg weight the avg accept len?
+        # TODO weighted average of the mean accept len?
         total_row.append('')
 
     # Deliberately avoid averaging per-request rates or summing cumulative cache counts.
