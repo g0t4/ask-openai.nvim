@@ -1,7 +1,7 @@
 from io import StringIO
 from rich.console import Console
 from tools.chat_viewer.timings import parse_timings, detect_cache_misses
-from tools.chat_viewer.timings_summary import build_timings_summary
+from tools.chat_viewer.timings_summary import TimingEntry, build_timings_summary
 
 
 def test_vllm_summary_uses_new_input_and_reasoning_split_and_sums_durations():
@@ -12,7 +12,7 @@ def test_vllm_summary_uses_new_input_and_reasoning_split_and_sums_durations():
     second = parse_timings({'usage': {'prompt_tokens':1300, 'completion_tokens':200,
         'prompt_tokens_details':{'cached_tokens':1100}, 'completion_tokens_details':{'reasoning_tokens':40}},
         'metrics':{'time_to_first_token_ms':100, 'generation_time_ms':1990}})
-    table = build_timings_summary([(1, first), (3, second)], 'vllm')
+    table = build_timings_summary([TimingEntry(1, first), TimingEntry(3, second)], 'vllm')
     assert [c.header.replace('\n', ' ') for c in table.columns] == ['cached tokens','in tokens','reasoning tokens','final tokens',
         'thinking %','out tokens','draft','mean accept len','in duration','out duration','#']
     cells = [list(column._cells) for column in table.columns]
@@ -43,13 +43,13 @@ def test_llama_and_vllm_cache_continuity_use_the_same_total_input_math():
     assert detect_cache_misses(llama)[1] == detect_cache_misses(vllm)[1]
     assert detect_cache_misses(vllm)[1].missing_tokens == -10
     assert detect_cache_misses([llama[0], vllm[1]]) == [None, None]
-    table = build_timings_summary([(1, llama[0])], 'llama-server')
+    table = build_timings_summary([TimingEntry(1, llama[0])], 'llama-server')
     assert 'reasoning tokens' not in [c.header.replace('\n', ' ') for c in table.columns]
 
 
 def test_unknown_cache_or_reasoning_does_not_fabricate_new_or_final_counts():
     stats = parse_timings({'usage':{'prompt_tokens':100,'completion_tokens':20}})
-    table = build_timings_summary([(1,stats)], 'vllm')
+    table = build_timings_summary([TimingEntry(1, stats)], 'vllm')
     cells = [list(c._cells) for c in table.columns]
     assert cells[1] == ['—','—']
     assert cells[2][-1] == cells[3][-1] == '—'

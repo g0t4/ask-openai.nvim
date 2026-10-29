@@ -1478,16 +1478,14 @@ def render_trace_to_console(console, messages, model_name, timings, *, full_widt
 
     render_messages_to_console(console, messages, full_width=full_width)
 
-    from tools.chat_viewer.timings_summary import build_timings_summary
-    assistant_ordinal = 0
+    from tools.chat_viewer.timings_summary import TimingEntry, build_timings_summary
     summaries = {}
-    for message in messages:
+    for message_number, message in enumerate(messages, start=1):
         if message.get("role") != "assistant":
             continue
-        assistant_ordinal += 1
         stats = parse_timings(message)
         if stats is not None:
-            summaries.setdefault(stats.backend, []).append((assistant_ordinal, stats))
+            summaries.setdefault(stats.backend, []).append(TimingEntry(message_number=message_number, timings=stats))
     names = {"llama-server": "llama-server", "vllm": "vLLM", "sglang": "SGLang"}
     for backend, entries in summaries.items():
         print_section_header(f"{names.get(backend, backend)} assistant timings", "blue")

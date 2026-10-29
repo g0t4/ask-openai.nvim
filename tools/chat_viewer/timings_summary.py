@@ -1,7 +1,17 @@
 """Comparable backend summary tables; counts and durations stay explicit."""
+from dataclasses import dataclass
+
 import rich
 from rich.table import Table
 from .timings import ModelTimings, detect_cache_misses
+
+
+@dataclass(frozen=True)
+class TimingEntry:
+    """A single assistant timing row, keyed by its message number in the trace."""
+
+    message_number: int
+    timings: ModelTimings
 
 
 def _count(value):
@@ -31,8 +41,8 @@ def red(text: str) -> str:
 def green(text: str) -> str:
     return f"[green]{text}[/]"
 
-def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str) -> Table:
-    """Entries carry assistant-only ordinal numbers, including unmeasured turns."""
+def build_timings_summary(entries: list[TimingEntry], backend: str) -> Table:
+    """Entries carry the assistant message's number in the trace, including unmeasured turns."""
 
     from rich import box
     table = Table(
@@ -46,8 +56,8 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
 
     show_out_split_columns = backend != 'llama-server' # vllm/sglang give us reasoning vs final split within output tokens
     # llama-server doesn't expose mean accept len at all... and then models w/o draft would not have draft stats at all
-    show_draft_column = any([e[1].draft_tokens is not None for e in entries])
-    show_mean_accept_len_column = any([e[1].mean_acceptance_length is not None for e in entries])
+    show_draft_column = any([e.timings.draft_tokens is not None for e in entries])
+    show_mean_accept_len_column = any([e.timings.mean_acceptance_length is not None for e in entries])
 
     # * headers
     table.add_column('cached', justify='right')
@@ -71,8 +81,10 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
     show_total_for_in = show_total_for_reasoning = True
     in_durations, out_durations = [], []
 
-    cache_states = detect_cache_misses([stats for _, stats in entries])
-    for (ordinal, stats), cache in zip(entries, cache_states):
+    cache_states = detect_cache_misses([entry.timings for entry in entries])
+    for entry, cache in zip(entries, cache_states):
+        message_number = entry.message_number
+        stats = entry.timings
         new_in_tokens = stats.uncached_prompt_tokens
 
         # cached tokens
@@ -131,7 +143,7 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
 
         cell_in_duration = _duration(input_ms)
         cell_out_duration = _duration(output_ms)
-        cell_ordinal = f'#{ordinal}'
+        cell_ordinal = f'#{message_number}'
         message_row += [
             cell_in_duration, cell_out_duration,
             cell_ordinal,
