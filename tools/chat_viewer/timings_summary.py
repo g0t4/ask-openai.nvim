@@ -39,28 +39,26 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
     )
     table.caption = 'Durations are summed phase times, not elapsed agent wall time.'
 
-    # * headers
     has_out_token_split = backend != 'llama-server'
     # llama-server doesn't expose mean accept len at all... and then models w/o draft would not have draft stats at all
     has_draft = any([e[1].draft_tokens is not None for e in entries])
     has_accept_len = any([e[1].mean_acceptance_length is not None for e in entries])
-    headers_draft = []
+
+    # * headers
+    table.add_column('cached', justify='right')
+    table.add_column('in', justify='right')
+    if has_out_token_split:
+        table.add_column('reasoning', justify='right')
+        table.add_column('final', justify='right')
+        table.add_column('thinking %', justify='right')
+    table.add_column('out', justify='right')
     if has_draft:
-        headers_draft += [ "draft" ]
+        table.add_column('draft', justify='right')
     if has_accept_len:
-        headers_draft += [ "accept\nlen" ]
-
-    headers = [
-        'cached', 'in', # input tokens
-        *(['reasoning', 'final', 'thinking %'] if has_out_token_split else []), 'out', # output tokens
-        *headers_draft,
-        'in', 'out', # durations
-        '#' # ordinal
-    ]
-
-    for header in headers:
-        has_newline = "\n" in header
-        table.add_column(header, justify='right', no_wrap=has_newline)
+        table.add_column('accept\nlen', justify='right', no_wrap=True)
+    table.add_column('in', justify='right')
+    table.add_column('out', justify='right')
+    table.add_column('#', justify='right')
 
     # * per message timing rows
     #
