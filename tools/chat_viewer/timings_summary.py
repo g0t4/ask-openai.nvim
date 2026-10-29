@@ -176,8 +176,10 @@ def build_timings_summary(entries: list[TimingEntry], backend: str) -> Table:
         total_row.extend([dim(total_for_reasoning), dim(total_for_final)])
 
     if show_draft_column:
+        # TODO we can sum up draft tokens too and the percent
         total_row.append('')
     if show_mean_accept_len_column:
+        # TODO can't we avg weight the avg accept len?
         total_row.append('')
 
     # Deliberately avoid averaging per-request rates or summing cumulative cache counts.
