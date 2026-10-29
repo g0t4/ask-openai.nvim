@@ -270,9 +270,12 @@ local function ask_agent_command(opts)
         lines:append_styled_lines({ "--- New Trace Started ---" }, HLGroups.SYSTEM_PROMPT)
         -- or:   AgentsFrontend.clear_chat_command()
     end
-    lines:mark_next_line(HLGroups.SYSTEM_PROMPT)
-    lines:append_folded_styled_text("system\n" .. system, "")
 
+    -- * display system message
+    lines:append_line("") -- extmark fails to show on system role if no blank line before it?
+    lines:mark_next_line(HLGroups.SYSTEM_PROMPT)
+    lines:append_role_header("system")
+    lines:append_folded_styled_text(system, "")
 
     -- * display user message in chat window
     lines:append_role_header("user")
