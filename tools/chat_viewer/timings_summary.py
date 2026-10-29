@@ -90,19 +90,19 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
         message_row = [cell_cached, cell_in]
 
         # output tokens
-        reasoning = stats.reasoning_tokens
-        valid_reasoning = reasoning is not None and 0 <= reasoning <= stats.predicted_tokens
+        reasoning_count = stats.reasoning_tokens
+        valid_reasoning = reasoning_count is not None and 0 <= reasoning_count <= stats.predicted_tokens
         if show_out_split_columns:
-            final = stats.predicted_tokens - reasoning if valid_reasoning else None
-            think_percent = f'{reasoning / stats.predicted_tokens * 100:.1f}%' if valid_reasoning and stats.predicted_tokens else '—'
-            cell_reasoning = dim(_count(reasoning if valid_reasoning else None))
+            final_count = stats.predicted_tokens - reasoning_count if valid_reasoning else None
+            think_percent = f'{reasoning_count / stats.predicted_tokens * 100:.1f}%' if valid_reasoning and stats.predicted_tokens else '—'
+            cell_reasoning = dim(_count(reasoning_count if valid_reasoning else None))
             cell_thinking_percent = dim(think_percent)
-            cell_final = _count(final)
+            cell_final = _count(final_count)
             message_row += [cell_reasoning, cell_final, cell_thinking_percent]
             show_total_for_reasoning &= valid_reasoning
             if valid_reasoning:
-                total_reasoning += reasoning
-                total_final += final
+                total_reasoning += reasoning_count
+                total_final += final_count
 
         # draft tokens
         cells_draft = []
