@@ -34,10 +34,14 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
 
     # * headers
     has_out_token_split = backend != 'llama-server'
+    # llama-server doesn't expose mean accept len at all... and then models w/o draft would not have draft stats at all
+    has_accept_len = any([e[1].mean_acceptance_length is not None for e in entries])
+
     headers = [
         'cached', 'in', # input tokens
         *(['reasoning', 'final', 'thinking %'] if has_out_token_split else []), 'out', # output tokens
-        'draft', 'accept\nlen',
+        'draft',
+        *(['accept\nlen'] if has_accept_len else []),
         'in', 'out', # durations
         '#' # ordinal
     ]
@@ -103,7 +107,8 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
         cell_ordinal = f'#{ordinal}'
         message_row += [
             cell_out,
-            cell_draft, cell_mean_accept_len,
+            cell_draft,
+            *([cell_mean_accept_len] if has_accept_len else []),
             cell_in_duration, cell_out_duration,
             cell_ordinal,
         ]
