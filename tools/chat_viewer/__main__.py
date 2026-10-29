@@ -1396,8 +1396,9 @@ def print_message_panel(title: str, color: str, content: TreeWrapper, align: str
     max_width = available_width if full_width else min(available_width, max(20, min(_console.width - 4, 100)))
     # Open speech-bubble look: keep the border on the side the message hugs.
     chat_box = CHAT_BOX_RIGHT if align == "right" else CHAT_BOX_LEFT
+    renderable = Group(Text(""), content)
     panel = Panel(
-        content,
+        renderable,
         title=f"[{color}]{title}[/]",
         title_align="right" if align == "right" else "left",
         border_style=color,
@@ -1406,6 +1407,7 @@ def print_message_panel(title: str, color: str, content: TreeWrapper, align: str
         expand=False,
         box=chat_box,
     )
+
     _console.print(Align(panel, align=align))
     _console.print()  # blank line between messages
 
