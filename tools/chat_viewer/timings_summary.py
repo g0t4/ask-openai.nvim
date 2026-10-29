@@ -71,7 +71,7 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
 
         cell_in = _tokens_rate(new_in_tokens, input_rate, not estimated_rates)
         cell_out = _tokens_rate(stats.predicted_tokens, output_rate, not estimated_rates)
-        row = [cell_cached, cell_in]
+        message_row = [cell_cached, cell_in]
 
         # output tokens
         reasoning = stats.reasoning_tokens
@@ -82,7 +82,7 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
             cell_reasoning = dim(_count(reasoning if valid_reasoning else None))
             cell_thinking_percent = dim(think_percent)
             cell_final = _count(final)
-            row += [cell_reasoning, cell_final, cell_thinking_percent]
+            message_row += [cell_reasoning, cell_final, cell_thinking_percent]
             known_reasoning &= valid_reasoning
             if valid_reasoning:
                 total_reasoning += reasoning
@@ -99,14 +99,14 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
         cell_in_duration = _duration(input_ms)
         cell_out_duration = _duration(output_ms)
         cell_ordinal = f'#{ordinal}'
-        row += [
+        message_row += [
             cell_out,
             cell_draft,
             cell_mean_accept_len,
             cell_in_duration, cell_out_duration,
             cell_ordinal,
         ]
-        table.add_row(*row)
+        table.add_row(*message_row)
 
         # running totals
         known_in &= new_in_tokens is not None
