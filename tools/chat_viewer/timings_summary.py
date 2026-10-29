@@ -37,7 +37,7 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
     headers = [
         'cached', 'in', # input tokens
         *(['reasoning', 'final', 'thinking %'] if has_out_token_split else []), 'out', # output tokens
-        'draft', 'mean accept len',
+        'draft', 'accept len',
         'in', 'out', # durations
         '#' # ordinal
     ]
