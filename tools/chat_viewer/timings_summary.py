@@ -116,7 +116,8 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
         out_durations.append(output_ms)
 
     # * totals row
-    total = ['', _count(total_in) if known_in else '—']
+    total_for_in = _count(total_in) if known_in else '—'
+    total = ['', total_for_in]
     if split_output:
         total_for_percent = f'{total_reasoning / total_out * 100:.1f}%' if known_reasoning and total_out else '—'
         total_for_reasoning = _count(total_reasoning) if known_reasoning else '—'
