@@ -117,7 +117,8 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
 
     # * totals row
     total_for_in = _count(total_in) if known_in else '—'
-    total_row = ['', total_for_in]
+    total_for_cached = ''
+    total_row = [total_for_cached, total_for_in]
     if split_output:
         total_for_percent = f'{total_reasoning / total_out * 100:.1f}%' if known_reasoning and total_out else '—'
         total_for_reasoning = _count(total_reasoning) if known_reasoning else '—'
@@ -128,7 +129,7 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
     total_for_out_duration = _duration(sum(out_durations)) if all(v is not None for v in out_durations) else '—'
     total_row += [
         _count(total_out),
-        '', '',
+        '', '', # draft columns
         total_for_in_duration, total_for_out_duration,
         'total',
     ]
