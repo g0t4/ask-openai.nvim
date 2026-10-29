@@ -35,13 +35,18 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
     # * headers
     has_out_token_split = backend != 'llama-server'
     # llama-server doesn't expose mean accept len at all... and then models w/o draft would not have draft stats at all
+    has_draft = any([e[1].draft_tokens is not None for e in entries])
     has_accept_len = any([e[1].mean_acceptance_length is not None for e in entries])
+    headers_draft = []
+    if has_draft:
+        headers_draft += [ "draft" ]
+    if has_accept_len:
+        headers_draft += [ "accept\nlen" ]
 
     headers = [
         'cached', 'in', # input tokens
         *(['reasoning', 'final', 'thinking %'] if has_out_token_split else []), 'out', # output tokens
-        'draft',
-        *(['accept\nlen'] if has_accept_len else []),
+        *headers_draft,
         'in', 'out', # durations
         '#' # ordinal
     ]
@@ -95,20 +100,25 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
                 total_final += final
 
         # draft tokens
-        cell_draft = '—'
-        if stats.draft_tokens is not None:
-            cell_draft = f'{_count(stats.draft_tokens_accepted)}/{_count(stats.draft_tokens)}'
-            if stats.formatted_acceptance_rate:
-                cell_draft += f' {stats.formatted_acceptance_rate}'
-        cell_mean_accept_len = '—' if stats.mean_acceptance_length is None else f'{stats.mean_acceptance_length:.2f}'
+        cells_draft = []
+        if has_draft:
+            if stats.draft_tokens is not None:
+                cell_draft = f'{_count(stats.draft_tokens_accepted)}/{_count(stats.draft_tokens)}'
+                if stats.formatted_acceptance_rate:
+                    cell_draft += f' {stats.formatted_acceptance_rate}'
+                cells_draft += [ cell_draft ]
+            else:
+                cells_draft += [ '—' ] # if we have draft stats but not for this message (would be strange, but possible)
+        if has_accept_len:
+            cell_mean_accept_len = '—' if stats.mean_acceptance_length is None else f'{stats.mean_acceptance_length:.2f}'
+            cells_draft += [ cell_mean_accept_len ]
 
         cell_in_duration = _duration(input_ms)
         cell_out_duration = _duration(output_ms)
         cell_ordinal = f'#{ordinal}'
         message_row += [
             cell_out,
-            cell_draft,
-            *([cell_mean_accept_len] if has_accept_len else []),
+            *cells_draft,
             cell_in_duration, cell_out_duration,
             cell_ordinal,
         ]
@@ -135,11 +145,19 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
     # Deliberately avoid averaging per-request rates or summing cumulative cache counts.
     total_for_in_duration = _duration(sum(in_durations)) if all(v is not None for v in in_durations) else '—'
     total_for_out_duration = _duration(sum(out_durations)) if all(v is not None for v in out_durations) else '—'
+
+    # both are empty, this is the ugly part about one total_row definition below
+    totals_for_draft = []
+    if has_draft:
+        totals_for_draft += ['']
+    if has_accept_len:
+        totals_for_draft += ['']
+
     total_row = [
         total_for_cached, total_for_in,
         *totals_split_out,
         _count(total_out),
-        '', '',  # draft columns
+        *totals_for_draft,
         total_for_in_duration, total_for_out_duration,
         'total',
     ]
