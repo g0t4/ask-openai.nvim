@@ -43,6 +43,8 @@ def green(text: str) -> str:
 
 def build_timings_summary(entries: list[TimingEntry], backend: str) -> Table:
     """Entries carry the assistant message's number in the trace, including unmeasured turns."""
+    # TODO what happens if you are missing timings on an assistant message? right now IIAC we would skip sending it here and we wouldn't realize it...
+    #   TODO should probably indicate missing in TimingEntry so we can factor that into cache hit/miss and at a minimum show missing timing info in table (b/c then you might miss overall durations or average tok/s b/c of missing timing)
 
     from rich import box
     table = Table(
