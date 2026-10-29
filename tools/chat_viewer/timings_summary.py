@@ -35,11 +35,11 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
     # * headers
     headers = ['cached', 'in']
 
-    split_output = backend != 'llama-server'
-    if split_output:
+    has_out_token_split = backend != 'llama-server'
+    if has_out_token_split:
         headers += ['reasoning', 'final', 'thinking %']
 
-    headers += ['out' if split_output else 'out', 'draft', 'mean accept len', 'in', 'out', '#']
+    headers += ['out' if has_out_token_split else 'out', 'draft', 'mean accept len', 'in', 'out', '#']
 
     for header in headers:
         table.add_column(header, justify='right', no_wrap=True)
@@ -76,7 +76,7 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
         # output tokens
         reasoning = stats.reasoning_tokens
         valid_reasoning = reasoning is not None and 0 <= reasoning <= stats.predicted_tokens
-        if split_output:
+        if has_out_token_split:
             final = stats.predicted_tokens - reasoning if valid_reasoning else None
             think_percent = f'{reasoning / stats.predicted_tokens * 100:.1f}%' if valid_reasoning and stats.predicted_tokens else '—'
             cell_reasoning = dim(_count(reasoning if valid_reasoning else None))
@@ -120,7 +120,7 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
     total_for_in = _count(total_in) if show_total_for_in else '—'
 
     totals_split_out = []
-    if split_output:
+    if has_out_token_split:
         total_for_percent = f'{total_reasoning / total_out * 100:.1f}%' if show_total_for_reasoning and total_out else '—'
         total_for_reasoning = _count(total_reasoning) if show_total_for_reasoning else '—'
         total_for_final = _count(total_final) if show_total_for_reasoning else '—'
