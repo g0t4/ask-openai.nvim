@@ -39,7 +39,7 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
     )
     table.caption = 'Durations are summed phase times, not elapsed agent wall time.'
 
-    has_out_token_split = backend != 'llama-server'
+    has_out_token_split = backend != 'llama-server' # vllm/sglang give us reasoning vs final split within output tokens
     # llama-server doesn't expose mean accept len at all... and then models w/o draft would not have draft stats at all
     has_draft = any([e[1].draft_tokens is not None for e in entries])
     has_accept_len = any([e[1].mean_acceptance_length is not None for e in entries])
