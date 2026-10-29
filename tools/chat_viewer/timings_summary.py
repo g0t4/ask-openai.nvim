@@ -99,12 +99,14 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
             # and for now I want to show the reasoning_count below even if "out of bounds" b/c there is a value returned so we need to show that
             rich.print(f"[red] UNEXPECTED, reasoning_count is outside of expected bounds: 0 <= {reasoning_count=} <= {stats.predicted_tokens=}[/]")
         if show_out_split_columns:
-            final_count = stats.predicted_tokens - reasoning_count if valid_reasoning else None # just let it go negative, that's fine if there is an out of bounds
-            think_percent = f'{reasoning_count / stats.predicted_tokens * 100:.1f}%' if valid_reasoning and stats.predicted_tokens else '—'
-
-            message_row.append(dim(_count(reasoning_count if valid_reasoning else None)))
-            message_row.append(_count(final_count))
-            message_row.append(dim(think_percent))
+            if valid_reasoning:
+                final_count = stats.predicted_tokens - reasoning_count  # just let it go negative, that's fine if there is an out of bounds
+                think_percent = f'{reasoning_count / stats.predicted_tokens * 100:.1f}%' if stats.predicted_tokens else '—'
+                message_row.append(dim(_count(reasoning_count)))
+                message_row.append(_count(final_count))
+                message_row.append(dim(think_percent))
+            else:
+                message_row.extend(['','',''])
 
             show_total_for_reasoning &= valid_reasoning
 
