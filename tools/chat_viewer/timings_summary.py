@@ -101,9 +101,9 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
             if valid_reasoning:
                 final_count = stats.predicted_tokens - reasoning_count  # just let it go negative, that's fine if there is an out of bounds
                 think_percent = f'{reasoning_count / stats.predicted_tokens * 100:.1f}%' if stats.predicted_tokens else '—'
-                cell_reasoning = dim(_count(reasoning_count)) + " " + dim(think_percent)
-                message_row.append(cell_reasoning)
-                message_row.append(_count(final_count))
+                cell_reasoning = _count(reasoning_count) + " " + think_percent
+                message_row.append(dim(cell_reasoning))
+                message_row.append(dim(_count(final_count)))
             else:
                 message_row.extend(['', ''])
 
