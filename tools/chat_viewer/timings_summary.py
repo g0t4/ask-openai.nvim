@@ -28,8 +28,11 @@ def green(text: str) -> str:
 
 def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str) -> Table:
     """Entries carry assistant-only ordinal numbers, including unmeasured turns."""
+
     split_output = backend != 'llama-server'
     table = Table(show_header=True, box=None, padding=(0, 1), row_styles=['', 'dim'])
+
+    # * headers
     headers = ['cached', 'in']
     if split_output:
         headers += ['reasoning', 'final', 'thinking %']
@@ -37,6 +40,8 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
                 'in', 'out', '#']
     for header in headers:
         table.add_column(header, justify='right', no_wrap=True)
+
+    # * per message timing rows
     cache_states = detect_cache_misses([stats for _, stats in entries])
     total_in = total_out = total_reasoning = total_final = 0
     known_in = known_reasoning = True
@@ -80,6 +85,8 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
         total_out += stats.predicted_tokens
         in_durations.append(input_ms)
         out_durations.append(output_ms)
+
+    # * totals row
     total = ['', _count(total_in) if known_in else '—']
     if split_output:
         total_for_percent = f'{total_reasoning / total_out * 100:.1f}%' if known_reasoning and total_out else '—'
