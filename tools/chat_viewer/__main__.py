@@ -1437,7 +1437,7 @@ def print_message_panel(
         padding=panel_padding,
         width=panel_width,
         expand=expand,
-        box=chat_box,
+        # box=chat_box, # comment out to go back to border around all sides
     )
 
     _console.print(Align(panel, align=align))
