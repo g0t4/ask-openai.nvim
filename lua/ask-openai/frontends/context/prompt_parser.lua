@@ -23,7 +23,8 @@ local M = {}
 ---@field reasoning_off? boolean
 local Includes = {}
 Includes.__index = Includes
-Includes.COURSE_PROMPT = "demo2"
+-- Includes.COURSE_PROMPT = "demo2"
+Includes.COURSE_PROMPT = nil
 M.Includes = Includes
 
 ---@return ParsedIncludes
