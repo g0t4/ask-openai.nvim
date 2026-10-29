@@ -29,6 +29,54 @@ def _tokens_rate(count, rate, estimated=False):
     return text
 
 
+# * book anchor constants: a rough, human-sized reference for the tok/s rates
+#   300-page book ≈ 250 words/page ≈ 75,000 words; English ~1.3 tokens/word.
+BOOK_PAGES = 300
+BOOK_WORDS_PER_PAGE = 250
+TOKENS_PER_WORD = 1.3
+BOOK_WORDS = BOOK_PAGES * BOOK_WORDS_PER_PAGE
+BOOK_TOKENS = int(BOOK_WORDS * TOKENS_PER_WORD)
+
+
+def _human_duration(seconds):
+    """Render a duration in seconds as a compact human-friendly string."""
+    if seconds >= 3600:
+        return f'{seconds / 3600:.1f} h'
+    if seconds >= 60:
+        return f'{seconds / 60:.1f} min'
+    return f'{seconds:.1f} s'
+
+
+def _aggregate_rate(total_tokens, durations_ms):
+    """Average tok/s across the measured turns, if every duration is present."""
+    if not total_tokens or not durations_ms:
+        return None
+    if any(duration is None for duration in durations_ms):
+        return None
+    total_ms = sum(durations_ms)
+    if total_ms <= 0:
+        return None
+    return total_tokens / (total_ms / 1000)
+
+
+def _book_anchor_blurb(read_rate, write_rate):
+    """Anchor the read/write tok/s speeds against a 300-page book."""
+    lines = [
+        f'📖 Book anchor: a {BOOK_PAGES}-page book ≈ {BOOK_WORDS:,} words ≈ {BOOK_TOKENS:,} tokens.',
+    ]
+    if read_rate is not None:
+        read_time = _human_duration(BOOK_TOKENS / read_rate)
+        lines.append(f'  • read it at {read_rate:,.1f} tok/s (input) → {read_time}')
+    else:
+        lines.append('  • read time: — (no input rate measured)')
+    if write_rate is not None:
+        write_time = _human_duration(BOOK_TOKENS / write_rate)
+        lines.append(f'  • write it at {write_rate:,.1f} tok/s (decode) → {write_time}')
+    else:
+        lines.append('  • write time: — (no decode rate measured)')
+    return '\n'.join(lines)
+
+
 def dim(text: str) -> str:
     return f"[dim]{text}[/]"
 
@@ -203,5 +251,13 @@ def build_timings_summary(entries: list[TimingEntry], backend: str) -> Table:
 
     table.add_section()
     table.add_row(*total_row, style='bold')
+
+    # * book anchor blurb (appended to the caption, which renders at the end of the table)
+    read_rate = _aggregate_rate(total_in, in_durations)
+    write_rate = _aggregate_rate(total_out, out_durations)
+    table.caption = (
+        'Durations are summed phase times, not elapsed agent wall time.\n'
+        + _book_anchor_blurb(read_rate, write_rate)
+    )
 
     return table
