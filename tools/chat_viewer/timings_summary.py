@@ -37,13 +37,14 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
     headers = [
         'cached', 'in', # input tokens
         *(['reasoning', 'final', 'thinking %'] if has_out_token_split else []), 'out', # output tokens
-        'draft', 'accept len',
+        'draft', 'accept\nlen',
         'in', 'out', # durations
         '#' # ordinal
     ]
 
     for header in headers:
-        table.add_column(header, justify='right', no_wrap=True)
+        has_newline = "\n" in header
+        table.add_column(header, justify='right', no_wrap=has_newline)
 
     # * per message timing rows
     #
