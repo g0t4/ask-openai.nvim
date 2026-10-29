@@ -48,10 +48,10 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
     # * headers
     table.add_column('cached', justify='right')
     table.add_column('in', justify='right')
+    table.add_column('out', justify='right')
     if show_out_split_columns:
         table.add_column('reasoning', justify='right')
         table.add_column('final', justify='right')
-    table.add_column('out', justify='right')
     if show_draft_column:
         table.add_column('draft', justify='right')
     if show_mean_accept_len_column:
@@ -87,7 +87,7 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
 
         cell_in = _tokens_rate(new_in_tokens, input_rate, not estimated_rates)
         cell_out = _tokens_rate(stats.predicted_tokens, output_rate, not estimated_rates)
-        message_row = [cell_cached, cell_in]
+        message_row = [cell_cached, cell_in, cell_out]
 
         # conditionally show output breakdown (reasoning vs final)
         reasoning_count = stats.reasoning_tokens
@@ -131,7 +131,6 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
         cell_out_duration = _duration(output_ms)
         cell_ordinal = f'#{ordinal}'
         message_row += [
-            cell_out,
             *cells_draft,
             cell_in_duration, cell_out_duration,
             cell_ordinal,
@@ -150,15 +149,15 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
     total_for_in = _count(total_in) if show_total_for_in else '—'
     total_row = [total_for_cached, total_for_in]
 
+    total_for_out = _count(total_out)
+    total_row.append(total_for_out)
+
     if show_out_split_columns:
         percent = f'{total_reasoning / total_out * 100:.1f}%' if show_total_for_reasoning and total_out else '—'
         count = _count(total_reasoning) if show_total_for_reasoning else '—'
         total_for_reasoning = count + " " + percent
         total_for_final = _count(total_final) if show_total_for_reasoning else '—'
         total_row.extend([total_for_reasoning, total_for_final])
-
-    total_for_out = _count(total_out)
-    total_row.append(total_for_out)
 
     # both are empty, this is the ugly part about one total_row definition below
     if show_draft_column:
