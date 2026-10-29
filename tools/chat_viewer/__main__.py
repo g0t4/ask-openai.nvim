@@ -1414,7 +1414,7 @@ def print_message_panel(title: str, color: str, content: TreeWrapper, align: str
         padding=(0, 1),
         width=max_width,
         expand=False,
-        box=chat_box,
+        # box=chat_box,
     )
 
     _console.print(Align(panel, align=align))
