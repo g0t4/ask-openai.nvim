@@ -51,7 +51,6 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
     if show_out_split_columns:
         table.add_column('reasoning', justify='right')
         table.add_column('final', justify='right')
-        table.add_column('thinking %', justify='right')
     table.add_column('out', justify='right')
     if show_draft_column:
         table.add_column('draft', justify='right')
@@ -102,11 +101,11 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
             if valid_reasoning:
                 final_count = stats.predicted_tokens - reasoning_count  # just let it go negative, that's fine if there is an out of bounds
                 think_percent = f'{reasoning_count / stats.predicted_tokens * 100:.1f}%' if stats.predicted_tokens else '—'
-                message_row.append(dim(_count(reasoning_count)))
+                cell_reasoning = dim(_count(reasoning_count)) + " " + dim(think_percent)
+                message_row.append(cell_reasoning)
                 message_row.append(_count(final_count))
-                message_row.append(dim(think_percent))
             else:
-                message_row.extend(['','',''])
+                message_row.extend(['', ''])
 
             show_total_for_reasoning &= valid_reasoning
 
@@ -152,10 +151,11 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
     total_row = [total_for_cached, total_for_in]
 
     if show_out_split_columns:
-        total_for_percent = f'{total_reasoning / total_out * 100:.1f}%' if show_total_for_reasoning and total_out else '—'
-        total_for_reasoning = _count(total_reasoning) if show_total_for_reasoning else '—'
+        percent = f'{total_reasoning / total_out * 100:.1f}%' if show_total_for_reasoning and total_out else '—'
+        count = _count(total_reasoning) if show_total_for_reasoning else '—'
+        total_for_reasoning = count + " " + percent
         total_for_final = _count(total_final) if show_total_for_reasoning else '—'
-        total_row.extend([total_for_reasoning, total_for_final, total_for_percent])
+        total_row.extend([total_for_reasoning, total_for_final])
 
     total_for_out = _count(total_out)
     total_row.append(total_for_out)
