@@ -54,8 +54,8 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
     table.add_column('in', justify='right')
     table.add_column('out', justify='right')
     if show_out_split_columns:
-        table.add_column('reasoning', justify='right', header_style='dim italic not bold')
-        table.add_column('final', justify='right', header_style='dim italic not bold')
+        table.add_column('reasoning', justify='right', header_style='dim not bold')
+        table.add_column('final', justify='right', header_style='dim not bold')
     if show_draft_column:
         table.add_column('draft', justify='right')
     if show_mean_accept_len_column:
@@ -105,8 +105,8 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
             if valid_reasoning:
                 final_count = stats.predicted_tokens - reasoning_count  # just let it go negative, that's fine if there is an out of bounds
                 think_percent = f'{reasoning_count / stats.predicted_tokens * 100:.1f}%' if stats.predicted_tokens else '—'
-                message_row.append(dim(italic(_count(reasoning_count) + " " + think_percent)))
-                message_row.append(dim(italic(_count(final_count))))
+                message_row.append(dim(_count(reasoning_count) + " " + think_percent))
+                message_row.append(dim(_count(final_count)))
             else:
                 message_row.extend(['', ''])
 
@@ -158,7 +158,7 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
         count = _count(total_reasoning) if show_total_for_reasoning else '—'
         total_for_reasoning = count + " " + percent
         total_for_final = _count(total_final) if show_total_for_reasoning else '—'
-        total_row.extend([dim(italic(total_for_reasoning)), dim(italic(total_for_final))])
+        total_row.extend([dim(total_for_reasoning), dim(total_for_final)])
 
     # both are empty, this is the ugly part about one total_row definition below
     if show_draft_column:
