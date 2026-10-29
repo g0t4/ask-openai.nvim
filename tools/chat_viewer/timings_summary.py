@@ -55,19 +55,19 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
     for (ordinal, stats), cache in zip(entries, cache_states):
         new_in_tokens = stats.uncached_prompt_tokens
 
-        # rates
-        estimated_rates = backend == 'llama-server'
-        input_rate = stats.prompt_tokens_per_second if estimated_rates else stats.estimated_input_tokens_per_second
-        output_rate = stats.predicted_tokens_per_second if estimated_rates else stats.estimated_decode_tokens_per_second
-        input_ms = stats.prompt_ms if estimated_rates else stats.time_to_first_token_ms
-        output_ms = stats.predicted_ms if estimated_rates else stats.generation_time_ms
-
         # cached tokens
         cached = _count(stats.cached_tokens)
         if stats.formatted_cache_ratio is not None:
             cached += dim(f'\n{stats.formatted_cache_ratio} hit')
         if cache:
             cached += red(f'\nMISS {cache.formatted_missing_tokens}') if cache.is_cache_miss else green('\nok')
+
+        # rates
+        estimated_rates = backend == 'llama-server'
+        input_rate = stats.prompt_tokens_per_second if estimated_rates else stats.estimated_input_tokens_per_second
+        output_rate = stats.predicted_tokens_per_second if estimated_rates else stats.estimated_decode_tokens_per_second
+        input_ms = stats.prompt_ms if estimated_rates else stats.time_to_first_token_ms
+        output_ms = stats.predicted_ms if estimated_rates else stats.generation_time_ms
 
         row = [cached, _tokens_rate(new_in_tokens, input_rate, not estimated_rates)]
 
