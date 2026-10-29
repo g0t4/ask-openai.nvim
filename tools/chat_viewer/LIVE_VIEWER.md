@@ -61,3 +61,5 @@ nvim -i NONE --headless -c 'PlenaryBustedFile lua/ask-openai/agents/live_trace_s
 The Python tests include a real headless Neovim publisher connected to the
 Textual app, as well as fragmented socket reads, reconnects, suffix replacement,
 partial JSON rendering, and disk/live reconciliation.
+
+The transcript is centered and capped at 120 columns by default; smaller terminals use their available width. `--max-width N` changes the cap, and `--max-width 0` starts at full width. Press `w` in either Textual viewer to switch between capped and full width. Margins retain the terminal background.

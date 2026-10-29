@@ -19,7 +19,7 @@ def test_real_tty_size_wins_over_stale_environment_and_updates(monkeypatch):
 
 
 @pytest.mark.asyncio
-async def test_existing_vtt_uses_the_full_inner_width(monkeypatch):
+async def test_existing_vtt_caps_centers_and_toggles_width(monkeypatch):
     from tools.chat_viewer import __main__ as viewer
     widths = []
     render = viewer.render_trace_to_console
@@ -33,7 +33,14 @@ async def test_existing_vtt_uses_the_full_inner_width(monkeypatch):
     async with app.run_test(size=(180, 50)) as pilot:
         await pilot.pause()
         log = app.query_one(RichLog)
+        assert log.region.width == 120
+        assert log.region.x == 30
+        await pilot.press("w")
+        await pilot.pause()
         assert log.region.width == 180
+        await pilot.press("w")
+        await pilot.pause()
+        assert log.region.width == 120
         assert log.region.height == 48
         assert widths[-1] == (log.scrollable_content_region.width, True)
         await pilot.resize_terminal(100, 30)
@@ -55,3 +62,32 @@ async def test_blank_areas_use_terminal_default_background(tmp_path, live):
         backgrounds = [segment.style.bgcolor for segment in blank if segment.style and segment.style.bgcolor]
         assert backgrounds
         assert all(color.is_default for color in backgrounds)
+
+
+@pytest.mark.asyncio
+async def test_live_width_cap_toggle_and_narrow_terminal(tmp_path):
+    from tools.chat_viewer.live_viewer import LiveTraceViewerApp
+    app = LiveTraceViewerApp(tmp_path, poll_interval=3600)
+    async with app.run_test(size=(180, 40)) as pilot:
+        await pilot.pause()
+        transcript = app.query_one('#transcript')
+        assert transcript.region.width == 120
+        assert transcript.region.x == 30
+        await pilot.press('w')
+        await pilot.pause()
+        assert transcript.region.width == 180
+        await pilot.press('w')
+        await pilot.resize_terminal(80, 24)
+        await pilot.pause()
+        assert transcript.region.width == 80
+        assert transcript.region.x == 0
+
+
+def test_plain_output_centers_without_altering_ansi_or_chunk_boundaries():
+    from io import StringIO
+    from tools.chat_viewer.__main__ import CenteredOutput
+    output = StringIO()
+    centered = CenteredOutput(output, 3)
+    centered.write('\x1b[32mhel')
+    centered.write('lo\x1b[0m\nnext\n')
+    assert output.getvalue() == '   \x1b[32mhello\x1b[0m\n   next\n'

@@ -6,6 +6,9 @@ from textual.app import App
 
 
 class TerminalSizedApp(App):
+    def set_transcript_width(self, widget, max_width: int) -> None:
+        widget.styles.max_width = max_width or None
+
     def __init__(self, *args, **kwargs):
         # Preserve ANSI default colors rather than resolving unpainted cells to
         # Textual's black fallback. The terminal then owns the background.

@@ -111,10 +111,11 @@ class LiveTraceViewerApp(TerminalSizedApp):
         Binding("f", "toggle_follow", "Follow latest"),
         Binding("a", "toggle_all", "Toggle all content"),
         Binding("r", "toggle_reasoning_style", "Reasoning style"),
+        Binding("w", "toggle_width", "Full/capped width"),
         Binding("q", "quit", "Quit"),
     ]
     CSS = """
-    Screen { layout: vertical; }
+    Screen { layout: vertical; align-horizontal: center; }
     #transcript {
         width: 100%; height: 1fr;
         border: none; background: transparent;
@@ -123,8 +124,10 @@ class LiveTraceViewerApp(TerminalSizedApp):
     .trace-message { width: 100%; height: auto; background: transparent; }
     """
 
-    def __init__(self, directory: Path, poll_interval: float = 0.25) -> None:
+    def __init__(self, directory: Path, poll_interval: float = 0.25, *, max_width: int = 120) -> None:
         super().__init__()
+        self.max_width = max_width
+        self.width_capped = bool(max_width)
         self.watcher = TraceDirectoryWatcher(directory)
         self.poll_interval = poll_interval
         self.snapshot: TraceSnapshot | None = None
@@ -152,6 +155,7 @@ class LiveTraceViewerApp(TerminalSizedApp):
         yield Footer()
 
     async def on_mount(self) -> None:
+        self.set_transcript_width(self.query_one("#transcript"), self.max_width)
         self._live_view_mounted = True
         self._previous_render_options = (viewer.SHOW_ALL, viewer.STYLE_REASONING, viewer.SHOW_STATS)
         viewer.SHOW_STATS = False
@@ -271,6 +275,11 @@ class LiveTraceViewerApp(TerminalSizedApp):
             if width != self._rendered_viewport_width:
                 await self.update_trace(self.snapshot, full=True)
 
+    def action_toggle_width(self) -> None:
+        self.width_capped = not self.width_capped
+        self.set_transcript_width(self.query_one("#transcript"), (self.max_width or 120) if self.width_capped else 0)
+        self.call_after_refresh(self._reflow_after_resize)
+
     async def action_toggle_all(self) -> None:
         viewer.SHOW_ALL = not viewer.SHOW_ALL
         if self.snapshot:
@@ -288,19 +297,20 @@ class LiveTraceViewerApp(TerminalSizedApp):
             self.query_one("#transcript", VerticalScroll).scroll_end(animate=False, x_axis=False)
 
 
-def run_live(directory: Path, *, show_all: bool = False, style_reasoning: bool = True) -> None:
+def run_live(directory: Path, *, show_all: bool = False, style_reasoning: bool = True, max_width: int = 120) -> None:
     viewer.SHOW_ALL = show_all
     viewer.STYLE_REASONING = style_reasoning
     viewer.load_preapproved_files()
-    LiveTraceViewerApp(directory).run()
+    LiveTraceViewerApp(directory, max_width=max_width).run()
 
 
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("directory", nargs="?", type=Path, default=default_trace_directory())
     parser.add_argument("--all", action="store_true", help="Show all content and timing statistics")
+    parser.add_argument("--max-width", type=viewer.parse_max_width, default=120, help="transcript width cap (default: 120; 0 for full width)")
     args = parser.parse_args(argv)
-    run_live(args.directory, show_all=args.all)
+    run_live(args.directory, show_all=args.all, max_width=args.max_width)
 
 
 if __name__ == "__main__":

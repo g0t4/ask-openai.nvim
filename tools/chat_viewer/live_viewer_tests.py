@@ -160,7 +160,7 @@ async def test_live_transcript_fills_terminal_and_reflows_after_resize(tmp_path,
         widths.append(console.width)
         return original_render(console, *args, **kwargs)
     monkeypatch.setattr(viewer, 'render_messages_to_console', capture_width)
-    app = LiveTraceViewerApp(tmp_path, poll_interval=3600)
+    app = LiveTraceViewerApp(tmp_path, poll_interval=3600, max_width=0)
     async with app.run_test(size=(160, 50)) as pilot:
         await pilot.pause()
         transcript = app.query_one('#transcript', VerticalScroll)

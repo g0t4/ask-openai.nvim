@@ -1507,7 +1507,35 @@ def render_trace_to_console(console, messages, model_name, timings, *, full_widt
         print_rewrite_diff(old_text, new_text)
 
 
+def parse_max_width(value: str) -> int:
+    width = int(value)
+    if width < 0:
+        raise argparse.ArgumentTypeError("max width must be non-negative (0 means full width)")
+    return width
+
+
+class CenteredOutput:
+    """Indent streamed ANSI output without decoding image or color escapes."""
+
+    def __init__(self, stream, margin: int):
+        self.stream = stream
+        self.margin = margin
+        self.line_start = True
+
+    def write(self, text: str) -> int:
+        for part in text.splitlines(keepends=True):
+            if self.line_start:
+                self.stream.write(" " * self.margin)
+            self.stream.write(part)
+            self.line_start = part.endswith("\n")
+        return len(text)
+
+    def flush(self):
+        self.stream.flush()
+
+
 def main() -> None:
+    global _console
     global SHOW_ALL
     global STYLE_REASONING
 
@@ -1521,6 +1549,7 @@ def main() -> None:
     parser.add_argument("--watch", nargs="?", const="", metavar="DIRECTORY",
                         help="follow the newest agent trace in DIRECTORY (default: Neovim agent state directory)")
     parser.add_argument("--all", action="store_true", help="show all content (no exclusions)")
+    parser.add_argument("--max-width", type=parse_max_width, default=120, help="transcript width cap (default: 120; 0 for full width)")
     parser.add_argument("--html", action="store_true", help="export rendered output as HTML")
     parser.add_argument(
         "--no-reasoning-style",
@@ -1548,7 +1577,7 @@ def main() -> None:
             parser.error("--watch cannot be combined with a trace file or --html")
         from tools.chat_viewer.live_viewer import run_live, default_trace_directory
         directory = Path(args.watch).expanduser() if args.watch else default_trace_directory()
-        run_live(directory, show_all=SHOW_ALL, style_reasoning=STYLE_REASONING)
+        run_live(directory, show_all=SHOW_ALL, style_reasoning=STYLE_REASONING, max_width=args.max_width)
         return
 
     trace_file_path = Path(args.trace_file) if args.trace_file else None
@@ -1566,7 +1595,12 @@ def main() -> None:
         parser.print_help()
         return
 
-    render_trace_to_console(_console, messages, model_name, timings)
+    terminal_width = _console.width
+    width = min(terminal_width, args.max_width) if args.max_width else terminal_width
+    margin = max(0, (terminal_width - width) // 2)
+    _console = Console(file=CenteredOutput(_console.file, margin), width=width,
+                       color_system="truecolor", force_terminal=True, record=export_html)
+    render_trace_to_console(_console, messages, model_name, timings, full_width=True)
 
     if export_html and html_path:
         try:

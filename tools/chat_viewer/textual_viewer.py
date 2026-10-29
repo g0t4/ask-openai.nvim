@@ -111,15 +111,17 @@ class TraceViewerApp(TerminalSizedApp):
     """Textual app for interactively browsing a chat trace."""
 
     TITLE = "Ask Trace Viewer"
-    SUB_TITLE = "a: toggle all · r: toggle reasoning style · q: quit"
+    SUB_TITLE = "a: toggle all · r: reasoning style · w: full/capped width · q: quit"
 
     BINDINGS = [
         Binding("a", "toggle_all", "Toggle all content", show=True),
         Binding("r", "toggle_reasoning_style", "Toggle reasoning style", show=True),
+        Binding("w", "toggle_width", "Full/capped width"),
         Binding("q", "quit", "Quit", show=False),
     ]
 
     CSS = """
+    Screen { align-horizontal: center; }
     RichLog {
         border: none;
         background: transparent;
@@ -133,8 +135,11 @@ class TraceViewerApp(TerminalSizedApp):
         messages: list[dict],
         model_name: str | None = None,
         timings=None,
+        max_width: int = 120,
     ) -> None:
         super().__init__()
+        self.max_width = max_width
+        self.width_capped = bool(max_width)
         self._messages = messages
         self._model_name = model_name
         self._timings = timings
@@ -171,8 +176,14 @@ class TraceViewerApp(TerminalSizedApp):
         )
 
     def on_mount(self) -> None:
+        self.set_transcript_width(self.query_one(RichLog), self.max_width)
         viewer.SHOW_ALL = False
         viewer.STYLE_REASONING = True
+        self.call_after_refresh(self._render)
+
+    def action_toggle_width(self) -> None:
+        self.width_capped = not self.width_capped
+        self.set_transcript_width(self.query_one(RichLog), (self.max_width or 120) if self.width_capped else 0)
         self.call_after_refresh(self._render)
 
     def action_toggle_all(self) -> None:
@@ -194,6 +205,7 @@ def main(argv: list[str] | None = None) -> None:
         default=None,
         help="path to trace file (or stdin if omitted)",
     )
+    parser.add_argument("--max-width", type=viewer.parse_max_width, default=120, help="transcript width cap (default: 120; 0 for full width)")
     argcomplete.autocomplete(parser)
     args = parser.parse_args(argv)
 
@@ -211,7 +223,7 @@ def main(argv: list[str] | None = None) -> None:
         parser.print_help()
         return
 
-    TraceViewerApp(messages, model_name, timings).run()
+    TraceViewerApp(messages, model_name, timings, max_width=args.max_width).run()
 
 
 if __name__ == "__main__":
