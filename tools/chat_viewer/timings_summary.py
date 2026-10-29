@@ -69,7 +69,8 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
         input_ms = stats.prompt_ms if estimated_rates else stats.time_to_first_token_ms
         output_ms = stats.predicted_ms if estimated_rates else stats.generation_time_ms
 
-        row = [cached, _tokens_rate(new_in_tokens, input_rate, not estimated_rates)]
+        cell_in = _tokens_rate(new_in_tokens, input_rate, not estimated_rates)
+        row = [cached, cell_in]
 
         # output tokens
         reasoning = stats.reasoning_tokens
@@ -94,8 +95,9 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
                 draft += f' {stats.formatted_acceptance_rate}'
         cell_mean_accept_len = '—' if stats.mean_acceptance_length is None else f'{stats.mean_acceptance_length:.2f}'
 
+        cell_out = _tokens_rate(stats.predicted_tokens, output_rate, not estimated_rates)
         row += [
-            _tokens_rate(stats.predicted_tokens, output_rate, not estimated_rates),
+            cell_out,
             draft,
             cell_mean_accept_len,
             _duration(input_ms), _duration(output_ms),
