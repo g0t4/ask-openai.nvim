@@ -216,13 +216,14 @@ local function ask_agent_command(opts)
     AgentsFrontend.abort_request()
     use_tools = context.includes.use_tools or false
 
+    local is_not_course_prompt = context.includes.not_course
+    local is_course_prompt = not context.includes.not_course
     local system = get_file("~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/agents/prompts/system_message.md")
-    if context.includes.COURSE_PROMPT then
+    if is_course_prompt then
         system = get_file("~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/agents/prompts/course/" .. context.includes.COURSE_PROMPT .. ".system.md")
     end
     -- PRN "NEVER add copyright or license headers unless specifically requested."
 
-    local is_not_course_prompt = context.includes.COURSE_PROMPT == nil
     local tool_definitions
     if use_tools then
         -- PRN build out more detailed guidance: review Claude Code and Codex prompts
@@ -241,9 +242,8 @@ local function ask_agent_command(opts)
         local tool_provided_instructs
         -- Pass coordinator flag based on slash command "coordinator"
         local coordinator_flag = context.includes.coordinator or false
-        local course_tools_only = not is_not_course_prompt
         local allowed_tool_names
-        if course_tools_only then
+        if is_course_prompt then
             -- TODO any others for investigations? or by demo #?
             allowed_tool_names = { "run_bash", "run_xonsh" }
         elseif coordinator_flag then

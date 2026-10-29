@@ -8,7 +8,6 @@ local M = {}
 ---@class ParsedIncludes
 ---@field yanks boolean
 ---@field current_file boolean
----@field COURSE_PROMPT boolean
 ---@field ctags? boolean
 ---@field matching_ctags? boolean
 ---@field norag? boolean
@@ -21,10 +20,12 @@ local M = {}
 ---@field reasoning_medium? boolean
 ---@field reasoning_high? boolean
 ---@field reasoning_off? boolean
+---@field not_course? boolean
+---@field COURSE_PROMPT? string
 local Includes = {}
 Includes.__index = Includes
--- Includes.COURSE_PROMPT = "demo2"
-Includes.COURSE_PROMPT = nil
+Includes.COURSE_PROMPT = "demo2"
+-- Includes.COURSE_PROMPT = nil
 M.Includes = Includes
 
 ---@return ParsedIncludes
@@ -44,6 +45,7 @@ function Includes.new(initial)
         reasoning_medium = initial.reasoning_medium or false,
         reasoning_high = initial.reasoning_high or false,
         reasoning_off = initial.reasoning_off or false,
+        not_course = initial.not_course or false,
     }
     setmetatable(self, Includes)
     return self
@@ -83,6 +85,8 @@ M.slash_commands = {
     REASONING_MEDIUM = "/medium",
     REASONING_HIGH   = "/high",
     REASONING_OFF    = "/off",
+
+    NOT_COURSE = "/notcourse",
 }
 
 --- Registration table for slash commands that perform text replacements.
@@ -251,6 +255,7 @@ function M.render(prompt)
         [M.slash_commands.REASONING_HIGH] = "reasoning_high",
         [M.slash_commands.REASONING_OFF] = "reasoning_off",
         [M.slash_commands.COORDINATOR] = "coordinator",
+        [M.slash_commands.NOT_COURSE] = "not_course",
     }
 
     local includes = Includes.new({})
