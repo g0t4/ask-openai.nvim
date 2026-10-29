@@ -139,67 +139,6 @@ def test_total_tokens_with_no_input() -> None:
     assert timings.total_tokens == 0
 
 
-def test_cache_hit_ratio() -> None:
-    """Test cache hit ratio calculation."""
-    timings = ModelTimings(
-        prompt_tokens=100,
-        predicted_tokens=50,
-        cached_tokens=349,
-    )
-    
-    assert timings.cache_hit_ratio is not None
-    # cache_hit_ratio = cached / (prompt + cached) = 349 / (100 + 349)
-    expected_ratio = 349 / (100 + 349)
-    assert abs(timings.cache_hit_ratio - expected_ratio) < 0.0001
-
-
-def test_cache_hit_ratio_with_no_cache() -> None:
-    """Test cache hit ratio when no cache data."""
-    timings = ModelTimings(
-        prompt_tokens=100,
-        predicted_tokens=50,
-    )
-    
-    assert timings.cache_hit_ratio is None
-
-
-def test_cache_hit_ratio_with_zero_cache() -> None:
-    """Test cache hit ratio when cache is zero."""
-    timings = ModelTimings(
-        prompt_tokens=100,
-        predicted_tokens=50,
-        cached_tokens=0,
-    )
-    
-    assert timings.cache_hit_ratio is not None
-    assert timings.cache_hit_ratio == 0.0
-
-
-def test_formatted_cache_ratio() -> None:
-    """Test formatted cache ratio string."""
-    timings = ModelTimings(
-        prompt_tokens=100,
-        predicted_tokens=50,
-        cached_tokens=349,
-    )
-    
-    formatted = timings.formatted_cache_ratio
-    assert formatted is not None
-    # Should contain percentage sign and be approximately 77.7%
-    assert "%" in formatted
-    assert "77.7" in formatted
-
-
-def test_formatted_cache_ratio_no_cache() -> None:
-    """Test formatted cache ratio when no cache data."""
-    timings = ModelTimings(
-        prompt_tokens=100,
-        predicted_tokens=50,
-    )
-    
-    assert timings.formatted_cache_ratio is None
-
-
 def test_format_stats_line_empty() -> None:
     """Test stats line formatting with no timings."""
     assert format_stats_line(None) == ""
@@ -549,7 +488,6 @@ def test_vllm_usage_metrics_keep_distinct_semantics() -> None:
     parsed = parse_timings(response)
     assert parsed is not None
     assert parsed.context_tokens == 120
-    assert parsed.cache_hit_ratio == 0.8
     assert parsed.prompt_tokens_per_second == 0  # unavailable, never derived from TTFT
     assert parsed.predicted_tokens_per_second == 0  # overall throughput isn't decode rate
     text = format_stats_line(parsed)

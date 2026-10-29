@@ -70,24 +70,6 @@ class ModelTimings:
         return self.prompt_tokens + self.predicted_tokens
 
     @property
-    def cache_hit_ratio(self) -> float | None:
-        """Ratio of cached tokens to total input tokens (if cache available)."""
-        if self.cached_tokens is None or self.input_tokens == 0:
-            return None
-        return self.cached_tokens / self.input_tokens
-
-    @property
-    def formatted_cache_ratio(self) -> str | None:
-        """Human-readable cache hit ratio, e.g. '34.2%'.
-        
-        Returns None if cache data is unavailable or ratio cannot be computed.
-        """
-        ratio = self.cache_hit_ratio
-        if ratio is None:
-            return None
-        return f"{ratio * 100:.1f}%"
-
-    @property
     def draft_acceptance_rate(self) -> float | None:
         """Calculate draft token acceptance rate.
         

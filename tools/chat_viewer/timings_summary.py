@@ -94,8 +94,6 @@ def build_timings_summary(entries: list[TimingEntry], backend: str) -> Table:
 
         # cached tokens
         cell_cached = _count(stats.cached_tokens)
-        if stats.formatted_cache_ratio is not None:
-            cell_cached += dim(f'\n{stats.formatted_cache_ratio} hit')
         if cache:
             cell_cached += red(f'\nMISS {cache.formatted_missing_tokens}') if cache.is_cache_miss else green('\nok')
 
