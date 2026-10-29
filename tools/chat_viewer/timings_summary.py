@@ -134,15 +134,16 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
     # * totals row
     total_for_cached = ''
     total_for_in = _count(total_in) if show_total_for_in else '—'
-
     total_row = [total_for_cached, total_for_in]
+
     if has_out_token_split:
         total_for_percent = f'{total_reasoning / total_out * 100:.1f}%' if show_total_for_reasoning and total_out else '—'
         total_for_reasoning = _count(total_reasoning) if show_total_for_reasoning else '—'
         total_for_final = _count(total_final) if show_total_for_reasoning else '—'
         total_row.extend([total_for_reasoning, total_for_final, total_for_percent])
 
-    total_row.append(_count(total_out))
+    total_for_out = _count(total_out)
+    total_row.append(total_for_out)
 
     # both are empty, this is the ugly part about one total_row definition below
     if has_draft:
