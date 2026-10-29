@@ -56,11 +56,11 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
         new_in_tokens = stats.uncached_prompt_tokens
 
         # cached tokens
-        cached = _count(stats.cached_tokens)
+        cell_cached = _count(stats.cached_tokens)
         if stats.formatted_cache_ratio is not None:
-            cached += dim(f'\n{stats.formatted_cache_ratio} hit')
+            cell_cached += dim(f'\n{stats.formatted_cache_ratio} hit')
         if cache:
-            cached += red(f'\nMISS {cache.formatted_missing_tokens}') if cache.is_cache_miss else green('\nok')
+            cell_cached += red(f'\nMISS {cache.formatted_missing_tokens}') if cache.is_cache_miss else green('\nok')
 
         # rates
         estimated_rates = backend == 'llama-server'
@@ -71,7 +71,7 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
 
         cell_in = _tokens_rate(new_in_tokens, input_rate, not estimated_rates)
         cell_out = _tokens_rate(stats.predicted_tokens, output_rate, not estimated_rates)
-        row = [cached, cell_in]
+        row = [cell_cached, cell_in]
 
         # output tokens
         reasoning = stats.reasoning_tokens
@@ -89,19 +89,22 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
                 total_final += final
 
         # draft tokens
-        draft = '—'
+        cell_draft = '—'
         if stats.draft_tokens is not None:
-            draft = f'{_count(stats.draft_tokens_accepted)}/{_count(stats.draft_tokens)}'
+            cell_draft = f'{_count(stats.draft_tokens_accepted)}/{_count(stats.draft_tokens)}'
             if stats.formatted_acceptance_rate:
-                draft += f' {stats.formatted_acceptance_rate}'
+                cell_draft += f' {stats.formatted_acceptance_rate}'
         cell_mean_accept_len = '—' if stats.mean_acceptance_length is None else f'{stats.mean_acceptance_length:.2f}'
 
+        cell_in_duration = _duration(input_ms)
+        cell_out_duration = _duration(output_ms)
+        cell_ordinal = f'#{ordinal}'
         row += [
             cell_out,
-            draft,
+            cell_draft,
             cell_mean_accept_len,
-            _duration(input_ms), _duration(output_ms),
-            f'#{ordinal}',
+            cell_in_duration, cell_out_duration,
+            cell_ordinal,
         ]
         table.add_row(*row)
 
