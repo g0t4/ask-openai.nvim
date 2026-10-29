@@ -145,10 +145,9 @@ def build_timings_summary(entries: list[TimingEntry], backend: str) -> Table:
 
         cell_in_duration = _duration(input_ms)
         cell_out_duration = _duration(output_ms)
-        cell_ordinal = f'#{message_number}'
         message_row += [
             cell_in_duration, cell_out_duration,
-            cell_ordinal,
+            f'#{message_number}',
         ]
         table.add_row(*message_row)
 
@@ -186,7 +185,7 @@ def build_timings_summary(entries: list[TimingEntry], backend: str) -> Table:
     total_row.extend([
         total_for_in_duration,
         total_for_out_duration,
-        '', # ordinal
+        '', # message_number
     ])
 
     table.add_section()
