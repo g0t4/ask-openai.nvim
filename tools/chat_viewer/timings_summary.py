@@ -62,7 +62,7 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
         table.add_column('accept\nlen', justify='right', no_wrap=True)
     table.add_column('in', justify='right')
     table.add_column('out', justify='right')
-    table.add_column('#', justify='right')
+    table.add_column('') # message number, no need for a header
 
     # * per message timing rows
     #
