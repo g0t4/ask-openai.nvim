@@ -1405,13 +1405,12 @@ def print_message_panel(title: str, color: str, content: TreeWrapper, align: str
         max_width = min(available_width, max_bubble_width)
     # Open speech-bubble look: keep the border on the side the message hugs.
     chat_box = CHAT_BOX_RIGHT if align == "right" else CHAT_BOX_LEFT
-    renderable = Group(Text(""), content)
     panel = Panel(
-        renderable,
+        content,
         title=f"[{color}]{title}[/]",
         title_align="right" if align == "right" else "left",
         border_style=color,
-        padding=(0, 1),
+        padding=(1, 1),
         width=max_width,
         expand=False,
         # box=chat_box,
