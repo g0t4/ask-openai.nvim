@@ -135,24 +135,20 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
     total_for_cached = ''
     total_for_in = _count(total_in) if show_total_for_in else '—'
 
-    totals_split_out = []
+    total_row = [total_for_cached, total_for_in]
     if has_out_token_split:
         total_for_percent = f'{total_reasoning / total_out * 100:.1f}%' if show_total_for_reasoning and total_out else '—'
         total_for_reasoning = _count(total_reasoning) if show_total_for_reasoning else '—'
         total_for_final = _count(total_final) if show_total_for_reasoning else '—'
-        totals_split_out = [total_for_reasoning, total_for_final, total_for_percent]
+        total_row.extend([total_for_reasoning, total_for_final, total_for_percent])
+
+    total_row.append(_count(total_out))
 
     # Deliberately avoid averaging per-request rates or summing cumulative cache counts.
     total_for_in_duration = _duration(sum(in_durations)) if all(v is not None for v in in_durations) else '—'
     total_for_out_duration = _duration(sum(out_durations)) if all(v is not None for v in out_durations) else '—'
 
     # both are empty, this is the ugly part about one total_row definition below
-    total_row = [
-        total_for_cached,
-        total_for_in,
-        *totals_split_out,
-        _count(total_out),
-    ]
     if has_draft:
         total_row.append('')
     if has_accept_len:
