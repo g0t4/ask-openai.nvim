@@ -20,6 +20,7 @@ from wes_syntax import syntax as themed_syntax
 from rich.panel import Panel
 from rich.pretty import Pretty, pprint
 from rich.text import Text
+from rich.table import Table
 from rich.tree import Tree
 from rich.segment import Segment
 import rich
@@ -1257,6 +1258,14 @@ def build_raw_completion_message(msg: dict) -> TreeWrapper | None:
     return root
 
 
+def _reasoning_row(text: Text) -> Table:
+    row = Table.grid(padding=0, expand=True)
+    row.add_column(width=4, no_wrap=True)
+    row.add_column(ratio=1)
+    row.add_row(Text("💭", style="dim bright_black italic"), text)
+    return row
+
+
 def build_assistant_message(msg: dict, color: str) -> TreeWrapper:
     root = TreeWrapper.hidden_root()
 
@@ -1264,8 +1273,7 @@ def build_assistant_message(msg: dict, color: str) -> TreeWrapper:
         # Incomplete Markdown and tool arguments are displayed verbatim.
         reasoning = msg.get("reasoning_content")
         if reasoning:
-            node = root.add(Text("💭", style="bright_black italic"))
-            node.add_no_markup(reasoning, style="bright_black italic")
+            root.add(_reasoning_row(Text(reasoning, style="bright_black italic")))
             root.blank_line()
         if msg.get("content"):
             root.add_no_markup(msg["content"])
@@ -1290,28 +1298,23 @@ def build_assistant_message(msg: dict, color: str) -> TreeWrapper:
 
     reasoning = msg.get("reasoning_content")
     if reasoning:
-        reasoning_text = Text.from_markup(
-            "[dim bright_black italic]💭[/]"
-        )
-        reasoning_node = root.add(reasoning_text)
         if STYLE_REASONING:
             # Subtle markdown emphasis: inline code + bold pop, while backticks,
             # fence markers and list markers are dimmed so they recede. The rest
             # is shown verbatim (no rich markup interpretation).
-            reasoning_node.add(
-                style_markdown_text(
+            reasoning_text = style_markdown_text(
                     insert_newlines(reasoning),
                     base_style="bright_black italic",
                     code_style="bold bright_black italic",
                     backtick_style="dim bright_black italic",
                     bold_style="bold bright_black italic",
-                )
             )
         else:
-            reasoning_node.add_no_markup(
+            reasoning_text = Text(
                 insert_newlines(reasoning),
                 style="bright_black italic",
             )
+        root.add(_reasoning_row(reasoning_text))
         root.blank_line()
 
     content = msg.get("content", "")
