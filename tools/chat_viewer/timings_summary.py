@@ -51,7 +51,9 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
         if split_output:
             final = stats.predicted_tokens - reasoning if valid_reasoning else None
             percent = f'{reasoning / stats.predicted_tokens * 100:.1f}%' if valid_reasoning and stats.predicted_tokens else '—'
-            row += [f'[dim]{_count(reasoning if valid_reasoning else None)}[/]', _count(final), f'[dim]{percent}[/]']
+            reasoning_count = f'[dim]{_count(reasoning if valid_reasoning else None)}[/]'
+            thinking_percent = f'[dim]{percent}[/]'
+            row += [reasoning_count, _count(final), thinking_percent]
             known_reasoning &= valid_reasoning
             if valid_reasoning:
                 total_reasoning += reasoning
