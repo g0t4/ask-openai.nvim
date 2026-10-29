@@ -35,9 +35,8 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
     # * headers
     has_out_token_split = backend != 'llama-server'
     headers = [
-        'cached', 'in',
-        *(['reasoning', 'final', 'thinking %'] if has_out_token_split else []),
-        'out' if has_out_token_split else 'out',
+        'cached', 'in', # input tokens
+        *(['reasoning', 'final', 'thinking %'] if has_out_token_split else []), 'out', # output tokens
         'draft', 'mean accept len',
         'in', 'out', # durations
         '#' # ordinal
