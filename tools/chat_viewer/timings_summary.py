@@ -126,9 +126,12 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
     # Deliberately avoid averaging per-request rates or summing cumulative cache counts.
     total_for_in_duration = _duration(sum(in_durations)) if all(v is not None for v in in_durations) else '—'
     total_for_out_duration = _duration(sum(out_durations)) if all(v is not None for v in out_durations) else '—'
-    total_row += [_count(total_out), '', '',
-              total_for_in_duration,
-              total_for_out_duration, 'total']
+    total_row += [
+        _count(total_out),
+        '', '',
+        total_for_in_duration, total_for_out_duration,
+        'total',
+    ]
     table.add_section()
     table.add_row(*total_row, style='bold')
 
