@@ -1392,7 +1392,8 @@ def print_message_panel(title: str, color: str, content: TreeWrapper, align: str
     capped at a readable width so short messages read as bubbles instead of
     spanning the full terminal width.
     """
-    max_width = _console.width if full_width else max(20, min(_console.width - 4, 100))
+    available_width = max(1, int(_console.width * 0.9 + 0.5))
+    max_width = available_width if full_width else min(available_width, max(20, min(_console.width - 4, 100)))
     # Open speech-bubble look: keep the border on the side the message hugs.
     chat_box = CHAT_BOX_RIGHT if align == "right" else CHAT_BOX_LEFT
     panel = Panel(
