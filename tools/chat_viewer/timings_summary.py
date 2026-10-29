@@ -17,6 +17,8 @@ def _tokens_rate(count, rate, estimated=False):
         text += f' @ {"≈" if estimated else ""}{rate:,.1f} tok/s'
     return text
 
+def dim(text: str) -> str:
+    return f"[dim]{text}[/]"
 
 def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str) -> Table:
     """Entries carry assistant-only ordinal numbers, including unmeasured turns."""
@@ -42,7 +44,7 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
         output_ms = stats.predicted_ms if native else stats.generation_time_ms
         cached = _count(stats.cached_tokens)
         if stats.formatted_cache_ratio is not None:
-            cached += f'\n[dim]{stats.formatted_cache_ratio} hit[/]'
+            cached += dim(f'\n{stats.formatted_cache_ratio} hit')
         if cache:
             cached += f'\n[red]MISS {cache.formatted_missing_tokens}[/]' if cache.is_cache_miss else '\n[green]ok[/]'
         row = [cached, _tokens_rate(new_tokens, input_rate, not native)]
@@ -51,8 +53,8 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
         if split_output:
             final = stats.predicted_tokens - reasoning if valid_reasoning else None
             think_percent = f'{reasoning / stats.predicted_tokens * 100:.1f}%' if valid_reasoning and stats.predicted_tokens else '—'
-            cell_reasoning = f'[dim]{_count(reasoning if valid_reasoning else None)}[/]'
-            cell_thinking_percent = f'[dim]{think_percent}[/]'
+            cell_reasoning = dim(_count(reasoning if valid_reasoning else None))
+            cell_thinking_percent = dim(think_percent)
             row += [cell_reasoning, _count(final), cell_thinking_percent]
             known_reasoning &= valid_reasoning
             if valid_reasoning:
