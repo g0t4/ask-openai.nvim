@@ -1259,7 +1259,7 @@ def build_assistant_message(msg: dict, color: str) -> TreeWrapper:
         # Incomplete Markdown and tool arguments are displayed verbatim.
         reasoning = msg.get("reasoning_content")
         if reasoning:
-            node = root.add(Text("💭 reasoning", style="bright_black italic"))
+            node = root.add(Text("💭", style="bright_black italic"))
             node.add_no_markup(reasoning, style="bright_black italic")
             root.blank_line()
         if msg.get("content"):
@@ -1286,7 +1286,7 @@ def build_assistant_message(msg: dict, color: str) -> TreeWrapper:
     reasoning = msg.get("reasoning_content")
     if reasoning:
         reasoning_text = Text.from_markup(
-            "[dim bright_black italic]💭 reasoning[/]"
+            "[dim bright_black italic]💭[/]"
         )
         reasoning_node = root.add(reasoning_text)
         if STYLE_REASONING:
