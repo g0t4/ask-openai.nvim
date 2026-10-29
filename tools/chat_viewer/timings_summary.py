@@ -32,7 +32,7 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
     from rich import box
     table = Table(
         show_header=True,
-        box=box.SIMPLE,
+        box=box.SIMPLE, # results in line under header
         padding=(0, 1),
         row_styles=['', 'dim'],
     )
