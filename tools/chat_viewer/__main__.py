@@ -1410,7 +1410,7 @@ def print_message_panel(title: str, color: str, content: TreeWrapper, align: str
         title=f"[{color}]{title}[/]",
         title_align="right" if align == "right" else "left",
         border_style=color,
-        padding=(1, 1),
+        padding=(1, 2),
         width=max_width,
         expand=False,
         # box=chat_box,
