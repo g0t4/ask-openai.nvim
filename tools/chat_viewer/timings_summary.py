@@ -48,7 +48,7 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
     #
     # initialize:
     total_in = total_out = total_reasoning = total_final = 0
-    show_total_for_in = known_reasoning = True
+    show_total_for_in = show_total_for_reasoning = True
     in_durations, out_durations = [], []
 
     cache_states = detect_cache_misses([stats for _, stats in entries])
@@ -83,7 +83,7 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
             cell_thinking_percent = dim(think_percent)
             cell_final = _count(final)
             message_row += [cell_reasoning, cell_final, cell_thinking_percent]
-            known_reasoning &= valid_reasoning
+            show_total_for_reasoning &= valid_reasoning
             if valid_reasoning:
                 total_reasoning += reasoning
                 total_final += final
@@ -121,9 +121,9 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
 
     totals_split_out = []
     if split_output:
-        total_for_percent = f'{total_reasoning / total_out * 100:.1f}%' if known_reasoning and total_out else '—'
-        total_for_reasoning = _count(total_reasoning) if known_reasoning else '—'
-        total_for_final = _count(total_final) if known_reasoning else '—'
+        total_for_percent = f'{total_reasoning / total_out * 100:.1f}%' if show_total_for_reasoning and total_out else '—'
+        total_for_reasoning = _count(total_reasoning) if show_total_for_reasoning else '—'
+        total_for_final = _count(total_final) if show_total_for_reasoning else '—'
         totals_split_out = [total_for_reasoning, total_for_final, total_for_percent]
 
     # Deliberately avoid averaging per-request rates or summing cumulative cache counts.
