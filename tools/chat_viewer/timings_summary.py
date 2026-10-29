@@ -39,7 +39,7 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
     )
     table.caption = 'Durations are summed phase times, not elapsed agent wall time.'
 
-    has_out_token_split = backend != 'llama-server' # vllm/sglang give us reasoning vs final split within output tokens
+    show_out_split_columns = backend != 'llama-server' # vllm/sglang give us reasoning vs final split within output tokens
     # llama-server doesn't expose mean accept len at all... and then models w/o draft would not have draft stats at all
     show_draft_column = any([e[1].draft_tokens is not None for e in entries])
     show_mean_accept_len_column = any([e[1].mean_acceptance_length is not None for e in entries])
@@ -47,7 +47,7 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
     # * headers
     table.add_column('cached', justify='right')
     table.add_column('in', justify='right')
-    if has_out_token_split:
+    if show_out_split_columns:
         table.add_column('reasoning', justify='right')
         table.add_column('final', justify='right')
         table.add_column('thinking %', justify='right')
@@ -92,7 +92,7 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
         # output tokens
         reasoning = stats.reasoning_tokens
         valid_reasoning = reasoning is not None and 0 <= reasoning <= stats.predicted_tokens
-        if has_out_token_split:
+        if show_out_split_columns:
             final = stats.predicted_tokens - reasoning if valid_reasoning else None
             think_percent = f'{reasoning / stats.predicted_tokens * 100:.1f}%' if valid_reasoning and stats.predicted_tokens else '—'
             cell_reasoning = dim(_count(reasoning if valid_reasoning else None))
@@ -141,7 +141,7 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
     total_for_in = _count(total_in) if show_total_for_in else '—'
     total_row = [total_for_cached, total_for_in]
 
-    if has_out_token_split:
+    if show_out_split_columns:
         total_for_percent = f'{total_reasoning / total_out * 100:.1f}%' if show_total_for_reasoning and total_out else '—'
         total_for_reasoning = _count(total_reasoning) if show_total_for_reasoning else '—'
         total_for_final = _count(total_final) if show_total_for_reasoning else '—'
