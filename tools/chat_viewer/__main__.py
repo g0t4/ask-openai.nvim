@@ -23,6 +23,7 @@ from rich.text import Text
 from rich.table import Table
 from rich.tree import Tree
 from rich.segment import Segment
+from rich.measure import measure_renderables
 import rich
 from typing import Any, Iterable, Iterator, Dict, Optional
 import hashlib
@@ -1385,7 +1386,15 @@ def is_model_input(role: str) -> bool:
     """
     return role in ("user", "user_raw", "tool", "system", "developer")
 
-def print_message_panel(title: str, color: str, content: TreeWrapper, align: str, *, full_width: bool = False) -> None:
+def print_message_panel(
+    title: str,
+    color: str,
+    content: TreeWrapper,
+    align: str,
+    *,
+    full_width: bool = False,
+    min_panel_width: int = 0,
+) -> None:
     """Render a single message as an aligned panel for a chat-like layout.
 
     User messages are right-aligned, everything else left-aligned. The panel is
@@ -1403,16 +1412,31 @@ def print_message_panel(title: str, color: str, content: TreeWrapper, align: str
         max_bubble_width = max(40, max_bubble_width)
         # Also don't let the bubble exceed the 90% available width.
         max_panel_width = min(available_width, max_bubble_width)
+
     # Open speech-bubble look: keep the border on the side the message hugs.
     chat_box = CHAT_BOX_RIGHT if align == "right" else CHAT_BOX_LEFT
+    panel_padding = (1, 2)
+    # The panel wraps content in padding + a border, so the content needs that
+    # extra horizontal room (both sides + left/right border) to avoid wrapping.
+    panel_overhead = panel_padding[1] * 2 + 2
+    if min_panel_width:
+        # Measure the content's natural width so a tiny result still gets a
+        # minimum-width bubble instead of collapsing to the title's width.
+        content_width = measure_renderables(_console, _console.options, [content]).maximum
+        panel_width = min(max_panel_width, max(min_panel_width, content_width + panel_overhead))
+        expand = True
+    else:
+        panel_width = max_panel_width
+        expand = False
+
     panel = Panel(
         content,
         title=f"[{color}]{title}[/]",
         title_align="right" if align == "right" else "left",
         border_style=color,
-        padding=(1, 2),
-        width=max_panel_width, # this is a max, not an actual width
-        expand=False,
+        padding=panel_padding,
+        width=panel_width,
+        expand=expand,
         # box=chat_box,
     )
 
