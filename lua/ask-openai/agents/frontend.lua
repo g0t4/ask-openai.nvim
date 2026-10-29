@@ -24,6 +24,7 @@ local prompt_parser = require("ask-openai.frontends.context.prompt_parser")
 local HLGroups = require("ask-openai.hlgroups")
 local formatters = require("ask-openai.agents.viewer.formatters")
 local response_stats = require("ask-openai.agents.viewer.response_stats")
+local reasoning_format = require("ask-openai.agents.viewer.reasoning_format")
 local response_reasoning = require("ask-openai.backends.response_reasoning")
 local ToolCallOutput = require("ask-openai.agents.tools.tool_call_output")
 local CurlRequestForTrace = require("ask-openai.agents.curl_request_for_trace")
@@ -39,9 +40,6 @@ local ansi = require("devtools.ansi")
 local safely = require("ask-openai.helpers.safely")
 local live_trace_stream = require("ask-openai.agents.live_trace_stream")
 local values = require("ask-openai.helpers.values")
-
--- The thinking emoji shown before reasoning content (matches the Python chat viewer).
-local THINKING_EMOJI = "💭"
 
 ---@class AgentsFrontend : StreamingFrontend
 local AgentsFrontend = {}
@@ -635,7 +633,7 @@ local function update_ui_chat_viewer(trace)
             lines:append_role_header(rx_message.role)
 
             if reasoning_content ~= "" then
-                lines:append_folded_styled_text(THINKING_EMOJI .. reasoning_content, HLGroups.CHAT_REASONING)
+                lines:append_folded_styled_text(reasoning_format.format_reasoning(reasoning_content), HLGroups.CHAT_REASONING)
             end
 
             lines:append_text(content)

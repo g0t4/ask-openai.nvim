@@ -4,14 +4,12 @@ local Fold = require("ask-openai.agents.viewer.fold")
 local LinesBuilder = require("ask-openai.agents.viewer.lines_builder")
 local formatters = require("ask-openai.agents.viewer.formatters")
 local response_stats = require("ask-openai.agents.viewer.response_stats")
+local reasoning_format = require("ask-openai.agents.viewer.reasoning_format")
 local ToolCallOutput = require("ask-openai.agents.tools.tool_call_output")
 local safely = require("ask-openai.helpers.safely")
 local config = require("ask-openai.config")
 
 local M = {}
-
--- The thinking emoji shown before reasoning content (matches the Python chat viewer).
-local THINKING_EMOJI = "💭"
 
 --- List all entries in a directory using uv.fs_opendir.
 ---
@@ -292,7 +290,7 @@ local function render_message(lines, msg, tool_results_by_id, should_fold_conten
         -- Only add role header content if there's something to show
         if reasoning_content ~= "" or content ~= "" or #tool_calls > 0 then
             if reasoning_content ~= "" then
-                lines:append_folded_styled_text(THINKING_EMOJI .. reasoning_content, HLGroups.CHAT_REASONING)
+                lines:append_folded_styled_text(reasoning_format.format_reasoning(reasoning_content), HLGroups.CHAT_REASONING)
             end
             lines:append_text(content)
             response_stats.render(lines, msg)

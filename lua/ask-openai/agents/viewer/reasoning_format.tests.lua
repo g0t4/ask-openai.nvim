@@ -1,0 +1,25 @@
+local reasoning_format = require("ask-openai.agents.viewer.reasoning_format")
+
+describe("reasoning_format", function()
+    it("prefixes the first line with the thinking emoji and one space", function()
+        local formatted = reasoning_format.format_reasoning("hello")
+        assert.equals("💭 hello", formatted)
+    end)
+
+    it("indents subsequent lines so text aligns after the emoji", function()
+        local formatted = reasoning_format.format_reasoning("line one\nline two")
+        local lines = vim.split(formatted, "\n")
+        assert.equals("💭 line one", lines[1])
+        -- 💭 is 2 cells wide + 1 space padding = 3 cells of indent
+        assert.equals("   line two", lines[2])
+    end)
+
+    it("keeps trailing blank lines empty (no stray indentation)", function()
+        local formatted = reasoning_format.format_reasoning("alpha\n\nbeta\n")
+        local lines = vim.split(formatted, "\n")
+        assert.equals("💭 alpha", lines[1])
+        assert.equals("", lines[2])
+        assert.equals("   beta", lines[3])
+        assert.equals("", lines[4])
+    end)
+end)
