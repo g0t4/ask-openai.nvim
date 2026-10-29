@@ -193,11 +193,9 @@ def build_timings_summary(entries: list[TimingEntry], backend: str) -> Table:
             return _duration(sum(durations))
         return '—'
 
-    total_for_in_duration = _total_duration(in_durations)
-    total_for_out_duration = _total_duration(out_durations)
     total_row.extend([
-        total_for_in_duration,
-        total_for_out_duration,
+        _total_duration(in_durations),
+        _total_duration(out_durations),
         '', # message_number
     ])
 
