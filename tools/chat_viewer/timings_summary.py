@@ -33,7 +33,7 @@ def build_timings_summary(entries: list[tuple[int, ModelTimings]], backend: str)
     table = Table(
         show_header=True,
         box = None,
-        # box=box.SIMPLE, # results in line under header
+        # box=box.SIMPLE, # results in line under header and extra blank above totals row b/c of add_section()
         padding=(0, 1),
         row_styles=['', 'dim'],
     )
