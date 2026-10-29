@@ -1407,9 +1407,8 @@ def print_message_panel(
         max_panel_width = available_width
     else:
         # Bubble mode: cap at a readable width (100 cols max), leaving a small
-        # margin from the terminal edge, but never shrink below 20 cols.
+        # margin from the terminal edge.
         max_bubble_width = min(_console.width - 4, 100)
-        max_bubble_width = max(40, max_bubble_width)
         # Also don't let the bubble exceed the 90% available width.
         max_panel_width = min(available_width, max_bubble_width)
 
@@ -1419,7 +1418,11 @@ def print_message_panel(
     # The panel wraps content in padding + a border, so the content needs that
     # extra horizontal room (both sides + left/right border) to avoid wrapping.
     panel_overhead = panel_padding[1] * 2 + 2
-    if min_panel_width:
+    if full_width:
+        # Span the full available width; the min width doesn't apply here.
+        panel_width = max_panel_width
+        expand = True
+    elif min_panel_width:
         # Measure the content's natural width so a tiny result still gets a
         # minimum-width bubble instead of collapsing to the title's width.
         content_width = measure_renderables(_console, _console.options, [content]).maximum
