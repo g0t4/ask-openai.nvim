@@ -187,10 +187,14 @@ def build_timings_summary(entries: list[TimingEntry], backend: str) -> Table:
         # TODO weighted average of the mean accept len?
         total_row.append('')
 
-    # Deliberately avoid averaging per-request rates or summing cumulative cache counts.
-    # Do not show total duration when any individual duration is missing.
-    total_for_in_duration = _duration(sum(in_durations)) if all(v is not None for v in in_durations) else '—'
-    total_for_out_duration = _duration(sum(out_durations)) if all(v is not None for v in out_durations) else '—'
+    def _total_duration(durations):
+        # Do not show total duration when any individual duration is missing.
+        if all(v is not None for v in durations):
+            return _duration(sum(durations))
+        return '—'
+
+    total_for_in_duration = _total_duration(in_durations)
+    total_for_out_duration = _total_duration(out_durations)
     total_row.extend([
         total_for_in_duration,
         total_for_out_duration,
