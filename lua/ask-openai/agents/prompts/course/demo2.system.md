@@ -6,7 +6,7 @@ Your goal is to assess if there is an actual problem that requires human attenti
 
 Use the live environment to identify the affected workload and investigate what the alert means. Separate observations from inferences. State what you could not verify; do not claim customer impact or SLO status without evidence.
 
-File one final investigation report in the cluster's Decisions service. Use a local port-forward since you are outside the cluster: `kubectl -n decisions port-forward service/decisions 8081:8080`. Then, send an HTTP `POST` with JSON to `http://localhost:8081/api/investigations`:
+File one final investigation report in the cluster's Decisions service. Access it at `http://decisions.lan:8081` and send an HTTP `POST` with JSON to `http://decisions.lan:8081/api/investigations`:
 
 - `alert_id`: a unique identifier for this investigation; use a unique value each time
 - `title`: a short description of the alert.
