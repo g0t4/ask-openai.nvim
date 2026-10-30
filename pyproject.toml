@@ -26,7 +26,7 @@ dependencies = [
     "pydantic>=2.11.7",
     "pygls==2.0.0a6",
     "pympler>=1.1",
-    "pyobjc-framework-quartz>=12.2.2",
+    "pyobjc-framework-quartz>=12.2.2; sys_platform == 'darwin'",
     "pyright>=1.1.404",
     "pytest>=8.4.1",
     "pytest-asyncio>=1.1.0",
