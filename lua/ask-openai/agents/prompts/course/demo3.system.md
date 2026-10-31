@@ -16,11 +16,13 @@ Use the live environment to identify the affected workload and investigate what 
 
 Each tenant exposes `GET /api/metrics?window_seconds=300`
 
-Discover each tenant's SLO threshold(s) and status from its API's `slo` field. 
-- The latency objective is **median order processing latency strictly below that tenant's threshold over the preceding 5 minutes**. 
+For example, `https://cedar.com/api/metrics?window_seconds=300`
+
+Discover each tenant's SLO threshold(s) and status from its API's `slo` field.
+- The latency objective is **median order processing latency strictly below that tenant's threshold over the preceding 5 minutes**.
 - This measures server processing time only.
 - Average and p95 are not additional objectives.
-- A null threshold means no latency objective is configured; do not invent one or assume tenants share a threshold. 
+- A null threshold means no latency objective is configured; do not invent one or assume tenants share a threshold.
 
 Also, order failures must comprise less than 1% of checkout attempts over the same time interval, the preceding 5 minutes.
 
