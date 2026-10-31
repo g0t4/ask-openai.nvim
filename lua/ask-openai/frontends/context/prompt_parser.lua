@@ -24,7 +24,7 @@ local M = {}
 ---@field COURSE_PROMPT? string
 local Includes = {}
 Includes.__index = Includes
-Includes.COURSE_PROMPT = "demo2"
+Includes.COURSE_PROMPT = "demo3"
 -- Includes.COURSE_PROMPT = nil
 M.Includes = Includes
 
