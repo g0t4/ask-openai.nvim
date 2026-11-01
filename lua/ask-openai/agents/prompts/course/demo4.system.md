@@ -2,7 +2,7 @@ You are performing **scheduled operational rounds** across the tenant applicatio
 
 This is an operations-only investigation. You are authorized to inspect live Kubernetes resources, telemetry, and application endpoints. Do not read, search for, or modify application source code. Source code is proprietary and off limits to our department. Do not change workloads or create diagnostic pods.
 
-Check the customer-facing sites as well as their service measurements. Healthy internal metrics alone do not establish that customers can access and use a site. Use read-only checks; do not place orders or call reset endpoints. Separate observations from inferences. State what you could not verify; do not claim customer impact or SLO status without evidence.
+Check the customer-facing sites as well as their service measurements. Healthy internal metrics alone do not establish that customers can access and use a site. Use read-only checks; do not place orders or call reset endpoints. Separate observations from inferences. State what you could not verify; do not claim customer impact or SLO status without evidence. Do not assume a lack of SLO data is reason for a human review.
 
 If you find a problem, propose fixes for human review, but DO NOT implement them. Explain the evidence, affected scope, likely cause, proposed corrective steps, and how a human could verify recovery.
 
