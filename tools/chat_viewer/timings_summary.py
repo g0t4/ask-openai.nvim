@@ -129,6 +129,7 @@ def build_timings_summary(entries: list[TimingEntry], backend: str) -> Table:
     # * per message timing rows
     #
     # initialize:
+    total_cached = 0
     total_in = total_out = total_reasoning = total_final = 0
     total_drafted = total_accepted = 0
     show_total_for_in = show_total_for_reasoning = True
@@ -208,6 +209,7 @@ def build_timings_summary(entries: list[TimingEntry], backend: str) -> Table:
         # running totals
         show_total_for_in &= new_in_tokens is not None
         total_in += new_in_tokens or 0
+        total_cached += stats.cached_tokens or 0
         total_out += stats.predicted_tokens
         in_durations.append(input_ms)
         out_durations.append(output_ms)
@@ -217,7 +219,7 @@ def build_timings_summary(entries: list[TimingEntry], backend: str) -> Table:
     read_rate = _aggregate_rate(total_in, in_durations)
     write_rate = _aggregate_rate(total_out, out_durations)
 
-    total_for_cached = 'total'
+    total_for_cached = _count(total_cached)
     total_for_in = _tokens_rate(total_in, read_rate) if show_total_for_in else '—'
     total_row = [total_for_cached, total_for_in]
 
