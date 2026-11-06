@@ -3,6 +3,7 @@
 Usage:
     python -m tools.summarize_video video.mp4
     python -m tools.summarize_video --width 320 --fps 1 video.mp4
+    python -m tools.summarize_video --audio-only video.mp4
 """
 
 import argparse
@@ -18,6 +19,8 @@ from tools.summarize_video.summarize import (
     DEFAULT_PROMPT,
     DEFAULT_TEMPERATURE,
     DEFAULT_WIDTH,
+    DEFAULT_WHISPER_MODEL,
+    DEFAULT_WHISPER_THREADS,
     summarize_video,
 )
 
@@ -69,6 +72,22 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=DEFAULT_TEMPERATURE,
         help="Sampling temperature (default: %(default)s)",
     )
+    parser.add_argument(
+        "--audio-only",
+        action="store_true",
+        help="Summarize the audio track only (transcribe with whisper.cpp, then summarize)",
+    )
+    parser.add_argument(
+        "--whisper-model",
+        default=DEFAULT_WHISPER_MODEL,
+        help="Path to the whisper.cpp model (default: %(default)s)",
+    )
+    parser.add_argument(
+        "--whisper-threads",
+        type=int,
+        default=DEFAULT_WHISPER_THREADS,
+        help="Whisper inference threads (default: %(default)s)",
+    )
     return parser.parse_args(argv)
 
 
@@ -85,10 +104,12 @@ def main(argv: list[str] | None = None) -> None:
         fps=args.fps,
         max_frames=args.max_frames,
         temperature=args.temperature,
+        audio_only=args.audio_only,
+        whisper_model_path=args.whisper_model,
+        whisper_threads=args.whisper_threads,
     )
     print(result)
 
 
 if __name__ == "__main__":
     main(sys.argv[1:])
-

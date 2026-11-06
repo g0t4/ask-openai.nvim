@@ -15,10 +15,13 @@ import pytest
 
 from tools.summarize_video.summarize import (
     DEFAULT_BASE_URL,
+    DEFAULT_WHISPER_MODEL,
+    extract_audio,
     find_model,
     probe_duration,
     summarize_video,
     transcode_video,
+    transcribe_audio,
 )
 
 SAMPLE_VIDEO = Path(__file__).resolve().parents[1] / "video" / "video1.mkv"
@@ -49,6 +52,13 @@ def test_transcode_video_missing_source(tmp_path):
         transcode_video(tmp_path / "nope.mkv", tmp_path / "out.mp4")
 
 
+def test_extract_audio_produces_wav(tmp_path):
+    wav_path = tmp_path / "audio.wav"
+    extract_audio(SAMPLE_VIDEO, wav_path)
+    assert wav_path.exists()
+    assert wav_path.stat().st_size > 0
+
+
 @pytest.mark.integration
 def test_find_model_returns_id():
     if not _server_available():
@@ -74,3 +84,20 @@ def test_summarize_video_end_to_end():
     assert result, "summarize_video returned an empty result"
     assert len(result) > 20, "summary is suspiciously short"
 
+
+@pytest.mark.integration
+def test_summarize_video_audio_only():
+    if not SAMPLE_VIDEO.exists():
+        pytest.skip("sample video not present")
+    if not _server_available():
+        pytest.skip("llama-server not reachable")
+    if not Path(DEFAULT_WHISPER_MODEL).exists():
+        pytest.skip("whisper model not present")
+
+    result = summarize_video(
+        SAMPLE_VIDEO,
+        audio_only=True,
+        max_tokens=300,
+    )
+    assert result, "audio-only summarize returned an empty result"
+    assert len(result) > 20, "audio-only summary is suspiciously short"
