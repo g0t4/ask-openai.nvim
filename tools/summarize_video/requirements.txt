@@ -1,0 +1,4 @@
+httpx>=0.28.1
+
+# System dependency: ffmpeg (must be installed and on PATH)
+
