@@ -953,9 +953,9 @@ def build_tool_result_message(
 
 
 def build_mcp_tool_result(root: TreeWrapper, content: Any) -> bool:
-    if isinstance(content, str):
-        rendered = render_flat_string_tool_output(content)
-        root.add(rendered)
+    is_flattened_string = isinstance(content, str)
+    if is_flattened_string:
+        root.add(render_flat_string_tool_output(content))
         return True
 
     if not isinstance(content, list):
