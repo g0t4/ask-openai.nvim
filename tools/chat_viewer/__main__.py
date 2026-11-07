@@ -1566,7 +1566,7 @@ class ChatViewerArgs(argparse.Namespace):
     trace_file: str | None = None
     watch: str | None = None
     show_all: bool = False
-    show_stats: bool = True
+    show_stats: bool = False
     max_width: int = 160
     html: bool = False
 
@@ -1585,8 +1585,8 @@ def main() -> None:
     parser.add_argument("--watch", nargs="?", const="", metavar="DIRECTORY",
                         help="follow the newest agent trace in DIRECTORY (default: Neovim agent state directory)")
     parser.add_argument("--all", action="store_true", dest="show_all", help="show all content (no exclusions)")
-    parser.add_argument("--stats", action=argparse.BooleanOptionalAction, dest="show_stats", default=True,
-                        help="show per-message timing stats (use --no-stats to disable)")
+    parser.add_argument("--stats", action=argparse.BooleanOptionalAction, dest="show_stats",
+                        help="show per-message timing stats (default: off; use --no-stats to disable)")
     parser.add_argument("--max-width", type=parse_max_width, default=160, help="transcript width cap (default: 160; 0 for full width)")
     parser.add_argument("--html", action="store_true", help="export rendered output as HTML")
 
