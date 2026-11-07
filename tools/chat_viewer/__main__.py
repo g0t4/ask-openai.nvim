@@ -955,7 +955,7 @@ def build_tool_result_message(
 def build_mcp_tool_result(root: TreeWrapper, content: Any) -> bool:
     is_flattened_string = isinstance(content, str)
     if is_flattened_string:
-        root.add(render_flat_string_tool_output(content))
+        render_flat_string_tool_output(root, content)
         return True
 
     if not isinstance(content, list):
@@ -981,10 +981,15 @@ def build_mcp_tool_result(root: TreeWrapper, content: Any) -> bool:
     return True
 
 
-def render_flat_string_tool_output(content: str) -> Text:
+def render_flat_string_tool_output(root: TreeWrapper, content: Any) -> Text:
     rendered = Text(content)
+    # TODO augment other detected fields
+    #   TODO or consider a reverse parse of flattened representation (well tested) into a content list once again so I can have one formatter
+    #   and fallback to text with no mods if it doesn't match easily... which is 100% fine for one off messages (i.e. if prompt or response has EXIT_CODE/STDOUT/STDERR etc then I cannot reasonably expect to handle that cleanly, nor should I)
+    #   the flattened format is two fold: easier for agent to reason about (avoids stringifying JSON in JSON crap)
+    #     also easy to display it plain text for humans... so I only need to augment it if I can cleanly identify sections that I care about calling out!
     rendered = annotate_exit_codes(rendered, content)
-    return rendered
+    root.add(rendered)
 
 
 def annotate_exit_codes(rendered: Text, content: str) -> Text:
