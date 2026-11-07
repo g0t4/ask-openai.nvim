@@ -80,7 +80,6 @@ CHAT_BOX_LEFT = box.Box(
 
 
 preapproved_file_patterns: list[re.Pattern] = []
-SHOW_ALL = False
 SHOW_STATS = False
 # When False, agent reasoning is rendered verbatim (no inline markdown styling)
 # for the rare case where a long/ambiguous block is easier to read as-is.
@@ -446,7 +445,7 @@ class SectionDTO:
     def __post_init__(self) -> None:
         # Compute hash and exclusion flag based on the content.
         self.content_hash = hashlib.sha256(self.content.encode("utf-8")).hexdigest()
-        self.is_excluded = not SHOW_ALL and self.content_hash in EXCLUDED_CONTENT_HASHES
+        self.is_excluded = not args.show_all and self.content_hash in EXCLUDED_CONTENT_HASHES
 
     def get_renderable(self):
         # return RenderGroup(Text(self.content))
@@ -473,7 +472,7 @@ class SectionDTO:
 
 def _split_content_into_sections(content: str) -> list[SectionDTO]:
     whole_hash = hashlib.sha256(content.encode("utf-8")).hexdigest()
-    if not SHOW_ALL and whole_hash in EXCLUDED_CONTENT_HASHES:
+    if not args.show_all and whole_hash in EXCLUDED_CONTENT_HASHES:
         # TODO why not just return it with is_excluded = True???
         return []
 
@@ -526,7 +525,7 @@ def add_semantic_grep_markdown_sections(root: TreeWrapper, markdown: str) -> boo
 
         file_path = match.group(1)
 
-        if not SHOW_ALL and is_preapproved(str(file_path)):
+        if not args.show_all and is_preapproved(str(file_path)):
             continue
 
         root.add_with_markup(f"🔍 MATCH {file_location}")  # keep the original format!
@@ -642,7 +641,7 @@ def load_messages(data) -> list[dict[str, Any]]:
         if "messages" in data:
             messages = data["messages"]
             del data["messages"]
-            if SHOW_ALL:
+            if args.show_all:
                 show_rest_of_request_body_properties(data)
             return messages
     return []
@@ -739,7 +738,7 @@ def build_default_user_message(raw_content: str) -> Optional[TreeWrapper]:
     for sec in sections:
         if sec.is_excluded:
             continue
-        if SHOW_ALL:
+        if args.show_all:
             hash_comment = (sec.content.splitlines()[0] or "")[0:30]  # limit # of characters
             if not hash_comment.startswith("#"):
                 hash_comment = ""
@@ -838,7 +837,7 @@ def build_semantic_grep_lsp_matches_result(root: TreeWrapper, content: Any, requ
         end_line_base0 = match.get('end_line_base0')
         start_line_base0 = match.get('start_line_base0')
 
-        skip = not SHOW_ALL and is_preapproved(str(file))
+        skip = not args.show_all and is_preapproved(str(file))
         if skip:
             continue
 
@@ -932,7 +931,7 @@ def build_tool_result_message(
     root = TreeWrapper.hidden_root()
 
     timings = parse_tool_call_timings(msg)
-    if SHOW_ALL and timings:
+    if args.show_all and timings:
         root.add(Align.right((f"[dim {color}]⏱️  {timings.formatted_duration}[/]")))
 
     content = decode_if_json(msg.get("content", ""))
@@ -1286,7 +1285,7 @@ def build_assistant_message(msg: dict, color: str) -> TreeWrapper:
         return root
 
     # Show per-message timings if present
-    if SHOW_ALL or SHOW_STATS:
+    if args.show_all or SHOW_STATS:
         msg_timings = parse_timings(msg)
         if msg_timings:
             # Skip the compact one-liner (format_timings_display); the verbose
@@ -1574,7 +1573,7 @@ class ChatViewerArgs(argparse.Namespace):
 
     trace_file: str | None = None
     watch: str | None = None
-    all: bool = False
+    show_all: bool = False
     max_width: int = 160
     html: bool = False
     no_reasoning_style: bool = False
@@ -1582,7 +1581,6 @@ class ChatViewerArgs(argparse.Namespace):
 
 def main() -> None:
     global _console
-    global SHOW_ALL
     global STYLE_REASONING
     global args
 
@@ -1595,7 +1593,7 @@ def main() -> None:
     )
     parser.add_argument("--watch", nargs="?", const="", metavar="DIRECTORY",
                         help="follow the newest agent trace in DIRECTORY (default: Neovim agent state directory)")
-    parser.add_argument("--all", action="store_true", help="show all content (no exclusions)")
+    parser.add_argument("--all", action="store_true", dest="show_all", help="show all content (no exclusions)")
     parser.add_argument("--max-width", type=parse_max_width, default=160, help="transcript width cap (default: 160; 0 for full width)")
     parser.add_argument("--html", action="store_true", help="export rendered output as HTML")
     parser.add_argument(
@@ -1607,10 +1605,6 @@ def main() -> None:
     argcomplete.autocomplete(parser)
     args = parser.parse_args(namespace=ChatViewerArgs())
 
-    if args.all:
-        SHOW_ALL = True
-    if args.no_reasoning_style:
-        STYLE_REASONING = False
 
     export_html = args.html
     if export_html:
@@ -1624,7 +1618,8 @@ def main() -> None:
             parser.error("--watch cannot be combined with a trace file or --html")
         from tools.chat_viewer.live_viewer import run_live, default_trace_directory
         directory = Path(args.watch).expanduser() if args.watch else default_trace_directory()
-        run_live(directory, show_all=SHOW_ALL, style_reasoning=STYLE_REASONING, max_width=args.max_width)
+        # TODO pass args to run_live?
+        run_live(directory, show_all=args.show_all, style_reasoning=STYLE_REASONING, max_width=args.max_width)
         return
 
     trace_file_path = Path(args.trace_file) if args.trace_file else None
