@@ -80,7 +80,6 @@ CHAT_BOX_LEFT = box.Box(
 
 
 preapproved_file_patterns: list[re.Pattern] = []
-SHOW_STATS = False
 # When False, agent reasoning is rendered verbatim (no inline markdown styling)
 # for the rare case where a long/ambiguous block is easier to read as-is.
 
@@ -1284,7 +1283,7 @@ def build_assistant_message(msg: dict, color: str) -> TreeWrapper:
         return root
 
     # Show per-message timings if present
-    if args.show_all or SHOW_STATS:
+    if args.show_all or args.show_stats:
         msg_timings = parse_timings(msg)
         if msg_timings:
             # Skip the compact one-liner (format_timings_display); the verbose
@@ -1567,6 +1566,7 @@ class ChatViewerArgs(argparse.Namespace):
     trace_file: str | None = None
     watch: str | None = None
     show_all: bool = False
+    show_stats: bool = False
     max_width: int = 160
     html: bool = False
 
@@ -1585,6 +1585,7 @@ def main() -> None:
     parser.add_argument("--watch", nargs="?", const="", metavar="DIRECTORY",
                         help="follow the newest agent trace in DIRECTORY (default: Neovim agent state directory)")
     parser.add_argument("--all", action="store_true", dest="show_all", help="show all content (no exclusions)")
+    parser.add_argument("--stats", action="store_true", dest="show_stats", help="show per-message timing stats")
     parser.add_argument("--max-width", type=parse_max_width, default=160, help="transcript width cap (default: 160; 0 for full width)")
     parser.add_argument("--html", action="store_true", help="export rendered output as HTML")
 

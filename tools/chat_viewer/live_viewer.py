@@ -157,8 +157,8 @@ class LiveTraceViewerApp(TerminalSizedApp):
     async def on_mount(self) -> None:
         self.set_transcript_width(self.query_one("#transcript"), self.max_width)
         self._live_view_mounted = True
-        self._previous_render_options = (viewer.args.show_all, viewer.SHOW_STATS)
-        viewer.SHOW_STATS = False
+        self._previous_render_options = (viewer.args.show_all, viewer.args.show_stats)
+        viewer.args.show_stats = False
         self.query_one("#transcript").focus()
         self.set_interval(self.poll_interval, self.poll_directory)
         await self.poll_directory()
@@ -169,7 +169,7 @@ class LiveTraceViewerApp(TerminalSizedApp):
         if self._subscriber_task:
             self._subscriber_task.cancel()
             await asyncio.gather(self._subscriber_task, return_exceptions=True)
-        viewer.args.show_all, viewer.SHOW_STATS = self._previous_render_options
+        viewer.args.show_all, viewer.args.show_stats = self._previous_render_options
 
     def _update_title(self) -> None:
         state = "following" if self.follow_latest else "scroll paused · f to follow"
