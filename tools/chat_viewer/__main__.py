@@ -1568,6 +1568,18 @@ class CenteredOutput:
         self.stream.flush()
 
 
+@dataclass
+class Args(argparse.Namespace):
+    """Strongly-typed command-line arguments for the chat viewer."""
+
+    trace_file: str | None = None
+    watch: str | None = None
+    all: bool = False
+    max_width: int = 160
+    html: bool = False
+    no_reasoning_style: bool = False
+
+
 def main() -> None:
     global _console
     global SHOW_ALL
@@ -1592,7 +1604,7 @@ def main() -> None:
     )
 
     argcomplete.autocomplete(parser)
-    args = parser.parse_args()
+    args = parser.parse_args(namespace=Args())
 
     if args.all:
         SHOW_ALL = True

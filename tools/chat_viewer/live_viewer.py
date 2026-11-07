@@ -304,12 +304,21 @@ def run_live(directory: Path, *, show_all: bool = False, style_reasoning: bool =
     LiveTraceViewerApp(directory, max_width=max_width).run()
 
 
+@dataclass
+class Args(argparse.Namespace):
+    """Strongly-typed command-line arguments for the live viewer."""
+
+    directory: Path = default_trace_directory()
+    all: bool = False
+    max_width: int = 160
+
+
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("directory", nargs="?", type=Path, default=default_trace_directory())
     parser.add_argument("--all", action="store_true", help="Show all content and timing statistics")
     parser.add_argument("--max-width", type=viewer.parse_max_width, default=160, help="transcript width cap (default: 160; 0 for full width)")
-    args = parser.parse_args(argv)
+    args = parser.parse_args(argv, namespace=Args())
     run_live(args.directory, show_all=args.all, max_width=args.max_width)
 
 
