@@ -1584,6 +1584,7 @@ def main() -> None:
     global _console
     global SHOW_ALL
     global STYLE_REASONING
+    global args
 
     parser = argparse.ArgumentParser(description="View chat traces")
     parser.add_argument(
