@@ -197,7 +197,7 @@ class TraceViewerApp(TerminalSizedApp):
 
 
 @dataclass
-class Args(argparse.Namespace):
+class TextualViewerArgs(argparse.Namespace):
     """Strongly-typed command-line arguments for the textual viewer."""
 
     trace_file: str | None = None
@@ -216,7 +216,7 @@ def main(argv: list[str] | None = None) -> None:
     )
     parser.add_argument("--max-width", type=viewer.parse_max_width, default=160, help="transcript width cap (default: 160; 0 for full width)")
     argcomplete.autocomplete(parser)
-    args = parser.parse_args(argv, namespace=Args())
+    args = parser.parse_args(argv, namespace=TextualViewerArgs())
 
     viewer.load_preapproved_files()
 

@@ -1569,7 +1569,7 @@ class CenteredOutput:
 
 
 @dataclass
-class Args(argparse.Namespace):
+class ChatViewerArgs(argparse.Namespace):
     """Strongly-typed command-line arguments for the chat viewer."""
 
     trace_file: str | None = None
@@ -1604,7 +1604,7 @@ def main() -> None:
     )
 
     argcomplete.autocomplete(parser)
-    args = parser.parse_args(namespace=Args())
+    args = parser.parse_args(namespace=ChatViewerArgs())
 
     if args.all:
         SHOW_ALL = True
