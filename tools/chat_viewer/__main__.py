@@ -83,7 +83,6 @@ preapproved_file_patterns: list[re.Pattern] = []
 SHOW_STATS = False
 # When False, agent reasoning is rendered verbatim (no inline markdown styling)
 # for the rare case where a long/ambiguous block is easier to read as-is.
-STYLE_REASONING = True
 
 EXCLUDED_CONTENT_HASHES: list[str] = [
     # FYI careful w/ trailing \n when computing by hand
@@ -1298,22 +1297,16 @@ def build_assistant_message(msg: dict, color: str) -> TreeWrapper:
 
     reasoning = msg.get("reasoning_content")
     if reasoning:
-        if STYLE_REASONING:
-            # Subtle markdown emphasis: inline code + bold pop, while backticks,
-            # fence markers and list markers are dimmed so they recede. The rest
-            # is shown verbatim (no rich markup interpretation).
-            reasoning_text = style_markdown_text(
-                    insert_newlines(reasoning),
-                    base_style="bright_black italic",
-                    code_style="bold bright_black italic",
-                    backtick_style="dim bright_black italic",
-                    bold_style="bold bright_black italic",
-            )
-        else:
-            reasoning_text = Text(
+        # Subtle markdown emphasis: inline code + bold pop, while backticks,
+        # fence markers and list markers are dimmed so they recede. The rest
+        # is shown verbatim (no rich markup interpretation).
+        reasoning_text = style_markdown_text(
                 insert_newlines(reasoning),
-                style="bright_black italic",
-            )
+                base_style="bright_black italic",
+                code_style="bold bright_black italic",
+                backtick_style="dim bright_black italic",
+                bold_style="bold bright_black italic",
+        )
         root.add(_reasoning_row(reasoning_text))
         root.blank_line()
 
@@ -1576,12 +1569,10 @@ class ChatViewerArgs(argparse.Namespace):
     show_all: bool = False
     max_width: int = 160
     html: bool = False
-    no_reasoning_style: bool = False
 
 
 def main() -> None:
     global _console
-    global STYLE_REASONING
     global args
 
     parser = argparse.ArgumentParser(description="View chat traces")
@@ -1596,11 +1587,6 @@ def main() -> None:
     parser.add_argument("--all", action="store_true", dest="show_all", help="show all content (no exclusions)")
     parser.add_argument("--max-width", type=parse_max_width, default=160, help="transcript width cap (default: 160; 0 for full width)")
     parser.add_argument("--html", action="store_true", help="export rendered output as HTML")
-    parser.add_argument(
-        "--no-reasoning-style",
-        action="store_true",
-        help="render agent reasoning verbatim (no inline markdown styling)",
-    )
 
     argcomplete.autocomplete(parser)
     args = parser.parse_args(namespace=ChatViewerArgs())
@@ -1618,8 +1604,7 @@ def main() -> None:
             parser.error("--watch cannot be combined with a trace file or --html")
         from tools.chat_viewer.live_viewer import run_live, default_trace_directory
         directory = Path(args.watch).expanduser() if args.watch else default_trace_directory()
-        # TODO pass args to run_live?
-        run_live(directory, show_all=args.show_all, style_reasoning=STYLE_REASONING, max_width=args.max_width)
+        run_live(directory)
         return
 
     trace_file_path = Path(args.trace_file) if args.trace_file else None

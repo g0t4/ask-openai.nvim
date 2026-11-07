@@ -178,8 +178,7 @@ class TraceViewerApp(TerminalSizedApp):
 
     def on_mount(self) -> None:
         self.set_transcript_width(self.query_one(RichLog), self.max_width)
-        viewer.SHOW_ALL = False
-        viewer.STYLE_REASONING = True
+        viewer.args.show_all = True
         self.call_after_refresh(self._render)
 
     def action_toggle_width(self) -> None:
@@ -188,13 +187,8 @@ class TraceViewerApp(TerminalSizedApp):
         self.call_after_refresh(self._render)
 
     def action_toggle_all(self) -> None:
-        viewer.SHOW_ALL = not viewer.SHOW_ALL
+        viewer.args.show_all = not viewer.args.show_all
         self._render()
-
-    def action_toggle_reasoning_style(self) -> None:
-        viewer.STYLE_REASONING = not viewer.STYLE_REASONING
-        self._render()
-
 
 @dataclass
 class TextualViewerArgs(argparse.Namespace):

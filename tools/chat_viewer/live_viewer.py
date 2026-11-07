@@ -157,7 +157,7 @@ class LiveTraceViewerApp(TerminalSizedApp):
     async def on_mount(self) -> None:
         self.set_transcript_width(self.query_one("#transcript"), self.max_width)
         self._live_view_mounted = True
-        self._previous_render_options = (viewer.SHOW_ALL, viewer.STYLE_REASONING, viewer.SHOW_STATS)
+        self._previous_render_options = (viewer.args.show_all, viewer.SHOW_STATS)
         viewer.SHOW_STATS = False
         self.query_one("#transcript").focus()
         self.set_interval(self.poll_interval, self.poll_directory)
@@ -169,7 +169,7 @@ class LiveTraceViewerApp(TerminalSizedApp):
         if self._subscriber_task:
             self._subscriber_task.cancel()
             await asyncio.gather(self._subscriber_task, return_exceptions=True)
-        viewer.SHOW_ALL, viewer.STYLE_REASONING, viewer.SHOW_STATS = self._previous_render_options
+        viewer.args.show_all, viewer.SHOW_STATS = self._previous_render_options
 
     def _update_title(self) -> None:
         state = "following" if self.follow_latest else "scroll paused · f to follow"
@@ -281,12 +281,7 @@ class LiveTraceViewerApp(TerminalSizedApp):
         self.call_after_refresh(self._reflow_after_resize)
 
     async def action_toggle_all(self) -> None:
-        viewer.SHOW_ALL = not viewer.SHOW_ALL
-        if self.snapshot:
-            await self.update_trace(self.snapshot, full=True)
-
-    async def action_toggle_reasoning_style(self) -> None:
-        viewer.STYLE_REASONING = not viewer.STYLE_REASONING
+        viewer.args.show_all = not viewer.args.show_all
         if self.snapshot:
             await self.update_trace(self.snapshot, full=True)
 
@@ -297,11 +292,9 @@ class LiveTraceViewerApp(TerminalSizedApp):
             self.query_one("#transcript", VerticalScroll).scroll_end(animate=False, x_axis=False)
 
 
-def run_live(directory: Path, *, show_all: bool = False, style_reasoning: bool = True, max_width: int = 160) -> None:
-    viewer.SHOW_ALL = show_all
-    viewer.STYLE_REASONING = style_reasoning
+def run_live(directory: Path) -> None:
     viewer.load_preapproved_files()
-    LiveTraceViewerApp(directory, max_width=max_width).run()
+    LiveTraceViewerApp(directory, max_width=viewer.args.max_width).run()
 
 
 @dataclass
