@@ -954,19 +954,11 @@ def build_tool_result_message(
 
 def build_mcp_tool_result(root: TreeWrapper, content: Any) -> bool:
     if isinstance(content, str):
-        # Flattened MCP output: the tool result content is already a plain
-        # string (nested JSON was flattened for the agent). Render it verbatim
-        # (no markup interpretation, real newlines preserved).
-        rendered = Text(content)
-        for match in reversed(list(re.finditer(r"(?m)^[ \t]*EXIT_CODE:[ \t]*([^\r\n]*)", content))):
-            success = match.group(1).strip() == "0"
-            indicator = Text(" " if success else " ", style="green" if success else "red")
-            rendered = rendered[:match.start()] + indicator + rendered[match.start():]
+        rendered = render_flat_string_tool_output(content)
         root.add(rendered)
         return True
 
-    has_mcp_content_list = isinstance(content, list)
-    if not has_mcp_content_list:
+    if not isinstance(content, list):
         return False
 
     for item in content:
@@ -988,6 +980,21 @@ def build_mcp_tool_result(root: TreeWrapper, content: Any) -> bool:
             root.add_no_markup(item_text)
 
     return True
+
+
+def render_flat_string_tool_output(content: str) -> Text:
+    rendered = Text(content)
+    rendered = annotate_exit_codes(rendered, content)
+    return rendered
+
+
+def annotate_exit_codes(rendered: Text, content: str) -> Text:
+    pattern = r"(?m)^[ \t]*EXIT_CODE:[ \t]*([^\r\n]*)"
+    for match in reversed(list(re.finditer(pattern, content))):
+        success = match.group(1).strip() == "0"
+        indicator = Text(" " if success else " ", style="green" if success else "red")
+        rendered = rendered[:match.start()] + indicator + rendered[match.start():]
+    return rendered
 
 
 class RawEscape:
