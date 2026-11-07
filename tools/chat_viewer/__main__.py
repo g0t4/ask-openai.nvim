@@ -964,7 +964,6 @@ def build_mcp_tool_result(root: TreeWrapper, content: Any) -> bool:
     for item in content:
         item_type = yank(item, "type")
         name = yank(item, "name")
-        padding = None
 
         if item_type == "image_url":
             _add_mcp_image_item(root, item)
