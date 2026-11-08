@@ -31,7 +31,7 @@ def test_vllm_summary_uses_new_input_and_reasoning_split_and_sums_durations():
     assert strip_markup(cells[7][0]) == '60/120'       # draft count
     assert strip_markup(cells[8][0]) == '50%'          # draft acceptance rate
     assert strip_markup(cells[9][0]) == '3.00'         # accept len
-    assert strip_markup(cells[9][-1]) == '3.00'        # overall accept len (only entry 1 has data)
+    assert strip_markup(cells[9][-1]) == '≈3.00'       # overall accept len (estimated; only entry 1 has data)
     assert strip_markup(cells[10][-1]) == '0.30s'      # in duration
     assert strip_markup(cells[11][-1]) == '2.98s'      # out duration
     assert [strip_markup(x) for x in cells[-1]] == ['#1', '#3', '']
@@ -93,7 +93,7 @@ def test_overall_mean_accept_len_is_weighted_by_draft_tokens():
         'metrics':{'speculative_decoding':{'num_draft_tokens':300,'num_accepted_draft_tokens':150,'mean_acceptance_length':4.0}}})
     table = build_timings_summary([TimingEntry(1, first), TimingEntry(2, second)], 'vllm', expanded=True)
     cells = [list(c._cells) for c in table.columns]
-    assert strip_markup(cells[9][-1]) == '3.50'  # (2.0*100 + 4.0*300) / 400
+    assert strip_markup(cells[9][-1]) == '≈3.50'  # (2.0*100 + 4.0*300) / 400
 
 def test_tokens_rate_under10_includes_decimal():
     _, rate = _token_rate(1, 9.3)
@@ -111,3 +111,9 @@ def test_tokens_rate_above10__rounds_and_shows_no_decimal():
 def test_tokens_rate_over_one_thousand__shows_comma_on_rate():
     _, rate = _token_rate(1, 1001)
     assert "1,001" in strip_markup(rate)
+
+def test_estimated_rate_dims_the_approx_marker():
+    _, rate = _token_rate(1, 100, estimated=True)
+    assert '[dim]≈[/]' in rate
+    _, exact_rate = _token_rate(1, 100, estimated=False)
+    assert '≈' not in exact_rate

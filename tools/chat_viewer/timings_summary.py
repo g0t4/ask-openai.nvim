@@ -27,7 +27,7 @@ def _token_rate(count, rate, estimated=False):
     count_cell = _count(count)
     if count is None or rate is None or rate <= 0:
         return count_cell, ''
-    approx = '≈' if estimated else ''
+    approx = dim('≈') if estimated else ''
     units = dim(' tok/s')
     if rate < 10:
         rate_cell = f'{approx}{rate:,.1f}{units}'
@@ -289,7 +289,7 @@ def build_timings_summary(entries: list[TimingEntry], backend: str, expanded: bo
             ]
         if show_mean_accept_len_column:
             overall_mean = _aggregate_mean_accept_len(entries)
-            cell = '—' if overall_mean is None else f'{overall_mean:.2f}'
+            cell = '—' if overall_mean is None else f'{dim("≈")}{overall_mean:.2f}'
             total_row.append(dim(cell))
 
         def _total_duration(durations):
