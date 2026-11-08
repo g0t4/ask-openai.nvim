@@ -131,7 +131,7 @@ def build_timings_summary(entries: list[TimingEntry], backend: str) -> Table:
 
     table.add_column('in', justify='right')
     table.add_column('out', justify='right')
-    table.add_column('') # message number, no need for a header
+    table.add_column('', justify='right')  # message number, no need for a header
 
     # * per message timing rows
     #
