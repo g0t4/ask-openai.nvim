@@ -126,6 +126,7 @@ def build_timings_summary(entries: list[TimingEntry], backend: str) -> Table:
         table.add_column('final', justify='right', header_style=dim_not_bold)
     if show_draft_column:
         table.add_column('draft', justify='right', header_style=dim_not_bold)
+        table.add_column('draft\n%', justify='right', header_style=dim_not_bold)
     if show_mean_accept_len_column:
         table.add_column('accept\nlen', justify='right', no_wrap=True, header_style=dim_not_bold)
 
@@ -192,14 +193,13 @@ def build_timings_summary(entries: list[TimingEntry], backend: str) -> Table:
         # draft tokens
         if show_draft_column:
             if stats.draft_tokens is not None:
-                cell_draft = f'{_count(stats.draft_tokens_accepted)}/{_count(stats.draft_tokens)}'
+                cell_draft_count = f'{_count(stats.draft_tokens_accepted)}/{_count(stats.draft_tokens)}'
                 total_drafted += stats.draft_tokens or 0
                 total_accepted += stats.draft_tokens_accepted or 0
-                if stats.formatted_acceptance_rate:
-                    cell_draft += f' {stats.formatted_acceptance_rate}'
-                message_row.append(dim(cell_draft))
+                cell_draft_rate = stats.formatted_acceptance_rate or ''
+                message_row += [dim(cell_draft_count), dim(cell_draft_rate)]
             else:
-                message_row.append(dim('—'))
+                message_row += [dim('—'), '']
         if show_mean_accept_len_column:
             cell_mean_accept_len = '—' if stats.mean_acceptance_length is None else f'{stats.mean_acceptance_length:.2f}'
             message_row.append(dim(cell_mean_accept_len))
@@ -251,7 +251,10 @@ def build_timings_summary(entries: list[TimingEntry], backend: str) -> Table:
                 total_acceptance_rate = f"{(total_accepted/total_drafted*100):.0f}%"
             else:
                 total_acceptance_rate = ''
-            total_row.append(dim(f'{_count(total_accepted)}/{_count(total_drafted)} {total_acceptance_rate}'.strip()))
+            total_row += [
+                dim(f'{_count(total_accepted)}/{_count(total_drafted)}'),
+                dim(total_acceptance_rate),
+            ]
         if show_mean_accept_len_column:
             # TODO weighted average of the mean accept len?
             total_row.append('')
