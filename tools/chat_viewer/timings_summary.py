@@ -133,6 +133,7 @@ def build_timings_summary(entries: list[TimingEntry], backend: str) -> Table:
     total_drafted = total_accepted = 0
     show_total_for_in = show_total_for_reasoning = True
     in_durations, out_durations = [], []
+    exact_rates = backend == 'llama-server'
 
     cache_states = detect_cache_misses([entry.timings for entry in entries])
     for entry, cache in zip(entries, cache_states):
@@ -150,7 +151,6 @@ def build_timings_summary(entries: list[TimingEntry], backend: str) -> Table:
             cell_cached += red(f'\nMISS {cache.formatted_missing_tokens}')
 
         # rates
-        exact_rates = backend == 'llama-server'
         input_rate = stats.prompt_tokens_per_second if exact_rates else stats.estimated_input_tokens_per_second
         output_rate = stats.predicted_tokens_per_second if exact_rates else stats.estimated_decode_tokens_per_second
 
@@ -219,10 +219,10 @@ def build_timings_summary(entries: list[TimingEntry], backend: str) -> Table:
     write_rate = _aggregate_rate(total_out, out_durations)
 
     total_for_cached = _count(total_cached)
-    total_for_in = _tokens_rate(total_in, read_rate) if show_total_for_in else '—'
+    total_for_in = _tokens_rate(total_in, read_rate, estimated=not exact_rates) if show_total_for_in else '—'
     total_row = [total_for_cached, total_for_in]
 
-    total_for_out = _tokens_rate(total_out, write_rate)
+    total_for_out = _tokens_rate(total_out, write_rate, estimated=not exact_rates)
     total_row.append(total_for_out)
 
     if show_out_split_columns:
