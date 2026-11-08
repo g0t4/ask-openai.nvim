@@ -31,6 +31,7 @@ def test_vllm_summary_uses_new_input_and_reasoning_split_and_sums_durations():
     assert strip_markup(cells[7][0]) == '60/120'       # draft count
     assert strip_markup(cells[8][0]) == '50%'          # draft acceptance rate
     assert strip_markup(cells[9][0]) == '3.00'         # accept len
+    assert strip_markup(cells[9][-1]) == '3.00'        # overall accept len (only entry 1 has data)
     assert strip_markup(cells[10][-1]) == '0.30s'      # in duration
     assert strip_markup(cells[11][-1]) == '2.98s'      # out duration
     assert [strip_markup(x) for x in cells[-1]] == ['#1', '#3', '']
@@ -84,6 +85,15 @@ def test_expanded_only_columns_hidden_by_default():
     headers_expanded = [c.header.replace('\n', ' ') for c in expanded.columns]
     assert headers_expanded == ['cached','in','in tok/s','out','out tok/s','reasoning','final',
         'draft','draft %','accept len','in','out','']
+
+def test_overall_mean_accept_len_is_weighted_by_draft_tokens():
+    first = parse_timings({'usage':{'prompt_tokens':100,'completion_tokens':50},
+        'metrics':{'speculative_decoding':{'num_draft_tokens':100,'num_accepted_draft_tokens':50,'mean_acceptance_length':2.0}}})
+    second = parse_timings({'usage':{'prompt_tokens':100,'completion_tokens':50},
+        'metrics':{'speculative_decoding':{'num_draft_tokens':300,'num_accepted_draft_tokens':150,'mean_acceptance_length':4.0}}})
+    table = build_timings_summary([TimingEntry(1, first), TimingEntry(2, second)], 'vllm', expanded=True)
+    cells = [list(c._cells) for c in table.columns]
+    assert strip_markup(cells[9][-1]) == '3.50'  # (2.0*100 + 4.0*300) / 400
 
 def test_tokens_rate_under10_includes_decimal():
     _, rate = _token_rate(1, 9.3)

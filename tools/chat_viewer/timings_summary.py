@@ -65,6 +65,27 @@ def _aggregate_rate(total_tokens, durations_ms):
     return total_tokens / (total_ms / 1000)
 
 
+def _aggregate_mean_accept_len(entries):
+    """Weighted average of mean accept length, weighted by draft tokens.
+
+    Each entry reports a per-sequence mean acceptance length, so combining
+    them across turns needs a weight proportional to the number of spec
+    sequences; draft tokens is the closest available proxy.
+    """
+    total_weight = 0
+    weighted_sum = 0.0
+    for entry in entries:
+        mean = entry.timings.mean_acceptance_length
+        if mean is None:
+            continue
+        weight = entry.timings.draft_tokens or 1
+        total_weight += weight
+        weighted_sum += mean * weight
+    if total_weight == 0:
+        return None
+    return weighted_sum / total_weight
+
+
 def _book_anchor_blurb(read_rate, write_rate):
     """Anchor the read/write tok/s speeds against a 300-page book."""
     lines = [
@@ -267,8 +288,9 @@ def build_timings_summary(entries: list[TimingEntry], backend: str, expanded: bo
                 dim(total_acceptance_rate),
             ]
         if show_mean_accept_len_column:
-            # TODO weighted average of the mean accept len?
-            total_row.append('')
+            overall_mean = _aggregate_mean_accept_len(entries)
+            cell = '—' if overall_mean is None else f'{overall_mean:.2f}'
+            total_row.append(dim(cell))
 
         def _total_duration(durations):
             # Do not show total duration when any individual duration is missing.
