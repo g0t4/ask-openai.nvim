@@ -24,7 +24,11 @@
 <a
   href={`#${id}`}
   class="opacity-0 group-hover:opacity-100 transition-opacity text-gray-500 px-1 select-none cursor-pointer hover:text-gray-300"
-  onclick={() => goToHash(id)}
+  onclick={(event) => {
+    // Don't let the parent header's copy handler swallow the navigation
+    event.stopPropagation()
+    goToHash(id)
+  }}
 >
   {#if isCopied}
     <span class="text-green-400">✓</span>
