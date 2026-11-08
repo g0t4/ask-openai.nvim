@@ -178,8 +178,11 @@ def build_timings_summary(entries: list[TimingEntry], backend: str) -> Table:
         if show_out_split_columns:
             if valid_reasoning:
                 final_count = stats.predicted_tokens - reasoning_count  # just let it go negative, that's fine if there is an out of bounds
-                think_percent = f'{reasoning_count / stats.predicted_tokens * 100:.0f}%' if stats.predicted_tokens else '—'
-                message_row.append(dim(_count(reasoning_count) + " " + think_percent))
+                if reasoning_count:
+                    think_percent = f'{reasoning_count / stats.predicted_tokens * 100:.0f}%' if stats.predicted_tokens else '—'
+                    message_row.append(dim(_count(reasoning_count) + " " + think_percent))
+                else:
+                    message_row.append('')  # no reasoning tokens, leave the column blank
                 message_row.append(dim(_count(final_count)))
             else:
                 message_row.extend(['', ''])
@@ -240,10 +243,16 @@ def build_timings_summary(entries: list[TimingEntry], backend: str) -> Table:
         total_row.extend([total_count_out, total_rate_out])
 
         if show_out_split_columns:
-            percent = f'{total_reasoning / total_out * 100:.0f}%' if show_total_for_reasoning and total_out else '—'
-            count = _count(total_reasoning) if show_total_for_reasoning else '—'
-            total_for_reasoning = count + " " + percent
-            total_for_final = _count(total_final) if show_total_for_reasoning else '—'
+            if show_total_for_reasoning:
+                total_for_final = _count(total_final)
+                if total_reasoning:
+                    percent = f'{total_reasoning / total_out * 100:.0f}%' if total_out else '—'
+                    total_for_reasoning = _count(total_reasoning) + " " + percent
+                else:
+                    total_for_reasoning = ''  # no reasoning tokens, leave the column blank
+            else:
+                total_for_reasoning = '—'
+                total_for_final = '—'
             total_row.extend([dim(total_for_reasoning), dim(total_for_final)])
 
         if show_draft_column:

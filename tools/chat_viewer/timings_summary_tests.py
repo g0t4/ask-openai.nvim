@@ -63,6 +63,14 @@ def test_unknown_cache_or_reasoning_does_not_fabricate_new_or_final_counts():
     assert strip_markup(cells[5][-1]) == ''               # no fabricated reasoning
     assert strip_markup(cells[6][-1]) == ''               # no fabricated final
 
+def test_zero_reasoning_leaves_reasoning_column_blank():
+    stats = parse_timings({'usage':{'prompt_tokens':100,'completion_tokens':50,
+        'completion_tokens_details':{'reasoning_tokens':0}}})
+    table = build_timings_summary([TimingEntry(1, stats)], 'vllm')
+    cells = [list(c._cells) for c in table.columns]
+    assert strip_markup(cells[5][0]) == ''                # reasoning column blank
+    assert strip_markup(cells[6][0]) == '50'              # all output is final
+
 def test_tokens_rate_under10_includes_decimal():
     _, rate = _token_rate(1, 9.3)
     assert "9.3" in strip_markup(rate)
