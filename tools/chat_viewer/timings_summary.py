@@ -28,7 +28,7 @@ def _tokens_rate(count, rate, estimated=False):
         return text
     # return text + f' @ {"≈" if estimated else ""}{rate:,.1f} tok/s'
     at = dim(' @ ')
-    approx = "≈" if estimated else ""
+    approx = dim("≈") if estimated else ""
     units = dim(' tok/s')
     if rate < 10:
         return text + at + f'{approx}{rate:,.1f}' + units
