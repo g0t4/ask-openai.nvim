@@ -46,6 +46,14 @@ export function copyLink(id: string): void {
   navigator.clipboard.writeText(url.toString())
 }
 
+/**
+ * Navigate the browser to a message/sub-element hash.
+ * Simply sets the URL hash; the hashchange listener scrolls to the element.
+ */
+export function goToHash(id: string): void {
+  window.location.hash = id
+}
+
 export function setupHashListener(): () => void {
   const handler = () => scrollToHash()
   window.addEventListener('hashchange', handler)
