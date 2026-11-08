@@ -209,7 +209,7 @@ def build_timings_summary(entries: list[TimingEntry], backend: str) -> Table:
         message_row += [
             _duration(input_ms),
             _duration(output_ms),
-            f'#{message_number}',
+            dim('#') + str(message_number),
         ]
         table.add_row(*message_row)
 
