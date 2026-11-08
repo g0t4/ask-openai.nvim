@@ -28,7 +28,7 @@ def test_vllm_summary_uses_new_input_and_reasoning_split_and_sums_durations():
     assert [strip_markup(x) for x in cells[4]] == ['≈100 tok/s', '≈100 tok/s', '≈101 tok/s']  # out rate
     assert strip_markup(cells[5][-1]) == '100 33%'  # reasoning
     assert strip_markup(cells[6][-1]) == '200'        # final
-    assert strip_markup(cells[7][0]) == '60/120 50.0%'  # draft
+    assert strip_markup(cells[7][0]) == '60/120 50%'  # draft
     assert strip_markup(cells[9][-1]) == '0.30 s'     # in duration
     assert strip_markup(cells[10][-1]) == '2.98 s'    # out duration
     assert [strip_markup(x) for x in cells[-1]] == ['#1', '#3', '']

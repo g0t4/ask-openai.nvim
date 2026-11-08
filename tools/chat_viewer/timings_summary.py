@@ -248,7 +248,7 @@ def build_timings_summary(entries: list[TimingEntry], backend: str) -> Table:
 
         if show_draft_column:
             if total_drafted:
-                total_acceptance_rate = f"{(total_accepted/total_drafted*100):.1f}%"
+                total_acceptance_rate = f"{(total_accepted/total_drafted*100):.0f}%"
             else:
                 total_acceptance_rate = ''
             total_row.append(dim(f'{_count(total_accepted)}/{_count(total_drafted)} {total_acceptance_rate}'.strip()))

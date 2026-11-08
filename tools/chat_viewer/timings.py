@@ -88,14 +88,14 @@ class ModelTimings:
 
     @property
     def formatted_acceptance_rate(self) -> str | None:
-        """Human-readable draft acceptance rate, e.g. '80.8%'.
+        """Human-readable draft acceptance rate, e.g. '81%'.
         
         Returns None if draft data is unavailable or rate cannot be computed.
         """
         rate = self.draft_acceptance_rate
         if rate is None:
             return None
-        return f"{rate:.1f}%"
+        return f"{rate:.0f}%"
 
 
 @dataclass
