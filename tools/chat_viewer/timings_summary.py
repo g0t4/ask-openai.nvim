@@ -143,15 +143,15 @@ def build_timings_summary(entries: list[TimingEntry], backend: str, expanded: bo
     # the underline on both cells renders as a single line connecting the pair.
     table.add_column('in', justify='right', header_style='underline')
     table.add_column('', justify='right', header_style='underline')
-    table.add_column('out', justify='right')
-    table.add_column('out\ntok/s', justify='right')
+    table.add_column('out', justify='right', header_style='underline')  # merged with the blank rate header
+    table.add_column('', justify='right', header_style='underline')
     dim_not_bold = 'dim not bold'
     if show_out_split_columns:
         table.add_column('reasoning', justify='right', header_style=dim_not_bold)
         table.add_column('final', justify='right', header_style=dim_not_bold)
     if show_draft_column:
-        table.add_column('draft', justify='right', header_style=dim_not_bold)
-        table.add_column('draft\n%', justify='right', header_style=dim_not_bold)
+        table.add_column('draft', justify='right', header_style='dim not bold underline')  # merged with the blank % header
+        table.add_column('', justify='right', header_style='dim not bold underline')
     if show_mean_accept_len_column:
         table.add_column('accept\nlen', justify='right', no_wrap=True, header_style=dim_not_bold)
 
