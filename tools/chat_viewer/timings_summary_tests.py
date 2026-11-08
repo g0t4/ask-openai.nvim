@@ -19,21 +19,21 @@ def test_vllm_summary_uses_new_input_and_reasoning_split_and_sums_durations():
         'prompt_tokens_details':{'cached_tokens':1100}, 'completion_tokens_details':{'reasoning_tokens':40}},
         'metrics':{'time_to_first_token_ms':100, 'generation_time_ms':1990}})
     table = build_timings_summary([TimingEntry(1, first), TimingEntry(3, second)], 'vllm', expanded=True)
-    assert [c.header.replace('\n', ' ') for c in table.columns] == ['cached','in','','out','',
+    assert [c.header.replace('\n', ' ') for c in table.columns] == ['cached','in','','','out','',
         'reasoning','final','draft','','accept len','in','out','']
     cells = [list(column._cells) for column in table.columns]
     assert [strip_markup(x) for x in cells[1]] == ['200 @', '200 @', '400 @']   # in count
     assert [strip_markup(x) for x in cells[2]] == ['≈1,000 tok/s', '≈2,000 tok/s', '≈1,333 tok/s']  # in rate
-    assert [strip_markup(x) for x in cells[3]] == ['100 @', '200 @', '300 @']   # out count
-    assert [strip_markup(x) for x in cells[4]] == ['≈100 tok/s', '≈100 tok/s', '≈101 tok/s']  # out rate
-    assert strip_markup(cells[5][-1]) == '100 33%'  # reasoning
-    assert strip_markup(cells[6][-1]) == '200'        # final
-    assert strip_markup(cells[7][0]) == '60/120'       # draft count
-    assert strip_markup(cells[8][0]) == '50%'          # draft acceptance rate
-    assert strip_markup(cells[9][0]) == '3.00'         # accept len
-    assert strip_markup(cells[9][-1]) == '≈3.00'       # overall accept len (estimated; only entry 1 has data)
-    assert strip_markup(cells[10][-1]) == '0.30s'      # in duration
-    assert strip_markup(cells[11][-1]) == '2.98s'      # out duration
+    assert [strip_markup(x) for x in cells[4]] == ['100 @', '200 @', '300 @']   # out count
+    assert [strip_markup(x) for x in cells[5]] == ['≈100 tok/s', '≈100 tok/s', '≈101 tok/s']  # out rate
+    assert strip_markup(cells[6][-1]) == '100 33%'  # reasoning
+    assert strip_markup(cells[7][-1]) == '200'        # final
+    assert strip_markup(cells[8][0]) == '60/120'       # draft count
+    assert strip_markup(cells[9][0]) == '50%'          # draft acceptance rate
+    assert strip_markup(cells[10][0]) == '3.00'        # accept len
+    assert strip_markup(cells[10][-1]) == '≈3.00'      # overall accept len (estimated; only entry 1 has data)
+    assert strip_markup(cells[11][-1]) == '0.30s'      # in duration
+    assert strip_markup(cells[12][-1]) == '2.98s'      # out duration
     assert [strip_markup(x) for x in cells[-1]] == ['#1', '#3', '']
     assert strip_markup(cells[0][-1]) == '1,900'      # cached totals
     for width in [100, 180]:
@@ -61,16 +61,16 @@ def test_unknown_cache_or_reasoning_does_not_fabricate_new_or_final_counts():
     table = build_timings_summary([TimingEntry(1, stats)], 'vllm', expanded=True)
     cells = [list(c._cells) for c in table.columns]
     assert [strip_markup(x) for x in cells[1]] == ['—']   # no new-input count
-    assert strip_markup(cells[5][-1]) == ''               # no fabricated reasoning
-    assert strip_markup(cells[6][-1]) == ''               # no fabricated final
+    assert strip_markup(cells[6][-1]) == ''               # no fabricated reasoning
+    assert strip_markup(cells[7][-1]) == ''               # no fabricated final
 
 def test_zero_reasoning_leaves_reasoning_column_blank():
     stats = parse_timings({'usage':{'prompt_tokens':100,'completion_tokens':50,
         'completion_tokens_details':{'reasoning_tokens':0}}})
     table = build_timings_summary([TimingEntry(1, stats)], 'vllm', expanded=True)
     cells = [list(c._cells) for c in table.columns]
-    assert strip_markup(cells[5][0]) == ''                # reasoning column blank
-    assert strip_markup(cells[6][0]) == '50'              # all output is final
+    assert strip_markup(cells[6][0]) == ''                # reasoning column blank
+    assert strip_markup(cells[7][0]) == '50'              # all output is final
 
 def test_expanded_only_columns_hidden_by_default():
     stats = parse_timings({'usage':{'prompt_tokens':100,'completion_tokens':50,
@@ -79,11 +79,11 @@ def test_expanded_only_columns_hidden_by_default():
     # without --all the expanded columns are omitted
     table = build_timings_summary([TimingEntry(1, stats)], 'vllm')
     headers = [c.header.replace('\n', ' ') for c in table.columns]
-    assert headers == ['cached','in','','out','','in','out','']
+    assert headers == ['cached','in','','','out','','in','out','']
     # with --all they appear
     expanded = build_timings_summary([TimingEntry(1, stats)], 'vllm', expanded=True)
     headers_expanded = [c.header.replace('\n', ' ') for c in expanded.columns]
-    assert headers_expanded == ['cached','in','','out','','reasoning','final',
+    assert headers_expanded == ['cached','in','','','out','','reasoning','final',
         'draft','','accept len','in','out','']
 
 def test_overall_mean_accept_len_is_weighted_by_draft_tokens():
@@ -93,7 +93,7 @@ def test_overall_mean_accept_len_is_weighted_by_draft_tokens():
         'metrics':{'speculative_decoding':{'num_draft_tokens':300,'num_accepted_draft_tokens':150,'mean_acceptance_length':4.0}}})
     table = build_timings_summary([TimingEntry(1, first), TimingEntry(2, second)], 'vllm', expanded=True)
     cells = [list(c._cells) for c in table.columns]
-    assert strip_markup(cells[9][-1]) == '≈3.50'  # (2.0*100 + 4.0*300) / 400
+    assert strip_markup(cells[10][-1]) == '≈3.50'  # (2.0*100 + 4.0*300) / 400
 
 def test_tokens_rate_under10_includes_decimal():
     _, rate = _token_rate(1, 9.3)

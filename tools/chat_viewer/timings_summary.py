@@ -143,6 +143,7 @@ def build_timings_summary(entries: list[TimingEntry], backend: str, expanded: bo
     # the underline on both cells renders as a single line connecting the pair.
     table.add_column('in', justify='right', header_style='underline')
     table.add_column('', justify='right', header_style='underline')
+    table.add_column('', width=1)  # spacer: visually separates the 'in' and 'out' pairs
     table.add_column('out', justify='right', header_style='underline')  # merged with the blank rate header
     table.add_column('', justify='right', header_style='underline')
     dim_not_bold = 'dim not bold'
@@ -190,7 +191,7 @@ def build_timings_summary(entries: list[TimingEntry], backend: str, expanded: bo
 
         count_in, rate_in = _token_rate(new_in_tokens, input_rate, not exact_rates)
         count_out, rate_out = _token_rate(stats.predicted_tokens, output_rate, not exact_rates)
-        message_row = [cell_cached, count_in, rate_in, count_out, rate_out]
+        message_row = [cell_cached, count_in, rate_in, '', count_out, rate_out]
 
         # conditionally show output breakdown (reasoning vs final)
         reasoning_count = stats.reasoning_tokens
@@ -262,7 +263,7 @@ def build_timings_summary(entries: list[TimingEntry], backend: str, expanded: bo
             total_count_in, total_rate_in = _token_rate(total_in, read_rate, estimated=not exact_rates)
         else:
             total_count_in, total_rate_in = '—', ''
-        total_row = [total_for_cached, total_count_in, total_rate_in]
+        total_row = [total_for_cached, total_count_in, total_rate_in, '']
 
         total_count_out, total_rate_out = _token_rate(total_out, write_rate, estimated=not exact_rates)
         total_row.extend([total_count_out, total_rate_out])
