@@ -28,10 +28,11 @@ def _tokens_rate(count, rate, estimated=False):
         return text
     # return text + f' @ {"≈" if estimated else ""}{rate:,.1f} tok/s'
     at = dim(' @ ')
+    approx = "≈" if estimated else ""
+    units = dim(' tok/s')
     if rate < 10:
-        return text + at + f'{rate:,.1f} [dim]tok/s[/]'
-    return text + at + f'{rate:,.0f} [dim]tok/s[/]'
-
+        return text + at + f'{approx}{rate:,.1f}' + units
+    return text + at + f'{approx}{rate:,.0f}' + units
 
 # * book anchor constants: a rough, human-sized reference for the tok/s rates
 #   300-page book ≈ 250 words/page ≈ 75,000 words; English ~1.3 tokens/word.
