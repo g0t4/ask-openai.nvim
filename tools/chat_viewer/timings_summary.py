@@ -102,7 +102,6 @@ def build_timings_summary(entries: list[TimingEntry], backend: str) -> Table:
         padding=(0, 1),
         # row_styles=['', 'dim'],
     )
-    table.caption = 'Durations are summed phase times, not elapsed agent wall time.'
 
     show_out_split_columns = backend != 'llama-server' # vllm/sglang give us reasoning vs final split within output tokens
     # llama-server doesn't expose mean accept len at all... and then models w/o draft would not have draft stats at all
@@ -258,10 +257,10 @@ def build_timings_summary(entries: list[TimingEntry], backend: str) -> Table:
     table.add_section()
     table.add_row(*total_row, style='bold')
 
-    # * book anchor blurb (appended to the caption, which renders at the end of the table)
-    table.caption = (
-        'Durations are summed phase times, not elapsed agent wall time.\n'
-        + _book_anchor_blurb(read_rate, write_rate)
-    )
+    # # * book anchor blurb (appended to the caption, which renders at the end of the table)
+    # table.caption = (
+    #     'Durations are summed phase times, not elapsed agent wall time.\n'
+    #     # + _book_anchor_blurb(read_rate, write_rate)
+    # )
 
     return table
