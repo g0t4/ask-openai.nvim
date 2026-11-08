@@ -7,7 +7,8 @@
   import ToolResult from './ToolResult.svelte'
   import Markdown from './Markdown.svelte'
   import SemanticGrepMatches from './SemanticGrepMatches.svelte'
-  import LinkButton, { copy } from './LinkButton.svelte'
+  import LinkButton from './LinkButton.svelte'
+  import { goToHash } from '../lib/hash-nav'
 
   interface Props {
     message: Message
@@ -51,7 +52,7 @@
     class:bg-role-assistant={role === 'assistant'}
     class:bg-role-tool={role === 'tool'}
     style="--tw-bg-opacity: 0.2"
-    onclick={() => copy(msgId)}
+    onclick={() => goToHash(msgId)}
   >
     <span class="text-{colorClass}">{index}: {displayRole}</span>
     <LinkButton id={msgId} />
