@@ -1,7 +1,7 @@
 from io import StringIO
 from rich.console import Console
 from tools.chat_viewer.timings import parse_timings, detect_cache_misses
-from tools.chat_viewer.timings_summary import TimingEntry, build_timings_summary
+from tools.chat_viewer.timings_summary import TimingEntry, build_timings_summary, _tokens_rate
 
 
 def test_vllm_summary_uses_new_input_and_reasoning_split_and_sums_durations():
@@ -53,3 +53,20 @@ def test_unknown_cache_or_reasoning_does_not_fabricate_new_or_final_counts():
     cells = [list(c._cells) for c in table.columns]
     assert cells[1] == ['—','—']
     assert cells[2][-1] == cells[3][-1] == '—'
+
+def test_tokens_rate_under10_includes_decimal():
+    rate = _tokens_rate(1, 9.3)
+    assert "9.3" in rate
+
+def test_tokens_rate_above10__rounds_and_shows_no_decimal():
+    rate = _tokens_rate(1, 11.3)
+    assert "11" in rate
+    assert "11.3" not in rate
+
+    # rounds up
+    rate = _tokens_rate(1, 11.6)
+    assert "12" in rate
+
+def test_tokens_rate_over_one_thousand__shows_comma_on_rate():
+    rate = _tokens_rate(1, 1001)
+    assert "1,001" in rate

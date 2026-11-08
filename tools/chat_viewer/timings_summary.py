@@ -26,7 +26,10 @@ def _tokens_rate(count, rate, estimated=False):
     text = _count(count)
     if count is None or rate is None or rate <= 0:
         return text
-    return text + f' @ {"≈" if estimated else ""}{rate:,.1f} tok/s'
+    # return text + f' @ {"≈" if estimated else ""}{rate:,.1f} tok/s'
+    if rate < 10:
+        return text + f' @ {rate:,.1f} tok/s'
+    return text + f' @ {rate:,.0f} tok/s'
 
 
 # * book anchor constants: a rough, human-sized reference for the tok/s rates
