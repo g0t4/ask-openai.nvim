@@ -141,11 +141,11 @@ def build_timings_summary(entries: list[TimingEntry], backend: str, expanded: bo
     table.add_column('cached', justify='right')
     # 'in' spans the count + rate columns as one merged header (the second header is blank);
     # the underline on both cells renders as a single line connecting the pair.
-    table.add_column('in', justify='right', header_style='underline')
-    table.add_column('', justify='right', header_style='underline')
+    table.add_column('', justify='right', header_style='underline')  # count column; header lives in the rightmost
+    table.add_column('in', justify='right', header_style='underline')  # rate column (rightmost of the pair)
     table.add_column('', width=1)  # spacer: visually separates the 'in' and 'out' pairs
-    table.add_column('out', justify='right', header_style='underline')  # merged with the blank rate header
-    table.add_column('', justify='right', header_style='underline')
+    table.add_column('', justify='right', header_style='underline')  # count column; header lives in the rightmost
+    table.add_column('out', justify='right', header_style='underline')  # rate column (rightmost of the pair)
     dim_not_bold = 'dim not bold'
     if show_out_split_columns:
         table.add_column('reasoning', justify='right', header_style=dim_not_bold)
