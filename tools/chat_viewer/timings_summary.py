@@ -19,7 +19,7 @@ def _count(value):
 
 
 def _duration(value):
-    return '—' if value is None else f'{value / 1000:.2f} {dim("s")}'
+    return '—' if value is None else f'{value / 1000:.2f}{dim("s")}'
 
 
 def _token_rate(count, rate, estimated=False):

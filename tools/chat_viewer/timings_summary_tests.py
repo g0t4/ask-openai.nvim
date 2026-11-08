@@ -31,8 +31,8 @@ def test_vllm_summary_uses_new_input_and_reasoning_split_and_sums_durations():
     assert strip_markup(cells[7][0]) == '60/120'       # draft count
     assert strip_markup(cells[8][0]) == '50%'          # draft acceptance rate
     assert strip_markup(cells[9][0]) == '3.00'         # accept len
-    assert strip_markup(cells[10][-1]) == '0.30 s'     # in duration
-    assert strip_markup(cells[11][-1]) == '2.98 s'     # out duration
+    assert strip_markup(cells[10][-1]) == '0.30s'      # in duration
+    assert strip_markup(cells[11][-1]) == '2.98s'      # out duration
     assert [strip_markup(x) for x in cells[-1]] == ['#1', '#3', '']
     assert strip_markup(cells[0][-1]) == '1,900'      # cached totals
     for width in [100, 180]:
