@@ -237,7 +237,7 @@ def build_timings_summary(entries: list[TimingEntry], backend: str) -> Table:
             total_acceptance_rate = f"{(total_accepted/total_drafted*100):.1f}%"
         else:
             total_acceptance_rate = ''
-        total_row.append(f'{_count(total_accepted)}/{_count(total_drafted)} {total_acceptance_rate}'.strip())
+        total_row.append(dim(f'{_count(total_accepted)}/{_count(total_drafted)} {total_acceptance_rate}'.strip()))
     if show_mean_accept_len_column:
         # TODO weighted average of the mean accept len?
         total_row.append('')
