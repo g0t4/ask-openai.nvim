@@ -150,12 +150,12 @@ def build_timings_summary(entries: list[TimingEntry], backend: str) -> Table:
             cell_cached += red(f'\nMISS {cache.formatted_missing_tokens}')
 
         # rates
-        estimated_rates = backend == 'llama-server'
-        input_rate = stats.prompt_tokens_per_second if estimated_rates else stats.estimated_input_tokens_per_second
-        output_rate = stats.predicted_tokens_per_second if estimated_rates else stats.estimated_decode_tokens_per_second
+        exact_rates = backend == 'llama-server'
+        input_rate = stats.prompt_tokens_per_second if exact_rates else stats.estimated_input_tokens_per_second
+        output_rate = stats.predicted_tokens_per_second if exact_rates else stats.estimated_decode_tokens_per_second
 
-        cell_in = _tokens_rate(new_in_tokens, input_rate, not estimated_rates)
-        cell_out = _tokens_rate(stats.predicted_tokens, output_rate, not estimated_rates)
+        cell_in = _tokens_rate(new_in_tokens, input_rate, not exact_rates)
+        cell_out = _tokens_rate(stats.predicted_tokens, output_rate, not exact_rates)
         message_row = [cell_cached, cell_in, cell_out]
 
         # conditionally show output breakdown (reasoning vs final)
@@ -196,8 +196,8 @@ def build_timings_summary(entries: list[TimingEntry], backend: str) -> Table:
             cell_mean_accept_len = '—' if stats.mean_acceptance_length is None else f'{stats.mean_acceptance_length:.2f}'
             message_row.append(dim(cell_mean_accept_len))
 
-        input_ms = stats.prompt_ms if estimated_rates else stats.time_to_first_token_ms
-        output_ms = stats.predicted_ms if estimated_rates else stats.generation_time_ms
+        input_ms = stats.prompt_ms if exact_rates else stats.time_to_first_token_ms
+        output_ms = stats.predicted_ms if exact_rates else stats.generation_time_ms
         message_row += [
             _duration(input_ms),
             _duration(output_ms),
