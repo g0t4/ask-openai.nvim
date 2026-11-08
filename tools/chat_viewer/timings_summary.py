@@ -95,7 +95,7 @@ def red(text: str) -> str:
 def green(text: str) -> str:
     return f"[green]{text}[/]"
 
-def build_timings_summary(entries: list[TimingEntry], backend: str) -> Table:
+def build_timings_summary(entries: list[TimingEntry], backend: str, expanded: bool = False) -> Table:
     """Entries carry the assistant message's number in the trace, including unmeasured turns."""
     # TODO what happens if you are missing timings on an assistant message? right now IIAC we would skip sending it here and we wouldn't realize it...
     #   TODO should probably indicate missing in TimingEntry so we can factor that into cache hit/miss and at a minimum show missing timing info in table (b/c then you might miss overall durations or average tok/s b/c of missing timing)
@@ -109,10 +109,12 @@ def build_timings_summary(entries: list[TimingEntry], backend: str) -> Table:
         # row_styles=['', 'dim'],
     )
 
-    show_out_split_columns = backend != 'llama-server' # vllm/sglang give us reasoning vs final split within output tokens
-    # llama-server doesn't expose mean accept len at all... and then models w/o draft would not have draft stats at all
-    show_draft_column = any([e.timings.draft_tokens is not None for e in entries])
-    show_mean_accept_len_column = any([e.timings.mean_acceptance_length is not None for e in entries])
+    # * expanded (--all) reveals extra detail; everything else shows always
+    #   vllm/sglang give us a reasoning vs final split; llama-server doesn't expose mean accept len,
+    #   and models without a draft have no draft stats at all.
+    show_out_split_columns = expanded and backend != 'llama-server'
+    show_draft_column = expanded and any([e.timings.draft_tokens is not None for e in entries])
+    show_mean_accept_len_column = expanded and any([e.timings.mean_acceptance_length is not None for e in entries])
 
     # * headers
     table.add_column('cached', justify='right')
@@ -154,7 +156,7 @@ def build_timings_summary(entries: list[TimingEntry], backend: str) -> Table:
         cell_cached = _count(stats.cached_tokens)
         # TODO look into caching with vllm and sglang... the expected/actual difference is almost never aligned so showing MISS every time is not that useful until I understand why and if I want to distill that into a MISS / delta
         #  TODO if I don't find a good use for HIT/MISS then get rid of it here
-        if backend == "llama-server" and cache and cache.is_cache_miss:
+        if expanded and backend == "llama-server" and cache and cache.is_cache_miss:
             # for llama-server only mark MISSes so I can investigate or at least so I don't mostly see `ok`/green when that' useless to know if it basically happens all the time
             #  no news (no ok) == good news!
             cell_cached += red(f'\nMISS {cache.formatted_missing_tokens}')

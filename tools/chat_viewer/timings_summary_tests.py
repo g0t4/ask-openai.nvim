@@ -18,7 +18,7 @@ def test_vllm_summary_uses_new_input_and_reasoning_split_and_sums_durations():
     second = parse_timings({'usage': {'prompt_tokens':1300, 'completion_tokens':200,
         'prompt_tokens_details':{'cached_tokens':1100}, 'completion_tokens_details':{'reasoning_tokens':40}},
         'metrics':{'time_to_first_token_ms':100, 'generation_time_ms':1990}})
-    table = build_timings_summary([TimingEntry(1, first), TimingEntry(3, second)], 'vllm')
+    table = build_timings_summary([TimingEntry(1, first), TimingEntry(3, second)], 'vllm', expanded=True)
     assert [c.header.replace('\n', ' ') for c in table.columns] == ['cached','in','in tok/s','out','out tok/s',
         'reasoning','final','draft','draft %','accept len','in','out','']
     cells = [list(column._cells) for column in table.columns]
@@ -57,7 +57,7 @@ def test_llama_and_vllm_cache_continuity_use_the_same_total_input_math():
 
 def test_unknown_cache_or_reasoning_does_not_fabricate_new_or_final_counts():
     stats = parse_timings({'usage':{'prompt_tokens':100,'completion_tokens':20}})
-    table = build_timings_summary([TimingEntry(1, stats)], 'vllm')
+    table = build_timings_summary([TimingEntry(1, stats)], 'vllm', expanded=True)
     cells = [list(c._cells) for c in table.columns]
     assert [strip_markup(x) for x in cells[1]] == ['—']   # no new-input count
     assert strip_markup(cells[5][-1]) == ''               # no fabricated reasoning
@@ -66,10 +66,24 @@ def test_unknown_cache_or_reasoning_does_not_fabricate_new_or_final_counts():
 def test_zero_reasoning_leaves_reasoning_column_blank():
     stats = parse_timings({'usage':{'prompt_tokens':100,'completion_tokens':50,
         'completion_tokens_details':{'reasoning_tokens':0}}})
-    table = build_timings_summary([TimingEntry(1, stats)], 'vllm')
+    table = build_timings_summary([TimingEntry(1, stats)], 'vllm', expanded=True)
     cells = [list(c._cells) for c in table.columns]
     assert strip_markup(cells[5][0]) == ''                # reasoning column blank
     assert strip_markup(cells[6][0]) == '50'              # all output is final
+
+def test_expanded_only_columns_hidden_by_default():
+    stats = parse_timings({'usage':{'prompt_tokens':100,'completion_tokens':50,
+        'completion_tokens_details':{'reasoning_tokens':20}},
+        'metrics':{'speculative_decoding':{'num_draft_tokens':120,'num_accepted_draft_tokens':60,'mean_acceptance_length':3}}})
+    # without --all the expanded columns are omitted
+    table = build_timings_summary([TimingEntry(1, stats)], 'vllm')
+    headers = [c.header.replace('\n', ' ') for c in table.columns]
+    assert headers == ['cached','in','in tok/s','out','out tok/s','in','out','']
+    # with --all they appear
+    expanded = build_timings_summary([TimingEntry(1, stats)], 'vllm', expanded=True)
+    headers_expanded = [c.header.replace('\n', ' ') for c in expanded.columns]
+    assert headers_expanded == ['cached','in','in tok/s','out','out tok/s','reasoning','final',
+        'draft','draft %','accept len','in','out','']
 
 def test_tokens_rate_under10_includes_decimal():
     _, rate = _token_rate(1, 9.3)
