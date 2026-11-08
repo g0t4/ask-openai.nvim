@@ -52,15 +52,19 @@ def load_trace_json(trace_path: Path) -> dict:
         return {}
 
 def launch_chat_viewer(trace_path: Path) -> None:
-    subprocess.run(["fish", "-i", "-c", f"view_trace {trace_path}"], check=False)
+    subprocess.run(["fish", "-i", "-c", f"view_trace '{trace_path}'"], check=False)
 
 def launch_chat_viewer_all(trace_path: Path) -> None:
-    subprocess.run(["fish", "-i", "-c", f"view_trace --all {trace_path}"], check=False)
+    subprocess.run(["fish", "-i", "-c", f"view_trace --all '{trace_path}'"], check=False)
 
 class TraceBrowser:
 
     def __init__(self, from_dir: str) -> None:
-        base_dir = Path(os.getenv("HOME") + "/.local/state/nvim/ask-openai/" + from_dir)
+        from_path = Path(from_dir)
+        if from_path.exists() and from_path.is_dir():
+            base_dir = from_path
+        else:
+            base_dir = Path(os.getenv("HOME") + "/.local/state/nvim/ask-openai/" + from_dir)
 
         to_dir = from_dir
         if from_dir == "fim":
