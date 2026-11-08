@@ -24,9 +24,9 @@ def _duration(value):
 
 def _tokens_rate(count, rate, estimated=False):
     text = _count(count)
-    if count is not None and rate is not None and rate > 0:
-        text += f' @ {"≈" if estimated else ""}{rate:,.1f} tok/s'
-    return text
+    if count is None or rate is None or rate <= 0:
+        return text
+    return text + f' @ {"≈" if estimated else ""}{rate:,.1f} tok/s'
 
 
 # * book anchor constants: a rough, human-sized reference for the tok/s rates
