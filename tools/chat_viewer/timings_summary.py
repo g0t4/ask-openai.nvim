@@ -214,48 +214,52 @@ def build_timings_summary(entries: list[TimingEntry], backend: str) -> Table:
         out_durations.append(output_ms)
 
     # * totals row
-    # overall speeds = token-weighted (== time-weighted) average across the measured turns
-    read_rate = _aggregate_rate(total_in, in_durations)
-    write_rate = _aggregate_rate(total_out, out_durations)
+    more_than_one = len(entries) > 1
+    if more_than_one:
 
-    total_for_cached = _count(total_cached)
-    total_for_in = _tokens_rate(total_in, read_rate, estimated=not exact_rates) if show_total_for_in else '—'
-    total_row = [total_for_cached, total_for_in]
+        # overall speeds = token-weighted (== time-weighted) average across the measured turns
+        read_rate = _aggregate_rate(total_in, in_durations)
+        write_rate = _aggregate_rate(total_out, out_durations)
 
-    total_for_out = _tokens_rate(total_out, write_rate, estimated=not exact_rates)
-    total_row.append(total_for_out)
+        total_for_cached = _count(total_cached)
+        total_for_in = _tokens_rate(total_in, read_rate, estimated=not exact_rates) if show_total_for_in else '—'
+        total_row = [total_for_cached, total_for_in]
 
-    if show_out_split_columns:
-        percent = f'{total_reasoning / total_out * 100:.1f}%' if show_total_for_reasoning and total_out else '—'
-        count = _count(total_reasoning) if show_total_for_reasoning else '—'
-        total_for_reasoning = count + " " + percent
-        total_for_final = _count(total_final) if show_total_for_reasoning else '—'
-        total_row.extend([dim(total_for_reasoning), dim(total_for_final)])
+        total_for_out = _tokens_rate(total_out, write_rate, estimated=not exact_rates)
+        total_row.append(total_for_out)
 
-    if show_draft_column:
-        if total_drafted:
-            total_acceptance_rate = f"{(total_accepted/total_drafted*100):.1f}%"
-        else:
-            total_acceptance_rate = ''
-        total_row.append(dim(f'{_count(total_accepted)}/{_count(total_drafted)} {total_acceptance_rate}'.strip()))
-    if show_mean_accept_len_column:
-        # TODO weighted average of the mean accept len?
-        total_row.append('')
+        if show_out_split_columns:
+            percent = f'{total_reasoning / total_out * 100:.1f}%' if show_total_for_reasoning and total_out else '—'
+            count = _count(total_reasoning) if show_total_for_reasoning else '—'
+            total_for_reasoning = count + " " + percent
+            total_for_final = _count(total_final) if show_total_for_reasoning else '—'
+            total_row.extend([dim(total_for_reasoning), dim(total_for_final)])
 
-    def _total_duration(durations):
-        # Do not show total duration when any individual duration is missing.
-        if all(v is not None for v in durations):
-            return _duration(sum(durations))
-        return '—'
+        if show_draft_column:
+            if total_drafted:
+                total_acceptance_rate = f"{(total_accepted/total_drafted*100):.1f}%"
+            else:
+                total_acceptance_rate = ''
+            total_row.append(dim(f'{_count(total_accepted)}/{_count(total_drafted)} {total_acceptance_rate}'.strip()))
+        if show_mean_accept_len_column:
+            # TODO weighted average of the mean accept len?
+            total_row.append('')
 
-    total_row.extend([
-        _total_duration(in_durations),
-        _total_duration(out_durations),
-        '', # message_number
-    ])
+        def _total_duration(durations):
+            # Do not show total duration when any individual duration is missing.
+            if all(v is not None for v in durations):
+                return _duration(sum(durations))
+            return '—'
 
-    table.add_section()
-    table.add_row(*total_row, style='bold')
+        total_row.extend([
+            _total_duration(in_durations),
+            _total_duration(out_durations),
+            '',  # message_number
+        ])
+
+        table.add_section()
+        table.add_row(*total_row, style='bold')
+
 
     # # * book anchor blurb (appended to the caption, which renders at the end of the table)
     # table.caption = (
