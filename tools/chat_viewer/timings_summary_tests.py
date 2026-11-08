@@ -1,7 +1,13 @@
 from io import StringIO
+import re
 from rich.console import Console
 from tools.chat_viewer.timings import parse_timings, detect_cache_misses
-from tools.chat_viewer.timings_summary import TimingEntry, build_timings_summary, _tokens_rate
+from tools.chat_viewer.timings_summary import TimingEntry, build_timings_summary, _token_rate
+
+
+def strip_markup(text):
+    """Remove rich markup tags so cells can be compared as plain text."""
+    return re.sub(r'\[/?[^\]]*\]', '', text)
 
 
 def test_vllm_summary_uses_new_input_and_reasoning_split_and_sums_durations():
@@ -13,20 +19,20 @@ def test_vllm_summary_uses_new_input_and_reasoning_split_and_sums_durations():
         'prompt_tokens_details':{'cached_tokens':1100}, 'completion_tokens_details':{'reasoning_tokens':40}},
         'metrics':{'time_to_first_token_ms':100, 'generation_time_ms':1990}})
     table = build_timings_summary([TimingEntry(1, first), TimingEntry(3, second)], 'vllm')
-    assert [c.header.replace('\n', ' ') for c in table.columns] == ['cached tokens','in tokens','reasoning tokens','final tokens',
-        'thinking %','out tokens','draft','mean accept len','in duration','out duration','#']
+    assert [c.header.replace('\n', ' ') for c in table.columns] == ['cached','in','in tok/s','out','out tok/s',
+        'reasoning','final','draft','accept len','in','out','']
     cells = [list(column._cells) for column in table.columns]
-    assert cells[1] == ['200 @ ≈1,000.0 tok/s', '200 @ ≈2,000.0 tok/s', '400']
-    assert cells[5][-1] == '300'
-    assert cells[2][-1] == '100'
-    assert cells[3][-1] == '200'
-    assert cells[4][-1] == '33.3%'
-    assert cells[6][0] == '60/120 50.0%'
-    assert cells[8][-1] == '0.30 s'
-    assert cells[9][-1] == '2.98 s'
-    assert cells[-1] == ['#1', '#3', 'total']
-    assert cells[0][-1] == ''
-    assert 'ok' in cells[0][1]  # 1,000 input + 100 output, not 800 + 1,000 + 100
+    assert [strip_markup(x) for x in cells[1]] == ['200 @', '200 @', '400 @']   # in count
+    assert [strip_markup(x) for x in cells[2]] == ['≈1,000 tok/s', '≈2,000 tok/s', '≈1,333 tok/s']  # in rate
+    assert [strip_markup(x) for x in cells[3]] == ['100 @', '200 @', '300 @']   # out count
+    assert [strip_markup(x) for x in cells[4]] == ['≈100 tok/s', '≈100 tok/s', '≈101 tok/s']  # out rate
+    assert strip_markup(cells[5][-1]) == '100 33.3%'  # reasoning
+    assert strip_markup(cells[6][-1]) == '200'        # final
+    assert strip_markup(cells[7][0]) == '60/120 50.0%'  # draft
+    assert strip_markup(cells[9][-1]) == '0.30 s'     # in duration
+    assert strip_markup(cells[10][-1]) == '2.98 s'    # out duration
+    assert [strip_markup(x) for x in cells[-1]] == ['#1', '#3', '']
+    assert strip_markup(cells[0][-1]) == '1,900'      # cached totals
     for width in [100, 180]:
         output = StringIO()
         Console(file=output, width=width).print(table)
@@ -44,29 +50,30 @@ def test_llama_and_vllm_cache_continuity_use_the_same_total_input_math():
     assert detect_cache_misses(vllm)[1].missing_tokens == -10
     assert detect_cache_misses([llama[0], vllm[1]]) == [None, None]
     table = build_timings_summary([TimingEntry(1, llama[0])], 'llama-server')
-    assert 'reasoning tokens' not in [c.header.replace('\n', ' ') for c in table.columns]
+    assert 'reasoning' not in [c.header.replace('\n', ' ') for c in table.columns]
 
 
 def test_unknown_cache_or_reasoning_does_not_fabricate_new_or_final_counts():
     stats = parse_timings({'usage':{'prompt_tokens':100,'completion_tokens':20}})
     table = build_timings_summary([TimingEntry(1, stats)], 'vllm')
     cells = [list(c._cells) for c in table.columns]
-    assert cells[1] == ['—','—']
-    assert cells[2][-1] == cells[3][-1] == '—'
+    assert [strip_markup(x) for x in cells[1]] == ['—']   # no new-input count
+    assert strip_markup(cells[5][-1]) == ''               # no fabricated reasoning
+    assert strip_markup(cells[6][-1]) == ''               # no fabricated final
 
 def test_tokens_rate_under10_includes_decimal():
-    rate = _tokens_rate(1, 9.3)
-    assert "9.3" in rate
+    _, rate = _token_rate(1, 9.3)
+    assert "9.3" in strip_markup(rate)
 
 def test_tokens_rate_above10__rounds_and_shows_no_decimal():
-    rate = _tokens_rate(1, 11.3)
-    assert "11" in rate
-    assert "11.3" not in rate
+    _, rate = _token_rate(1, 11.3)
+    assert "11" in strip_markup(rate)
+    assert "11.3" not in strip_markup(rate)
 
     # rounds up
-    rate = _tokens_rate(1, 11.6)
-    assert "12" in rate
+    _, rate = _token_rate(1, 11.6)
+    assert "12" in strip_markup(rate)
 
 def test_tokens_rate_over_one_thousand__shows_comma_on_rate():
-    rate = _tokens_rate(1, 1001)
-    assert "1,001" in rate
+    _, rate = _token_rate(1, 1001)
+    assert "1,001" in strip_markup(rate)

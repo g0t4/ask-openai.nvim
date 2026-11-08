@@ -22,17 +22,18 @@ def _duration(value):
     return '—' if value is None else f'{value / 1000:.2f} s'
 
 
-def _tokens_rate(count, rate, estimated=False):
-    text = _count(count)
+def _token_rate(count, rate, estimated=False):
+    """Split a count and its tok/s rate into two cells so numeric values align."""
+    count_cell = _count(count)
     if count is None or rate is None or rate <= 0:
-        return text
-    # return text + f' @ {"≈" if estimated else ""}{rate:,.1f} tok/s'
-    at = dim(' @ ')
-    approx = dim("≈") if estimated else ""
+        return count_cell, ''
+    approx = '≈' if estimated else ''
     units = dim(' tok/s')
     if rate < 10:
-        return text + at + f'{approx}{rate:,.1f}' + units
-    return text + at + f'{approx}{rate:,.0f}' + units
+        rate_cell = f'{approx}{rate:,.1f}{units}'
+    else:
+        rate_cell = f'{approx}{rate:,.0f}{units}'
+    return count_cell + dim(' @'), rate_cell
 
 # * book anchor constants: a rough, human-sized reference for the tok/s rates
 #   300-page book ≈ 250 words/page ≈ 75,000 words; English ~1.3 tokens/word.
@@ -116,7 +117,9 @@ def build_timings_summary(entries: list[TimingEntry], backend: str) -> Table:
     # * headers
     table.add_column('cached', justify='right')
     table.add_column('in', justify='right')
+    table.add_column('in\ntok/s', justify='right')
     table.add_column('out', justify='right')
+    table.add_column('out\ntok/s', justify='right')
     dim_not_bold = 'dim not bold'
     if show_out_split_columns:
         table.add_column('reasoning', justify='right', header_style=dim_not_bold)
@@ -159,9 +162,9 @@ def build_timings_summary(entries: list[TimingEntry], backend: str) -> Table:
         input_rate = stats.prompt_tokens_per_second if exact_rates else stats.estimated_input_tokens_per_second
         output_rate = stats.predicted_tokens_per_second if exact_rates else stats.estimated_decode_tokens_per_second
 
-        cell_in = _tokens_rate(new_in_tokens, input_rate, not exact_rates)
-        cell_out = _tokens_rate(stats.predicted_tokens, output_rate, not exact_rates)
-        message_row = [cell_cached, cell_in, cell_out]
+        count_in, rate_in = _token_rate(new_in_tokens, input_rate, not exact_rates)
+        count_out, rate_out = _token_rate(stats.predicted_tokens, output_rate, not exact_rates)
+        message_row = [cell_cached, count_in, rate_in, count_out, rate_out]
 
         # conditionally show output breakdown (reasoning vs final)
         reasoning_count = stats.reasoning_tokens
@@ -227,11 +230,14 @@ def build_timings_summary(entries: list[TimingEntry], backend: str) -> Table:
         write_rate = _aggregate_rate(total_out, out_durations)
 
         total_for_cached = _count(total_cached)
-        total_for_in = _tokens_rate(total_in, read_rate, estimated=not exact_rates) if show_total_for_in else '—'
-        total_row = [total_for_cached, total_for_in]
+        if show_total_for_in:
+            total_count_in, total_rate_in = _token_rate(total_in, read_rate, estimated=not exact_rates)
+        else:
+            total_count_in, total_rate_in = '—', ''
+        total_row = [total_for_cached, total_count_in, total_rate_in]
 
-        total_for_out = _tokens_rate(total_out, write_rate, estimated=not exact_rates)
-        total_row.append(total_for_out)
+        total_count_out, total_rate_out = _token_rate(total_out, write_rate, estimated=not exact_rates)
+        total_row.extend([total_count_out, total_rate_out])
 
         if show_out_split_columns:
             percent = f'{total_reasoning / total_out * 100:.1f}%' if show_total_for_reasoning and total_out else '—'
