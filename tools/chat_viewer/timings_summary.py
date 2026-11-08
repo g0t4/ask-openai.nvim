@@ -139,8 +139,8 @@ def build_timings_summary(entries: list[TimingEntry], backend: str, expanded: bo
 
     # * headers
     table.add_column('cached', justify='right')
-    table.add_column('in', justify='right')
-    table.add_column('in\ntok/s', justify='right')
+    table.add_column('in', justify='right', header_style='underline')  # grouped with 'in tok/s'
+    table.add_column('in\ntok/s', justify='right', header_style='underline')
     table.add_column('out', justify='right')
     table.add_column('out\ntok/s', justify='right')
     dim_not_bold = 'dim not bold'
