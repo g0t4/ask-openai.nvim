@@ -127,7 +127,7 @@ def build_timings_summary(entries: list[TimingEntry], backend: str, expanded: bo
         box = None,
         # box=box.SIMPLE, # results in line under header and extra blank above totals row b/c of add_section()
         padding=(0, 1),
-        collapse_padding=True,  # adjacent columns share one padding space (not two)
+        # collapse_padding=True,  # adjacent columns share one padding space (not two)
         # row_styles=['', 'dim'],
     )
 
