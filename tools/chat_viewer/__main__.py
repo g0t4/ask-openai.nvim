@@ -586,12 +586,12 @@ def print_model_info(name: str | None, timings: ModelTimings | None = None) -> N
         name: The model name to display.
         timings: Optional ModelTimings object for displaying token counts and timing info.
     """
-    if name:
-        _console.print(f"[dim]Model:[/] [bold]{name}[/]")
-        if timings:
-            stats_line = format_stats_line(timings)
-            if stats_line:
-                _console.print(f"[dim]{stats_line}[/]")
+    show_model_info(name)
+
+    if timings:
+        stats_line = format_stats_line(timings)
+        if stats_line:
+            _console.print(f"[dim]{stats_line}[/]")
         _console.print()
 
 def get_model_name_from_jsonl_messages(records) -> str|None:
@@ -1535,6 +1535,10 @@ def render_messages_to_console(console, messages, *, start_index=1, context_mess
     finally:
         _console = previous_console
 
+def show_model_info(model_name):
+    if model_name:
+        _console.print(f"[dim]Model:[/] [bold]{model_name}[/]")
+        _console.print()
 
 def render_trace_to_console(console, messages, model_name, timings, *, full_width=False) -> None:
     """Render a full trace to the given rich Console.
@@ -1550,9 +1554,7 @@ def render_trace_to_console(console, messages, model_name, timings, *, full_widt
     has_message_timings = any(msg.get("role") == "assistant" and parse_timings(msg) is not None for msg in messages)
     if has_message_timings:
         # Show model name only, no trace-level timings
-        if model_name:
-            _console.print(f"[dim]Model:[/] [bold]{model_name}[/]")
-            _console.print()
+        print_model_info(model_name, None)
     else:
         print_model_info(model_name, timings)
 
