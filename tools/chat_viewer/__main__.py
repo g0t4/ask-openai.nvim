@@ -1228,6 +1228,10 @@ def _handle_unknown_tool(arguments: str):
     return arguments
 
 
+def warn(tree: TreeWrapper, message: str):
+    tree.add(message + "\n", style="dim italic")
+
+
 def add_tool_call_request(func_name: str, arguments: str, tree: TreeWrapper):
     if func_name == "apply_patch":
         return _add_apply_patch(arguments, tree)
@@ -1236,6 +1240,10 @@ def add_tool_call_request(func_name: str, arguments: str, tree: TreeWrapper):
         child = tree.add(format_call_title(func_name))
         return add_run_bash__and_legacy_shell_tools(arguments, child)
 
+    if func_name == "execute_in_current_xonsh":
+        child = tree.add(format_call_title(func_name))
+        return _add_run_xonsh(arguments, child)
+
     if func_name == "run_xonsh":
         child = tree.add(format_call_title(func_name))
         return _add_run_xonsh(arguments, child)
@@ -1243,6 +1251,10 @@ def add_tool_call_request(func_name: str, arguments: str, tree: TreeWrapper):
     if func_name == "run_in_neovim":
         child = tree.add(format_call_title(func_name))
         return _add_run_in_neovim(arguments, child)
+
+    if func_name != "semantic_grep":
+        # FYI mark the allowed tool names like semantic_grep here so we only warn on new tools
+        warn(tree, f"No formatter for `{func_name}`, using generic fallback")
 
     # FYI semantic_grep works good with generic right now:
     return _add_generic_tool(func_name, arguments, tree)
