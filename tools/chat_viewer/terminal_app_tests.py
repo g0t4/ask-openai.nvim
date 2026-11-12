@@ -27,7 +27,7 @@ async def test_existing_vtt_caps_centers_and_toggles_width(monkeypatch):
         widths.append((console.width, kwargs.get('full_width')))
         return render(console, *args, **kwargs)
     monkeypatch.setattr(viewer, 'render_trace_to_console', capture_width)
-    monkeypatch.setattr(viewer, 'SHOW_ALL', False)
+    monkeypatch.setattr(viewer.args, 'show_all', False)
     app = TraceViewerApp([{'role':'assistant', 'content':'OK'}])
     async with app.run_test(size=(180, 50)) as pilot:
         await pilot.pause()

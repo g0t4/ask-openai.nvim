@@ -1622,6 +1622,10 @@ class ChatViewerArgs(argparse.Namespace):
     show_stats: bool = False
     max_width: int = 160
 
+args = ChatViewerArgs()
+SHOW_ALL = False
+
+
 
 def main() -> None:
     global _console

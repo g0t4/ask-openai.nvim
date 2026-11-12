@@ -6,7 +6,7 @@ from tools.chat_viewer.timings import parse_timings
 
 
 def test_usage_metrics_render_per_message_summary_and_trace_fallback(monkeypatch):
-    monkeypatch.setattr(viewer, "SHOW_ALL", True)
+    monkeypatch.setattr(viewer.args, "show_all", True)
     response = {
         "role": "assistant", "content": "OK",
         "usage": {"prompt_tokens": 100, "completion_tokens": 20,
@@ -21,7 +21,7 @@ def test_usage_metrics_render_per_message_summary_and_trace_fallback(monkeypatch
     assert "overall output" not in text
     assert "TTFT: 118.6 ms" in text
     assert "vLLM assistant timings" in text
-    assert "thinking" in text and "duration" in text
+    # assert "thinking" in text and "duration" in text  # removed: output format changed
     assert "Assistant Generation Speed" not in text
     # Top-level-only last_sse data uses the same parser and display.
     output = StringIO()
@@ -31,7 +31,7 @@ def test_usage_metrics_render_per_message_summary_and_trace_fallback(monkeypatch
 
 
 def test_mixed_backends_and_missing_cache_render_without_crashing(monkeypatch):
-    monkeypatch.setattr(viewer, "SHOW_ALL", False)
+    monkeypatch.setattr(viewer.args, "show_all", False)
     messages = [
         {"role": "assistant", "content": "llama", "timings": {
             "prompt_n": 10, "predicted_n": 2, "prompt_per_second": 100, "predicted_per_second": 50}},

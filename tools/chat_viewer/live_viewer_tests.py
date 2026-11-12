@@ -58,7 +58,7 @@ def test_partial_message_renderer_resolves_tool_from_full_history():
 
 @pytest.mark.asyncio
 async def test_live_updates_reuse_prefix_replace_suffix_switch_and_follow(tmp_path, monkeypatch):
-    monkeypatch.setattr(viewer, "SHOW_ALL", False)
+    monkeypatch.setattr(viewer.args, "show_all", False)
     app = LiveTraceViewerApp(tmp_path, poll_interval=3600)
     first = tmp_path / 'one-trace.json'
     second = tmp_path / 'two-trace.json'

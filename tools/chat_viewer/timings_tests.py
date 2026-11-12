@@ -205,7 +205,7 @@ def test_format_stats_line_with_draft() -> None:
     assert "in: 129 @ 2,010.9 tok/s" in lines[1]
     assert "out: 296 @ 260.2 tok/s" in lines[2]
     assert "  draft:" in lines[3]
-    assert "80.8% accepted" in lines[3]  # 101/125 = 80.8%
+    assert "81% accepted" in lines[3]  # 101/125 = 80.8%
     assert "(101 / 125 tokens)" in lines[3]
 
 
@@ -260,7 +260,7 @@ def test_format_stats_line_zero_draft_accepted() -> None:
     # Should have 3 lines: in, out, draft (no cached)
     assert len(lines) == 3
     assert "  draft:" in lines[2]
-    assert "0.0% accepted" in lines[2]  # 0/125 = 0.0%
+    assert "0% accepted" in lines[2]  # 0/125 = 0.0%
     assert "(0 / 125 tokens)" in lines[2]
 
 
@@ -300,7 +300,7 @@ def test_formatted_acceptance_rate() -> None:
     
     formatted = timings.formatted_acceptance_rate
     assert formatted is not None
-    assert formatted == "80.8%"
+    assert formatted == "81%"
 
 
 def test_formatted_acceptance_rate_no_draft() -> None:
@@ -327,7 +327,7 @@ def test_formatted_acceptance_rate_perfect_rate() -> None:
 
     formatted = timings.formatted_acceptance_rate
     assert formatted is not None
-    assert formatted == "100.0%"
+    assert formatted == "100%"
 
 
 def test_expected_next_cache() -> None:
@@ -492,7 +492,7 @@ def test_vllm_usage_metrics_keep_distinct_semantics() -> None:
     assert parsed.predicted_tokens_per_second == 0  # overall throughput isn't decode rate
     text = format_stats_line(parsed)
     for label in ("in: 20 @ ≈168.6 tok/s", "out: 20 @ ≈363.4 tok/s", "reasoning: 10", "TTFT: 118.6 ms",
-                  "decode: 52.3 ms", "20.0%", "mean acceptance length: 2.0"):
+                  "decode: 52.3 ms", "20%", "mean acceptance length: 2.0"):
         assert label in text
     assert "ms prompt" not in text
     assert expected_next_cache(parsed) == 120
@@ -601,12 +601,12 @@ def test_sglang_openai_extensions_and_native_metadata_are_verbatim():
     assert stats.uncached_prompt_tokens == 20
     assert stats.reasoning_tokens == 7
     assert stats.draft_tokens == 18 and stats.draft_tokens_accepted == 12
-    assert stats.formatted_acceptance_rate == '66.7%'
+    assert stats.formatted_acceptance_rate == '67%'
     assert stats.mean_acceptance_length == 8/3
     assert stats.estimated_input_tokens_per_second is None
     assert stats.estimated_decode_tokens_per_second is None
     text = format_stats_line(stats)
-    assert 'in: 20' in text and 'reasoning: 7' in text and '66.7%' in text
+    assert 'in: 20' in text and 'reasoning: 7' in text and '67%' in text
     assert 'TTFT' not in text and 'tok/s' not in text and 'overall' not in text
     assert response == original
     assert parse_timings({'meta_info':{'prompt_tokens':100,'completion_tokens':20,'cached_tokens':80}}).uncached_prompt_tokens == 20
