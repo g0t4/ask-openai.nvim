@@ -16,24 +16,7 @@ from rich.table import Table
 from typing import List, Optional
 
 from tools.chat_viewer.tree_wrapper import TreeWrapper
-
-def relative_age(past: datetime) -> str:
-    """Return a human‑readable relative age like “2 days ago”. """
-    now = datetime.now(timezone.utc)
-    delta = now - past.astimezone(timezone.utc)
-
-    seconds = int(delta.total_seconds())
-    minutes = seconds // 60
-    hours = minutes // 60
-    days = hours // 24
-
-    if days > 0:
-        return f"{days} day{'s' if days != 1 else ''} ago"
-    if hours > 0:
-        return f"{hours} hour{'s' if hours != 1 else ''} ago"
-    if minutes > 0:
-        return f"{minutes} minute{'s' if minutes != 1 else ''} ago"
-    return f"{seconds} second{'s' if seconds != 1 else ''} ago"
+from tools.chat_viewer.loader import file_age
 
 def find_trace_files(base_dir: Path) -> List[Path]:
     """
@@ -128,8 +111,7 @@ class TraceBrowser:
             .removeprefix(prefix_path_str) \
             .removeprefix(os.sep)
 
-        ts = datetime.fromtimestamp(int(trace.stem.split("-")[0]))
-        relative = relative_age(ts)
+        relative, ts = file_age(trace)
         sys.stdout.write(f"[{self.index + 1}/{len(self.traces)}] {display_path}  "
               f"({ts.isoformat()}, {relative})\n")
         sys.stdout.flush()
