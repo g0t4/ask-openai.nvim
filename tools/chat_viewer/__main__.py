@@ -1591,7 +1591,6 @@ class ChatViewerArgs(argparse.Namespace):
     show_all: bool = False
     show_stats: bool = False
     max_width: int = 160
-    html: bool = False
 
 
 def main() -> None:
@@ -1611,22 +1610,17 @@ def main() -> None:
     parser.add_argument("--stats", action=argparse.BooleanOptionalAction, dest="show_stats",
                         help="show per-message timing stats (default: off; use --no-stats to disable)")
     parser.add_argument("--max-width", type=parse_max_width, default=160, help="transcript width cap (default: 160; 0 for full width)")
-    parser.add_argument("--html", action="store_true", help="export rendered output as HTML")
+    # --html removed
 
     argcomplete.autocomplete(parser)
     args = parser.parse_args(namespace=ChatViewerArgs())
 
 
-    export_html = args.html
-    if export_html:
-        _console.record = True
-    html_path: str | None = None
-
     load_preapproved_files()
 
-    if args.watch is not None or (not args.trace_file and sys.stdin.isatty() and not export_html):
-        if args.trace_file or export_html:
-            parser.error("--watch cannot be combined with a trace file or --html")
+    if args.watch is not None or (not args.trace_file and sys.stdin.isatty()):
+        if args.trace_file:
+            parser.error("--watch cannot be combined with a trace file ")
         from tools.chat_viewer.live_viewer import run_live, default_trace_directory
         directory = Path(args.watch).expanduser() if args.watch else default_trace_directory()
         run_live(directory)
@@ -1637,12 +1631,8 @@ def main() -> None:
     if trace_file_path is None and not sys.stdin.isatty():
         # No file arg and stdin has data (piped)
         messages, model_name, timings = load_trace_messages_from_stream(sys.stdin)
-        if export_html:
-            html_path = "stdout.html"
     elif trace_file_path is not None:
         messages, model_name, timings = load_trace_messages_from_path(trace_file_path)
-        if export_html:
-            html_path = str(trace_file_path) + ".html"
     else:
         parser.print_help()
         return
@@ -1651,14 +1641,8 @@ def main() -> None:
     width = min(terminal_width, args.max_width) if args.max_width else terminal_width
     margin = max(0, (terminal_width - width) // 2)
     _console = Console(file=CenteredOutput(_console.file, margin), width=width,
-                       color_system="truecolor", force_terminal=True, record=export_html)
+                       color_system="truecolor", force_terminal=True)
     render_trace_to_console(_console, messages, model_name, timings, full_width=True)
-
-    if export_html and html_path:
-        try:
-            _console.save_html(html_path)
-        except Exception as e:
-            _console.print(f"[red]Failed to write HTML output to {html_path}: {e}[/]")
 
 
 if __name__ == "__main__":
