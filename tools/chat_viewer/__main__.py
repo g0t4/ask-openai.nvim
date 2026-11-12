@@ -608,6 +608,7 @@ def load_trace_messages_from_path(trace_file: Path) -> tuple[list[dict[str, Any]
         print(f"File not found: {trace_file}")
         sys.exit(1)
     if str(trace_file).endswith(".jsonl"):
+        # TODO move to yielding? so we can stream the output? instead of waiting for the full list here?
         return list(load_messages_jsonl(trace_file)), None, None
 
     with trace_file.open("r", encoding="utf-8") as f:
