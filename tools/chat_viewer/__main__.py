@@ -45,7 +45,6 @@ from tools.chat_viewer.theme import (
     tool_icon,
 )
 
-# Enable recording so that ``save_html`` can export the rendered output.
 # ``force_terminal=True`` keeps rich from dropping control segments (the iTerm2
 # inline-image escape) when the console's file is not a real TTY; otherwise
 # ``Console._render_buffer`` strips ``control=True`` segments entirely.
@@ -1610,7 +1609,6 @@ def main() -> None:
     parser.add_argument("--stats", action=argparse.BooleanOptionalAction, dest="show_stats",
                         help="show per-message timing stats (default: off; use --no-stats to disable)")
     parser.add_argument("--max-width", type=parse_max_width, default=160, help="transcript width cap (default: 160; 0 for full width)")
-    # --html removed
 
     argcomplete.autocomplete(parser)
     args = parser.parse_args(namespace=ChatViewerArgs())
