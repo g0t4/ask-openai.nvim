@@ -586,7 +586,6 @@ def print_model_info(name: str | None, timings: ModelTimings | None = None) -> N
         name: The model name to display.
         timings: Optional ModelTimings object for displaying token counts and timing info.
     """
-    show_model_info(name)
 
     if timings:
         stats_line = format_stats_line(timings)
@@ -1550,13 +1549,11 @@ def render_trace_to_console(console, messages, model_name, timings, *, full_widt
     global _console
     _console = console
 
-    # Detect per-message timings
-    has_message_timings = any(msg.get("role") == "assistant" and parse_timings(msg) is not None for msg in messages)
-    if has_message_timings:
-        # Show model name only, no trace-level timings
-        print_model_info(model_name, None)
-    else:
-        print_model_info(model_name, timings)
+    show_model_info(model_name)
+
+    has_per_message_timings = any(msg.get("role") == "assistant" and parse_timings(msg) is not None for msg in messages)
+    if not has_per_message_timings:
+        print_model_info(timings)
 
     render_messages_to_console(console, messages, full_width=full_width)
 
