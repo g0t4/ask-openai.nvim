@@ -605,6 +605,8 @@ def get_model_name_from_jsonl_messages(records) -> str|None:
     first = assistant_records[0]
     # _console.print(first["metadata"])
     # TODO defensive checks... I'd love to not use dictionaries TBH
+    # TODO check if diff model name than first and if so print that variation on assistant chat boxes? I don't currently do this but I could see a time to do this
+    # ... TODO actually we should track that as a model change record type (could be logical off of asssistant responses too b/c the server can use a diff model than client asked for)
     return first['metadata']['response']['model_name']
 
 def load_trace_messages_from_path(trace_file: Path) -> tuple[list[dict[str, Any]], str | None, ModelTimings | None]:
