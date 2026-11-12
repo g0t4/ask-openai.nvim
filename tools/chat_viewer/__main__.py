@@ -555,7 +555,7 @@ def yank(mapping, key: str, default=None):
     return value
 
 
-def load_messages_jsonl(path: Path) -> Iterable[dict[str, Any]]:
+def load_jsonl_records(path: Path) -> Iterable[dict[str, Any]]:
     # https://jsonlines.org/
     # aka new line delimited JSON
     # each line is a record
@@ -577,15 +577,7 @@ def load_messages_jsonl(path: Path) -> Iterable[dict[str, Any]]:
             _console.print(f"record is missing type:")
             _console.print(f"  {record=}")
             return
-
-        # TODO emit records and have downstream handler for new types beyond messages
-        record_type = record["type"]
-        if record_type == "message":
-            _console.print(record)
-            yield record["message"] # for now we just yield the message object itself for backwards compat with viewer
-        else:
-            _console.print(f"skipping {record_type=}")
-
+        yield record
 
 def print_model_info(name: str | None, timings: ModelTimings | None = None) -> None:
     """Print model name and optional timing stats.
@@ -608,8 +600,9 @@ def load_trace_messages_from_path(trace_file: Path) -> tuple[list[dict[str, Any]
         print(f"File not found: {trace_file}")
         sys.exit(1)
     if str(trace_file).endswith(".jsonl"):
-        # TODO move to yielding? so we can stream the output? instead of waiting for the full list here?
-        return list(load_messages_jsonl(trace_file)), None, None
+        records = list(load_jsonl_records(trace_file))
+        messages = [r["message"] for r in records if "message" in r and "type" in r and r["type"] == "message"]
+        return messages, None, None
 
     with trace_file.open("r", encoding="utf-8") as f:
         data = json.load(f)
