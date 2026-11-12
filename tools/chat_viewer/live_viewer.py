@@ -22,6 +22,7 @@ from textual.containers import VerticalScroll
 from textual.widgets import Footer, Header, Static
 
 from tools.chat_viewer import __main__ as viewer
+from tools.chat_viewer.__main__ import load_jsonl_records, get_model_name_from_jsonl_messages
 from tools.chat_viewer.terminal_app import TerminalSizedApp
 from tools.chat_viewer.live_stream import TraceSocketSubscriber, StreamSnapshot
 
@@ -61,6 +62,13 @@ class TraceDirectoryWatcher:
                         candidates.append((stat.st_mtime_ns, path.name, path, stat))
                 except OSError:
                     continue
+            for path in self.directory.glob("*.jsonl"):
+                try:
+                    stat = path.stat()
+                    if path.is_file():
+                        candidates.append((stat.st_mtime_ns, path.name, path, stat))
+                except OSError:
+                    continue
         except OSError as error:
             self.error = str(error)
             return None
@@ -73,17 +81,22 @@ class TraceDirectoryWatcher:
             self.error = None
             return None
         try:
-            data = json.loads(path.read_text(encoding="utf-8"))
             after = path.stat()
             if (before.st_mtime_ns, before.st_size, before.st_ino) != (after.st_mtime_ns, after.st_size, after.st_ino):
                 self.error = f"Waiting for {path.name} to finish saving"
                 return None
-            messages = data.get("request_body", data).get("messages")
-            if not isinstance(messages, list) or not all(isinstance(message, dict) and "role" in message for message in messages):
-                raise ValueError("expected an array of trace messages")
-            if isinstance(data.get("response_message"), dict):
-                messages = [*messages, data["response_message"]]
-            model_name = (data.get("last_sse") or {}).get("model")
+            if path.suffix == ".jsonl":
+                records = list(load_jsonl_records(path))
+                messages = [r["message"] for r in records if isinstance(r, dict) and r.get("type") == "message" and "message" in r]
+                model_name = get_model_name_from_jsonl_messages(records)
+            else:
+                data = json.loads(path.read_text(encoding="utf-8"))
+                messages = data.get("request_body", data).get("messages")
+                if not isinstance(messages, list) or not all(isinstance(message, dict) and "role" in message for message in messages):
+                    raise ValueError("expected an array of trace messages")
+                if isinstance(data.get("response_message"), dict):
+                    messages = [*messages, data["response_message"]]
+                model_name = (data.get("last_sse") or {}).get("model")
         except (OSError, ValueError, AttributeError, TypeError) as error:
             self.error = f"Waiting for a complete save of {path.name}: {error}"
             return None

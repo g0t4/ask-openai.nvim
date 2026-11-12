@@ -37,12 +37,23 @@ def relative_age(past: datetime) -> str:
 
 def find_trace_files(base_dir: Path) -> List[Path]:
     """
-    Walk ``base_dir`` looking for <unix_timestamp>-trace.json files
+    Walk ``base_dir`` looking for <unix_timestamp>-trace.json files and .jsonl files
     Returns a sorted list of Paths ordered chronologically.
     """
-    pattern = "**/[0-9]*-trace.json"
-    files = sorted(base_dir.glob(pattern), key=lambda p: int(p.stem.split("-")[0]))
-    return files
+    pattern_json = "**/[0-9]*-trace.json"
+    pattern_jsonl = "**/*.jsonl"
+    files_json = list(base_dir.glob(pattern_json))
+    files_jsonl = list(base_dir.glob(pattern_jsonl))
+    files = files_json + files_jsonl
+    def sort_key(p):
+        name = p.stem
+        try:
+            # try timestamp prefix
+            ts = int(name.split("-")[0])
+        except Exception:
+            ts = 0
+        return (ts, p.name)
+    return sorted(files, key=sort_key)
 
 def load_trace_json(trace_path: Path) -> dict:
     try:
