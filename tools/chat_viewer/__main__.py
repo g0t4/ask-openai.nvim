@@ -556,13 +556,35 @@ def yank(mapping, key: str, default=None):
 
 
 def load_messages_jsonl(path: Path) -> Iterable[dict[str, Any]]:
+    # https://jsonlines.org/
+    # aka new line delimited JSON
+    # each line is a record
     with open(path, "r", encoding="utf-8") as f:
         lines = f.readlines()
     for line in lines:
         if line.strip() == "":
             continue
-        message = json.loads(line)
-        yield message
+        record = json.loads(line)
+
+        # data pre-conditions, abort if violated
+        if not isinstance(record, dict):
+            # `list` is not allowed
+            _console.print(f"record must be a dict (object)... aborting:")
+            _console.print(f"  actual type: {type(record)}")
+            _console.print(f"  {record=}")
+            return # stop for now so user sees the problem (not glossed over)
+        if not "type" in record:
+            _console.print(f"record is missing type:")
+            _console.print(f"  {record=}")
+            return
+
+        # TODO emit records and have downstream handler for new types beyond messages
+        record_type = record["type"]
+        if record_type == "message":
+            _console.print(record)
+            yield record["message"] # for now we just yield the message object itself for backwards compat with viewer
+        else:
+            _console.print(f"skipping {record_type=}")
 
 
 def print_model_info(name: str | None, timings: ModelTimings | None = None) -> None:
@@ -585,7 +607,7 @@ def load_trace_messages_from_path(trace_file: Path) -> tuple[list[dict[str, Any]
     if not trace_file.is_file():
         print(f"File not found: {trace_file}")
         sys.exit(1)
-    if str(trace_file).endswith("-messages.jsonl"):
+    if str(trace_file).endswith(".jsonl"):
         return list(load_messages_jsonl(trace_file)), None, None
 
     with trace_file.open("r", encoding="utf-8") as f:
