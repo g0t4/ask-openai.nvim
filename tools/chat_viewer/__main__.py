@@ -594,6 +594,18 @@ def print_model_info(name: str | None, timings: ModelTimings | None = None) -> N
                 _console.print(f"[dim]{stats_line}[/]")
         _console.print()
 
+def get_model_name_from_jsonl_messages(records) -> str|None:
+    # TODO turn this into a print_model_name so we dont pass it around
+    # TODO lets take old formats and wrap them as records too? so I can pass records into the main loop to print messages (and then I can print other recrod info) and long term move to records
+    assistant_records = [r for r in records if r["type"] == "message" and r["message"]["role"] == "assistant"]
+    # _console.print(assistant_records)
+    if not any(assistant_records):
+        print("none")
+        return None
+    first = assistant_records[0]
+    # _console.print(first["metadata"])
+    # TODO defensive checks... I'd love to not use dictionaries TBH
+    return first['metadata']['response']['model_name']
 
 def load_trace_messages_from_path(trace_file: Path) -> tuple[list[dict[str, Any]], str | None, ModelTimings | None]:
     if not trace_file.is_file():
@@ -602,7 +614,9 @@ def load_trace_messages_from_path(trace_file: Path) -> tuple[list[dict[str, Any]
     if str(trace_file).endswith(".jsonl"):
         records = list(load_jsonl_records(trace_file))
         messages = [r["message"] for r in records if "message" in r and "type" in r and r["type"] == "message"]
-        return messages, None, None
+        model_name = get_model_name_from_jsonl_messages(records)
+        # TODO return timings too? make sure we request them for vllm/sglang/llama-server/etc like in ask-openai.nvim
+        return messages, model_name, None
 
     with trace_file.open("r", encoding="utf-8") as f:
         data = json.load(f)
