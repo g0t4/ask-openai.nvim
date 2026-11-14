@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import asyncio
 import json
+import tempfile
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -94,9 +96,7 @@ async def test_ping_pong_and_ptt_flow():
         writer.write(b'{"type":"start"}\n')
         await writer.drain()
         await _read_until(reader, lambda e: e.get("state") == "listening")
-        live = await _read_until(
-            reader, lambda e: e["type"] == "transcription"
-        )
+        live = await _read_until(reader, lambda e: e["type"] == "transcription")
         assert live["text"] == "hello world"
         assert live["final"] is False
 
@@ -112,4 +112,104 @@ async def test_ping_pong_and_ptt_flow():
         writer.close()
         await writer.wait_closed()
     finally:
+        await daemon._shutdown()
+
+
+@pytest.fixture(autouse=True)
+def isolated_socket(monkeypatch):
+    """Never unlink the user's running voiced socket during tests."""
+    with tempfile.TemporaryDirectory(dir="/tmp", prefix="voiced-test-") as directory:
+        path = Path(directory) / "v.sock"
+        monkeypatch.setattr("tools.voiced.daemon.socket_path", lambda: path)
+        monkeypatch.setitem(globals(), "socket_path", lambda: path)
+        yield
+
+
+@pytest.mark.asyncio
+async def test_private_dictation_isolation_busy_and_disconnect():
+    daemon = VoicedDaemon(
+        model_path="unused", step_ms=10, mic=FakeMic(), transcriber=FakeTranscriber()
+    )
+    await daemon.start_server()
+    clients = [await asyncio.open_unix_connection(str(socket_path())) for _ in range(3)]
+    owner, observer, other = clients
+
+    async def command(client, kind):
+        client[1].write((json.dumps({"type": kind}) + "\n").encode())
+        await client[1].drain()
+
+    try:
+        await command(owner, "hello")
+        assert (await _read_until(owner[0], lambda e: e["type"] == "hello"))[
+            "private_dictation"
+        ] == 1
+        await command(owner, "dictation_start")
+        await _read_until(owner[0], lambda e: e.get("state") == "listening")
+        await command(other, "dictation_start")
+        assert (
+            "busy"
+            in (await _read_until(other[0], lambda e: e["type"] == "error"))["message"]
+        )
+        await command(observer, "stop")
+        await daemon.stop_listening()  # hardware PTT release must not end private input
+        assert daemon._listening
+        await command(owner, "dictation_stop")
+        final = await _read_until(owner[0], lambda e: e.get("final"))
+        assert final["text"] == "hello world"
+        await _read_until(owner[0], lambda e: e.get("state") == "idle")
+        assert daemon._dictation_owner is None
+        # Ordering barrier: global ping follows finalization, with no private events before it.
+        for client in (observer, other):
+            await command(client, "ping")
+            assert json.loads(await asyncio.wait_for(client[0].readline(), 1)) == {
+                "type": "pong"
+            }
+        await command(owner, "dictation_start")
+        await _read_until(owner[0], lambda e: e.get("state") == "listening")
+        owner[1].close()
+        await owner[1].wait_closed()
+        for _ in range(100):
+            if daemon._dictation_owner is None:
+                break
+            await asyncio.sleep(0.01)
+        assert daemon._dictation_owner is None and not daemon._listening
+        await command(observer, "start")
+        await _read_until(observer[0], lambda e: e.get("state") == "listening")
+        await command(other, "dictation_start")
+        assert (
+            "busy"
+            in (await _read_until(other[0], lambda e: e["type"] == "error"))["message"]
+        )
+        await command(observer, "stop")
+        await _read_until(observer[0], lambda e: e.get("state") == "idle")
+    finally:
+        for _, writer in clients:
+            writer.close()
+            await writer.wait_closed()
+        await daemon._shutdown()
+
+
+@pytest.mark.asyncio
+async def test_private_transcription_failure_releases_microphone():
+    class Broken:
+        def transcribe(self, audio):
+            raise RuntimeError("recognizer unavailable")
+
+    daemon = VoicedDaemon(
+        model_path="unused", step_ms=1000, mic=FakeMic(), transcriber=Broken()
+    )
+    await daemon.start_server()
+    reader, writer = await asyncio.open_unix_connection(str(socket_path()))
+    try:
+        writer.write(b'{"type":"dictation_start"}\n{"type":"dictation_stop"}\n')
+        await writer.drain()
+        error = await _read_until(reader, lambda e: e["type"] == "error")
+        assert error["message"] == "recognizer unavailable"
+        await _read_until(reader, lambda e: e.get("state") == "idle")
+        assert daemon._dictation_owner is None
+        assert not daemon._mic.capture_enabled
+        assert not daemon._finishing
+    finally:
+        writer.close()
+        await writer.wait_closed()
         await daemon._shutdown()

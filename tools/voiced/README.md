@@ -202,3 +202,20 @@ the first client playback write):
 - Clankerd's argument-stream handler queues complete sentence segments for TTS.
   Continuous incremental text input into one TTS generation context remains a
   separate future step.
+
+## Private dictation clients
+
+A resident Whisper instance can also serve app-local text input without sending
+that speech to Clankerd or other global subscribers. Connect a dedicated socket,
+send `{"type":"hello"}`, and require `{"type":"hello","private_dictation":1}`.
+Then send `dictation_start`, wait for `status/listening`, and send
+`dictation_stop` on release. The existing live/final transcription and idle events
+are routed **only to that connection** until finalization finishes. Insert the
+final transcript in the app; submitting it is a separate user action.
+
+If the microphone is already listening or finalizing, the request returns an
+error instead of taking over an utterance. Global hardware PTT release and VAD
+cannot stop private dictation. Disconnecting the owner finalizes and releases it;
+that final transcript stays private. This is one microphone session at a time,
+not simultaneous independent recordings. Legacy start/stop, PTT, and broadcast
+behavior is unchanged when no private owner exists. Restart voiced after updating.

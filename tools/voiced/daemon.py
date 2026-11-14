@@ -57,6 +57,8 @@ class VoicedDaemon:
         self._clients: set[asyncio.StreamWriter] = set()
         self._loop: Optional[asyncio.AbstractEventLoop] = None
         self._listening = False
+        self._dictation_owner = None
+        self._finishing = False
         self._transcribe_task: Optional[asyncio.Task] = None
         self._server: Optional[asyncio.AbstractServer] = None
 
@@ -136,7 +138,11 @@ class VoicedDaemon:
 
     def _on_mic_samples(self, samples: np.ndarray) -> None:
         """Called from the audio callback thread for every mic chunk."""
-        if not self._handsfree or self._loop is None:
+        if (
+            not self._handsfree
+            or self._loop is None
+            or self._dictation_owner is not None
+        ):
             return
         event = self._vad.feed(samples)
         if event == "start":
@@ -149,7 +155,7 @@ class VoicedDaemon:
     # ------------------------------------------------------------- listening
 
     async def start_listening(self) -> None:
-        if self._listening:
+        if self._listening or self._finishing:
             return
         self._listening = True
         # Pause the wake listener while actively listening so it doesn't
@@ -160,28 +166,38 @@ class VoicedDaemon:
         self._transcribe_task = asyncio.create_task(self._transcribe_loop())
         await self._broadcast({"type": "status", "state": "listening"})
 
-    async def stop_listening(self) -> None:
+    async def stop_listening(self, owner=None) -> None:
+        if self._dictation_owner is not None and owner is not self._dictation_owner:
+            return
         if not self._listening:
             return
-        self._listening = False
-        if self._transcribe_task:
-            await self._transcribe_task
-            self._transcribe_task = None
+        try:
+            self._listening = False
+            self._finishing = True
+            if self._transcribe_task:
+                await self._transcribe_task
+                self._transcribe_task = None
 
-        # Final transcription of the complete utterance.
-        audio = self._mic.take()
-        text = await self._run_transcribe(audio)
-        if text:
-            logger.info("transcription [final]: %s", text)
-            await self._broadcast(
-                {"type": "transcription", "text": text, "final": True}
-            )
-        self._mic.enable_capture(False)
-
-        # Resume wake-word listening now that we are idle again.
-        if self._wake_listener:
-            await self._wake_listener.start()
-        await self._broadcast({"type": "status", "state": "idle"})
+            # Final transcription of the complete utterance.
+            audio = self._mic.take()
+            text = await self._run_transcribe(audio)
+            if text:
+                logger.info("transcription [final]: %s", text)
+                await self._broadcast(
+                    {"type": "transcription", "text": text, "final": True}
+                )
+        except Exception as error:
+            logger.exception("transcription failed")
+            await self._broadcast({"type": "error", "message": str(error)})
+        finally:
+            try:
+                self._mic.enable_capture(False)
+                if self._wake_listener:
+                    await self._wake_listener.start()
+                await self._broadcast({"type": "status", "state": "idle"})
+            finally:
+                self._dictation_owner = None
+                self._finishing = False
 
     async def _transcribe_loop(self) -> None:
         while self._listening:
@@ -218,6 +234,8 @@ class VoicedDaemon:
         except asyncio.CancelledError:
             pass
         finally:
+            if self._dictation_owner is writer:
+                await self.stop_listening(owner=writer)
             self._clients.discard(writer)
             writer.close()
             try:
@@ -236,7 +254,26 @@ class VoicedDaemon:
             return
 
         command_type = command.get("type")
-        if command_type == "start":
+        if command_type == "hello":
+            await self._send(writer, {"type": "hello", "private_dictation": 1})
+        elif command_type == "dictation_start":
+            if self._listening or self._finishing or self._dictation_owner is not None:
+                await self._send(
+                    writer, {"type": "error", "message": "Microphone is busy"}
+                )
+                return
+            self._dictation_owner = writer
+            try:
+                await self.start_listening()
+            except Exception as error:
+                self._listening = False
+                self._mic.enable_capture(False)
+                self._dictation_owner = None
+                await self._send(writer, {"type": "error", "message": str(error)})
+        elif command_type == "dictation_stop":
+            if self._dictation_owner is writer:
+                await self.stop_listening(owner=writer)
+        elif command_type == "start":
             await self.start_listening()
         elif command_type == "stop":
             await self.stop_listening()
@@ -264,6 +301,10 @@ class VoicedDaemon:
             self._clients.discard(writer)
 
     async def _broadcast(self, event: dict) -> None:
+        # Private dictation never reaches global subscribers such as Clankerd.
+        if self._dictation_owner is not None:
+            await self._send(self._dictation_owner, event)
+            return
         for writer in list(self._clients):
             await self._send(writer, event)
 
