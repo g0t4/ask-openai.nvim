@@ -7,16 +7,14 @@ import rich
 import subprocess
 import sys
 import termios
-import time
 import tty
-import re
 from datetime import datetime, timezone
 from pathlib import Path
 from rich.table import Table
 from typing import List, Optional
+from tools.chat_viewer.humanize import humanize_size, relative_age
 
 from tools.chat_viewer.tree_wrapper import TreeWrapper
-from tools.chat_viewer.loader import file_age
 
 def find_trace_files(base_dir: Path) -> List[Path]:
     """
@@ -50,6 +48,15 @@ def launch_chat_viewer(trace_path: Path) -> None:
 
 def launch_chat_viewer_all(trace_path: Path) -> None:
     subprocess.run(["fish", "-i", "-c", f"view_trace --all '{trace_path}'"], check=False)
+
+
+def file_age(path: Path):
+    if path.name.endswith("-trace.json"):
+        # ? should we use created timestamp here too?
+        return datetime.fromtimestamp(int(path.stem.split("-")[0]))
+        # use the file's created timestamp (i.e. for *.jsonl)
+    return datetime.fromtimestamp(path.stat().st_ctime, tz=timezone.utc)
+
 
 class TraceBrowser:
 
@@ -111,10 +118,21 @@ class TraceBrowser:
             .removeprefix(prefix_path_str) \
             .removeprefix(os.sep)
 
-        relative, ts = file_age(trace)
-        sys.stdout.write(f"[{self.index + 1}/{len(self.traces)}] {display_path}  "
-              f"({ts.isoformat()}, {relative})\n")
+        index_base1 = self.index + 1
+        count = len(self.traces)
+        position = f"[{index_base1}/{count}]"
+        #
+        size = humanize_size(trace)
+        #
+        created_timestamp = file_age(trace)
+        age = relative_age(created_timestamp)
+        #
+        trace_info = f"{position} {display_path} - {age} - {size}"
+
+        sys.stdout.write(trace_info)
+        sys.stdout.write("\n")
         sys.stdout.flush()
+
         # meta = load_trace_json(trace)
         # print(f"  summary: {meta.get('summary', 'n/a')}")
 
