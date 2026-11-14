@@ -241,8 +241,11 @@ end
 
 ---@param request_body table
 ---@param effort string
+---@param is_prediction? boolean
 ---@return table
-function M.body_for_muse_glimmer(request_body, effort)
+function M.body_for_muse_glimmer(request_body, effort, is_prediction)
+    is_prediction = is_prediction or false
+
     throw_if_no_messages(request_body)
     -- Best practices: https://huggingface.co/meta-models/Muse-Glimmer-30B-GGUF
     -- Sampling Parameters:
@@ -296,9 +299,12 @@ function M.body_for_muse_glimmer(request_body, effort)
         -- sys_message = "## Reasoning Guidance\n" .. " Reasoning strength: " .. effort .. ".\n"
         --     .. 'To clarify, "low" effort means less than 100 tokens. Do not practice predictions, just make them! If they don\'t work, the user will ask for a new one in a split-second. So, don\'t overthink it. Less than 100 tokens of thinking (you can have as many prediction tokens as you want, whatever you\'re confident make sense!'
         --     .. sys_message
-        sys_message = "Do not overthink this, the user is only asking for a code prediction, return the first thing that comes to mind. Do not reason for more than 100 tokens. Do not wrap your suggestion in backticks"
         -- TODO stick Muse, or maybe deepseek/codex/claude, on finding the best prompt for a spectrum of FIM tasks, for Muse... Muse seems highly maleable w.r.t. thinking
-        request_body.messages[1].content = sys_message
+        if is_prediction then
+            -- replace system message for predictions only (formerly FIM now Edit Predictions)
+            sys_message = "Do not overthink this, the user is only asking for a code prediction, return the first thing that comes to mind. Do not reason for more than 100 tokens. Do not wrap your suggestion in backticks"
+            request_body.messages[1].content = sys_message
+        end
 
         -- FYI this is working with template to add the level
         recommended.chat_template_kwargs.reasoning_strength = effort

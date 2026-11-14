@@ -188,7 +188,7 @@ function FimRequestBuilder:fim_request()
                 }
                 -- TODO other models use their overrides in params.
             elseif model == models.MUSE then
-                body = params.body_for_muse_glimmer(body, level)
+                body = params.body_for_muse_glimmer(body, level, true)
                 curl_params.body = body
             end
 
