@@ -308,8 +308,8 @@ def main() -> None:
     parser.add_argument(
         "from_dir",
         nargs="?",
-        default="fim",
-        help="trace from_dir: fim, rewrite, agents",
+        default="",
+        help="path or from_dir: fim, rewrite, agents",
     )
 
     argcomplete.autocomplete(parser)
