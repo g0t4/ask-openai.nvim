@@ -72,7 +72,7 @@ class ModelTimings:
     @property
     def draft_acceptance_rate(self) -> float | None:
         """Calculate draft token acceptance rate.
-        
+
         Returns:
             Acceptance rate as a percentage (0-100), or None if draft data
             is unavailable or draft_tokens is zero.
@@ -89,7 +89,7 @@ class ModelTimings:
     @property
     def formatted_acceptance_rate(self) -> str | None:
         """Human-readable draft acceptance rate, e.g. '81%'.
-        
+
         Returns None if draft data is unavailable or rate cannot be computed.
         """
         rate = self.draft_acceptance_rate
@@ -180,10 +180,10 @@ def detect_cache_misses(
 
 def parse_timings(last_sse: dict[str, Any] | None) -> ModelTimings | None:
     """Extract timing information from the last SSE response.
-    
+
     Args:
         last_sse: The last server-sent event from the trace data.
-        
+
     Returns:
         ModelTimings if timings data is available, None otherwise.
     """
@@ -277,7 +277,7 @@ def parse_timings(last_sse: dict[str, Any] | None) -> ModelTimings | None:
 
 def _humanize_int(value: int) -> str:
     """Format an integer with comma separators for readability.
-    
+
     Examples:
         1000 => "1,000"
         1000000 => "1,000,000"
@@ -287,7 +287,7 @@ def _humanize_int(value: int) -> str:
 
 def _humanize_float(value: float, decimals: int = 1) -> str:
     """Format a float with comma separators and specified decimal places.
-    
+
     Examples:
         1234.5 => "1,234.5"
         1234.567 => "1,234.6"
@@ -297,10 +297,10 @@ def _humanize_float(value: float, decimals: int = 1) -> str:
 
 def format_timings_display(timings: ModelTimings | None) -> str:
     """Format timings for display under the model name.
-    
+
     Args:
         timings: The parsed ModelTimings object.
-        
+
     Returns:
         Formatted string for display, or empty string if no timings.
     """
@@ -308,15 +308,15 @@ def format_timings_display(timings: ModelTimings | None) -> str:
         return ""
 
     parts: list[str] = []
-    
+
     # Token counts: total + cached + prompt vs predicted breakdown
     token_parts = [f"{_humanize_int(timings.context_tokens)} tokens"]
-    
+
     if timings.cached_tokens is not None and timings.cached_tokens > 0:
         token_parts.insert(0, f"{_humanize_int(timings.cached_tokens)} cached")
-    
+
     parts.append(" ".join(token_parts))
-    
+
     if timings.backend in ("vllm", "sglang"):
         if timings.time_to_first_token_ms is not None:
             parts.append(f"{_humanize_float(timings.time_to_first_token_ms)}ms TTFT")
@@ -326,10 +326,10 @@ def format_timings_display(timings: ModelTimings | None) -> str:
     # Add timing info
     if timings.prompt_ms > 0:
         parts.append(f"{_humanize_float(timings.prompt_ms, 0)}ms prompt")
-    
+
     if timings.predicted_ms > 0:
         parts.append(f"{_humanize_float(timings.predicted_ms, 0)}ms predicted")
-    
+
     return " | ".join(parts)
 
 
