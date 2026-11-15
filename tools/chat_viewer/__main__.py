@@ -533,12 +533,6 @@ def add_semantic_grep_markdown_sections(root: TreeWrapper, markdown: str) -> boo
     return has_visible_match
 
 
-def pprint_no_truncate(what):
-    # TODO use new _pretty_no_truncate(what) and then get rid of this old pprint_no_truncate()
-    # btw expand_all=False is the default and will truncate some sections (shown w/ yellow bg on black text with "...")
-    #   for now just always show everything given the review is supposed to be exhaustive and so far I haven't noticed much that is a huge burden
-    pprint(what, expand_all=True, indent_guides=False)
-
 def _pretty_no_truncate(text: Any):
     # ?? was I relying on soft_wrap=True from pprint (this replaced pprint)? if yes, what makes sense in a Tree instead?
     return Pretty(
@@ -651,7 +645,7 @@ def show_rest_of_request_body_properties(data):
     #   primary is going to be tools list and that tends to look good as is in JSON b/c it is itself a JSON schema
     # only show rest of request body in verbose mode (--all)
     print_section_header("UNPROCESSED request.body properties", color="cyan")
-    pprint_no_truncate(data)
+    _pretty_no_truncate(data)
 
 
 def load_messages(data) -> list[dict[str, Any]]:
