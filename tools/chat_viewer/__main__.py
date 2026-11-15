@@ -960,9 +960,15 @@ def build_tool_result_message(
     if build_mcp_tool_result(root, content):
         return root
 
-    # FYI this is just a warning to consider adding handlers for it
-    root.add("[yellow bold]⚠️ UNRECOGNIZED RESULT TYPE:[/]") \
-        .add(_pretty_no_truncate(content))
+    allowed_generic = func_name in {
+        "inspect_video",  # slop_reel
+    }
+
+    if not allowed_generic:
+        # FYI this is just a warning to consider adding handlers for it
+        root.add("[yellow bold]⚠️ UNRECOGNIZED RESULT TYPE[/]")
+
+    root.add(_pretty_no_truncate(content))
 
     return root
 
