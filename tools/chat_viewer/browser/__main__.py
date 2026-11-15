@@ -71,6 +71,14 @@ class TraceBrowser:
         if from_dir == "fim":
             # only fim is renamed from_dir vs to_dir
             to_dir = "fims"
+        if to_dir is None or to_dir == "":
+            # infer to_dir when from_dir is CWD (nothing passed for from_dir)
+            to_dir = Path(os.getcwd()).name
+            rich.print(f"[yellow italic]⚠️ assuming {to_dir=} based on CWD b/c no from_dir passed[/]")
+        if "/" in to_dir:
+            # if from_dir represents a path then use last dir as to_dir
+            to_dir = Path(to_dir).name
+            rich.print(f"[yellow italic]⚠️ assuming {to_dir=} because from_dir was a path[/]")
         self.to_dir = to_dir
 
         if not base_dir.is_dir():
