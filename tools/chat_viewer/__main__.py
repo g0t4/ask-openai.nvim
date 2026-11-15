@@ -894,12 +894,6 @@ def build_semantic_grep_lsp_matches_result(root: TreeWrapper, content: Any, requ
     return True
 
 
-def build_unrecognized_tool_result_message(root: TreeWrapper, content: Any) -> None:
-    # FYI this is just a warning to consider adding handlers for it
-    root.add("[yellow bold]⚠️ UNRECOGNIZED RESULT TYPE:[/]") \
-        .add(_pretty_no_truncate(content))
-
-
 def build_tool_call_requests_by_id(messages: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
     """Map each assistant tool_call id -> its request dict (function name + arguments).
 
@@ -957,27 +951,19 @@ def build_tool_result_message(
             f"[red]WARNING: no tool call request found for tool result tool_call_id={msg.get('tool_call_id')!r}",
             file=sys.stderr,
         )
+
     func_name = get_tool_call_name(request)
 
-    def dispatch_tool_result_message(
-        func_name: str | None,
-        root: TreeWrapper,
-        content: Any,
-        request: dict[str, Any] | None,
-    ) -> bool:
-        """Route a tool result to the builder for the tool that produced it."""
-        if func_name == "semantic_grep":
-            return build_semantic_grep_result(root, content, request)
-        # TODO as needed, dispatch other tool types based on func_name too!
-
-        # default: generic MCP content-block handling
-        return build_mcp_tool_result(root, content)
-
-    handled = dispatch_tool_result_message(func_name, root, content, request)
-    if handled:
+    if func_name == "semantic_grep" and build_semantic_grep_result(root, content, request):
         return root
 
-    build_unrecognized_tool_result_message(root, content)
+    if build_mcp_tool_result(root, content):
+        return root
+
+    # FYI this is just a warning to consider adding handlers for it
+    root.add("[yellow bold]⚠️ UNRECOGNIZED RESULT TYPE:[/]") \
+        .add(_pretty_no_truncate(content))
+
     return root
 
 
