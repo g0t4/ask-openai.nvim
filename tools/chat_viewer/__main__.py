@@ -936,21 +936,6 @@ def get_tool_call_name(request: dict[str, Any] | None) -> str | None:
     return function.get("name")
 
 
-def dispatch_tool_result_message(
-    func_name: str | None,
-    root: TreeWrapper,
-    content: Any,
-    request: dict[str, Any] | None,
-) -> bool:
-    """Route a tool result to the builder for the tool that produced it."""
-    if func_name == "semantic_grep":
-        return build_semantic_grep_result(root, content, request)
-    # TODO as needed, dispatch other tool types based on func_name too!
-
-    # default: generic MCP content-block handling
-    return build_mcp_tool_result(root, content)
-
-
 def build_tool_result_message(
     msg: Dict[str, Any],
     color: str,
@@ -973,6 +958,20 @@ def build_tool_result_message(
             file=sys.stderr,
         )
     func_name = get_tool_call_name(request)
+
+    def dispatch_tool_result_message(
+        func_name: str | None,
+        root: TreeWrapper,
+        content: Any,
+        request: dict[str, Any] | None,
+    ) -> bool:
+        """Route a tool result to the builder for the tool that produced it."""
+        if func_name == "semantic_grep":
+            return build_semantic_grep_result(root, content, request)
+        # TODO as needed, dispatch other tool types based on func_name too!
+
+        # default: generic MCP content-block handling
+        return build_mcp_tool_result(root, content)
 
     handled = dispatch_tool_result_message(func_name, root, content, request)
     if handled:
