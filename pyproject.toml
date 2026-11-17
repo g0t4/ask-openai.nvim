@@ -73,6 +73,7 @@ module-root = ""
 [project.scripts]
 view_trace = "tools.chat_viewer.__main__:main"
 view_trace_tui = "tools.chat_viewer.textual_viewer:main"
+browse_traces = "tools.chat_viewer.browser.__main__:main"
 
 # scripts make it possible to install as commands:
 #   uv pip install --editable .
