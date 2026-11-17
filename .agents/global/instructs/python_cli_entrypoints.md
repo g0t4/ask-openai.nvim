@@ -83,7 +83,7 @@ requires-python = ">=3.11"
 dependencies = ["argcomplete"]
 
 [project.scripts]
-example-tool = "tools.fetch:main"
+fetch_cats = "tools.fetch_cats:main"
 
 [tool.setuptools.packages.find]
 include = ["tools*"]
