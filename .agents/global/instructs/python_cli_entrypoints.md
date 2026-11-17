@@ -99,17 +99,16 @@ from collections.abc import Sequence
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        prog="example-tool",
-        description="Operate the example system.",
+        prog="fetch_cats",
+        description="Herd the cats!",
     )
     commands = parser.add_subparsers(dest="command", required=True)
 
     watch = commands.add_parser(
         "watch",
-        help="Follow live activity.",
-        description="Follow live activity.",
+        description="Watch cats.",
     )
-    watch.add_argument("view", nargs="?", choices=("events", "visual"), default="events")
+    watch.add_argument("type", nargs="?", choices=("calico", "black", "orange", "snow"), default="calico")
     watch.set_defaults(handler=run_watch)
     return parser
 
@@ -121,6 +120,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     return args.handler(args)
 ```
 
+Do not add a framework solely to avoid a modest amount of `argparse` code!
+
 The same parser should define:
 
 - Subcommands and their descriptions.
@@ -131,11 +132,13 @@ The same parser should define:
 
 Do not maintain separate lists for parser choices, help text, and shell completions.
 
-Use stdlib `argparse` as the portable baseline. If a project already uses another CLI framework, preserve it when it can provide the same single-source command model and completion behavior. Do not add a framework solely to avoid a modest amount of `argparse` code.
+If a project already uses another CLI framework, preserve it when it can provide the same single-source command model and completion behavior.
 
 ## Cross-shell completion
 
 ### Bash, Zsh, and Fish
+
+Wes only cares about completions in xonsh. But given argparse is compatible with many other shells, here are some notes about how that would work.
 
 Use `argcomplete` and keep `# PYTHON_ARGCOMPLETE_OK` within the first 1,024 bytes of the console-script module so global completion can recognize generated `[project.scripts]` entrypoints.
 
@@ -164,14 +167,14 @@ Global argcomplete activation is also acceptable when already part of the user's
 
 ### Xonsh
 
-Prefer Xonsh's native `ArgparseCompleter`. It imports the same parser directly, preserving subcommand descriptions and supporting custom argument completers without spawning the command.
+Prefer Xonsh's native `ArgparseCompleter`. It imports the same parser directly, preserving subcommand descriptions and supporting custom argument completers **without spawning the command!!**
 
-Create `xompletions/example_tool.py`:
+Create `tools/fetch/xompletions/__init__.py`:
 
 ```python
 from xonsh.cli_utils import ArgparseCompleter
 
-from example_tool.cli import build_parser
+from tools.fetch import build_parser
 
 
 def xonsh_complete(ctx):
