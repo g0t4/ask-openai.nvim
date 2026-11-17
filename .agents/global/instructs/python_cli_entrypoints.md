@@ -38,7 +38,6 @@ Use the same Python package for local and global installation:
 
 ```
 repo
-├── .local.xsh
 ├── pyproject.toml
 ├── uv.lock
 └── tools
@@ -113,6 +112,11 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def run_watch(args: argparse.Namespace) -> int:
+    print(f"Watching {args.type} cats")
+    return 0
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     parser = build_parser()
     enable_argcomplete(parser)
@@ -157,10 +161,10 @@ Interactive activation examples:
 
 ```sh
 # Bash or Zsh
-eval "$(register-python-argcomplete example-tool)"
+eval "$(register-python-argcomplete fetch_cats)"
 
 # Fish
-register-python-argcomplete --shell fish example-tool | source
+register-python-argcomplete --shell fish fetch_cats | source
 ```
 
 Global argcomplete activation is also acceptable when already part of the user's shell configuration.
@@ -169,29 +173,30 @@ Global argcomplete activation is also acceptable when already part of the user's
 
 Prefer Xonsh's native `ArgparseCompleter`. It imports the same parser directly, preserving subcommand descriptions and supporting custom argument completers **without spawning the command!!**
 
-Create `tools/fetch/xompletions/__init__.py`:
+Create `tools/fetch_cats/xompletions/__init__.py`:
 
 ```python
 from xonsh.cli_utils import ArgparseCompleter
 
-from tools.fetch import build_parser
+from ..__main__ import build_parser
 
 
 def xonsh_complete(ctx):
     yield from ArgparseCompleter(build_parser(), command=ctx).complete()
 ```
 
-Register the repository completion directory in `.local.xsh`:
+Always yield completion candidates or return a set/generator. Do not return a plain list: Xonsh reserves sequences for its `(results, already_filtered)` completion protocol.
 
-```xonsh
-from pathlib import Path
-from xonsh.completers.commands import complete_xompletions
+The global Xonsh configuration discovers these modules automatically in two passes:
 
-_example_xompletion_dir = str(Path(__file__).with_name("xompletions"))
-if _example_xompletion_dir not in $XONSH_COMPLETER_DIRS:
-    $XONSH_COMPLETER_DIRS.append(_example_xompletion_dir)
-complete_xompletions.wrap(r"\bexample-tool$", "example_tool")
-```
+- On shell startup, it scans editable projects installed with `uv tool install --editable` and loads their global completions.
+- When auto-venv activates or changes, it scans editable projects in that venv and replaces the local completion layer.
+- A local completion overrides a global completion with the same command name and disappears when the venv deactivates.
+- Discovery and imports happen only at startup or venv changes. Pressing Tab calls the already-loaded native function without a process or filesystem scan.
+
+By default, the command name is the directory containing `xompletions` (`fetch_cats` above). A module can declare `COMMAND = "other-name"` or `COMMANDS = ("one", "two")` when an entrypoint name differs.
+
+Use relative imports inside `xompletions`, as shown above. The loader gives each repository a synthetic package namespace so many repositories can safely use the generic top-level `tools` package without polluting Xonsh's module cache. Keep the parser import path lightweight and defer runtime-only third-party imports until command execution; the completion module runs inside Xonsh's Python environment, not the tool's venv interpreter.
 
 Keep execution external. Do not turn an interactive command into a callable Xonsh alias merely to obtain completion; callable aliases can receive captured streams instead of a real TTY. The xompletion module supplies completion while the executable in `.venv/bin` retains normal terminal, redirection, and signal behavior.
 
@@ -219,7 +224,7 @@ run_ids.completer = known_run_ids
 1. Preserve the existing command names, positional arguments, defaults, environment overrides, output streams, and exit behavior unless a change is intentional.
 2. Move the implementation into an importable Python package.
 3. Add the `[project.scripts]` entrypoint and run `uv sync`.
-4. Add parser-driven completion. Prefer a repo-local Xonsh bridge and `argcomplete` for other shells.
+4. Add parser-driven completion. Ship a native `xompletions` module for Xonsh and use `argcomplete` for other shells.
 5. Keep a tiny old-path compatibility entrypoint only where existing callers require it.
 6. Verify the PATH command in a fresh or re-entered shell before removing Fish functions, abbreviations, or path-hiding wrappers.
 7. Remove obsolete wrappers only after searching for their callers and confirming the real entrypoint covers their behavior.
@@ -232,9 +237,9 @@ Verify the layers that were actually changed:
 
 ```sh
 uv sync
-python -m py_compile example_tool/cli.py
-example-tool --help
-example-tool watch --help
+python -m py_compile tools/fetch_cats/__main__.py tools/fetch_cats/xompletions/__init__.py
+fetch_cats --help
+fetch_cats watch --help
 python -m unittest discover
 ```
 
@@ -245,7 +250,7 @@ Also check:
 - The command runs from outside its source repository.
 - Xonsh completion lists subcommands with descriptions and narrows argument choices.
 - Dynamic completion returns real current candidates.
-- `python -m argcomplete._check_console_script "$(which example-tool)"` accepts the generated entrypoint.
+- `python -m argcomplete._check_console_script "$(which fetch_cats)"` accepts the generated entrypoint.
 - Interactive subcommands still receive a TTY and respond correctly to interruption.
 - At least one representative end-to-end operation succeeds, not only parser unit tests.
 - Generated environments and package metadata are ignored while the lockfile remains tracked.
