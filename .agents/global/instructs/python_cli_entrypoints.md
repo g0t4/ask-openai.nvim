@@ -36,40 +36,33 @@ Use the same Python package for local and global installation:
 
 ## Recommended layout
 
-```text
-repo/
-|-- pyproject.toml
-|-- uv.lock
-|-- tool_name/
-|   |-- __init__.py
-|   `-- cli.py
-|-- tests/
-|   `-- test_cli.py
-|-- xompletions/
-|   `-- tool_name.py
-
+```
 repo
 ├── .local.xsh
 ├── pyproject.toml
 ├── uv.lock
 └── tools
-    ├── view_trace
+    ├── fetch_cats
+    │   ├── xompletions
+    │   │   └── __init__.py
     │   ├── __main__.py
     │   └── __init__.py
-    ├── fetch
+    ├── paint_flowers
     │   ├── browser
     │   │   ├── __main__.py
     │   │   └── __init__.py
+    │   ├── xompletions
+    │   │   └── __init__.py
+    │   ├── tests
+    │   │   └── __init__.py
     │   ├── __main__.py
-    │   ├── __init__.py
-    │   └── tests
-    │       └── __init__.py
+    │   └── __init__.py
     └── __init__.py
 ```
 
 ## Package entrypoint
 
-Declare the executable with `[project.scripts]`:
+Declare executables with `[project.scripts]`:
 
 ```toml
 [build-system]
@@ -83,7 +76,9 @@ requires-python = ">=3.11"
 dependencies = ["argcomplete"]
 
 [project.scripts]
-fetch_cats = "tools.fetch_cats:main"
+fetch_cats = "tools.fetch_cats.__main__:main"
+paint_flowers = "tools.paint_flowers.__main__:main"
+browser = "tools.paint_flowers.browser.__main__:main"
 
 [tool.setuptools.packages.find]
 include = ["tools*"]
