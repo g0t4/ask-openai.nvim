@@ -77,16 +77,16 @@ requires = ["setuptools>=77"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "example-tools"
+name = "my-tools"
 version = "0.1.0"
 requires-python = ">=3.11"
-dependencies = ["argcomplete>=3.6,<4"]
+dependencies = ["argcomplete"]
 
 [project.scripts]
-example-tool = "example_tool.cli:main"
+example-tool = "tools.fetch:main"
 
 [tool.setuptools.packages.find]
-include = ["example_tool*"]
+include = ["tools*"]
 ```
 
 Use the repository's existing build backend and dependency conventions when present. Do not replace a working project layout merely to match this example.
