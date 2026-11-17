@@ -6,25 +6,33 @@ description: build first-class Python command-line entrypoints with uv, PATH ins
 
 ## Goal
 
-Prefer a real Python command application over shell wrappers when a repository control script has subcommands, validation, process orchestration, interactive behavior, or completion-worthy arguments.
+Prefer a real Python entrypoint over shell wrappers for system wide tools and repo-local scripts.
 
-The command should become a normal executable on `PATH`. This lets all existing command-line tools operate on it naturally, including `which`, Xonsh's `=command` expansion, `cdc command`, help inspection, history, and completion.
+Technically it's more accurate to say `venv-local` because you could easily have multiple `venv`s in one repo. However, most of my repos only have one `venv` in the repo root (hence calling these tools `repo-local`).
 
-Do not convert every tiny shell fragment. A short static pipeline or a direct invocation can remain shell. Use this pattern when the command has enough behavior to benefit from a parser, tests, reusable functions, and explicit subprocess handling.
+The command should become a normal executable on `PATH`.
+
+Do not convert every tiny shell fragment. Just when there's a prominent reusable `tool` that would benefit from convenient access.
 
 ## Installation standard
 
 Use the same Python package for local and global installation:
 
-```text
-Repository-local tool -> uv sync -> auto-activated .venv
-Global tool           -> uv tool install --editable <path>
-```
 
-- For a repository-local tool, declare it in `pyproject.toml`, run `uv sync`, and rely on the repository's `.venv` auto-activation. The generated console script in `.venv/bin` is the command.
-- For a global tool, run `uv tool install --editable <path>`. Do not add a Fish/Xonsh/Bash wrapper that hides a source path or interpreter invocation.
-- Editable installs make ordinary source changes immediately visible. Reinstall or upgrade the tool when entrypoint metadata, dependencies, or build configuration changes.
-- Commit `pyproject.toml` and `uv.lock`. Ignore `.venv/`, `*.egg-info/`, `__pycache__/`, and `*.py[cod]` unless the repository already has equivalent rules.
+| Type | Command |
+|------|---------|
+| repo-local tool | uv sync -> auto-activated .venv |
+| global tool | uv tool install --editable . |
+
+
+- My shell has auto-activated venv so any `venv` based tool is always available within the scope of the `.venv`
+  - auto-activated upon `cd`ing to a directory with a venv (or one of its nested dirs)
+  - auto-deactivated upon `cd`ing out of the directory
+- For a repo-local tool, declare it in `pyproject.toml`, run `uv sync`, and rely on the repository's `.venv` auto-activation. The generated console script in `.venv/bin` is the command.
+- For a global tool, run `uv tool install --editable <path>`. Do not add a Fish/Xonsh/Bash wrapper that hides a source path or interpreter path/invocation.
+- Editable installs make ordinary source changes immediately visible.
+- Reinstall or upgrade the tool when entrypoint metadata, dependencies, or build configuration changes.
+- Commit `pyproject.toml` and `uv.lock`
 
 ## Recommended layout
 
@@ -39,10 +47,25 @@ repo/
 |   `-- test_cli.py
 |-- xompletions/
 |   `-- tool_name.py
-`-- .local.xsh
-```
 
-New tools normally do not need a checked-in `bin/tool-name` wrapper. During migration, a tiny compatibility entrypoint may remain temporarily so existing docs and automation keep working. It must only import and invoke the real Python `main()`; do not duplicate command logic there.
+repo
+├── .local.xsh
+├── pyproject.toml
+├── uv.lock
+└── tools
+    ├── view_trace
+    │   ├── __main__.py
+    │   └── __init__.py
+    ├── fetch
+    │   ├── browser
+    │   │   ├── __main__.py
+    │   │   └── __init__.py
+    │   ├── __main__.py
+    │   ├── __init__.py
+    │   └── tests
+    │       └── __init__.py
+    └── __init__.py
+```
 
 ## Package entrypoint
 
