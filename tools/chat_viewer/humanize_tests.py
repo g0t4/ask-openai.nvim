@@ -84,3 +84,10 @@ def test_relative_age_singular():
     now = datetime.now(timezone.utc)
     past = now - timedelta(days=1)
     assert relative_age(past) == "1 day ago"
+
+def test_text_from_ansi_width():
+    from rich.text import Text
+    s = "\x1b[31mred\x1b[0m \x1b[38;5;240mhl\x1b[0m"
+    t = Text.from_ansi(s)
+    assert t.cell_len == len(t.plain) == 6
+    assert t.plain == "red hl"

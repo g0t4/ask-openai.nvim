@@ -997,7 +997,10 @@ def build_mcp_tool_result(root: TreeWrapper, content: Any) -> bool:
 
 
 def render_flat_string_tool_output(root: TreeWrapper, content: Any) -> Text:
-    rendered = Text(content)
+    if not isinstance(content, str):
+        content = str(content)
+    # Parse ANSI sequences so Rich measures visual width correctly
+    rendered = Text.from_ansi(content)
     # TODO augment other detected fields
     #   TODO or consider a reverse parse of flattened representation (well tested) into a content list once again so I can have one formatter
     #   and fallback to text with no mods if it doesn't match easily... which is 100% fine for one off messages (i.e. if prompt or response has EXIT_CODE/STDOUT/STDERR etc then I cannot reasonably expect to handle that cleanly, nor should I)
@@ -1008,11 +1011,17 @@ def render_flat_string_tool_output(root: TreeWrapper, content: Any) -> Text:
 
 
 def annotate_exit_codes(rendered: Text, content: str) -> Text:
+    # Use plain text for reliable offsets; rendered is already Text.from_ansi
+    plain = rendered.plain
     pattern = r"(?m)^[ \t]*EXIT_CODE:[ \t]*([^\r\n]*)"
-    for match in reversed(list(re.finditer(pattern, content))):
-        success = match.group(1).strip() == "0"
+    inserts = []
+    for m in re.finditer(pattern, plain):
+        success = m.group(1).strip() == "0"
         indicator = Text(" " if success else " ", style="green" if success else "red")
-        rendered = rendered[:match.start()] + indicator + rendered[match.start():]
+        inserts.append((m.start(), indicator))
+    # Apply from end to start to keep indices stable
+    for pos, indicator in reversed(inserts):
+        rendered = rendered[:pos] + indicator + rendered[pos:]
     return rendered
 
 
