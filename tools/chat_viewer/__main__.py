@@ -18,7 +18,7 @@ from rich.style import Style
 from rich.markdown import Markdown
 from rich.padding import Padding
 from rich.syntax import Syntax
-from wes_syntax import syntax as themed_syntax
+from wes_syntax import syntax as themed_syntax, markdown_tables
 from rich.panel import Panel
 from rich.pretty import Pretty, pprint
 from rich.text import Text
@@ -1109,7 +1109,10 @@ def _syntax(source: str, lexer: str) -> Syntax:
 
 def _markdown(source: str):
     # FYI markdown must use word_wrap=True (often has really long paragraphs that must wrap)
-    return themed_syntax(source, "markdown", line_numbers=False, word_wrap=True)
+    if not args.show_all:
+        # for now lets assume show_all means as-is (as much as possible), so no table padding
+        padded = markdown_tables.pad_tables(source)
+    return themed_syntax(padded, "markdown", line_numbers=False, word_wrap=True)
 
 def _lua(source: str) -> Syntax:
     return themed_syntax(source, "lua", line_numbers=False, word_wrap=True)
