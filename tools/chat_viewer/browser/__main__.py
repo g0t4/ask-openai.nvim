@@ -1,5 +1,5 @@
-import argcomplete
-import argparse
+# PYTHON_ARGCOMPLETE_OK
+
 import asyncio
 import json
 import os
@@ -15,6 +15,7 @@ from typing import List, Optional
 from tools.chat_viewer.humanize import humanize_size, relative_age
 
 from tools.chat_viewer.tree_wrapper import TreeWrapper
+from tools.chat_viewer.browser.cli import build_parser, enable_argcomplete
 
 def find_trace_files(base_dir: Path) -> List[Path]:
     """
@@ -330,15 +331,8 @@ async def input_loop(browser: TraceBrowser):
         termios.tcsetattr(fd, termios.TCSADRAIN, old)
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Trace browser REPL")
-    parser.add_argument(
-        "from_dir",
-        nargs="?",
-        default="",
-        help="path or from_dir: fim, rewrite, agents",
-    )
-
-    argcomplete.autocomplete(parser)
+    parser = build_parser()
+    enable_argcomplete(parser)
     args = parser.parse_args()
     browser = TraceBrowser(args.from_dir)
     asyncio.run(input_loop(browser))

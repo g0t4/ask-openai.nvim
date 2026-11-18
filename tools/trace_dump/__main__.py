@@ -1,12 +1,14 @@
+# PYTHON_ARGCOMPLETE_OK
+
 """Dump command like tool calls from a trace file."""
 
-import argcomplete
-import argparse
 import json
 import subprocess
 import sys
 from pathlib import Path
 from typing import Any
+
+from tools.trace_dump.cli import parse_args
 
 from rich.console import Console
 from rich.panel import Panel
@@ -219,34 +221,6 @@ def dump_commands(commands: list[dict[str, Any]], plain_text: bool) -> None:
         else:
             # Styled mode: bat + panel with borders
             console.print(_bash_via_bat_high_contrast(display_command, language="bash"))
-
-
-def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
-    """Parse command-line arguments.
-
-    Args:
-        argv: Argument list (defaults to sys.argv[1:]).
-
-    Returns:
-        Parsed namespace with trace_file and plain_text attributes.
-    """
-    parser = argparse.ArgumentParser(
-        description="Dump commands from a trace file.",
-    )
-    parser.add_argument(
-        "trace_file",
-        help="Path to the -trace.json file to analyze.",
-    )
-    parser.add_argument(
-        "--plain-text",
-        action="store_true",
-        default=False,
-        help="Output plain text without colors or panel borders.",
-    )
-
-    argcomplete.autocomplete(parser)
-
-    return parser.parse_args(argv)
 
 
 def main() -> None:

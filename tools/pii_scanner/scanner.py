@@ -15,24 +15,14 @@ from typing import Any
 from rich.console import Console
 from rich.panel import Panel
 
+from .constants import PII_CATEGORIES
+
 _console = Console(color_system="truecolor")
 
 
 # ─────────────────────────────────────────────
 # PII categories (matching openai/privacy-filter taxonomy)
 # ─────────────────────────────────────────────
-PII_CATEGORIES: list[str] = [
-    "account_number",
-    "private_address",
-    "private_email",
-    "private_person",
-    "private_phone",
-    "private_url",
-    "private_date",
-    "secret",
-]
-
-
 @dataclass
 class PiIFinding:
     """A single PII detection result."""

@@ -1,3 +1,5 @@
+# PYTHON_ARGCOMPLETE_OK
+
 """CLI entry point for the PII scanner.
 
 Usage:
@@ -15,16 +17,14 @@ Examples:
     python -m tools.pii_scanner --extract-paths trace.json   # extract from single file
 """
 
-import argcomplete
-import argparse
 import json as json_module
 import sys
 from pathlib import Path
 
 from rich.console import Console
 
+from tools.pii_scanner.cli import parse_args
 from tools.pii_scanner.scanner import (
-    PII_CATEGORIES,
     run_scan,
     print_summary,
     print_file_results,
@@ -34,53 +34,6 @@ from tools.pii_scanner.scanner import (
 )
 
 _console = Console(color_system="truecolor")
-
-
-def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
-    """Parse command-line arguments."""
-    parser = argparse.ArgumentParser(
-        description="Scan JSON files for PII, or extract file paths from trace files.",
-        epilog=f"PII categories: {', '.join(PII_CATEGORIES)}",
-    )
-    parser.add_argument(
-        "target",
-        nargs="?",
-        default=".",
-        help="Directory or single JSON file to scan (default: current directory)",
-    )
-    parser.add_argument(
-        "--model",
-        default=None,
-        help=(
-            "HuggingFace model name for transformers-based detection. "
-            "If omitted, uses regex-based detection (no model download needed)."
-        ),
-    )
-    parser.add_argument(
-        "--threshold",
-        type=float,
-        default=0.5,
-        help="Minimum confidence score to report a finding (default: 0.5)",
-    )
-    parser.add_argument(
-        "--json",
-        action="store_true",
-        help="Output results as JSON to stdout",
-    )
-    parser.add_argument(
-        "--show-matches",
-        action="store_true",
-        help="Display actual PII text instead of masked dots (use with caution)",
-    )
-    parser.add_argument(
-        "--extract-paths",
-        action="store_true",
-        help="Extract file paths from *-trace.json files (skips PII scanning)",
-    )
-
-    argcomplete.autocomplete(parser)
-
-    return parser.parse_args(argv)
 
 
 def output_json(results: list, mode: str) -> None:

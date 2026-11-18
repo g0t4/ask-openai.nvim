@@ -1,3 +1,5 @@
+# PYTHON_ARGCOMPLETE_OK
+
 import json
 import difflib
 import os
@@ -27,10 +29,14 @@ from rich.measure import measure_renderables
 import rich
 from typing import Any, Iterable, Iterator, Dict, Optional
 import hashlib
-import argparse
-import argcomplete
 from copy import deepcopy
 
+from tools.chat_viewer.cli import (
+    ChatViewerArgs,
+    build_parser,
+    enable_argcomplete,
+    parse_max_width,
+)
 from tools.chat_viewer.markdown_utils import split_h2_markdown_sections
 from tools.chat_viewer.markdown_inline import style_markdown_text
 from tools.chat_viewer.tree_wrapper import TreeWrapper
@@ -1579,13 +1585,6 @@ def render_trace_to_console(console, messages, model_name, timings, *, full_widt
         print_rewrite_diff(old_text, new_text)
 
 
-def parse_max_width(value: str) -> int:
-    width = int(value)
-    if width < 0:
-        raise argparse.ArgumentTypeError("max width must be non-negative (0 means full width)")
-    return width
-
-
 class CenteredOutput:
     """Indent streamed ANSI output without decoding image or color escapes."""
 
@@ -1606,16 +1605,6 @@ class CenteredOutput:
         self.stream.flush()
 
 
-@dataclass
-class ChatViewerArgs(argparse.Namespace):
-    """Strongly-typed command-line arguments for the chat viewer."""
-
-    trace_file: str | None = None
-    watch: str | None = None
-    show_all: bool = False
-    show_stats: bool = False
-    max_width: int = 160
-
 args = ChatViewerArgs()
 SHOW_ALL = False
 
@@ -1625,21 +1614,8 @@ def main() -> None:
     global _console
     global args
 
-    parser = argparse.ArgumentParser(description="View chat traces")
-    parser.add_argument(
-        "trace_file",
-        nargs="?",
-        default=None,
-        help="path to trace file (stdin when piped; live agent viewer when omitted)",
-    )
-    parser.add_argument("--watch", nargs="?", const="", metavar="DIRECTORY",
-                        help="follow the newest agent trace in DIRECTORY (default: Neovim agent state directory)")
-    parser.add_argument("--all", action="store_true", dest="show_all", help="show all content (no exclusions)")
-    parser.add_argument("--stats", action=argparse.BooleanOptionalAction, dest="show_stats",
-                        help="show per-message timing stats (default: off; use --no-stats to disable)")
-    parser.add_argument("--max-width", type=parse_max_width, default=160, help="transcript width cap (default: 160; 0 for full width)")
-
-    argcomplete.autocomplete(parser)
+    parser = build_parser()
+    enable_argcomplete(parser)
     args = parser.parse_args(namespace=ChatViewerArgs())
 
 

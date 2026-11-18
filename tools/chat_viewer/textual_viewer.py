@@ -1,3 +1,5 @@
+# PYTHON_ARGCOMPLETE_OK
+
 """Interactive Textual-based viewer for chat traces.
 
 A remake of the ``view_trace`` CLI using `textual <https://textual.textualize.io/>`_
@@ -14,11 +16,8 @@ interactive view shows exactly the same content as the plain CLI dump.
 
 from __future__ import annotations
 
-import argparse
-import argcomplete
 import io
 import sys
-from dataclasses import dataclass
 from pathlib import Path
 
 from rich.console import Console
@@ -28,6 +27,11 @@ from textual.binding import Binding
 from textual.widgets import Footer, Header, RichLog
 
 from tools.chat_viewer import __main__ as viewer
+from tools.chat_viewer.cli import (
+    TextualViewerArgs,
+    build_textual_parser,
+    enable_argcomplete,
+)
 from tools.chat_viewer.terminal_app import TerminalSizedApp
 
 
@@ -190,26 +194,9 @@ class TraceViewerApp(TerminalSizedApp):
         viewer.args.show_all = not viewer.args.show_all
         self._render()
 
-@dataclass
-class TextualViewerArgs(argparse.Namespace):
-    """Strongly-typed command-line arguments for the textual viewer."""
-
-    trace_file: str | None = None
-    max_width: int = 160
-
-
 def main(argv: list[str] | None = None) -> None:
-    parser = argparse.ArgumentParser(
-        description="Interactive textual trace viewer (a: toggle all, q: quit)"
-    )
-    parser.add_argument(
-        "trace_file",
-        nargs="?",
-        default=None,
-        help="path to trace file (or stdin if omitted)",
-    )
-    parser.add_argument("--max-width", type=viewer.parse_max_width, default=160, help="transcript width cap (default: 160; 0 for full width)")
-    argcomplete.autocomplete(parser)
+    parser = build_textual_parser()
+    enable_argcomplete(parser)
     args = parser.parse_args(argv, namespace=TextualViewerArgs())
 
     viewer.load_preapproved_files()
