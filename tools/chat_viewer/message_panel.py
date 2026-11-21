@@ -1,3 +1,11 @@
+from typing import Literal
+
+from rich.align import Align
+from rich.console import Console
+from rich.measure import measure_renderables
+from rich.panel import Panel
+
+from tools.chat_viewer.tree_wrapper import TreeWrapper
 
 # # Chat-style panel boxes: only a top border plus the border on the aligned edge,
 # # so messages read as open speech bubbles flowing toward the aligned side.
@@ -29,7 +37,8 @@ def print_message_panel(
     title: str,
     color: str,
     content: TreeWrapper,
-    align: str,
+    align: Literal['left']|Literal['right']|Literal['center'],
+    _console: Console,
     *,
     full_width: bool = False,
     min_panel_width: int = 50,

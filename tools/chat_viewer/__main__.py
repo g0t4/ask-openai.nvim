@@ -6,26 +6,18 @@ import os
 import sys
 import subprocess
 import re
-import base64
-import tempfile
-import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from rich.console import Console, Group
 from rich.align import Align
-from rich import box
-from rich.style import Style
-from rich.markdown import Markdown
-from rich.padding import Padding
 from rich.syntax import Syntax
+from tools.chat_viewer.message_panel import print_message_panel
 from wes_syntax import syntax as themed_syntax, markdown_tables
 from rich.panel import Panel
-from rich.pretty import Pretty, pprint
+from rich.pretty import Pretty
 from rich.text import Text
 from rich.table import Table
-from rich.tree import Tree
 from rich.segment import Segment
-from rich.measure import measure_renderables
 import rich
 from typing import Any, Iterable, Iterator, Dict, Optional
 import hashlib
@@ -1083,8 +1075,8 @@ def _markdown(source: str):
     # FYI markdown must use word_wrap=True (often has really long paragraphs that must wrap)
     if not args.show_all:
         # for now lets assume show_all means as-is (as much as possible), so no table padding
-        padded = markdown_tables.pad_tables(source)
-    return themed_syntax(padded, "markdown", line_numbers=False, word_wrap=True)
+        source = markdown_tables.pad_tables(source)
+    return themed_syntax(source, "markdown", line_numbers=False, word_wrap=True)
 
 def _lua(source: str) -> Syntax:
     return themed_syntax(source, "lua", line_numbers=False, word_wrap=True)
@@ -1426,7 +1418,7 @@ def print_message(msg: dict, idx: int, requests_by_id: dict[str, dict[str, Any]]
         return
 
     align = "right" if is_model_input(role) else "left"
-    print_message_panel(title, color, root, align, full_width=full_width)
+    print_message_panel(title, color, root, align, _console=_console, full_width=full_width)
 
 
 def render_messages_to_console(console, messages, *, start_index=1, context_messages=None, full_width=False) -> None:
