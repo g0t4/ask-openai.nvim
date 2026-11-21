@@ -13,13 +13,18 @@ from rich.text import Text
 
 # Role -> accent color (used for section headers, labels, timing lines).
 ROLE_COLORS = {
-    "system": "magenta",
-    "developer": "cyan",
-    "user": "green",
-    "user_raw": "green",
-    "assistant": "yellow",
-    "assistant_raw": "yellow",
-    "tool": "red",
+    # color ideas from:
+    # https://imagecolorpicker.com/color-code/76c6b5?skipGenerate=true
+    "system": "#7677c6",
+    "developer": "#7677c6",
+    "user": "#76c6b5",
+    "user_raw": "#76c6b5",
+    # "user": "#afc676",
+    # "user_raw": "#afc676",
+
+    "assistant": "#c6b576",
+    "assistant_raw": "#c6b576",
+    "tool": "#c67687",
 }
 
 # Role -> icon shown next to the message header.
