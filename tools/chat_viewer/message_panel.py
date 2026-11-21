@@ -1,28 +1,28 @@
 
-# Chat-style panel boxes: only a top border plus the border on the aligned edge,
-# so messages read as open speech bubbles flowing toward the aligned side.
-# User (right-aligned) -> top + right border.
-CHAT_BOX_RIGHT = box.Box(
-    " ──╮\n"
-    "   │\n"
-    "   │\n"
-    "   │\n"
-    "   │\n"
-    "   │\n"
-    "   │\n"
-    "    "
-)
-# Assistant (left-aligned) -> top + left border.
-CHAT_BOX_LEFT = box.Box(
-    "╭── \n"
-    "│   \n"
-    "│   \n"
-    "│   \n"
-    "│   \n"
-    "│   \n"
-    "│   \n"
-    "    "
-)
+# # Chat-style panel boxes: only a top border plus the border on the aligned edge,
+# # so messages read as open speech bubbles flowing toward the aligned side.
+# # User (right-aligned) -> top + right border.
+# CHAT_BOX_RIGHT = box.Box(
+#     " ──╮\n"
+#     "   │\n"
+#     "   │\n"
+#     "   │\n"
+#     "   │\n"
+#     "   │\n"
+#     "   │\n"
+#     "    "
+# )
+# # Assistant (left-aligned) -> top + left border.
+# CHAT_BOX_LEFT = box.Box(
+#     "╭── \n"
+#     "│   \n"
+#     "│   \n"
+#     "│   \n"
+#     "│   \n"
+#     "│   \n"
+#     "│   \n"
+#     "    "
+# )
 
 
 def print_message_panel(
@@ -53,7 +53,7 @@ def print_message_panel(
         max_panel_width = min(available_width, max_bubble_width)
 
     # Open speech-bubble look: keep the border on the side the message hugs.
-    chat_box = CHAT_BOX_RIGHT if align == "right" else CHAT_BOX_LEFT
+    # chat_box = CHAT_BOX_RIGHT if align == "right" else CHAT_BOX_LEFT
     panel_padding = (1, 2)
     # The panel wraps content in padding + a border, so the content needs that
     # extra horizontal room (both sides + left/right border) to avoid wrapping.
