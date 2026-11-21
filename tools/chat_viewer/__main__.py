@@ -1408,11 +1408,6 @@ def get_display_role(role: str) -> str:
     return role.upper()
 
 
-def get_color(role: str) -> str:
-    """Return the accent color for a message role."""
-    return role_color(role)
-
-
 def get_font_color_for_bg(bg_color: str) -> str:
     """Pick black or white text for best contrast on the given background."""
     from tools.chat_viewer.theme import contrast_color_for
@@ -1500,7 +1495,7 @@ def print_message(msg: dict, idx: int, requests_by_id: dict[str, dict[str, Any]]
     title = f"{idx}: {icon} {display_role}"
     if "output.json" in msg:
         title = f"{title} (output.json)"
-    color = get_color(role)
+    color = role_color(role)
 
     match role:
         case "tool":
