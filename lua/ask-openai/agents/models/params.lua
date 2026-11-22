@@ -62,6 +62,8 @@ function M.body_for(config_model, generic_body, reasoning_level, endpoint_model_
         return M.body_for_muse_glimmer(generic_body, reasoning_level)
     elseif config_model == models.NEMO then
         return M.body_for_nemo_lightning(generic_body, reasoning_level)
+    elseif config_model == models.INKLING2 then
+        return M.body_for_inkling2(generic_body, reasoning_level, endpoint_model_info)
     end
     error("model not supported" .. tostring(config_model))
 end
@@ -143,6 +145,7 @@ function M.body_for_deepseek4flash(request_body, effort, endpoint_model_info)
         recommended.max_tokens = nil
     end
 
+    log:info("endpoint_model_info", endpoint_model_info)
     if endpoint_model_info and endpoint_model_info.backend == "vllm" then
         recommended.stream_options = { include_usage = true }
     end
@@ -154,7 +157,7 @@ function M.body_for_deepseek4flash(request_body, effort, endpoint_model_info)
     elseif effort == efforts.HIGH
         or effort == efforts.MAX
         or effort == efforts.LOW
-        then
+    then
         recommended.chat_template_kwargs.reasoning_effort = effort
         -- else "low" => default w/o high/max system prompt mods
     elseif effort == efforts.PSM then
@@ -331,6 +334,32 @@ function M.body_for_nemo_lightning(request_body, reasoning_level)
     }
     local body = default_to_recommended(request_body, recommended)
     return set_enable_thinking(body, reasoning_level)
+end
+
+---@param request_body table
+---@return table
+function M.body_for_inkling2(request_body, reasoning_level, endpoint_model_info)
+    throw_if_no_messages(request_body)
+    local recommended = {
+        --  https://thinkingmachines.ai/news/inkling-2-mini/
+        --  temperature 1.0 (default) is recommended
+        temperature = 1.0,
+        --  template: https://huggingface.co/thinkingmachines/Inkling-2-Mini/raw/main/chat_template.jinja
+        chat_template_kwargs = {
+            -- BTW can be either a named level in chat template
+            --   OR can be any number from 0.0 to 1.0
+            reasoning_effort = reasoning_level
+        }
+    }
+
+    log:info("endpoint_model_info", endpoint_model_info)
+    if endpoint_model_info and endpoint_model_info.backend == "vllm" then
+        recommended.stream_options = { include_usage = true }
+    end
+
+    local body = default_to_recommended(request_body, recommended)
+    log:info("recommended", recommended)
+    return body
 end
 
 return M

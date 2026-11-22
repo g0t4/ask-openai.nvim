@@ -10,6 +10,7 @@ M.DEEPSEEK = "ds4"
 M.DEEPSEEK_41 = "ds41"
 M.MUSE = "muse"
 M.NEMO = "nemo-lightning"
+M.INKLING2 = "inkling2"
 
 M.CYCLE = {
     M.GPTOSS,
@@ -19,6 +20,7 @@ M.CYCLE = {
     M.DEEPSEEK,
     M.MUSE,
     M.NEMO,
+    M.INKLING2,
 }
 
 --- @type ConfigModel
@@ -72,6 +74,7 @@ M.MUSE_REASONING_EFFORT = {
     HIGH = "high",
     XHIGH = "xhigh",
 }
+
 M.CYCLE_MUSE_REASONING_EFFORT = {
     M.MUSE_REASONING_EFFORT.OFF,
     M.MUSE_REASONING_EFFORT.LOW,
@@ -80,6 +83,25 @@ M.CYCLE_MUSE_REASONING_EFFORT = {
     M.MUSE_REASONING_EFFORT.XHIGH,
 }
 
+--- @enum INKLING2_REASONING_EFFORT
+M.INKLING2_REASONING_EFFORT= {
+    OFF = "none",
+    MINIMAL = "minimal",
+    LOW = "low",
+    MEDIUM = "medium",
+    HIGH = "high",
+    XHIGH = "xhigh",
+    MAX = "max",
+}
+M.CYCLE_INKLING2_REASONING_EFFORT = {
+    M.INKLING2_REASONING_EFFORT.OFF,
+    M.INKLING2_REASONING_EFFORT.MINIMAL,
+    M.INKLING2_REASONING_EFFORT.LOW,
+    M.INKLING2_REASONING_EFFORT.MEDIUM,
+    M.INKLING2_REASONING_EFFORT.HIGH,
+    M.INKLING2_REASONING_EFFORT.XHIGH,
+    M.INKLING2_REASONING_EFFORT.MAX,
+}
 
 M.MODEL_AUTHOR_MAP = {
     [M.GPTOSS] = "gptoss120b<wes.mcclure+gptoss120b@gmail.com>",
@@ -87,6 +109,7 @@ M.MODEL_AUTHOR_MAP = {
     [M.DEEPSEEK] = "deepseek-v4-flash<wes.mcclure+deepseek-v4-flash@gmail.com>",
     [M.DEEPSEEK_41] = "deepseek-v4.1-flash<wes.mcclure+deepseek-v4.1-flash@gmail.com>",
     [M.MUSE] = "muse-glimmer-30b-dspark<wes.mcclure+muse-glimmer-30b-dspark@gmail.com>",
+    [M.INKLING2] = "inkling2-mini<wes.mcclure+inkling2-mini@gmail.com>",
 }
 
 local MODEL_PATTERNS = {
@@ -115,6 +138,7 @@ local MODEL_PATTERNS = {
     { pattern = "/Muse%-Glimmer",       abbrev = "muse" },
     -- ggml-org/NVIDIA-Nemotron-3.5-Lightning-30B-A3B-GGUF:Q4_K_M
     { pattern = "/NVIDIA%-Nemotron",    abbrev = "nemo-lightning" },
+    { pattern = "inkling-2-mini",    abbrev = "inkling-2-mini" }, -- TODO shorten?
 }
 
 --- Abbreviate an actual served model ID for display; never use this as a config key.

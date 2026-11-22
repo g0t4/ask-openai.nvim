@@ -36,6 +36,7 @@ local function load_config()
         [models.DEEPSEEK] = {},
         [models.MUSE] = {},
         [models.NEMO] = {},
+        [models.INKLING2] = {},
     }
 
     if file_exists(config_path) then
@@ -242,6 +243,8 @@ local function _cycle_reasoning_level(current, model)
         return cycle(models.CYCLE_DEEPSEEK_REASONING_EFFORT, current)
     elseif model == models.MUSE then
         return cycle(models.CYCLE_MUSE_REASONING_EFFORT, current)
+    elseif model == models.INKLING2 then
+        return cycle(models.CYCLE_INKLING2_REASONING_EFFORT, current)
     else
         return cycle(models.CYCLE_REASONING_ON_OFF, current)
     end

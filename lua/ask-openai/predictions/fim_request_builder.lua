@@ -162,6 +162,7 @@ function FimRequestBuilder:fim_request()
         or model == models.GLM
         or model == models.MUSE
         or model == models.NEMO
+        or model == models.INKLING2
     then
         if USE_GPTOSS_RAW and model == models.GPTOSS then
             curl_params:set_raw_completions()
@@ -181,6 +182,7 @@ function FimRequestBuilder:fim_request()
             elseif model == models.GLM
                 or model == models.GEMMA4
                 or model == models.NEMO then
+
                 -- enable_thinking confirmed works with glm and nemo-lightning
                 --   (nemo-lightning's chat template has no effort/strength level kwarg)
                 body.chat_template_kwargs = {
@@ -190,6 +192,10 @@ function FimRequestBuilder:fim_request()
             elseif model == models.MUSE then
                 body = params.body_for_muse_glimmer(body, level, true)
                 curl_params.body = body
+            elseif model == models.INKLING2 then
+                body.chat_template_kwargs = {
+                    reasoning_effort = level
+                }
             end
 
             body.max_tokens = gptoss_tokenizer.get_gptoss_max_tokens_for_level(level)
