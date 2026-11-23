@@ -91,6 +91,7 @@ end
 ---@param request HttpRawRequest
 ---@return uv.uv_tcp_t tcp_handle
 function M.http(request)
+    local started = uv.hrtime()
     local on_headers = request.on_headers or function() end
     -- FYI https://docs.libuv.org/en/v1.x/tcp.html for uv_tcp_t
     local tcp_handle, newtcp_err, newtcp_err_name = uv.new_tcp()
@@ -115,7 +116,7 @@ function M.http(request)
 
                 local who = request.host .. ' on port ' .. request.port
                 local message = 'tcp_handle:connect failed ' .. who .. ' : ' .. inner_err
-                log:error(message, request)
+                log:error(message, request.method, request.path)
                 log:info('  FYI tcp_handle:is_closing()', tcp_handle:is_closing())
                 if tcp_handle:is_closing() then
                     log:info("  tcp_handle already closing, not calling close again")
@@ -150,6 +151,32 @@ function M.http(request)
             tcp_handle:write(message)
 
             local buffer = ""
+            local header_reads, body_bytes = 0, 0
+            local response_headers
+
+            local function finish(err)
+                tcp_handle:close()
+                if not headers_done and not err then
+                    err = "Connection closed before complete HTTP response headers"
+                end
+                if err or (response_headers and not response_headers.OK) then
+                    local payload = request.body or {}
+                    local h = response_headers or {}
+                    log:warn("HTTP request failed", {
+                        time_utc = os.date("!%Y-%m-%dT%H:%M:%SZ"),
+                        method = request.method, endpoint = request.host .. ":" .. request.port .. request.path,
+                        model = payload.model, messages = type(payload.messages) == "table" and #payload.messages or nil,
+                        tools = type(payload.tools) == "table" and #payload.tools or nil,
+                        max_tokens = payload.max_tokens, max_completion_tokens = payload.max_completion_tokens,
+                        request_body_bytes = #body_json, elapsed_ms = (uv.hrtime() - started) / 1e6,
+                        status = h.status_code, server = h.server, server_date = h.date,
+                        request_id = h["x-request-id"], content_type = h["content-type"],
+                        content_length = h["content-length"], transfer_encoding = h["transfer-encoding"],
+                        header_reads = header_reads, received_body_wire_bytes = body_bytes, read_error = err,
+                    })
+                end
+                return request.on_done(err)
+            end
 
             -- local first_n = 10
 
@@ -166,17 +193,16 @@ function M.http(request)
 
                 -- here is same as curl
                 if read_err then
-                    tcp_handle:close()
-                    return request.on_done(read_err)
+                    return finish(read_err)
                 end
 
                 if not chunk then
-                    tcp_handle:close()
-                    return request.on_done()
+                    return finish()
                 end
 
                 -- log:info('chunk', chunk)
                 if not headers_done then
+                    header_reads = header_reads + 1
                     buffer = buffer .. chunk
                     local _, body_start = buffer:find("\r\n\r\n", 1, true)
 
@@ -188,11 +214,13 @@ function M.http(request)
                         --   TODO and if streaming => need to parse the length at the start of each "chunk" and then read exactly that and then wait for next length
                         --   TODO if not streaming => read content-length chars and stop (I suppose warn if more than that?)
                         -- log:info("headers", headers)
+                        response_headers = headers
                         on_headers(headers)
 
                         -- dregs after headers would be start of body, so `on_data` it!
                         local body = buffer:sub(body_start + 1)
                         buffer = ""
+                        body_bytes = #body
                         if #body > 0 then
                             -- log:info(ansi.green_bold("ON_DATA(header_dregs)"), vim.inspect(body))
                             request.on_data(body)
@@ -203,6 +231,7 @@ function M.http(request)
                 end
 
                 -- log:info(ansi.green_bold("ON_DATA"), vim.inspect(chunk))
+                body_bytes = body_bytes + #chunk
                 request.on_data(chunk)
             end)
         end)
