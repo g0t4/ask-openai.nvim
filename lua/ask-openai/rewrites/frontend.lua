@@ -24,6 +24,7 @@ local rag_instructions = require("ask-openai.frontends.prompts.rag_instructions"
 local prompt_parser = require("ask-openai.frontends.context.prompt_parser")
 local RewritePerformance = require("ask-openai.rewrites.performance")
 local perf = require("ask-openai.perf")
+local values = require("ask-openai.helpers.values")
 
 ---@class RewriteFrontend : StreamingFrontend
 local RewriteFrontend = {}
@@ -159,6 +160,8 @@ end
 
 ---@type OnParsedSSE
 function RewriteFrontend.on_parsed_data_sse(sse_parsed)
+    sse_parsed = values.nil_ify(sse_parsed) -- FYI added proactively, vim.NIL wasn't causing any issues (yet)
+
     -- log:info("sse", vim.inspect(sse_parsed))
     if sse_parsed.choices == nil or sse_parsed.choices[1] == nil then
         return
