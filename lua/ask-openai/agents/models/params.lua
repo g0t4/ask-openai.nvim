@@ -37,15 +37,22 @@ end
 ---@return table
 ---@param endpoint_model_info? EndpointModelInfo @Discovery snapshot; only used for explicit exceptions
 function M.body_for(config_model, generic_body, reasoning_level, endpoint_model_info)
-    if endpoint_model_info and endpoint_model_info.backend == "sglang" then
-        generic_body = vim.tbl_deep_extend("force", {}, generic_body, {
-            stream_options = { include_usage = true },
-            return_spec_tokens_details = true,
-            return_cached_tokens_details = true,
-        })
-        -- Local GLM deployment has the opt-in final-SSE timing overlay.
-        if endpoint_model_info.actual_model_name == "glm-5.3-flash" then
-            generic_body = default_to_recommended(generic_body, { return_timings = true })
+    if endpoint_model_info then
+        if endpoint_model_info.backend == "vllm" then
+            log:info("endpoint_model_info", endpoint_model_info)
+            generic_body.stream_options = { include_usage = true }
+            -- TODO any other fields in vllm?
+        elseif endpoint_model_info.backend == "sglang" then
+            generic_body = vim.tbl_deep_extend("force", {}, generic_body, {
+                stream_options = { include_usage = true },
+                return_spec_tokens_details = true,
+                return_cached_tokens_details = true,
+                -- opt-in, custom final-SSE timing overlay (assume available for all local sglang deployments)
+                return_timings = true,
+            })
+        -- elseif endpoint_model_info == "llama-server" then
+        --     -- optionally enable verbose for more than just timings (timings are there automatically IIRC)
+        --     generic_body.verbose = true -- timings, raw input prompt, etc
         end
     end
     if config_model == models.GPTOSS then
@@ -143,11 +150,6 @@ function M.body_for_deepseek4flash(request_body, effort, endpoint_model_info)
     local actual_model_name = endpoint_model_info and endpoint_model_info.actual_model_name
     if actual_model_name and actual_model_name:lower():match("deepseek%-v4%.1%-flash") then
         recommended.max_tokens = nil
-    end
-
-    log:info("endpoint_model_info", endpoint_model_info)
-    if endpoint_model_info and endpoint_model_info.backend == "vllm" then
-        recommended.stream_options = { include_usage = true }
     end
 
     local efforts = models.DEEPSEEK_REASONING_EFFORT
@@ -351,11 +353,6 @@ function M.body_for_inkling2(request_body, reasoning_level, endpoint_model_info)
             reasoning_effort = reasoning_level
         }
     }
-
-    log:info("endpoint_model_info", endpoint_model_info)
-    if endpoint_model_info and endpoint_model_info.backend == "vllm" then
-        recommended.stream_options = { include_usage = true }
-    end
 
     local body = default_to_recommended(request_body, recommended)
     log:info("recommended", recommended)
