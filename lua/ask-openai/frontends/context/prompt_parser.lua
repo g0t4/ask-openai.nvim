@@ -86,7 +86,7 @@ M.slash_commands = {
     REASONING_HIGH   = "/high",
     REASONING_OFF    = "/off",
 
-    NOT_COURSE = "/notcourse",
+    NOT_COURSE = "/not_course",
 }
 
 --- Registration table for slash commands that perform text replacements.
