@@ -92,7 +92,9 @@ function PredictionsFrontend.ask_for_prediction(params)
     PredictionsFrontend._set_current_prediction(params.bufnr, this_prediction)
 
     local enable_rag = config.is_rag_enabled()
-    local ps_chunk = ps.get_prefix_suffix_chunk()
+
+    local model = config.get_fim_model()
+    local ps_chunk = ps.get_prefix_suffix_chunk(model)
 
     -- Register with performance registry for lualine display
     perf.register("fim", this_prediction.performance)

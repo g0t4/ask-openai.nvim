@@ -52,8 +52,21 @@ end
 
 ---@param take_num_lines_each_way? integer
 ---@return PrefixSuffixChunk ps_chunk
-function PrefixSuffixChunk.get_prefix_suffix_chunk(take_num_lines_each_way)
-    take_num_lines_each_way = take_num_lines_each_way or 1000
+function PrefixSuffixChunk.get_prefix_suffix_chunk(take_num_lines_each_way, configured_model_name)
+    local models = require("ask-openai.config.models")
+    if configured_model_name == models.INKLING2 then
+        -- TLDR the entire file :) unless it's over 10K
+        take_num_lines_each_way = take_num_lines_each_way or 10000
+    elseif configured_model_name == models.GPTOSS then
+        take_num_lines_each_way = take_num_lines_each_way or 300
+    elseif configured_model_name == models.DEEPSEEK then
+        -- DSv4Flash on vllm is hitting 10K prefill easily
+        -- especially viable on single turn prompts (no long context follow up)
+        take_num_lines_each_way = take_num_lines_each_way or 200
+    else
+        take_num_lines_each_way = take_num_lines_each_way or 100
+    end
+
     -- presently, this only works with current buffer/window:
     local current_win_id = 0
     local current_bufnr = 0

@@ -34,6 +34,9 @@ function M.get(base_url)
     if type(base_url) ~= "string" or base_url == "" then
         return { status = "no_endpoint", backend = "unknown" }
     end
+    -- TODO how about append model so its all in one record to pass around?
+    --  ALSO model is equally discovered technically
+    --  configured vs actual could be tacked on too?
     return snapshots[base_url] or { status = "pending", backend = "unknown", base_url = base_url }
 end
 
