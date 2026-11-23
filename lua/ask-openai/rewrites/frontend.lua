@@ -446,7 +446,6 @@ local function ask_rewrite_command(opts)
             -- set messages here so that we can modify messages in the model specific request customization (i.e. prefill assistant message as last msg)
             messages = messages,
             model = "", -- irrelevant for llama-server
-            verbose = true, -- my llama-server flag to include __verbose one-off (instead of needing --verbose on server start)
         }
 
         local model = config.get_rewrite_model()

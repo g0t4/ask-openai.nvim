@@ -349,7 +349,6 @@ local function ask_agent_command(opts)
             messages = messages,
             model = "", -- irrelevant for llama-server
             tools = tool_definitions,
-            verbose = true, -- capture __verbose one-off
         }
 
         local config_model = config.get_agents_model()

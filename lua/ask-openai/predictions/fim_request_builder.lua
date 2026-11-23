@@ -12,7 +12,7 @@ local config = require("ask-openai.config")
 local params = require("ask-openai.agents.models.params")
 local gptoss_tokenizer = require("ask-openai.backends.models.gptoss.tokenizer")
 local CurlRequest = require("ask-openai.backends.curl_request")
-local config = require("ask-openai.config")
+local discovery = require("ask-openai.backends.discovery")
 local logging_tokens = require("ask-openai.logs.tokens")
 
 require("ask-openai.backends.sse.parsers")
@@ -113,7 +113,11 @@ function FimRequestBuilder:fim_request()
     end
 
     local model = config.get_fim_model()
-    local curl_params = CurlParamsBuilder:new(config.get_endpoints()[model].base_url, body)
+    local base_url = config.get_endpoints()[model].base_url
+    local curl_params = CurlParamsBuilder:new(base_url, body)
+    local endpoint_model_info = discovery.get(base_url)
+    log:info("endpoint_model_info", endpoint_model_info)
+    body = params.request_timings_too(body, endpoint_model_info)
 
     if string.find(model, "codellama") then
         curl_params:set_raw_completions()

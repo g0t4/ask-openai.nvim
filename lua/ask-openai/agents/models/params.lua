@@ -31,12 +31,10 @@ local function set_enable_thinking(request_body, reasoning_level)
     return request_body
 end
 
----@param config_model string @Configuration key selects params, independently of the actual served model
 ---@param generic_body table
----@param reasoning_level string
 ---@return table
 ---@param endpoint_model_info? EndpointModelInfo @Discovery snapshot; only used for explicit exceptions
-function M.body_for(config_model, generic_body, reasoning_level, endpoint_model_info)
+function M.request_timings_too(generic_body, endpoint_model_info)
     if endpoint_model_info then
         if endpoint_model_info.backend == "vllm" then
             log:info("endpoint_model_info", endpoint_model_info)
@@ -50,11 +48,17 @@ function M.body_for(config_model, generic_body, reasoning_level, endpoint_model_
                 -- opt-in, custom final-SSE timing overlay (assume available for all local sglang deployments)
                 return_timings = true,
             })
-        -- elseif endpoint_model_info == "llama-server" then
-        --     -- optionally enable verbose for more than just timings (timings are there automatically IIRC)
-        --     generic_body.verbose = true -- timings, raw input prompt, etc
+        elseif endpoint_model_info == "llama-server" then
+            -- TODO do I want this off normally? how heavy of a penalty is this? could I get timings alone w/o the rest? (i.e. raw prompt in last sse?)
+            generic_body.verbose = true -- timings, raw input prompt, etc
         end
     end
+    return generic_body
+end
+
+function M.body_for(config_model, generic_body, reasoning_level, endpoint_model_info)
+    generic_body = M.request_timings_too(generic_body, endpoint_model_info)
+    log:info("generic_body(after requset_timings_too)", generic_body)
     if config_model == models.GPTOSS then
         return M.body_for_gptoss(generic_body, reasoning_level)
     elseif config_model == models.GEMMA4 then
@@ -95,8 +99,6 @@ function M.body_for_gptoss(request_body, reasoning_level)
             reasoning_effort = reasoning_level,
         },
         max_tokens = max_tokens,
-
-        -- verbose = true, -- add __verbose
     }
     return default_to_recommended(request_body, recommended)
 end
@@ -140,8 +142,6 @@ function M.body_for_deepseek4flash(request_body, effort, endpoint_model_info)
         --
         -- preview => https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash#instruct-model
         --   levels: non-think, high, max
-
-        verbose = true, -- add __verbose
 
         chat_template_kwargs = {}
     }
