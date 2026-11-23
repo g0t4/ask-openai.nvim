@@ -37,7 +37,7 @@ function M.get_endpoints()
     local deepseek_url = "http://ask.lan:8014"
     local muse_url = "http://build21.lan:8016"
     local nemo_lightning_url = "http://build21.lan:8017"
-    local inkling2_url = "http://build21.lan:8019"
+    local inkling2_url = "http://build21.lan:8017"
 
     -- FYI fine by me to collapse Endpoint into a string
     -- I used to handle name here too but that became a hot mess due to async vs sync
