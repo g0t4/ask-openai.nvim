@@ -58,7 +58,7 @@ local function color_by_probability(text, prob)
     return ansi.rgb(text, r, g, b)
 end
 
-M.SHOW_PROBABILITIES = true
+M.SHOW_PROBABILITIES = false
 
 ---@param prob number|nil
 ---@return string probability display
