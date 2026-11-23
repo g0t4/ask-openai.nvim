@@ -69,6 +69,11 @@ end
 function M.send_tool_call_router(tool_call, callback, on_progress)
     local tool_name = tool_call["function"].name
 
+    if tool_call.arguments_error then
+        callback(plumbing.create_tool_call_output_for_error_message(tool_call.arguments_error))
+        return nil
+    end
+
     local function call_tool(fn)
         -- treat as tool call failure, that way model can choose how to recover... vs just killing your tool runner :)
         local ok, result_or_error = safely.call(fn)

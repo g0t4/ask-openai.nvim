@@ -78,3 +78,33 @@ describe("tool image messages", function()
         end
     end)
 end)
+
+describe("completed tool arguments", function()
+    local ToolCall = require("ask-openai.agents.tools.tool_call")
+    local router = require("ask-openai.tools.router")
+
+    it("rejects malformed calls before dispatch and preserves replayable history", function()
+        for _, raw in ipairs({ "", "  ", '{"argv":', "[]", "null" }) do
+            local call = ToolCall:new({ id = "bad", type = "function", ["function"] = { name = "run_bash", arguments = raw } })
+            call:finish_arguments()
+            local result
+            router.send_tool_call_router(call, function(output) result = output.result end)
+            assert.is_true(result.isError)
+            assert.equals(call.arguments_error, result.content[1].text)
+            local history = Tx:from_assistant_rx_message({ tool_calls = { call } })
+            assert.equals("bad", history.tool_calls[1].id)
+            assert.equals("{}", history.tool_calls[1]["function"].arguments)
+            assert.equals(raw, call["function"].arguments)
+        end
+    end)
+
+    it("preserves valid arguments including no-argument calls", function()
+        for _, raw in ipairs({ "{}", ' {"argv":["ls"]}' }) do
+            local call = ToolCall:new({ ["function"] = { name = "test", arguments = raw } })
+            call:finish_arguments()
+            assert.is_nil(call.arguments_error)
+            local history = Tx:from_assistant_rx_message({ tool_calls = { call } })
+            assert.equals(raw, history.tool_calls[1]["function"].arguments)
+        end
+    end)
+end)

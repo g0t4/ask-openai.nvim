@@ -158,7 +158,8 @@ function TxChatMessage:from_assistant_rx_message(rx_message)
                 type = call_request.type,
                 ["function"] = {
                     name = call_request["function"].name,
-                    arguments = call_request["function"].arguments,
+                    -- Keep the rejected bytes on the received call. History must be valid JSON.
+                    arguments = call_request.arguments_error and "{}" or call_request["function"].arguments,
                 }
             }
             table.insert(tx_message.tool_calls, new_call)

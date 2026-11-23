@@ -3,6 +3,7 @@
 ---@class ToolCall : OpenAIChoiceDeltaToolCall
 ---
 ---  my additions:
+---@field arguments_error? string
 ---@field response_message table|nil -- TODO type this? response message to send call results back to the model that will, also attached to agent_trace (history)
 ---@field call_output? ToolCallOutput -- tool call outputs (specific to a given tool type, some have standard structure, i.e. MCP)
 ---@field progress_notifications string[] -- progress messages received during tool execution
@@ -17,6 +18,14 @@ function ToolCall:new(o)
     setmetatable(o, self)
     self.__index = self
     return o
+end
+
+-- Validate only after the final delta. Partial argument strings are normal while streaming.
+function ToolCall:finish_arguments()
+    local arguments = self["function"].arguments
+    if type(arguments) ~= "string" or not arguments:match("^%s*{") or not pcall(vim.json.decode, arguments) then
+        self.arguments_error = "Tool was not run. Retry with arguments encoded as a valid JSON object."
+    end
 end
 
 ---@param notification string

@@ -652,7 +652,13 @@ local function update_ui_chat_viewer(trace)
         for _, tool_call in ipairs(rx_message.tool_calls) do
             local function_name = tool_call["function"] and tool_call["function"].name or ""
             local formatter = formatters.get_formatter(function_name)
-            local ok, err = pcall(function() formatter(lines, tool_call, rx_message) end)
+            local ok, err = pcall(function()
+                if tool_call.arguments_error then
+                    lines:append_unexpected_text(function_name .. ": " .. tool_call.arguments_error)
+                    return
+                end
+                formatter(lines, tool_call, rx_message)
+            end)
             if not ok then
                 lines:append_unexpected_text("Formatter error: " .. tostring(err))
                 lines:append_text(vim.inspect(tool_call))
@@ -857,6 +863,9 @@ function AgentsFrontend.on_curl_exited_successfully()
             -- add assistant response message to chat history (TxChatMessage)
             --   (must come before tool result messages)
             --   theoretically there can be multiple messages, with any role (not just assitant)
+            for _, tool_call in ipairs(rx_message.tool_calls) do
+                tool_call:finish_arguments()
+            end
             local trace_message = TxChatMessage:from_assistant_rx_message(rx_message)
             trace:add_message(trace_message)
             -- TODO could I merge this accum logic with completion logger's accum logic?
