@@ -163,6 +163,8 @@ function RewriteFrontend.on_parsed_data_sse(sse_parsed)
     if sse_parsed.choices == nil or sse_parsed.choices[1] == nil then
         return
     end
+    log:info("rewrite", sse_parsed)
+    -- TODO see AgentsFrontend for response_metadata.capture_final(sse_parsed, request.accumulated_model_response_messages) ... adapt to RewriteFrontend for timing captures for sglang/vllm?? do I need that?
 
     local first_choice = sse_parsed.choices[1]
     local extract_generated_text = get_extract_generated_text_func(RewriteFrontend.last_request.endpoint)
