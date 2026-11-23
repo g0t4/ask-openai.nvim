@@ -183,6 +183,7 @@ function FimRequestBuilder:fim_request()
                 body.chat_template_kwargs = {
                     reasoning_effort = level
                 }
+                body.max_tokens = gptoss_tokenizer.get_gptoss_max_tokens_for_level(level)
             elseif model == models.GLM
                 or model == models.GEMMA4
                 or model == models.NEMO then
@@ -193,16 +194,18 @@ function FimRequestBuilder:fim_request()
                     enable_thinking = level ~= "off"
                 }
                 -- TODO other models use their overrides in params.
+                -- TODO max_tokens?
             elseif model == models.MUSE then
                 body = params.body_for_muse_glimmer(body, level, true)
                 curl_params.body = body
+                -- TODO max_tokens?
             elseif model == models.INKLING2 then
                 body.chat_template_kwargs = {
                     reasoning_effort = level
                 }
+                -- TODO max_tokens?
             end
 
-            body.max_tokens = gptoss_tokenizer.get_gptoss_max_tokens_for_level(level)
         end
 
         -- * common settings
