@@ -80,7 +80,7 @@ def construct_message_panel(
     panel = Panel(
         content,
         title=f"[{color}]{title}[/]",
-        title_align="right" if align == "right" else "left",
+        title_align=align,
         border_style=color,
         padding=panel_padding,
         width=panel_width,
