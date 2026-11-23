@@ -264,14 +264,20 @@ function M.render(prompt)
         local found
         found, rendered_prompt = strip_slash_command_from_prompt(rendered_prompt, command)
         local field = M.slash_command_to_field[command]
+        log:info("field", field)
         if field then
-            includes[field] = found
+            -- only set if slash command was found
+            -- otherwise defer to Includes.new ctor for defaults
+            if found == true then
+                log:info("  found", found)
+                includes[field] = found
+            end
         else
-            vim.notify("missing field for slash command: " .. command, vim.log.levels.ERROR)
-            log:error("missing field for slash command: " .. command)
+            local msg = "missing field for slash command: " .. command
+            vim.notify(msg, vim.log.levels.ERROR)
+            log:error(msg)
         end
     end
-
     includes.rendered_prompt = rendered_prompt
     -- log:trace("includes", vim.inspect(includes))
     return includes
