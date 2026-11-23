@@ -107,6 +107,14 @@ def _book_anchor_blurb(read_rate, write_rate):
 def dim(text: str) -> str:
     return f"[dim]{text}[/]"
 
+def in_cell(text: str) -> str:
+    """Tint an input-side cell so the in group (count, rate, duration) reads as one hue."""
+    return f"[dim cyan]{text}[/]" if text else text
+
+def out_cell(text: str) -> str:
+    """Tint an output-side cell so the out group (count, rate, duration, split) reads as one hue."""
+    return f"[dim green]{text}[/]" if text else text
+
 def italic(text: str) -> str:
     return f"[italic]{text}[/]"
 
@@ -139,14 +147,17 @@ def build_timings_summary(entries: list[TimingEntry], backend: str, expanded: bo
     show_mean_accept_len_column = expanded and any([e.timings.mean_acceptance_length is not None for e in entries])
 
     # * headers
+    # in/out groups get distinct hues (cyan = input, green = output); the cells are
+    # tinted with the dim variants (in_cell/out_cell) so the signal runs down the
+    # columns without shouting.
     table.add_column('cached', justify='right')
     # 'in' spans the count + rate columns as one merged header (the second header is blank);
     # the underline on both cells renders as a single line connecting the pair.
-    table.add_column('', justify='right', header_style='underline')  # count column; header lives in the rightmost
-    table.add_column('in', justify='right', header_style='underline')  # rate column (rightmost of the pair)
+    table.add_column('', justify='right', header_style='cyan underline')  # count column; header lives in the rightmost
+    table.add_column('in', justify='right', header_style='cyan underline')  # rate column (rightmost of the pair)
     table.add_column('', width=1)  # spacer: visually separates the 'in' and 'out' pairs
-    table.add_column('', justify='right', header_style='underline')  # count column; header lives in the rightmost
-    table.add_column('out', justify='right', header_style='underline')  # rate column (rightmost of the pair)
+    table.add_column('', justify='right', header_style='green underline')  # count column; header lives in the rightmost
+    table.add_column('out', justify='right', header_style='green underline')  # rate column (rightmost of the pair)
     dim_not_bold = 'dim not bold'
     if show_out_split_columns:
         table.add_column('reasoning', justify='right', header_style=dim_not_bold)
@@ -157,8 +168,8 @@ def build_timings_summary(entries: list[TimingEntry], backend: str, expanded: bo
     if show_mean_accept_len_column:
         table.add_column('accept\nlen', justify='right', no_wrap=True, header_style=dim_not_bold)
 
-    table.add_column('in', justify='right')
-    table.add_column('out', justify='right')
+    table.add_column('in', justify='right', header_style='cyan')
+    table.add_column('out', justify='right', header_style='green')
     table.add_column('', justify='right')  # message number, no need for a header
 
     # * per message timing rows
@@ -192,7 +203,7 @@ def build_timings_summary(entries: list[TimingEntry], backend: str, expanded: bo
 
         count_in, rate_in = _token_rate(new_in_tokens, input_rate, not exact_rates)
         count_out, rate_out = _token_rate(stats.predicted_tokens, output_rate, not exact_rates)
-        message_row = [cell_cached, count_in, rate_in, '', count_out, rate_out]
+        message_row = [cell_cached, in_cell(count_in), in_cell(rate_in), '', out_cell(count_out), out_cell(rate_out)]
 
         # conditionally show output breakdown (reasoning vs final)
         reasoning_count = stats.reasoning_tokens
@@ -207,10 +218,10 @@ def build_timings_summary(entries: list[TimingEntry], backend: str, expanded: bo
                 final_count = stats.predicted_tokens - reasoning_count  # just let it go negative, that's fine if there is an out of bounds
                 if reasoning_count:
                     think_percent = f'{reasoning_count / stats.predicted_tokens * 100:.0f}%' if stats.predicted_tokens else '—'
-                    message_row.append(dim(_count(reasoning_count) + " " + think_percent))
+                    message_row.append(out_cell(_count(reasoning_count) + " " + think_percent))
                 else:
                     message_row.append('')  # no reasoning tokens, leave the column blank
-                message_row.append(dim(_count(final_count)))
+                message_row.append(out_cell(_count(final_count)))
             else:
                 message_row.extend(['', ''])
 
@@ -237,8 +248,8 @@ def build_timings_summary(entries: list[TimingEntry], backend: str, expanded: bo
         input_ms = stats.prompt_ms if exact_rates else stats.time_to_first_token_ms
         output_ms = stats.predicted_ms if exact_rates else stats.generation_time_ms
         message_row += [
-            _duration(input_ms),
-            _duration(output_ms),
+            in_cell(_duration(input_ms)),
+            out_cell(_duration(output_ms)),
             dim('#') + str(message_number),
         ]
         table.add_row(*message_row)
@@ -264,10 +275,10 @@ def build_timings_summary(entries: list[TimingEntry], backend: str, expanded: bo
             total_count_in, total_rate_in = _token_rate(total_in, read_rate, estimated=not exact_rates)
         else:
             total_count_in, total_rate_in = '—', ''
-        total_row = [total_for_cached, total_count_in, total_rate_in, '']
+        total_row = [total_for_cached, in_cell(total_count_in), in_cell(total_rate_in), '']
 
         total_count_out, total_rate_out = _token_rate(total_out, write_rate, estimated=not exact_rates)
-        total_row.extend([total_count_out, total_rate_out])
+        total_row.extend([out_cell(total_count_out), out_cell(total_rate_out)])
 
         if show_out_split_columns:
             if show_total_for_reasoning:
@@ -280,7 +291,7 @@ def build_timings_summary(entries: list[TimingEntry], backend: str, expanded: bo
             else:
                 total_for_reasoning = '—'
                 total_for_final = '—'
-            total_row.extend([dim(total_for_reasoning), dim(total_for_final)])
+            total_row.extend([out_cell(total_for_reasoning), out_cell(total_for_final)])
 
         if show_draft_column:
             if total_drafted:
@@ -303,8 +314,8 @@ def build_timings_summary(entries: list[TimingEntry], backend: str, expanded: bo
             return '—'
 
         total_row.extend([
-            _total_duration(in_durations),
-            _total_duration(out_durations),
+            in_cell(_total_duration(in_durations)),
+            out_cell(_total_duration(out_durations)),
             '',  # message_number
         ])
 
