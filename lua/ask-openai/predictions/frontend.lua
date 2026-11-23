@@ -372,6 +372,11 @@ local input_events_subscription = input_events:subscribe(function(event)
     -- log:info("input_event", event.bufnr)
 
     -- immediately clear/hide prediction, else slides as you type
+    -- TODO: Keep the stream alive while typing at the same edit site. Compare the actual
+    -- buffer edit (including autopairs and autoindent) with the parsed replacement text,
+    -- excluding its context anchors. While the model is ahead, show only the untyped suffix.
+    -- While the user is ahead, hide the suggestion and let the stream catch up. Invalidate
+    -- only when the overlapping text diverges or the surrounding edit context changes.
     PredictionsFrontend.cancel_current_prediction(event.bufnr)
     -- end)
     -- local debounced_subscription = debounced_events:subscribe(function(event)
