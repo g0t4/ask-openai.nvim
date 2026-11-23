@@ -31,7 +31,7 @@ end
 ---@return table<string, Endpoint>
 function M.get_endpoints()
     local gptoss_url = "http://build21.lan:8013"
-    local qwen3_url = "http://build21.lan:8012"
+    local qwen3_url = "http://build21.lan:8027" -- 8012 llama-server / 8027 sglang
     local gemma4_url = "http://build21.lan:8011"
     local glm_url = "http://ask.lan:8015"
     local deepseek_url = "http://ask.lan:8014"
