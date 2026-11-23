@@ -163,3 +163,70 @@ describe("http_events", function()
         assert.is_nil(done_err, "should not have a failure on_done")
     end)
 end)
+
+describe("fragmented HTTP responses", function()
+    local new_tcp, query_address
+    local reads
+    before_each(function()
+        new_tcp, query_address = vim.uv.new_tcp, raw_request.query_inet_addy
+        reads = {}
+        raw_request.query_inet_addy = function(_, cb) cb("127.0.0.1") end
+        vim.uv.new_tcp = function()
+            return {
+                connect = function(_, _, _, cb) cb() end,
+                read_start = function(_, cb) table.insert(reads, cb) end,
+                write = NOOP,
+                is_closing = function() return false end,
+                close = NOOP,
+            }
+        end
+    end)
+
+    after_each(function()
+        vim.uv.new_tcp, raw_request.query_inet_addy = new_tcp, query_address
+    end)
+
+    local function start()
+        local result = { events = {}, done = 0 }
+        raw_request.http_events({
+            host = "localhost", port = 80, method = "GET", path = "/",
+            on_data_value = function(value) table.insert(result.events, value) end,
+            on_done = function(err)
+                result.done = result.done + 1
+                result.err = err
+            end,
+        })
+        return result, reads[#reads]
+    end
+
+    it("delivers a split JSON error and keeps an overlapping SSE request independent", function()
+        local failed, fail_read = start()
+        local success, success_read = start()
+        fail_read(nil, "HTTP/1.1 400 Bad Request\r\nContent-Length: 37\r\n\r")
+        success_read(nil, "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n")
+        fail_read(nil, '\n{"error":{"message":"context ')
+        success_read(nil, "\r\ne\r\ndata: [DONE]\n\n")
+        fail_read(nil, 'limit"}}')
+        fail_read(nil, nil)
+        success_read(nil, "\r\n0\r\n\r\n")
+        success_read(nil, nil)
+        assert.are.equal('HTTP 400: {"error":{"message":"context limit"}}', failed.err)
+        assert.are.same({}, failed.events)
+        assert.are.same({ "[DONE]" }, success.events)
+        assert.is_nil(success.err)
+        assert.are.equal(1, failed.done)
+        assert.are.equal(1, success.done)
+    end)
+
+    it("shows the status for an empty body and decodes chunked error text", function()
+        local empty, read = start()
+        read(nil, "HTTP/1.1 503 Unavailable\r\nContent-Length: 0\r\n\r\n")
+        read(nil, nil)
+        assert.are.equal("HTTP 503", empty.err)
+        local chunked, chunk_read = start()
+        chunk_read(nil, "HTTP/1.1 400 Bad Request\r\nTransfer-Encoding: chunked\r\n\r\n3\r\nto")
+        chunk_read(nil, "o\r\n5\r\n long\r\n0\r\n\r\n")
+        chunk_read(nil, nil)
+        assert.are.equal("HTTP 400: too long", chunked.err)
+    end)
+end)

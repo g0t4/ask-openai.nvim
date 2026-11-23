@@ -91,7 +91,7 @@ end
 ---@param request HttpRawRequest
 ---@return uv.uv_tcp_t tcp_handle
 function M.http(request)
-    on_headers = request.on_headers or function() end
+    local on_headers = request.on_headers or function() end
     -- FYI https://docs.libuv.org/en/v1.x/tcp.html for uv_tcp_t
     local tcp_handle, newtcp_err, newtcp_err_name = uv.new_tcp()
     -- log:info("new tcp_handle", tcp_handle)
@@ -102,13 +102,12 @@ function M.http(request)
     end
 
     M.query_inet_addy(request.host, function(first_ip)
-        host_ip = first_ip
         local headers_done = false
 
         if tcp_handle:is_closing() then
             return -- defensive, in case close is called before we connect, not likely to happen in reality
         end
-        local conn, conn_err, conn_err_name = tcp_handle:connect(host_ip, request.port, function(inner_err)
+        local conn, conn_err, conn_err_name = tcp_handle:connect(first_ip, request.port, function(inner_err)
             if inner_err then
                 if inner_err:find("ECANCELED") then
                     log:info("ECANCELED detected, turn this into an ignore if it is tied to close, BTW tcp_handle:is_closing():", tcp_handle:is_closing())
@@ -177,9 +176,8 @@ function M.http(request)
                 end
 
                 -- log:info('chunk', chunk)
-                buffer = buffer .. chunk
-
                 if not headers_done then
+                    buffer = buffer .. chunk
                     local _, body_start = buffer:find("\r\n\r\n", 1, true)
 
                     if body_start then
@@ -193,7 +191,8 @@ function M.http(request)
                         on_headers(headers)
 
                         -- dregs after headers would be start of body, so `on_data` it!
-                        local body = chunk:sub(body_start + 1)
+                        local body = buffer:sub(body_start + 1)
+                        buffer = ""
                         if #body > 0 then
                             -- log:info(ansi.green_bold("ON_DATA(header_dregs)"), vim.inspect(body))
                             request.on_data(body)
@@ -213,6 +212,23 @@ function M.http(request)
     return tcp_handle
 end
 
+-- Decode chunk framing only for the buffered HTTP error response. Keep the
+-- original bytes as diagnostic text if the server closed mid-frame.
+local function decode_error_chunks(wire)
+    local parts, pos = {}, 1
+    while pos <= #wire do
+        local line_end = wire:find("\r\n", pos, true)
+        local size = line_end and tonumber(wire:sub(pos, line_end - 1):match("^%s*(%x+)") or "", 16)
+        if not size then return wire end
+        if size == 0 then return table.concat(parts) end
+        local first = line_end + 2
+        if wire:sub(first + size, first + size + 1) ~= "\r\n" then return wire end
+        table.insert(parts, wire:sub(first, first + size - 1))
+        pos = first + size + 2
+    end
+    return wire
+end
+
 ---@class HttpRawRequestForEvents
 ---@field host string
 ---@field port number
@@ -226,10 +242,12 @@ end
 ---@return uv.uv_tcp_t tcp_handle
 function M.http_events(request)
     local SSEDataOnlyParser = require("ask-openai.backends.sse.data_only_parser")
-    parser = SSEDataOnlyParser.new(function(sse)
+    local parser = SSEDataOnlyParser.new(function(sse)
         request.on_data_value(sse)
     end)
 
+    local response_headers
+    local error_chunks = {}
     local raw = {
         -- start_ns = request.start_ns, -- FYI just for perf testing, nuke when done with that
         host = request.host,
@@ -240,9 +258,27 @@ function M.http_events(request)
         on_data = function(data)
             -- ❤️ that my existing SSEDataOnlyParser fits perfectly into my new raw request client
             -- FYI consumers of http_events should not set these...
-            parser:write(data)
+            if response_headers and not response_headers.OK then
+                table.insert(error_chunks, data)
+            else
+                parser:write(data)
+            end
         end,
         on_done = function(err)
+            if response_headers and not response_headers.OK then
+                local body = table.concat(error_chunks)
+                if response_headers.chunked then
+                    body = decode_error_chunks(body)
+                end
+                local message = "HTTP " .. response_headers.status_code
+                if body ~= "" then
+                    message = message .. ": " .. body
+                end
+                if err then
+                    message = message .. " (" .. err .. ")"
+                end
+                return request.on_done(message)
+            end
             local dregs_error = parser:flush_dregs()
             if dregs_error ~= nil then
                 -- PRN do not swallow passed err too? if both have info?
@@ -252,10 +288,8 @@ function M.http_events(request)
             request.on_done(err)
         end,
         on_headers = function(headers)
-            if not headers.OK then
-                log:warn("Non-OK status code: %s", headers.status_code)
-            end
-            if not headers.chunked then
+            response_headers = headers
+            if headers.OK and not headers.chunked then
                 log:warn(string.format("Expected transfer-encoding: chunked, got headers: %s", vim.inspect(headers)))
             end
         end,

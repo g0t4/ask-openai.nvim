@@ -136,7 +136,7 @@ function Curl.spawn(request, frontend)
         --   or is it a pooling mechanism because a prior connection was canceled and now the connection is avail?
         -- local start_ns = perf.get_time_in_ns()
         ---@param data_value string
-        function on_raw_data_value(data_value)
+        local function on_raw_data_value(data_value)
 
             if request.tcp_handle == nil then
                 return
@@ -166,9 +166,8 @@ function Curl.spawn(request, frontend)
             -- flush dregs before on_curl_exited_successfully
             -- - which may depend on, for example, a tool_call in dregs
             if err then
-                local message = "on_done -> err =" .. vim.inspect(err)
-                log:error(message)
-                frontend.explain_error(message)
+                log:error(err)
+                frontend.explain_error(err)
                 return
             end
 
