@@ -109,8 +109,8 @@ def dim(text: str) -> str:
 
 # in/out column-group hues: soft pastels that resonate with the role palette in
 # theme.py (periwinkle blue = system/developer, rose pink = tool).
-IN_HUE = '#7e7fbe'
-OUT_HUE = '#be7e8c'
+IN_HUE = '#8485b8'
+OUT_HUE = '#b88490'
 
 def in_cell(text: str) -> str:
     """Tint an input-side cell so the in group (count, rate, duration) reads as one hue."""
