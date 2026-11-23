@@ -137,17 +137,13 @@ class TraceViewerApp(TerminalSizedApp):
 
     def __init__(
         self,
-        messages: list[dict],
-        model_name: str | None = None,
-        timings=None,
+        trace: viewer.TraceDTO,
         max_width: int = 160,
     ) -> None:
         super().__init__()
         self.max_width = max_width
         self.width_capped = bool(max_width)
-        self._messages = messages
-        self._model_name = model_name
-        self._timings = timings
+        self._trace = trace
 
     def get_css_variables(self) -> dict[str, str]:
         """Use the terminal's default background instead of Textual's dark theme.
@@ -177,7 +173,7 @@ class TraceViewerApp(TerminalSizedApp):
             width=max(1, log.scrollable_content_region.width),
         )
         viewer.render_trace_to_console(
-            console, self._messages, self._model_name, self._timings, full_width=True
+            console, self._trace, full_width=True
         )
 
     def on_mount(self) -> None:
@@ -202,18 +198,14 @@ def main(argv: list[str] | None = None) -> None:
     viewer.load_preapproved_files()
 
     if args.trace_file:
-        messages, model_name, timings = viewer.load_trace_messages_from_path(
-            Path(args.trace_file)
-        )
+        trace = viewer.load_trace_messages_from_path(Path(args.trace_file))
     elif not sys.stdin.isatty():
-        messages, model_name, timings = viewer.load_trace_messages_from_stream(
-            sys.stdin
-        )
+        trace = viewer.load_trace_messages_from_stream(sys.stdin)
     else:
         parser.print_help()
         return
 
-    TraceViewerApp(messages, model_name, timings, max_width=args.max_width).run()
+    TraceViewerApp(trace, max_width=args.max_width).run()
 
 
 if __name__ == "__main__":

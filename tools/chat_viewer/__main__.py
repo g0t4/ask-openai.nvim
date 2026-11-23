@@ -572,7 +572,17 @@ def get_model_name_from_jsonl_messages(records) -> str|None:
     # ... TODO actually we should track that as a model change record type (could be logical off of asssistant responses too b/c the server can use a diff model than client asked for)
     return first['metadata']['response']['model_name']
 
-def load_trace_messages_from_path(trace_file: Path) -> tuple[list[dict[str, Any]], str | None, ModelTimings | None]:
+
+@dataclass
+class TraceDTO:
+    """Information extracted from a trace file or stream."""
+
+    messages: list[dict[str, Any]]
+    model_name: str | None = None
+    timings: ModelTimings | None = None
+
+
+def load_trace_messages_from_path(trace_file: Path) -> TraceDTO:
     if not trace_file.is_file():
         print(f"File not found: {trace_file}")
         sys.exit(1)
@@ -581,7 +591,7 @@ def load_trace_messages_from_path(trace_file: Path) -> tuple[list[dict[str, Any]
         messages = [r["message"] for r in records if "message" in r and "type" in r and r["type"] == "message"]
         model_name = get_model_name_from_jsonl_messages(records)
         # TODO return timings too? make sure we request them for vllm/sglang/llama-server/etc like in ask-openai.nvim
-        return messages, model_name, None
+        return TraceDTO(messages=messages, model_name=model_name)
 
     with trace_file.open("r", encoding="utf-8") as f:
         data = json.load(f)
@@ -606,7 +616,7 @@ def load_trace_messages_from_path(trace_file: Path) -> tuple[list[dict[str, Any]
                     response["output.json"] = True
                     messages.append(response)
 
-    return messages, model_name, timings
+    return TraceDTO(messages=messages, model_name=model_name, timings=timings)
 
 
 def show_rest_of_request_body_properties(data):
@@ -639,7 +649,7 @@ def load_messages(data) -> list[dict[str, Any]]:
     return []
 
 
-def load_trace_messages_from_stream(stream) -> tuple[list[dict[str, Any]], str | None, ModelTimings | None]:
+def load_trace_messages_from_stream(stream) -> TraceDTO:
     # assume stream can be:
     #   jq .messages | this
     #   cat *-trace.json | this
@@ -657,7 +667,7 @@ def load_trace_messages_from_stream(stream) -> tuple[list[dict[str, Any]], str |
             messages.append(response)
     # FYI cannot assume output.json is related (or any othe file) given this data is from STDIN
 
-    return messages, model_name, timings
+    return TraceDTO(messages=messages, model_name=model_name, timings=timings)
 
 
 def insert_newlines(content: str) -> str:
@@ -1446,7 +1456,7 @@ def show_model_info(model_name):
         _console.print(f"[dim]Model:[/] [bold]{model_name}[/]")
         _console.print()
 
-def render_trace_to_console(console, messages, model_name, timings, *, full_width=False) -> None:
+def render_trace_to_console(console, trace: TraceDTO, *, full_width=False) -> None:
     """Render a full trace to the given rich Console.
 
     Shared by the CLI entrypoint (``main``) and the Textual viewer
@@ -1456,11 +1466,12 @@ def render_trace_to_console(console, messages, model_name, timings, *, full_widt
     global _console
     _console = console
 
-    show_model_info(model_name)
+    messages = trace.messages
+    show_model_info(trace.model_name)
 
     has_per_message_timings = any(msg.get("role") == "assistant" and parse_timings(msg) is not None for msg in messages)
     if not has_per_message_timings:
-        print_model_info(timings)
+        print_model_info(trace.timings)
 
     render_messages_to_console(console, messages, full_width=full_width)
 
@@ -1549,9 +1560,9 @@ def main() -> None:
 
     if trace_file_path is None and not sys.stdin.isatty():
         # No file arg and stdin has data (piped)
-        messages, model_name, timings = load_trace_messages_from_stream(sys.stdin)
+        trace = load_trace_messages_from_stream(sys.stdin)
     elif trace_file_path is not None:
-        messages, model_name, timings = load_trace_messages_from_path(trace_file_path)
+        trace = load_trace_messages_from_path(trace_file_path)
     else:
         parser.print_help()
         return
@@ -1561,7 +1572,7 @@ def main() -> None:
     margin = max(0, (terminal_width - width) // 2)
     _console = Console(file=CenteredOutput(_console.file, margin), width=width,
                        color_system="truecolor", force_terminal=True)
-    render_trace_to_console(_console, messages, model_name, timings, full_width=True)
+    render_trace_to_console(_console, trace, full_width=True)
 
 
 if __name__ == "__main__":
