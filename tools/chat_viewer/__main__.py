@@ -1480,7 +1480,11 @@ def render_trace_to_console(console, messages, model_name, timings, *, full_widt
             summaries.setdefault(stats.backend, []).append(TimingEntry(message_number=message_number, timings=stats))
     names = {"llama-server": "llama-server", "vllm": "vLLM", "sglang": "SGLang"}
     for backend, entries in summaries.items():
-        print_section_header(f"{names.get(backend, backend)} assistant timings", "blue")
+        title = f"{names.get(backend, backend)} assistant timings"
+        # print_section_header(title, "#b576c6")
+        # #77c676
+        color = "#b576c6"
+        _console.print(header_bar(title, color, _console.width, dark_font=True))
         _console.print(build_timings_summary(entries, backend, expanded=args.show_all))
         _console.print()
     # Consider optional TTFT, queue time, and mean ITL columns in a future view.
