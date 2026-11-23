@@ -45,7 +45,7 @@ function Includes.new(initial)
         reasoning_medium = initial.reasoning_medium or false,
         reasoning_high = initial.reasoning_high or false,
         reasoning_off = initial.reasoning_off or false,
-        not_course = initial.not_course or false,
+        not_course = initial.not_course or true, -- true effectively disables this setting while not removing it... so I can flip it back on for future courses
     }
     setmetatable(self, Includes)
     return self
