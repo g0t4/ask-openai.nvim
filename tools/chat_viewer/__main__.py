@@ -11,7 +11,7 @@ from pathlib import Path
 from rich.console import Console, Group
 from rich.align import Align
 from rich.syntax import Syntax
-from tools.chat_viewer.message_panel import print_message_panel
+from tools.chat_viewer.message_panel import construct_message_panel
 from wes_syntax import syntax as themed_syntax, markdown_tables
 from rich.panel import Panel
 from rich.pretty import Pretty
@@ -1418,7 +1418,7 @@ def print_message(msg: dict, idx: int, requests_by_id: dict[str, dict[str, Any]]
         return
 
     align = "right" if is_model_input(role) else "left"
-    panel = print_message_panel(title, color, root, align, _console=_console, full_width=full_width)
+    panel = construct_message_panel(title, color, root, align, _console=_console, full_width=full_width)
     _console.print(panel)
     _console.print()  # blank line between messages
 

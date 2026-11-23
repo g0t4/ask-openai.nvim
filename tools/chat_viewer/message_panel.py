@@ -33,7 +33,7 @@ from tools.chat_viewer.tree_wrapper import TreeWrapper
 # )
 
 
-def print_message_panel(
+def construct_message_panel(
     title: str,
     color: str,
     content: TreeWrapper,
