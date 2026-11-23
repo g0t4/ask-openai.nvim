@@ -1387,8 +1387,8 @@ def get_font_color_for_bg(bg_color: str) -> str:
     return contrast_color_for(bg_color)
 
 
-def print_section_header(title, color):
-    _console.print(header_bar(title, color, _console.width))
+def print_section_header(title, color, dark_font=False):
+    _console.print(header_bar(title, color, _console.width, dark_font=dark_font))
 
 
 def is_model_input(role: str) -> bool:
@@ -1481,7 +1481,6 @@ def render_trace_to_console(console, messages, model_name, timings, *, full_widt
     names = {"llama-server": "llama-server", "vllm": "vLLM", "sglang": "SGLang"}
     for backend, entries in summaries.items():
         title = f"{names.get(backend, backend)} assistant timings"
-        # print_section_header(title, "#b576c6")
         color = "#77c676"
         # color = "#7677c6"
         # color = "#b576c6"
@@ -1490,7 +1489,7 @@ def render_trace_to_console(console, messages, model_name, timings, *, full_widt
         # color = "#769fc6"
         # color = "#c6c576"
         _console.print()
-        _console.print(header_bar(title, color, _console.width, dark_font=True))
+        print_section_header(title, color, dark_font=True)
         _console.print(build_timings_summary(entries, backend, expanded=args.show_all))
         _console.print()
     # Consider optional TTFT, queue time, and mean ITL columns in a future view.
