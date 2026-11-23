@@ -89,5 +89,4 @@ def print_message_panel(
         # btw short width tool results are where I really like seeing panel with full border... don't get rid of chat_box yet though, keep it around to use again
     )
 
-    _console.print(Align(panel, align=align))
-    _console.print()  # blank line between messages
+    return Align(panel, align=align)

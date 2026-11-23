@@ -1418,7 +1418,9 @@ def print_message(msg: dict, idx: int, requests_by_id: dict[str, dict[str, Any]]
         return
 
     align = "right" if is_model_input(role) else "left"
-    print_message_panel(title, color, root, align, _console=_console, full_width=full_width)
+    panel = print_message_panel(title, color, root, align, _console=_console, full_width=full_width)
+    _console.print(panel)
+    _console.print()  # blank line between messages
 
 
 def render_messages_to_console(console, messages, *, start_index=1, context_messages=None, full_width=False) -> None:
