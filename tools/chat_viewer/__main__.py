@@ -1483,7 +1483,13 @@ def render_trace_to_console(console, messages, model_name, timings, *, full_widt
         title = f"{names.get(backend, backend)} assistant timings"
         # print_section_header(title, "#b576c6")
         color = "#77c676"
+        # color = "#7677c6"
         # color = "#b576c6"
+        # color = "#bbbbe3"
+        # color = "#76bfc6"
+        # color = "#769fc6"
+        # color = "#c6c576"
+        _console.print()
         _console.print(header_bar(title, color, _console.width, dark_font=True))
         _console.print(build_timings_summary(entries, backend, expanded=args.show_all))
         _console.print()
