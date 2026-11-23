@@ -264,12 +264,12 @@ function M.render(prompt)
         local found
         found, rendered_prompt = strip_slash_command_from_prompt(rendered_prompt, command)
         local field = M.slash_command_to_field[command]
-        log:info("field", field)
+        -- log:info("field", field)
         if field then
             -- only set if slash command was found
             -- otherwise defer to Includes.new ctor for defaults
             if found == true then
-                log:info("  found", found)
+                -- log:info("  found", found)
                 includes[field] = found
             end
         else
