@@ -48,7 +48,9 @@ function M.request_timings_too(generic_body, endpoint_model_info)
                 -- opt-in, custom final-SSE timing overlay (assume available for all local sglang deployments)
                 return_timings = true,
             })
-        elseif endpoint_model_info == "llama-server" then
+        -- elseif endpoint_model_info == "llama-server" then
+        else
+            -- intended for llama-server only, leave it on as a fallback
             -- TODO do I want this off normally? how heavy of a penalty is this? could I get timings alone w/o the rest? (i.e. raw prompt in last sse?)
             generic_body.verbose = true -- timings, raw input prompt, etc
         end
