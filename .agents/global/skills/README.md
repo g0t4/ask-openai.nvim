@@ -1,4 +1,4 @@
-## Comments in Instructs
+## Comments in Skills
 
 - FYI can put comments in yaml frontmatter too!
     - good spot for general TODOs

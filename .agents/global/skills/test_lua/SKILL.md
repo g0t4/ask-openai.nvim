@@ -23,7 +23,7 @@ I use **Plenary/Busted** style tests for Neovim and Hammerspoon configuration fi
 
 ```sh
 nvim --headless \
-  -c "PlenaryBustedFile lua/ask-openai/frontends/instructs.tests.lua" \
+  -c "PlenaryBustedFile lua/ask-openai/frontends/skills.tests.lua" \
   -c "qa!"
 ```
 

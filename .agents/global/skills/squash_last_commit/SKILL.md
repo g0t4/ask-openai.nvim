@@ -3,7 +3,7 @@ name: squash_last_commit
 description: squash last commit onto previous when changes are related
 ---
 
-Use this instruct when the user says `/squash` or when the last commit and the one before it are clearly related (e.g., a bugfix for a feature just added, or an iterative improvement to the same code).
+Use this skill when the user says `/squash` or when the last commit and the one before it are clearly related (e.g., a bugfix for a feature just added, or an iterative improvement to the same code).
 
 ## Squash Command
 

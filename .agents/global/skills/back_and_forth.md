@@ -34,7 +34,7 @@ TODO provide example (only show user input + last part of agent final message...
    https://g0t4.github.io/ask-openai.nvim/?github=g0t4/datasets/master/ask_traces/tools/2026-04-14_001/1776154398-thread.json
    summarize agent responses too (and note that they are summarized)
 
-TODO flip side of this INSTRUCT is /AFK (away from keyboard, so don't ask questions, just decide and do!)
+TODO flip side of this SKILL is /AFK (away from keyboard, so don't ask questions, just decide and do!)
 
  - FYI can put full example into an asset for the model to review,
    or even for a human to review later as "documentation",

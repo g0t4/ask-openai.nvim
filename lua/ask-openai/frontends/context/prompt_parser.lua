@@ -1,5 +1,5 @@
 local log = require("devtools.logs.logger").universal()
-local instructs = require("ask-openai.frontends.instructs")
+local skills = require("ask-openai.frontends.skills")
 local local_share = require("ask-openai.config.local_share")
 local models = require("ask-openai.config.models")
 
@@ -130,9 +130,9 @@ function M.SlashCommandCompletion(arglead, cmdline, cursorpos)
         end
     end
 
-    -- * add instruct prompts
+    -- * add skill prompts
     -- FYI first load will happen on first completion, s/b fine for slight delay
-    for _, cmd in ipairs(instructs.get_instruct_slash_commands()) do
+    for _, cmd in ipairs(skills.get_skill_slash_commands()) do
         if cmd:find('^' .. escaped) then
             table.insert(result, "/" .. cmd)
         end
@@ -220,21 +220,21 @@ end
 function M.render(prompt)
     prompt = prompt or ""
 
-    -- * inject instructs first
-    local instruct_contents = {}
+    -- * inject skills first
+    local skill_contents = {}
     local rendered_prompt = prompt
-    for _, instruct_name in pairs(instructs.get_instruct_slash_commands()) do
-        local cmd = "/" .. instruct_name
+    for _, skill_name in pairs(skills.get_skill_slash_commands()) do
+        local cmd = "/" .. skill_name
         found, rendered_prompt = strip_slash_command_from_prompt(rendered_prompt, cmd)
         if found then
-            local content = instructs.load_instruct(instruct_name)
+            local content = skills.load_skill(skill_name)
             if content then
-                table.insert(instruct_contents, content)
+                table.insert(skill_contents, content)
             end
         end
     end
-    if #instruct_contents > 0 then
-        rendered_prompt = rendered_prompt .. "\n" .. table.concat(instruct_contents, "\n")
+    if #skill_contents > 0 then
+        rendered_prompt = rendered_prompt .. "\n" .. table.concat(skill_contents, "\n")
     end
 
     -- * apply replacement slash commands (e.g., /cwd)

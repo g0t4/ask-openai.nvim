@@ -1,4 +1,4 @@
-## verification/testing instructs
+## verification/testing skills
 
 - FYI can apply these notes to any test tool, not just lua+nvim
 
