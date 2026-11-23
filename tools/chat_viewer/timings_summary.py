@@ -109,21 +109,22 @@ def dim(text: str) -> str:
 
 # in/out column-group hues: soft pastels that resonate with the role palette in
 # theme.py (periwinkle blue = system/developer, rose pink = tool).
-# IN_HUE = '#acadcf'
-# IN_HUE = '#9497ff' # 100% sat, 79% L
-IN_HUE = '#c7c9ff' # 100% sat, 89% L
-# OUT_HUE = '#cfacb4'
-# OUT_HUE = '#ff94ac' # 100% sat, 79% L (very bold and bright)
-# OUT_HUE = '#ffadc0' # 100% sat, 84% L (less bold)
-OUT_HUE = '#ffc7d4' # 100% sat, 89% L
+# HUE2 = '#acadcf'
+# HUE2 = '#9497ff' # 100% sat, 79% L
+HUE2 = '#c7c9ff' # 100% sat, 89% L
+# HUE1 = '#cfacb4'
+# HUE1 = '#ff94ac' # 100% sat, 79% L (very bold and bright)
+# HUE1 = '#ffadc0' # 100% sat, 84% L (less bold)
+HUE1 = '#ffc7d4' # 100% sat, 89% L
+# HUE1 = '#f8e7eb' # make it almost white so its violet/blue vs white
 
 def in_cell(text: str) -> str:
     """Tint an input-side cell so the in group (count, rate, duration) reads as one hue."""
-    return f"[{IN_HUE}]{text}[/]" if text else text
+    return f"[{HUE1}]{text}[/]" if text else text
 
 def out_cell(text: str) -> str:
     """Tint an output-side cell so the out group (count, rate, duration, split) reads as one hue."""
-    return f"[{OUT_HUE}]{text}[/]" if text else text
+    return f"[{HUE2}]{text}[/]" if text else text
 
 def italic(text: str) -> str:
     return f"[italic]{text}[/]"
@@ -163,11 +164,11 @@ def build_timings_summary(entries: list[TimingEntry], backend: str, expanded: bo
     table.add_column('cached', justify='right')
     # 'in' spans the count + rate columns as one merged header (the second header is blank);
     # the underline on both cells renders as a single line connecting the pair.
-    table.add_column('', justify='right', header_style=f'{IN_HUE} underline')  # count column; header lives in the rightmost
-    table.add_column('in', justify='right', header_style=f'{IN_HUE} underline')  # rate column (rightmost of the pair)
+    table.add_column('', justify='right', header_style=f'{HUE1} underline')  # count column; header lives in the rightmost
+    table.add_column('in', justify='right', header_style=f'{HUE1} underline')  # rate column (rightmost of the pair)
     table.add_column('', width=1)  # spacer: visually separates the 'in' and 'out' pairs
-    table.add_column('', justify='right', header_style=f'{OUT_HUE} underline')  # count column; header lives in the rightmost
-    table.add_column('out', justify='right', header_style=f'{OUT_HUE} underline')  # rate column (rightmost of the pair)
+    table.add_column('', justify='right', header_style=f'{HUE2} underline')  # count column; header lives in the rightmost
+    table.add_column('out', justify='right', header_style=f'{HUE2} underline')  # rate column (rightmost of the pair)
     dim_not_bold = 'dim not bold'
     if show_out_split_columns:
         table.add_column('reasoning', justify='right', header_style=dim_not_bold)
@@ -178,8 +179,8 @@ def build_timings_summary(entries: list[TimingEntry], backend: str, expanded: bo
     if show_mean_accept_len_column:
         table.add_column('accept\nlen', justify='right', no_wrap=True, header_style=dim_not_bold)
 
-    table.add_column('in', justify='right', header_style=IN_HUE)
-    table.add_column('out', justify='right', header_style=OUT_HUE)
+    table.add_column('in', justify='right', header_style=HUE1)
+    table.add_column('out', justify='right', header_style=HUE2)
     table.add_column('', justify='right')  # message number, no need for a header
 
     # * per message timing rows
