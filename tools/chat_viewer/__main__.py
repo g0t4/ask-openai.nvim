@@ -19,7 +19,8 @@ from rich.text import Text
 from rich.table import Table
 from rich.segment import Segment
 import rich
-from typing import Any, Iterable, Iterator, Dict, Optional
+from collections.abc import Iterable
+from typing import Any
 import hashlib
 from copy import deepcopy
 
@@ -731,7 +732,7 @@ def build_empty_user_message(msg):
     return root
 
 
-def build_default_user_message(raw_content: str) -> Optional[TreeWrapper]:
+def build_default_user_message(raw_content: str) -> TreeWrapper|None:
     sections = _split_content_into_sections(raw_content)
     if not sections:
         return None
@@ -905,10 +906,10 @@ def get_tool_call_name(request: dict[str, Any] | None) -> str | None:
 
 
 def build_tool_result_message(
-    msg: Dict[str, Any],
+    msg: dict[str, Any],
     color: str,
     requests_by_id: dict[str, dict[str, Any]],
-) -> Optional[TreeWrapper]:
+) -> TreeWrapper|None:
     root = TreeWrapper.hidden_root()
 
     timings = parse_tool_call_timings(msg)
