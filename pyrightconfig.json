@@ -20,6 +20,7 @@
     "reportUnknownMemberType": "none",
     "reportAny": "none", // usage of Any is a report?!
     "reportMissingTypeStubs": "none", // WTF requires a stub file for libraries?
+    "reportUnannotatedClassAttribute": "hint", // ok to hint for now, given I can add the annotations (at least on my own types)
 
     "reportUnusedCallResult": "none", // WTF WHO CARES if I call method and don't use its return value?
 
