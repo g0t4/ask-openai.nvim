@@ -53,7 +53,7 @@ end
 ---@param take_num_lines_each_way? integer
 ---@return PrefixSuffixChunk ps_chunk
 function PrefixSuffixChunk.get_prefix_suffix_chunk(take_num_lines_each_way)
-    take_num_lines_each_way = take_num_lines_each_way or 80
+    take_num_lines_each_way = take_num_lines_each_way or 1000
     -- presently, this only works with current buffer/window:
     local current_win_id = 0
     local current_bufnr = 0
