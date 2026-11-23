@@ -114,11 +114,11 @@ OUT_HUE = '#c67687'
 
 def in_cell(text: str) -> str:
     """Tint an input-side cell so the in group (count, rate, duration) reads as one hue."""
-    return f"[dim {IN_HUE}]{text}[/]" if text else text
+    return f"[{IN_HUE}]{text}[/]" if text else text
 
 def out_cell(text: str) -> str:
     """Tint an output-side cell so the out group (count, rate, duration, split) reads as one hue."""
-    return f"[dim {OUT_HUE}]{text}[/]" if text else text
+    return f"[{OUT_HUE}]{text}[/]" if text else text
 
 def italic(text: str) -> str:
     return f"[italic]{text}[/]"
@@ -153,7 +153,7 @@ def build_timings_summary(entries: list[TimingEntry], backend: str, expanded: bo
 
     # * headers
     # in/out groups get distinct hues (blue = input, pink = output); the cells are
-    # tinted with the dim variants (in_cell/out_cell) so the signal runs down the
+    # tinted with in_cell/out_cell so the signal runs down the
     # columns without shouting.
     table.add_column('cached', justify='right')
     # 'in' spans the count + rate columns as one merged header (the second header is blank);
