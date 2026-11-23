@@ -1390,8 +1390,8 @@ def get_font_color_for_bg(bg_color: str) -> str:
     return contrast_color_for(bg_color)
 
 
-def print_section_header(title, color, dark_font=False):
-    _console.print(header_bar(title, color, _console.width, dark_font=dark_font))
+def print_section_header(title, color, font_color=None):
+    _console.print(header_bar(title, color, _console.width, font_color=font_color))
 
 
 def is_model_input(role: str) -> bool:
@@ -1493,9 +1493,19 @@ def render_trace_to_console(console, trace: TraceDTO, *, full_width=False) -> No
         # color = "#bbbbe3"
         # color = "#76bfc6"
         # color = "#769fc6"
-        # color = "#c6c576"
+        color = "#c6c576"
+        # color = "#c69676" # orange (got by dragging hue while holding S/L constant with purple above
+        #
+        # color = "#d91c7b"
+        # color = "#e14995" # * fav but its too bold, not enough space for contrasting color so I can't use it (plus my overall theme is pastel/desaturated so this isn't a fit in that regard either)
+        # color = "#ea80b5"
+        # color = "#ed92bf"
+        # color = "#f0a4ca"
+        # font_color = "#371224"
+        font_color = "#000000"
+        #
         _console.print()
-        print_section_header(title, color, dark_font=True)
+        print_section_header(title, color, font_color=font_color)
         _console.print(build_timings_summary(entries, backend, expanded=args.show_all))
         _console.print()
     # Consider optional TTFT, queue time, and mean ITL columns in a future view.

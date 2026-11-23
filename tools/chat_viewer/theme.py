@@ -93,20 +93,20 @@ def contrast_color_for(bg_color: str) -> str:
     return "black" if luminance > 0.4 else "white"
 
 
-def header_bar(title: str, color: str, width: int, dark_font = False) -> Text:
+def header_bar(title: str, color: str, width: int, font_color = None) -> Text:
     """Build a full-width section header bar.
 
     A colored ``pill`` holds the title (with a role icon), then a dim ``rule``
     fills the rest of the line so messages are cleanly separated without
     consuming three full lines.
     """
-    dark_font = dark_font or False
-
     r, g, b = Color.parse(color).get_truecolor()
     bg_hex = f"#{r:02x}{g:02x}{b:02x}"
-    font_color = contrast_color_for(color)
-    if dark_font:
-        font_color = "#23243b"
+    if font_color:
+        font_color = font_color
+    else:
+        font_color = contrast_color_for(color)
+
 
     pill = Text(f" {title} ", style=Style(bgcolor=bg_hex, color=font_color, bold=True))
     rule_width = max(0, width - len(pill) - 1) # -1 for icons (some overflow a char and wrap the header)
