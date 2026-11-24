@@ -582,7 +582,7 @@ def print_model_info(name: str | None, timings: ModelTimingsDTO | None = None) -
 
     Args:
         name: The model name to display.
-        timings: Optional ModelTimings object for displaying token counts and timing info.
+        timings: Optional ModelTimingsDTO object for displaying token counts and timing info.
     """
 
     if timings:

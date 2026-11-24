@@ -348,7 +348,7 @@ def parse_timings(message: dict[str, Any] | None) -> ModelTimingsDTO | None:
 
     # raise ValueError("unexpected error mapping timings")
     rich.print("[red]no timings - TODO what to do in this case?[/]") # TODO IIAC this is just a non event
-    return None # TODO what to return? previously I was returning an empty ModelTimings b/c it wouldn't have any timings, right?
+    return None # TODO what to return? previously I was returning an empty ModelTimingsDTO b/c it wouldn't have any timings, right?
 
 def _humanize_int(value: int) -> str:
     """Format an integer with comma separators for readability.
@@ -374,7 +374,7 @@ def format_timings_display(timings: ModelTimingsDTO | None) -> str:
     """Format timings for display under the model name.
 
     Args:
-        timings: The parsed ModelTimings object.
+        timings: The parsed ModelTimingsDTO object.
 
     Returns:
         Formatted string for display, or empty string if no timings.
@@ -412,7 +412,7 @@ def format_stats_line(timings: ModelTimingsDTO | None, color: str = "dim") -> st
     """Format multi-line stats for display (similar to AskRewrite format).
 
     Args:
-        timings: The parsed ModelTimings object.
+        timings: The parsed ModelTimingsDTO object.
         color: Rich color name used for the lines (e.g. a role color).
 
     Returns:
