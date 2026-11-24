@@ -16,7 +16,7 @@ def test_usage_metrics_render_per_message_summary_and_trace_fallback(monkeypatch
     }
     output = StringIO()
     viewer.render_trace_to_console(Console(file=output, width=300, color_system=None),
-                                   viewer.TraceDTO(messages=[response], model_name="deepseek-v4.1-flash",
+                                   viewer.TraceDTO(messages=[viewer.TraceMessageDTO.from_dict(response)], model_name="deepseek-v4.1-flash",
                                                    timings=parse_timings(response)))
     text = output.getvalue()
     assert "overall output" not in text
@@ -40,7 +40,8 @@ def test_mixed_backends_and_missing_cache_render_without_crashing(monkeypatch):
             "prompt_tokens": 10, "completion_tokens": 2}, "metrics": None},
     ]
     output = StringIO()
-    viewer.render_trace_to_console(Console(file=output, width=300, color_system=None), viewer.TraceDTO(messages=messages))
+    viewer.render_trace_to_console(Console(file=output, width=300, color_system=None),
+                                   viewer.TraceDTO(messages=[viewer.TraceMessageDTO.from_dict(message) for message in messages]))
     text = output.getvalue()
     assert "llama-server assistant timings" in text
     assert "vLLM assistant timings" in text

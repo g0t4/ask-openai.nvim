@@ -28,7 +28,7 @@ async def test_existing_vtt_caps_centers_and_toggles_width(monkeypatch):
         return render(console, *args, **kwargs)
     monkeypatch.setattr(viewer, 'render_trace_to_console', capture_width)
     monkeypatch.setattr(viewer.args, 'show_all', False)
-    app = TraceViewerApp(viewer.TraceDTO(messages=[{'role':'assistant', 'content':'OK'}]))
+    app = TraceViewerApp(viewer.TraceDTO(messages=[viewer.TraceMessageDTO.from_dict({'role': 'assistant', 'content': 'OK'})]))
     async with app.run_test(size=(180, 50)) as pilot:
         await pilot.pause()
         log = app.query_one(RichLog)
@@ -53,7 +53,7 @@ async def test_blank_areas_use_terminal_default_background(tmp_path, live):
     from tools.chat_viewer.live_viewer import LiveTraceViewerApp
     from tools.chat_viewer import __main__ as viewer
     app = LiveTraceViewerApp(tmp_path, poll_interval=3600) if live else TraceViewerApp(
-        viewer.TraceDTO(messages=[{'role': 'assistant', 'content': 'short message'}])
+        viewer.TraceDTO(messages=[viewer.TraceMessageDTO.from_dict({'role': 'assistant', 'content': 'short message'})])
     )
     async with app.run_test(size=(80, 24)) as pilot:
         await pilot.pause()

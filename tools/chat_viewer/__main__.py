@@ -150,6 +150,48 @@ FIM_SUFFIX = "<|fim_suffix|>"
 CURSOR_IS_HERE = "<|CURSOR_IS_HERE|>"
 
 
+@dataclass
+class TraceMessageDTO:
+    """Standardized projection of a raw message dict for chat viewer consumers.
+
+    Input sources map each raw message dict onto this contract so consumers
+    can rely on dot access instead of dict lookups. The original dict is kept
+    on ``raw`` for anything the projection does not cover (e.g. the per-message
+    timing fields read by ``parse_timings``).
+    """
+
+    role: str = ""
+    content: Any = None
+    tool_calls: list[dict[str, Any]] = field(default_factory=list)
+    tool_call_id: str | None = None
+    reasoning_content: str | None = None
+    partial: bool = False
+    output_json: bool = False
+    raw: dict[str, Any] = field(default_factory=dict)
+
+    @classmethod
+    def from_dict(cls, raw: dict[str, Any]) -> "TraceMessageDTO":
+        return cls(
+            role=raw.get("role", ""),
+            content=raw.get("content"),
+            tool_calls=raw.get("tool_calls") or [],
+            tool_call_id=raw.get("tool_call_id"),
+            reasoning_content=raw.get("reasoning_content"),
+            partial=bool(raw.get("_partial")),
+            output_json="output.json" in raw,
+            raw=raw,
+        )
+
+
+@dataclass
+class TraceDTO:
+    """Information extracted from a trace file or stream."""
+
+    messages: list[TraceMessageDTO]
+    model_name: str | None = None
+    timings: ModelTimings | None = None
+
+
 def is_raw_completion_fim(data: dict) -> bool:
     """Check if this is a raw completion trace with FIM marker."""
     if not is_raw_completion_trace(data):
@@ -251,7 +293,7 @@ def print_fim_diff(prompt: str, completion: str) -> None:
     _console.print(root)
 
 
-def find_fim_diff(messages: list[dict]) -> tuple[str, str] | None:
+def find_fim_diff(messages: list[TraceMessageDTO]) -> tuple[str, str] | None:
     """Find the FIM prompt + completion pair in messages for the diff summary.
 
     Supports both native raw completions (``user_raw``/``assistant_raw`` with
@@ -263,20 +305,20 @@ def find_fim_diff(messages: list[dict]) -> tuple[str, str] | None:
 
     # Native raw completion: user_raw (FIM_MIDDLE) followed by assistant_raw
     first_msg = messages[0]
-    if first_msg.get("role") == "user_raw" and FIM_MIDDLE in _extract_content(first_msg):
+    if first_msg.role == "user_raw" and FIM_MIDDLE in _extract_content(first_msg):
         second_msg = messages[1]
-        if second_msg.get("role") == "assistant_raw":
+        if second_msg.role == "assistant_raw":
             return _extract_content(first_msg), _extract_content(second_msg)
 
     # Chat-style FIM: last user message w/ CURSOR_IS_HERE followed by an assistant message
     last_user_idx = -1
     for idx, msg in enumerate(messages):
-        if msg.get("role") == "user" and CURSOR_IS_HERE in _extract_content(msg):
+        if msg.role == "user" and CURSOR_IS_HERE in _extract_content(msg):
             last_user_idx = idx
     if last_user_idx < 0:
         return None
     for msg in messages[last_user_idx + 1:]:
-        if msg.get("role") == "assistant":
+        if msg.role == "assistant":
             return _extract_content(messages[last_user_idx]), _extract_content(msg)
     return None
 
@@ -292,7 +334,7 @@ def _extract_first_code_block(text: str) -> str | None:
     return None
 
 
-def find_rewrite_diff(messages: list[dict]) -> tuple[str, str] | None:
+def find_rewrite_diff(messages: list[TraceMessageDTO]) -> tuple[str, str] | None:
     """Find the user-selected code + assistant rewrite pair for the diff summary."""
     if not messages:
         return None
@@ -300,7 +342,7 @@ def find_rewrite_diff(messages: list[dict]) -> tuple[str, str] | None:
     # Find the last user message carrying the rewrite selection marker
     last_user_idx = -1
     for idx, msg in enumerate(messages):
-        if msg.get("role") == "user" and REWRITE_SELECTION_MARKER in _extract_content(msg):
+        if msg.role == "user" and REWRITE_SELECTION_MARKER in _extract_content(msg):
             last_user_idx = idx
     if last_user_idx < 0:
         return None
@@ -317,7 +359,7 @@ def find_rewrite_diff(messages: list[dict]) -> tuple[str, str] | None:
 
     # Find the assistant's rewrite after the user message
     for msg in messages[last_user_idx + 1:]:
-        if msg.get("role") == "assistant":
+        if msg.role == "assistant":
             assistant_content = _extract_content(msg)
             # Prefer the first code block, else treat the whole response as the rewrite
             new_text = _extract_first_code_block(assistant_content) or assistant_content
@@ -358,7 +400,7 @@ def is_raw_completion_trace(data: dict) -> bool:
     return has_prompt and has_content and not has_messages
 
 
-def create_raw_completion_messages(data: dict) -> list[dict]:
+def create_raw_completion_messages(data: dict) -> list[TraceMessageDTO]:
     """Create synthetic messages for raw completions (llamacpp /completions endpoint)."""
     messages = []
     request_body = data.get("request_body", {})
@@ -366,16 +408,10 @@ def create_raw_completion_messages(data: dict) -> list[dict]:
     completion = data.get("content", "")
 
     if prompt:
-        messages.append({
-            "role": "user_raw",
-            "content": prompt,
-        })
+        messages.append(TraceMessageDTO.from_dict({"role": "user_raw", "content": prompt}))
 
     if completion:
-        messages.append({
-            "role": "assistant_raw",
-            "content": completion,
-        })
+        messages.append(TraceMessageDTO.from_dict({"role": "assistant_raw", "content": completion}))
 
     return messages
 
@@ -573,22 +609,17 @@ def get_model_name_from_jsonl_messages(records) -> str | None:
     return first['metadata']['response']['model_name']
 
 
-@dataclass
-class TraceDTO:
-    """Information extracted from a trace file or stream."""
-
-    messages: list[dict[str, Any]]
-    model_name: str | None = None
-    timings: ModelTimings | None = None
-
-
 def load_trace_messages_from_path(trace_file: Path) -> TraceDTO:
     if not trace_file.is_file():
         print(f"File not found: {trace_file}")
         sys.exit(1)
     if str(trace_file).endswith(".jsonl"):
         records = list(load_jsonl_records(trace_file))
-        messages = [r["message"] for r in records if "message" in r and "type" in r and r["type"] == "message"]
+        messages = [
+            TraceMessageDTO.from_dict(r["message"])
+            for r in records
+            if "message" in r and "type" in r and r["type"] == "message"
+        ]
         model_name = get_model_name_from_jsonl_messages(records)
         # TODO return timings too? make sure we request them for vllm/sglang/llama-server/etc like in ask-openai.nvim
         return TraceDTO(messages=messages, model_name=model_name)
@@ -605,7 +636,7 @@ def load_trace_messages_from_path(trace_file: Path) -> TraceDTO:
         response = data["response_message"]
         if isinstance(response, dict):
             response["output.json"] = True
-            messages.append(response)
+            messages.append(TraceMessageDTO.from_dict(response))
     else:
         # * legacy output.json
         output_path = trace_file.parent / "output.json"
@@ -614,7 +645,7 @@ def load_trace_messages_from_path(trace_file: Path) -> TraceDTO:
                 response = json.load(f)
                 if isinstance(response, dict):
                     response["output.json"] = True
-                    messages.append(response)
+                    messages.append(TraceMessageDTO.from_dict(response))
 
     return TraceDTO(messages=messages, model_name=model_name, timings=timings)
 
@@ -628,10 +659,10 @@ def show_rest_of_request_body_properties(data):
     _pretty_no_truncate(data)
 
 
-def load_messages(data) -> list[dict[str, Any]]:
+def load_messages(data) -> list[TraceMessageDTO]:
     if isinstance(data, list):
         # * only has list of messages
-        return data
+        return [TraceMessageDTO.from_dict(message) for message in data]
     if isinstance(data, dict):
         # Check for raw completions first (llamacpp /completions endpoint)
         if is_raw_completion_trace(data):
@@ -645,7 +676,7 @@ def load_messages(data) -> list[dict[str, Any]]:
             del data["messages"]
             if args.show_all:
                 show_rest_of_request_body_properties(data)
-            return messages
+            return [TraceMessageDTO.from_dict(message) for message in messages]
     return []
 
 
@@ -664,7 +695,7 @@ def load_trace_messages_from_stream(stream) -> TraceDTO:
         response = data["response_message"]
         if isinstance(response, dict):
             response["output.json"] = True
-            messages.append(response)
+            messages.append(TraceMessageDTO.from_dict(response))
     # FYI cannot assume output.json is related (or any othe file) given this data is from STDIN
 
     return TraceDTO(messages=messages, model_name=model_name, timings=timings)
@@ -681,14 +712,14 @@ def _format_json(content: Any) -> str:
         return str(content)
 
 
-def _extract_content(msg: dict) -> str:
-    content = msg.get("content", "")
+def _extract_content(msg: TraceMessageDTO) -> Any:
+    content = msg.content or ""
     if isinstance(content, dict) and "text" in content:
         return content["text"]
-    return content  # type: ignore
+    return content
 
 
-def build_user_message(msg: dict) -> TreeWrapper | None:
+def build_user_message(msg: TraceMessageDTO) -> TreeWrapper | None:
     """
     Build messages from a user: user message or system/developer instructions message.
     Assume content may be markdown
@@ -705,7 +736,7 @@ def build_user_message(msg: dict) -> TreeWrapper | None:
             if item.get("type") == "image_url":
                 _add_mcp_image_item(root, deepcopy(item))
             elif item.get("type") == "text":
-                text_tree = build_user_message({"content": item.get("text", "")})
+                text_tree = build_user_message(TraceMessageDTO(content=item.get("text", "")))
                 if text_tree is not None:
                     root.children.extend(text_tree.children)
         return root
@@ -721,7 +752,7 @@ def build_user_message(msg: dict) -> TreeWrapper | None:
     return build_default_user_message(raw_content)
 
 
-def build_empty_user_message(msg):
+def build_empty_user_message(msg: TraceMessageDTO):
     root = TreeWrapper.hidden_root()
     # FYI you can remove this warning entirely and return None if you want... just leave this until you see how often you encounter this...
     # only thing I can think of would be submitting an empty message but even then my tooling would prepend interrupt and/or other automatic guidance, so I don't think this would ever happen
@@ -869,7 +900,7 @@ def build_semantic_grep_lsp_matches_result(root: TreeWrapper, content: Any, requ
     return True
 
 
-def build_tool_call_requests_by_id(messages: list[dict[str, Any]]) -> dict[str, dict[str, Any]]:
+def build_tool_call_requests_by_id(messages: list[TraceMessageDTO]) -> dict[str, dict[str, Any]]:
     """Map each assistant tool_call id -> its request dict (function name + arguments).
 
     A tool *result* message only carries ``tool_call_id``; looking up the matching
@@ -878,9 +909,9 @@ def build_tool_call_requests_by_id(messages: list[dict[str, Any]]) -> dict[str, 
     """
     requests_by_id: dict[str, dict[str, Any]] = {}
     for msg in messages:
-        if msg.get("role") != "assistant":
+        if msg.role != "assistant":
             continue
-        for call in msg.get("tool_calls", []) or []:
+        for call in msg.tool_calls:
             call_id = call.get("id")
             if call_id:
                 requests_by_id[call_id] = deepcopy(call)  # copy so other mods to original don't affect this copy
@@ -888,11 +919,11 @@ def build_tool_call_requests_by_id(messages: list[dict[str, Any]]) -> dict[str, 
 
 
 def get_tool_call_request(
-    msg: dict[str, Any],
+    msg: TraceMessageDTO,
     requests_by_id: dict[str, dict[str, Any]],
 ) -> dict[str, Any] | None:
     """Resolve the tool call request that produced ``msg`` via ``tool_call_id``."""
-    call_id = msg.get("tool_call_id")
+    call_id = msg.tool_call_id
     if not call_id:
         return None
     return requests_by_id.get(call_id)
@@ -906,24 +937,24 @@ def get_tool_call_name(request: dict[str, Any] | None) -> str | None:
 
 
 def build_tool_result_message(
-    msg: dict[str, Any],
+    msg: TraceMessageDTO,
     color: str,
     requests_by_id: dict[str, dict[str, Any]],
 ) -> TreeWrapper | None:
     root = TreeWrapper.hidden_root()
 
-    timings = parse_tool_call_timings(msg)
+    timings = parse_tool_call_timings(msg.raw)
     if args.show_all and timings:
         root.add(Align.right((f"[dim {color}]⏱️  {timings.formatted_duration}[/]")))
 
-    content = decode_if_json(msg.get("content", ""))
+    content = decode_if_json(msg.content or "")
 
     # * always resolve the tool call request so formatting is driven by the
     #   request (function.name), never reverse-engineered from the result content
     request = get_tool_call_request(msg, requests_by_id)
     if request is None:
         rich.print(
-            f"[red]WARNING: no tool call request found for tool result tool_call_id={msg.get('tool_call_id')!r}",
+            f"[red]WARNING: no tool call request found for tool result tool_call_id={msg.tool_call_id!r}",
             file=sys.stderr,
         )
 
@@ -1280,7 +1311,7 @@ def print_if_missing_keys(obj, name, tree: TreeWrapper):
             .add(_json(obj))
 
 
-def build_raw_completion_message(msg: dict) -> TreeWrapper | None:
+def build_raw_completion_message(msg: TraceMessageDTO) -> TreeWrapper | None:
     """Print raw completion message (prompt or completion) verbatim."""
     raw_content = _extract_content(msg)
     if not raw_content:
@@ -1299,18 +1330,18 @@ def _reasoning_row(text: Text) -> Table:
     return row
 
 
-def build_assistant_message(msg: dict, color: str) -> TreeWrapper:
+def build_assistant_message(msg: TraceMessageDTO, color: str) -> TreeWrapper:
     root = TreeWrapper.hidden_root()
 
-    if msg.get("_partial"):
+    if msg.partial:
         # Incomplete Markdown and tool arguments are displayed verbatim.
-        reasoning = msg.get("reasoning_content")
+        reasoning = msg.reasoning_content
         if reasoning:
             root.add(_reasoning_row(Text(reasoning, style="bright_black italic")))
             root.blank_line()
-        if msg.get("content"):
-            root.add_no_markup(msg["content"])
-        for call in msg.get("tool_calls", []) or []:
+        if msg.content:
+            root.add_no_markup(msg.content)
+        for call in msg.tool_calls:
             function = call.get("function") or {}
             # Preserve the recognizable SSE boundary without parsing partial JSON.
             root.add_no_markup(function.get("name") or "tool call")
@@ -1319,7 +1350,7 @@ def build_assistant_message(msg: dict, color: str) -> TreeWrapper:
 
     # Show per-message timings if present
     if args.show_all or args.show_stats:
-        msg_timings = parse_timings(msg)
+        msg_timings = parse_timings(msg.raw)
         if msg_timings:
             # Skip the compact one-liner (format_timings_display); the verbose
             # per-second stats + draft acceptance lines below are more useful.
@@ -1329,7 +1360,7 @@ def build_assistant_message(msg: dict, color: str) -> TreeWrapper:
                 root.add(stats)
             root.blank_line()
 
-    reasoning = msg.get("reasoning_content")
+    reasoning = msg.reasoning_content
     if reasoning:
         # Subtle markdown emphasis: inline code + bold pop, while backticks,
         # fence markers and list markers are dimmed so they recede. The rest
@@ -1344,7 +1375,7 @@ def build_assistant_message(msg: dict, color: str) -> TreeWrapper:
         root.add(_reasoning_row(reasoning_text))
         root.blank_line()
 
-    content = msg.get("content", "")
+    content = msg.content or ""
     if content:
         # TODO if markdown causes issues, get rid of it here...
         # TODO perhaps look for ## or ``` before applying markdown? and even then if it confuses me to review what was generated then go back to no markdown in content
@@ -1352,7 +1383,7 @@ def build_assistant_message(msg: dict, color: str) -> TreeWrapper:
         root.add(_markdown(insert_newlines(content)))
         root.blank_line()
 
-    requests = yank(msg, "tool_calls", [])
+    requests = yank(msg.raw, "tool_calls", [])
     if requests:
         for call in requests:
             call_id = yank(call, "id")
@@ -1408,13 +1439,13 @@ def is_model_input(role: str) -> bool:
     return role in ("user", "user_raw", "tool", "system", "developer")
 
 
-def print_message(msg: dict, idx: int, requests_by_id: dict[str, dict[str, Any]], *, full_width: bool = False):
-    msg = deepcopy(msg)  # some builders progressively strip the key/value pairs and then use a final generic dump for the rest, so clone first so we don't wipe out the message that we might need to use elsewhere
-    role = msg.get("role", "").lower()
+def print_message(msg: TraceMessageDTO, idx: int, requests_by_id: dict[str, dict[str, Any]], *, full_width: bool = False):
+    msg = deepcopy(msg)  # some builders progressively strip key/value pairs off msg.raw and then use a final generic dump for the rest, so clone first so we don't wipe out the message that we might need to use elsewhere
+    role = msg.role.lower()
     display_role = get_display_role(role)
     icon = role_icon(role)  # TODO! decide if keep icon or not
     title = f"{idx}: {icon} {display_role}"
-    if "output.json" in msg:
+    if msg.output_json:
         title = f"{title} (output.json)"
     color = role_color(role)
 
@@ -1440,6 +1471,10 @@ def print_message(msg: dict, idx: int, requests_by_id: dict[str, dict[str, Any]]
 def render_messages_to_console(console, messages, *, start_index=1, context_messages=None, full_width=False) -> None:
     """Render one or more messages using the same formatting as a full trace.
 
+    Messages may be raw message dicts or ``TraceMessageDTO`` projections; raw
+    dicts are mapped onto the standardized contract at this boundary so every
+    consumer below it sees the same dottable shape.
+
     Pass the full history as context_messages when rendering a changed suffix,
     so tool results still resolve their originating request.
     """
@@ -1447,13 +1482,22 @@ def render_messages_to_console(console, messages, *, start_index=1, context_mess
     previous_console = _console
     _console = console
     try:
+        messages = [as_trace_message(message) for message in messages]
+        context = [as_trace_message(message) for message in context_messages] if context_messages is not None else None
         requests_by_id = build_tool_call_requests_by_id( \
-            messages if context_messages is None else context_messages
+            messages if context is None else context
         )
         for index, message in enumerate(messages, start=start_index):
             print_message(message, index, requests_by_id, full_width=full_width)
     finally:
         _console = previous_console
+
+
+def as_trace_message(message: TraceMessageDTO | dict[str, Any]) -> TraceMessageDTO:
+    """Map a raw message dict onto the standardized contract (pass DTOs through)."""
+    if isinstance(message, TraceMessageDTO):
+        return message
+    return TraceMessageDTO.from_dict(message)
 
 
 def show_model_info(model_name):
@@ -1475,7 +1519,7 @@ def render_trace_to_console(console, trace: TraceDTO, *, full_width=False) -> No
     messages = trace.messages
     show_model_info(trace.model_name)
 
-    has_per_message_timings = any(msg.get("role") == "assistant" and parse_timings(msg) is not None for msg in messages)
+    has_per_message_timings = any(msg.role == "assistant" and parse_timings(msg.raw) is not None for msg in messages)
     if not has_per_message_timings:
         print_model_info(trace.timings)
 
@@ -1484,9 +1528,9 @@ def render_trace_to_console(console, trace: TraceDTO, *, full_width=False) -> No
     from tools.chat_viewer.timings_summary import TimingEntry, build_timings_summary
     summaries = {}
     for message_number, message in enumerate(messages, start=1):
-        if message.get("role") != "assistant":
+        if message.role != "assistant":
             continue
-        stats = parse_timings(message)
+        stats = parse_timings(message.raw)
         if stats is not None:
             summaries.setdefault(stats.backend, []).append(TimingEntry(message_number=message_number, timings=stats))
     names = {"llama-server": "llama-server", "vllm": "vLLM", "sglang": "SGLang"}
