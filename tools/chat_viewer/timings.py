@@ -246,15 +246,11 @@ def parse_timings_from_message(message: dict[str, Any] | None) -> AssistantMessa
 
     # FYI in the past `message` was very close to `last_sse`
     # when we get to JSONL records it will be record.metadata that holds the timings... and that won't be even close to last_sse so lets drop that name
+
     timings = message.get("timings")
     sglang_choices = timings.get("choices") if isinstance(timings, dict) else None
 
-    # TODO use response_backend to shortcircuit anything here?
-
-    # llama-server has timings w/o timings.choices
-    # also llama-server doesn't have sglext
-    is_llama_server = timings and isinstance(timings, dict) and not sglang_choices and not "sglext" in message
-    if is_llama_server:
+    def parse_llama_server():
         return AssistantMessageTimingsDTO(
             backend = "llama-server", # default, still make it explicit here
             prompt_tokens=timings.get("prompt_n", 0),
@@ -267,6 +263,17 @@ def parse_timings_from_message(message: dict[str, Any] | None) -> AssistantMessa
             prompt_tokens_per_second=timings.get("prompt_per_second", 0.0),
             predicted_tokens_per_second=timings.get("predicted_per_second", 0.0),
         )
+
+    # * use response_backend if captured (historically not always captured, going forward it will be)
+    backend = message.get("response_backend")
+    if backend == "llama-server":
+        return parse_llama_server()
+
+    # llama-server has timings w/o timings.choices
+    # also llama-server doesn't have sglext
+    is_llama_server_timings = timings and isinstance(timings, dict) and not sglang_choices and not "sglext" in message
+    if is_llama_server_timings:
+        return parse_llama_server()
 
     patched_sglang = isinstance(sglang_choices, list)
     # Usage can aggregate choices. Never attach one choice's timings to that total.
