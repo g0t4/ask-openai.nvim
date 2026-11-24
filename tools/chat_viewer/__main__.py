@@ -155,8 +155,7 @@ class TraceMessageDTO:
 
     Input sources map each raw message dict onto this contract so consumers
     can rely on dot access instead of dict lookups. The original dict is kept
-    on ``raw`` for anything the projection does not cover (e.g. the per-message
-    timing fields read by ``parse_timings``).
+    on ``raw`` for anything the projection does not cover (i.e. experiments).
     """
 
     role: str = ""
