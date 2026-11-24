@@ -315,8 +315,7 @@ def parse_timings_from_message(message: dict[str, Any] | None) -> AssistantMessa
             return None
 
         timings_choices = timings.get("choices")
-        patched_sglang = isinstance(timings_choices, list)
-        if not patched_sglang:
+        if not isinstance(timings_choices, list):
             return None
 
         usage = message.get("usage")
