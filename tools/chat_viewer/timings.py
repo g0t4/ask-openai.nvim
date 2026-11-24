@@ -288,6 +288,7 @@ def parse_timings_from_message(message: dict[str, Any] | None) -> AssistantMessa
 
     timings = message.get("timings")
 
+    # * explicit backend
     # * use response_backend if captured (historically not always captured, going forward it will be)
     backend = message.get("response_backend")
     if backend == "llama-server":
@@ -297,6 +298,7 @@ def parse_timings_from_message(message: dict[str, Any] | None) -> AssistantMessa
     if backend == "sglang":
         pass # TODO
 
+    # * implicit backend (unique presence of timing fields)
     # llama-server has timings w/o timings.choices
     # also llama-server doesn't have sglext
     is_llama_server_timings = timings and isinstance(timings, dict) and (not "choices" in timings) and (not "sglext" in message)
@@ -308,6 +310,7 @@ def parse_timings_from_message(message: dict[str, Any] | None) -> AssistantMessa
         return parse_vllm_message_timings(message)
 
     def try_parse_sglang_message_timings(message):
+        timings = message.get("timings")
         if not timings or not isinstance(timings, dict):
             return None
 
