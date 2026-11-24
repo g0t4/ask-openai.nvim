@@ -301,7 +301,7 @@ def parse_timings_from_message(message: dict[str, Any] | None) -> AssistantMessa
     # * implicit backend (unique presence of timing fields)
     # llama-server has timings w/o timings.choices
     # also llama-server doesn't have sglext
-    is_llama_server_timings = timings and isinstance(timings, dict) and (not "choices" in timings) and (not "sglext" in message)
+    is_llama_server_timings = timings and isinstance(timings, dict) and ("choices" not in timings) and ("sglext" not in message)
     if is_llama_server_timings:
         return parse_llama_server_timings(timings)
 
