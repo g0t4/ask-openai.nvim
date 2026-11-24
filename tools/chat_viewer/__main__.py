@@ -599,13 +599,46 @@ def load_trace_messages_from_path(trace_file: Path) -> TraceDTO:
         sys.exit(1)
     if str(trace_file).endswith(".jsonl"):
         records = list(load_jsonl_records(trace_file))
+        model_name = get_model_name_from_jsonl_messages(records)
+        # FYI clanker_mode first is only vllm
+        if not "clanker_mode" in str(trace_file):
+            print("not ready to support jsonl timings outside of clanker_mode")
+            # TODO test timings for other JSONL logs (verify what's what as far as what you capture and where it is stored)
+            # TODO long term converge on one JSONL format across all AI tools (including nvim harness and clanker_mode et al)
+            messages = [
+                TraceMessageDTO.from_dict(r["message"])
+                for r in records
+                if "message" in r and "type" in r and r["type"] == "message"
+            ]
+            return TraceDTO(messages=messages, model_name=model_name)
+
+        def hack_copy_timings_if_present_to_raw_message(record):
+            raw_message = record.get("message")
+            rich.print(record)
+            # FYI right now clanker_mode uses deepseek v4 flash only which is exclusively vllm
+            # we can start with that limitation too
+            metadata = record.get("metadata")
+            if metadata:
+                # if "usage" in metadata:
+                #     raw_message["usage"] = metadata["usage"]
+                response = metadata.get("response")
+                if response:
+                    # langchain takes openai's `usage` and returns it under `response.token_usage`
+                    # likewise `metrics` is put under `response.metrics` (not renamed in this case)
+                    # then langchain creates a new `usage` by transforming names in `response.token_usage`
+                    # IOTW if I want the original `usage` then take it from `token_usage`
+                    if "token_usage" in response:
+                        raw_message["usage"] = response["token_usage"]
+                    if "metrics" in response:
+                        raw_message["metrics"] = response["metrics"]
+            raw_message["response_backend"] = "vllm"
+            return TraceMessageDTO.from_dict(raw_message)
+
         messages = [
-            TraceMessageDTO.from_dict(r["message"])
+            hack_copy_timings_if_present_to_raw_message(r)
             for r in records
             if "message" in r and "type" in r and r["type"] == "message"
         ]
-        model_name = get_model_name_from_jsonl_messages(records)
-        # TODO return timings too? make sure we request them for vllm/sglang/llama-server/etc like in ask-openai.nvim
         return TraceDTO(messages=messages, model_name=model_name)
 
     with trace_file.open("r", encoding="utf-8") as f:
