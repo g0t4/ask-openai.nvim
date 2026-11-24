@@ -307,10 +307,8 @@ def parse_timings_from_message(message: dict[str, Any] | None) -> AssistantMessa
 
         prompt_details = usage.get("prompt_tokens_details") or {}
         is_sglang = (backend == "sglang" \
-                     or patched_sglang
                      or "sglext" in message
-                     or bool(native_meta)
-                     or "reasoning_tokens" in usage)
+                     or bool(native_meta))
         if is_sglang:
             sglext = message.get("sglext") or {}
             spec = native_meta or sglext.get("spec_tokens_details") or {}
