@@ -15,17 +15,30 @@ function M.is_final(sse)
 end
 
 function M.copy(sse, message)
+    -- log:info("copy", sse)
     for _, field in ipairs({ "timings", "usage", "metrics", "sglext", "meta_info", "response_backend" }) do
         if sse[field] ~= nil and (sse[field] ~= vim.NIL or message[field] == nil) then
             message[field] = sse[field]
         end
     end
-    if type(sse.sglext) == "table" or type(sse.meta_info) == "table" then
-        message.response_backend = "sglang"
-    elseif type(sse.metrics) == "table" and sse.system_fingerprint and sse.system_fingerprint:find("^vllm") then
-        message.response_backend = "vllm"
-    elseif type(sse.timings) == "table" then
-        message.response_backend = "llama-server"
+    if message.response_backend == nil then
+        local timings_with_choices = (type(sse.timings) == "table" and type(sse.timings.choices) == "table")
+        local timings_without_choices = type(sse.timings) == "table" and sse.timings.choices == nil
+        local has_usage = type(sse.usage) == "table"
+        local has_sglext = type(sse.sglext) == "table"
+        local has_metrics = type(sse.metrics) == "table"
+
+        if has_sglext and timings_with_choices and has_usage then
+            -- FYI must have sglext + timings + usage to ensure you're using merged last_sse for sglang stats
+            message.response_backend = "sglang"
+        elseif has_metrics and sse.system_fingerprint and sse.system_fingerprint:find("^vllm") then
+            message.response_backend = "vllm"
+        elseif timings_without_choices and sse.sglext == nil then
+            message.response_backend = "llama-server"
+        end
+    else
+        -- TODO I don't think this should ever happen so lets flag it if so
+        log:warn("response_backend already set, unexpected... check notes in code", sse)
     end
 end
 

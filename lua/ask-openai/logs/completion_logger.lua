@@ -139,6 +139,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         --  TODO see notes in AgentsFrontend to figure out where I want this
         --   and FYI this can affect any frontend, not just Agents... i.e. PredictionsFrontend using non reasoning FIM with Muse Glimmer
 
+        -- TODO jsonl_record logs
         if is_last_sse then
             response_metadata.copy(sse_parsed, accum)
             request.response_metadata_sse = response_metadata.merge(request.response_metadata_sse, sse_parsed)
