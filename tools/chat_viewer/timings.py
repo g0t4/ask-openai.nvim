@@ -313,13 +313,13 @@ def parse_timings_from_message(message: dict[str, Any] | None) -> AssistantMessa
         if not patched_sglang:
             return None
 
-        # Usage can aggregate choices. Never attach one choice's timings to that total.
-        single_choice = (sglang_choices[0] if patched_sglang and len(sglang_choices) == 1
-                         and isinstance(sglang_choices[0], dict) else {})
         if not timings or not isinstance(timings, dict):
             usage = message.get("usage")
 
             # * attempt to read meta_info off of completion choice objects
+            # Usage can aggregate choices. Never attach one choice's timings to that total.
+            single_choice = (sglang_choices[0] if patched_sglang and len(sglang_choices) == 1
+                             and isinstance(sglang_choices[0], dict) else {})
             native_meta = single_choice or message.get("meta_info") or {}
             if not native_meta and isinstance(message.get("choices"), list):
                 choices = message["choices"]
