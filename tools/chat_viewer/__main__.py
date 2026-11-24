@@ -607,10 +607,10 @@ def load_trace_messages_from_path(trace_file: Path) -> TraceDTO:
                 # no warnings, cuz no timing :)
                 return raw_message
 
-            if not "clanker_mode" in str(trace_file):
-                rich.print("[yellow]not ready to support JSON outside clanker_mode[/]")
-                rich.print(record)
-                return raw_message
+            # if not "clanker_mode" in str(trace_file):
+            #     rich.print("[yellow]not ready to support JSON outside clanker_mode[/]")
+            #     rich.print(record)
+            #     return raw_message
 
             # FYI clanker_mode first is only vllm (for now)
             raw_message["response_backend"] = "vllm" # TODO copy response_backend if set? where will we set it?
