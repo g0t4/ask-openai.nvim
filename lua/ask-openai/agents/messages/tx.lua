@@ -133,10 +133,20 @@ function TxChatMessage:from_assistant_rx_message(rx_message)
     local role = rx_message.role or "assistant"
     local tx_message = TxChatMessage:new(role, rx_message.content) --[[@as Ask_OpenAIChatCompletion_Assistant_TxChatMessage]]
 
+    -- TODO add turn start/end records too (don't wait for turn to complete before appending)
+    -- TODO find spot where tool call results arrive and append those too (don't wait for all to complete)
+    -- TODO switch to logging something like this for new jsonl format:
+    local jsonl_record = {
+        type = "message",
+        message = tx_message,
+        metadata = {}
+    }
+
     -- Preserve raw statistics alongside assistant history for trace viewers.
     if rx_message.last_sse then
         -- TODO move to record object's metadata - record object completion logging refactor
         require("ask-openai.backends.response_metadata").copy(rx_message.last_sse, tx_message)
+        require("ask-openai.backends.response_metadata").copy(rx_message.last_sse, jsonl_record.metadata)
     end
 
     -- FYI qwen3-8b's template exploded after tool call w/ reasoning_content included: (smth about lstrip).. if I comment out next line, then it works fine (tool calls and all):
