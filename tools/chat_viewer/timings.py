@@ -314,7 +314,7 @@ def parse_timings_from_message(message: dict[str, Any] | None) -> AssistantMessa
         if not timings or not isinstance(timings, dict):
             return None
 
-        sglang_choices = timings.get("choices") if isinstance(timings, dict) else None
+        sglang_choices = timings.get("choices")
         patched_sglang = isinstance(sglang_choices, list)
         if not patched_sglang:
             return None
