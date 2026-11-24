@@ -1519,10 +1519,6 @@ def render_trace_to_console(console, trace: TraceDTO, *, full_width=False) -> No
     messages = trace.messages
     show_model_info(trace.model_name)
 
-    has_per_message_timings = any(msg.role == "assistant" and parse_timings(msg.raw) is not None for msg in messages)
-    if not has_per_message_timings:
-        print_model_info(trace.timings)
-
     render_messages_to_console(console, messages, full_width=full_width)
 
     from tools.chat_viewer.timings_summary import TimingEntry, build_timings_summary
