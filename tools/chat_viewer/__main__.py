@@ -617,7 +617,7 @@ def hack_copy_jsonl_record_timings_to_raw_message_like_nvim_harness(record):
 
     is_langchain = "response" in metadata and "token_usage" in metadata["response"]
     if not is_langchain:
-        rich.print("[yellow]only JSONL via langchain is supported, cannot find record's timing[/]")
+        rich.print("[yellow]only JSONL via langchain is supported (detected via presence of record.metadata.response.token_usage), cannot find record's timing[/]")
         rich.print(record)
         return raw_message
 
