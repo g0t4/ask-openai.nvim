@@ -577,21 +577,6 @@ def load_jsonl_records(path: Path) -> Iterable[dict[str, Any]]:
         yield record
 
 
-def print_model_info(name: str | None, timings: ModelTimingsDTO | None = None) -> None:
-    """Print model name and optional timing stats.
-
-    Args:
-        name: The model name to display.
-        timings: Optional ModelTimingsDTO object for displaying token counts and timing info.
-    """
-
-    if timings:
-        stats_line = format_stats_line(timings)
-        if stats_line:
-            _console.print(f"[dim]{stats_line}[/]")
-        _console.print()
-
-
 def get_model_name_from_jsonl_messages(records) -> str | None:
     # TODO turn this into a print_model_name so we dont pass it around
     # TODO lets take old formats and wrap them as records too? so I can pass records into the main loop to print messages (and then I can print other recrod info) and long term move to records

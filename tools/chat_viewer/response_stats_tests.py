@@ -27,7 +27,6 @@ def test_usage_metrics_render_per_message_summary_and_trace_fallback(monkeypatch
     # Top-level-only last_sse data uses the same parser and display.
     output = StringIO()
     monkeypatch.setattr(viewer, "_console", Console(file=output, width=160, color_system=None))
-    viewer.print_model_info("deepseek-v4.1-flash", parse_timings(response))
     assert "overall output" not in output.getvalue()
 
 
