@@ -22,6 +22,9 @@ function M.copy(sse, message)
         end
     end
     if message.response_backend == nil then
+        -- TODO vet sglang marked
+        -- TODO vet llama-server marked
+        -- TODO vet vllm marked
         local timings_with_choices = (type(sse.timings) == "table" and type(sse.timings.choices) == "table")
         local timings_without_choices = type(sse.timings) == "table" and sse.timings.choices == nil
         local has_usage = type(sse.usage) == "table"

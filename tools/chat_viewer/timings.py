@@ -252,8 +252,11 @@ def parse_timings(last_sse: dict[str, Any] | None) -> ModelTimings | None:
     #         "tokens_per_second": 247.93318655869
     #       }
 
+    # TODO move away from using last_sse entirely? this is messy as F and not that critical to keep historically
     timings = last_sse.get("timings")
     sglang_choices = timings.get("choices") if isinstance(timings, dict) else None
+
+    # TODO use response_backend to shortcircuit anything here?
 
     # llama-server has timings w/o timings.choices
     # also llama-server doesn't have sglext
@@ -282,11 +285,13 @@ def parse_timings(last_sse: dict[str, Any] | None) -> ModelTimings | None:
         # IIUC meta_info is sglang for non-streaming completions only
         native_meta = single_choice or last_sse.get("meta_info") or {}
         if not native_meta and isinstance(last_sse.get("choices"), list):
+            # * attempt to read meta_info off of completion choice objects
             choices = last_sse["choices"]
             if len(choices) == 1 and isinstance(choices[0], dict):
                 native_meta = choices[0].get("meta_info") or {}
 
         if not isinstance(usage, dict) and isinstance(native_meta, dict) and "prompt_tokens" in native_meta:
+            # * construct synthetic usage from meta_info
             usage = {"prompt_tokens": native_meta.get("prompt_tokens"),
                      "completion_tokens": native_meta.get("completion_tokens"),
                      "prompt_tokens_details": {"cached_tokens": native_meta.get("cached_tokens")},
