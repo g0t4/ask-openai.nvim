@@ -339,6 +339,7 @@ def parse_timings_from_message(message: dict[str, Any] | None) -> AssistantMessa
                 mean_acceptance_length=spec.get("spec_accept_length"),
             )
 
+        usage = message.get("usage")
         metrics = message.get("metrics") or {}
         speculative = metrics.get("speculative_decoding") or {}
         completion_details = usage.get("completion_tokens_details") or {}
