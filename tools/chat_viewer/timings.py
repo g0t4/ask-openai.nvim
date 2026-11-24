@@ -3,6 +3,8 @@
 from dataclasses import dataclass
 from typing import Any, Literal
 
+import rich
+
 
 @dataclass
 class ModelTimings:
@@ -252,6 +254,24 @@ def parse_timings(last_sse: dict[str, Any] | None) -> ModelTimings | None:
 
     timings = last_sse.get("timings")
     sglang_choices = timings.get("choices") if isinstance(timings, dict) else None
+
+    # llama-server has timings w/o timings.choices
+    # also llama-server doesn't have sglext
+    is_llama_server = timings and isinstance(timings, dict) and not sglang_choices and not "sglext" in last_sse
+    if is_llama_server:
+        return ModelTimings(
+            backend = "llama-server", # default, still make it explicit here
+            prompt_tokens=timings.get("prompt_n", 0),
+            predicted_tokens=timings.get("predicted_n", 0),
+            cached_tokens=timings.get("cache_n"),
+            draft_tokens=timings.get("draft_n"),
+            draft_tokens_accepted=timings.get("draft_n_accepted"),
+            prompt_ms=timings.get("prompt_ms", 0.0),
+            predicted_ms=timings.get("predicted_ms", 0.0),
+            prompt_tokens_per_second=timings.get("prompt_per_second", 0.0),
+            predicted_tokens_per_second=timings.get("predicted_per_second", 0.0),
+        )
+
     patched_sglang = isinstance(sglang_choices, list)
     # Usage can aggregate choices. Never attach one choice's timings to that total.
     single_choice = (sglang_choices[0] if patched_sglang and len(sglang_choices) == 1
@@ -327,19 +347,9 @@ def parse_timings(last_sse: dict[str, Any] | None) -> ModelTimings | None:
             mean_acceptance_length=speculative.get("mean_acceptance_length"),
         )
 
-    return ModelTimings(
-        backend = "llama-server", # default, still make it explicit here
-        prompt_tokens=timings.get("prompt_n", 0),
-        predicted_tokens=timings.get("predicted_n", 0),
-        cached_tokens=timings.get("cache_n"),
-        draft_tokens=timings.get("draft_n"),
-        draft_tokens_accepted=timings.get("draft_n_accepted"),
-        prompt_ms=timings.get("prompt_ms", 0.0),
-        predicted_ms=timings.get("predicted_ms", 0.0),
-        prompt_tokens_per_second=timings.get("prompt_per_second", 0.0),
-        predicted_tokens_per_second=timings.get("predicted_per_second", 0.0),
-    )
-
+    # raise ValueError("unexpected error mapping timings")
+    rich.print("[red]no timings - TODO what to do in this case?[/]") # TODO IIAC this is just a non event
+    return None # TODO what to return? previously I was returning an empty ModelTimings b/c it wouldn't have any timings, right?
 
 def _humanize_int(value: int) -> str:
     """Format an integer with comma separators for readability.
