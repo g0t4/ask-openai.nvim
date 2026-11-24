@@ -179,16 +179,9 @@ def detect_cache_misses(
     return states
 
 
-def parse_timings(last_sse: dict[str, Any] | None) -> ModelTimings | None:
-    """Extract timing information from the last SSE response.
-
-    Args:
-        last_sse: The last server-sent event from the trace data.
-
-    Returns:
-        ModelTimings if timings data is available, None otherwise.
-    """
-    if not last_sse:
+def parse_timings(message: dict[str, Any] | None) -> ModelTimings | None:
+    """Extract timing information"""
+    if not message:
         return None
 
     # TODO long term move to record type that contains the message object
@@ -253,14 +246,14 @@ def parse_timings(last_sse: dict[str, Any] | None) -> ModelTimings | None:
     #       }
 
     # TODO move away from using last_sse entirely? this is messy as F and not that critical to keep historically
-    timings = last_sse.get("timings")
+    timings = message.get("timings")
     sglang_choices = timings.get("choices") if isinstance(timings, dict) else None
 
     # TODO use response_backend to shortcircuit anything here?
 
     # llama-server has timings w/o timings.choices
     # also llama-server doesn't have sglext
-    is_llama_server = timings and isinstance(timings, dict) and not sglang_choices and not "sglext" in last_sse
+    is_llama_server = timings and isinstance(timings, dict) and not sglang_choices and not "sglext" in message
     if is_llama_server:
         return ModelTimings(
             backend = "llama-server", # default, still make it explicit here
@@ -280,13 +273,13 @@ def parse_timings(last_sse: dict[str, Any] | None) -> ModelTimings | None:
     single_choice = (sglang_choices[0] if patched_sglang and len(sglang_choices) == 1
                      and isinstance(sglang_choices[0], dict) else {})
     if patched_sglang or not timings or not isinstance(timings, dict):
-        usage = last_sse.get("usage")
+        usage = message.get("usage")
 
         # IIUC meta_info is sglang for non-streaming completions only
-        native_meta = single_choice or last_sse.get("meta_info") or {}
-        if not native_meta and isinstance(last_sse.get("choices"), list):
+        native_meta = single_choice or message.get("meta_info") or {}
+        if not native_meta and isinstance(message.get("choices"), list):
             # * attempt to read meta_info off of completion choice objects
-            choices = last_sse["choices"]
+            choices = message["choices"]
             if len(choices) == 1 and isinstance(choices[0], dict):
                 native_meta = choices[0].get("meta_info") or {}
 
@@ -300,12 +293,12 @@ def parse_timings(last_sse: dict[str, Any] | None) -> ModelTimings | None:
         if not isinstance(usage, dict) or not usage:
             return None
 
-        metrics = last_sse.get("metrics") or {}
+        metrics = message.get("metrics") or {}
         prompt_details = usage.get("prompt_tokens_details") or {}
         completion_details = usage.get("completion_tokens_details") or {}
         speculative = metrics.get("speculative_decoding") or {}
-        sglext = last_sse.get("sglext") or {}
-        is_sglang = (patched_sglang or last_sse.get("response_backend") == "sglang" or bool(sglext)
+        sglext = message.get("sglext") or {}
+        is_sglang = (patched_sglang or message.get("response_backend") == "sglang" or bool(sglext)
                      or bool(native_meta) or "reasoning_tokens" in usage)
         if is_sglang:
             spec = native_meta or sglext.get("spec_tokens_details") or {}
