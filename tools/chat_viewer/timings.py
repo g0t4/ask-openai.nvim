@@ -247,8 +247,8 @@ def parse_sglang_message_timings(message):
     if not isinstance(usage, dict) or not usage:
         return None
 
-    is_sglang = "sglext" in message or bool(native_meta)
-    if not is_sglang:
+    has_rest_of_timings = "sglext" in message or bool(native_meta)
+    if not has_rest_of_timings:
         return None
 
     sglext = message.get("sglext") or {}
