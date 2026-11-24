@@ -603,6 +603,9 @@ def load_trace_messages_from_path(trace_file: Path) -> TraceDTO:
 
         def hack_copy_timings_if_present_to_raw_message(record):
             raw_message = record.get("message")
+            if raw_message["role"] != "assistant":
+                # no warnings, cuz no timing :)
+                return raw_message
 
             if not "clanker_mode" in str(trace_file):
                 rich.print("[yellow]not ready to support JSON outside clanker_mode[/]")
