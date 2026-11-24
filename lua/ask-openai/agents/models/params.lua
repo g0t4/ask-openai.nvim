@@ -36,15 +36,15 @@ end
 ---@param endpoint_model_info? EndpointModelInfo @Discovery snapshot; only used for explicit exceptions
 function M.request_timings_too(generic_body, endpoint_model_info)
     if endpoint_model_info then
+        generic_body = vim.tbl_deep_extend("force", {}, generic_body, {
+            -- at least need this for vllm and sglang, doesn't hurt to have on llama-server too
+            stream_options = { include_usage = true }, -- openai "usage" on last SSE before [DONE], vllm: this also includes `metrics`
+        })
         if endpoint_model_info.backend == "vllm" then
             log:info("endpoint_model_info", endpoint_model_info)
-            generic_body = vim.tbl_deep_extend("force", {}, generic_body, {
-                stream_options = { include_usage = true },
-            })
             -- TODO any other fields in vllm?
         elseif endpoint_model_info.backend == "sglang" then
             generic_body = vim.tbl_deep_extend("force", {}, generic_body, {
-                stream_options = { include_usage = true },
                 return_spec_tokens_details = true,
                 return_cached_tokens_details = true,
                 -- opt-in, custom final-SSE timing overlay (assume available for all local sglang deployments)
