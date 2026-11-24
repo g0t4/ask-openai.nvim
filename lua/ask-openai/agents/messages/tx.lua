@@ -135,6 +135,7 @@ function TxChatMessage:from_assistant_rx_message(rx_message)
 
     -- Preserve raw statistics alongside assistant history for trace viewers.
     if rx_message.last_sse then
+        -- TODO move to record object's metadata - record object completion logging refactor
         require("ask-openai.backends.response_metadata").copy(rx_message.last_sse, tx_message)
     end
 
