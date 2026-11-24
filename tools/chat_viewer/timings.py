@@ -308,7 +308,7 @@ def parse_timings_from_message(message: dict[str, Any] | None) -> AssistantMessa
     if has_vllm_metrics:
         return parse_vllm_message_timings(message)
 
-    def parse_sglang_message_timings(message):
+    def try_parse_sglang_message_timings(message):
         patched_sglang = isinstance(sglang_choices, list)
         # Usage can aggregate choices. Never attach one choice's timings to that total.
         single_choice = (sglang_choices[0] if patched_sglang and len(sglang_choices) == 1
@@ -370,7 +370,7 @@ def parse_timings_from_message(message: dict[str, Any] | None) -> AssistantMessa
     def fallback_timings():
         rich.print("[red]no timings - TODO what to do in this case?[/]")
 
-    return parse_sglang_message_timings(message) or fallback_timings()
+    return try_parse_sglang_message_timings(message) or fallback_timings()
 
 def _humanize_int(value: int) -> str:
     """Format an integer with comma separators for readability.
