@@ -305,10 +305,7 @@ def parse_timings_from_message(message: dict[str, Any] | None) -> AssistantMessa
         if not isinstance(usage, dict) or not usage:
             return None
 
-        metrics = message.get("metrics") or {}
         prompt_details = usage.get("prompt_tokens_details") or {}
-        completion_details = usage.get("completion_tokens_details") or {}
-        speculative = metrics.get("speculative_decoding") or {}
         sglext = message.get("sglext") or {}
         is_sglang = (patched_sglang or message.get("response_backend") == "sglang" or bool(sglext)
                      or bool(native_meta) or "reasoning_tokens" in usage)
@@ -340,6 +337,10 @@ def parse_timings_from_message(message: dict[str, Any] | None) -> AssistantMessa
                 reported_draft_acceptance_rate=spec.get("spec_accept_rate"),
                 mean_acceptance_length=spec.get("spec_accept_length"),
             )
+
+        metrics = message.get("metrics") or {}
+        speculative = metrics.get("speculative_decoding") or {}
+        completion_details = usage.get("completion_tokens_details") or {}
         return AssistantMessageTimingsDTO(
             backend="vllm",
             prompt_tokens=usage.get("prompt_tokens") or 0,
