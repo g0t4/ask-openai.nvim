@@ -592,7 +592,7 @@ def get_model_name_from_jsonl_messages(records) -> str | None:
     # ... TODO actually we should track that as a model change record type (could be logical off of asssistant responses too b/c the server can use a diff model than client asked for)
     return first['metadata']['response']['model_name']
 
-def hack_copy_timings_if_present_to_raw_message(record):
+def hack_copy_jsonl_record_timings_to_raw_message_like_nvim_harness(record):
     raw_message = record.get("message")
     if raw_message["role"] != "assistant":
         # no warnings, cuz no timing :)
@@ -641,7 +641,7 @@ def load_trace_messages_from_path(trace_file: Path) -> TraceDTO:
         records = list(load_jsonl_records(trace_file))
         model_name = get_model_name_from_jsonl_messages(records)
         messages = [ \
-            TraceMessageDTO.from_dict(hack_copy_timings_if_present_to_raw_message(r))
+            TraceMessageDTO.from_dict(hack_copy_jsonl_record_timings_to_raw_message_like_nvim_harness(r))
             for r in records
             if "message" in r and "type" in r and r["type"] == "message"
         ]
