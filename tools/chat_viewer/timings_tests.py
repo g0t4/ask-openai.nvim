@@ -7,7 +7,7 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from tools.chat_viewer.timings import (
-    ModelTimingsDTO,
+    AssistantMessageTimingsDTO,
     parse_timings,
     format_stats_line,
     _humanize_int,
@@ -124,7 +124,7 @@ def test_parse_timings_missing_cache() -> None:
 
 def test_total_tokens() -> None:
     """Test total token calculation."""
-    timings = ModelTimingsDTO(
+    timings = AssistantMessageTimingsDTO(
         prompt_tokens=100,
         predicted_tokens=50,
     )
@@ -134,7 +134,7 @@ def test_total_tokens() -> None:
 
 def test_total_tokens_with_no_input() -> None:
     """Test total token calculation with zero values."""
-    timings = ModelTimingsDTO()
+    timings = AssistantMessageTimingsDTO()
 
     assert timings.total_tokens == 0
 
@@ -146,7 +146,7 @@ def test_format_stats_line_empty() -> None:
 
 def test_format_stats_line_basic() -> None:
     """Test basic stats line formatting."""
-    timings = ModelTimingsDTO(
+    timings = AssistantMessageTimingsDTO(
         prompt_tokens=129,
         predicted_tokens=296,
         cached_tokens=349,
@@ -168,7 +168,7 @@ def test_format_stats_line_basic() -> None:
 
 def test_format_stats_line_large_numbers() -> None:
     """Test stats line formatting with large numbers."""
-    timings = ModelTimingsDTO(
+    timings = AssistantMessageTimingsDTO(
         prompt_tokens=10000,
         predicted_tokens=50000,
         cached_tokens=25000,
@@ -186,7 +186,7 @@ def test_format_stats_line_large_numbers() -> None:
 
 def test_format_stats_line_with_draft() -> None:
     """Test stats line formatting with speculative decoding (draft) info."""
-    timings = ModelTimingsDTO(
+    timings = AssistantMessageTimingsDTO(
         prompt_tokens=129,
         predicted_tokens=296,
         cached_tokens=349,
@@ -211,7 +211,7 @@ def test_format_stats_line_with_draft() -> None:
 
 def test_format_stats_line_no_cache() -> None:
     """Test stats line formatting without cache data."""
-    timings = ModelTimingsDTO(
+    timings = AssistantMessageTimingsDTO(
         prompt_tokens=100,
         predicted_tokens=50,
         prompt_tokens_per_second=100.0,
@@ -229,7 +229,7 @@ def test_format_stats_line_no_cache() -> None:
 
 def test_format_stats_line_no_speed() -> None:
     """Test stats line formatting without speed data."""
-    timings = ModelTimingsDTO(
+    timings = AssistantMessageTimingsDTO(
         prompt_tokens=100,
         predicted_tokens=50,
         cached_tokens=300,
@@ -245,7 +245,7 @@ def test_format_stats_line_no_speed() -> None:
 
 def test_format_stats_line_zero_draft_accepted() -> None:
     """Test stats line formatting when draft_tokens but zero accepted."""
-    timings = ModelTimingsDTO(
+    timings = AssistantMessageTimingsDTO(
         prompt_tokens=129,
         predicted_tokens=296,
         prompt_tokens_per_second=2010.91,
@@ -266,7 +266,7 @@ def test_format_stats_line_zero_draft_accepted() -> None:
 
 def test_draft_acceptance_rate() -> None:
     """Test draft acceptance rate calculation."""
-    timings = ModelTimingsDTO(
+    timings = AssistantMessageTimingsDTO(
         draft_tokens=125,
         draft_tokens_accepted=101,
     )
@@ -278,13 +278,13 @@ def test_draft_acceptance_rate() -> None:
 
 def test_draft_acceptance_rate_no_draft() -> None:
     """Test draft acceptance rate when no draft data."""
-    timings = ModelTimingsDTO()
+    timings = AssistantMessageTimingsDTO()
     assert timings.draft_acceptance_rate is None
 
 
 def test_draft_acceptance_rate_zero_draft() -> None:
     """Test draft acceptance rate when draft_tokens is zero."""
-    timings = ModelTimingsDTO(
+    timings = AssistantMessageTimingsDTO(
         draft_tokens=0,
         draft_tokens_accepted=0,
     )
@@ -293,7 +293,7 @@ def test_draft_acceptance_rate_zero_draft() -> None:
 
 def test_formatted_acceptance_rate() -> None:
     """Test formatted acceptance rate string."""
-    timings = ModelTimingsDTO(
+    timings = AssistantMessageTimingsDTO(
         draft_tokens=125,
         draft_tokens_accepted=101,
     )
@@ -305,13 +305,13 @@ def test_formatted_acceptance_rate() -> None:
 
 def test_formatted_acceptance_rate_no_draft() -> None:
     """Test formatted acceptance rate when no draft data."""
-    timings = ModelTimingsDTO()
+    timings = AssistantMessageTimingsDTO()
     assert timings.formatted_acceptance_rate is None
 
 
 def test_formatted_acceptance_rate_zero_draft() -> None:
     """Test formatted acceptance rate when draft_tokens is zero."""
-    timings = ModelTimingsDTO(
+    timings = AssistantMessageTimingsDTO(
         draft_tokens=0,
         draft_tokens_accepted=0,
     )
@@ -320,7 +320,7 @@ def test_formatted_acceptance_rate_zero_draft() -> None:
 
 def test_formatted_acceptance_rate_perfect_rate() -> None:
     """Test formatted acceptance rate with 100%."""
-    timings = ModelTimingsDTO(
+    timings = AssistantMessageTimingsDTO(
         draft_tokens=100,
         draft_tokens_accepted=100,
     )
@@ -332,7 +332,7 @@ def test_formatted_acceptance_rate_perfect_rate() -> None:
 
 def test_expected_next_cache() -> None:
     """Expected next cache is prior cache + prompt + predicted."""
-    prev = ModelTimingsDTO(
+    prev = AssistantMessageTimingsDTO(
         prompt_tokens=4505,
         predicted_tokens=213,
         cached_tokens=0,
@@ -342,12 +342,12 @@ def test_expected_next_cache() -> None:
 
 def test_expected_next_cache_no_prior_cache() -> None:
     """When the prior generation has no cache data, there is no expectation."""
-    prev = ModelTimingsDTO(prompt_tokens=100, predicted_tokens=50)
+    prev = AssistantMessageTimingsDTO(prompt_tokens=100, predicted_tokens=50)
     assert expected_next_cache(prev) is None
 
 
-def _timings(prompt_n: int, predicted_n: int, cache_n: int) -> ModelTimingsDTO:
-    return ModelTimingsDTO(
+def _timings(prompt_n: int, predicted_n: int, cache_n: int) -> AssistantMessageTimingsDTO:
+    return AssistantMessageTimingsDTO(
         prompt_tokens=prompt_n,
         predicted_tokens=predicted_n,
         cached_tokens=cache_n,
@@ -512,7 +512,7 @@ def test_vllm_null_metrics_still_show_usage() -> None:
 
 
 def test_vllm_cache_is_not_compared_with_llama_cache() -> None:
-    llama = ModelTimingsDTO(prompt_tokens=100, predicted_tokens=20, cached_tokens=80)
+    llama = AssistantMessageTimingsDTO(prompt_tokens=100, predicted_tokens=20, cached_tokens=80)
     vllm = parse_timings({"usage": {"prompt_tokens": 100, "completion_tokens": 20,
                                   "prompt_tokens_details": {"cached_tokens": 80}}})
     assert vllm is not None
@@ -551,7 +551,7 @@ def test_vllm_rates_are_estimates_using_uncached_input_and_n_minus_one_output() 
 
 
 def test_vllm_estimates_require_usable_counts_and_durations() -> None:
-    parsed = ModelTimingsDTO(backend="vllm", prompt_tokens=100, predicted_tokens=1,
+    parsed = AssistantMessageTimingsDTO(backend="vllm", prompt_tokens=100, predicted_tokens=1,
                           time_to_first_token_ms=100, generation_time_ms=0)
     assert parsed.estimated_input_tokens_per_second is None  # no cache count
     assert parsed.estimated_decode_tokens_per_second is None  # no decode interval
