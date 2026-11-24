@@ -191,7 +191,7 @@ class TraceDTO:
     model_name: str | None = None
     # FYI this `timings` is just last_assistant_timings... I don't care about supporting this right now... if I do, I can move this into loader logic that maps this to the last assistant message object (raw/DTO)... tracking it here is super confusing, especially plural timings
     #   nice thing about this DTO is it brought out this oddity!
-    timings: ModelTimings | None = None
+    last_assistant_msg_timings: ModelTimings | None = None
 
 
 def is_raw_completion_fim(data: dict) -> bool:
@@ -649,7 +649,7 @@ def load_trace_messages_from_path(trace_file: Path) -> TraceDTO:
                     response["output.json"] = True
                     messages.append(TraceMessageDTO.from_dict(response))
 
-    return TraceDTO(messages=messages, model_name=model_name, timings=timings)
+    return TraceDTO(messages=messages, model_name=model_name, last_assistant_msg_timings=timings)
 
 
 def show_rest_of_request_body_properties(data):
@@ -700,7 +700,7 @@ def load_trace_messages_from_stream(stream) -> TraceDTO:
             messages.append(TraceMessageDTO.from_dict(response))
     # FYI cannot assume output.json is related (or any othe file) given this data is from STDIN
 
-    return TraceDTO(messages=messages, model_name=model_name, timings=timings)
+    return TraceDTO(messages=messages, model_name=model_name, last_assistant_msg_timings=timings)
 
 
 def insert_newlines(content: str) -> str:

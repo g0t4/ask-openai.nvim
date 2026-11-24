@@ -17,7 +17,7 @@ def test_usage_metrics_render_per_message_summary_and_trace_fallback(monkeypatch
     output = StringIO()
     viewer.render_trace_to_console(Console(file=output, width=300, color_system=None),
                                    viewer.TraceDTO(messages=[viewer.TraceMessageDTO.from_dict(response)], model_name="deepseek-v4.1-flash",
-                                                   timings=parse_timings(response)))
+                                                   last_assistant_msg_timings=parse_timings(response)))
     text = output.getvalue()
     assert "overall output" not in text
     assert "TTFT: 118.6 ms" in text
