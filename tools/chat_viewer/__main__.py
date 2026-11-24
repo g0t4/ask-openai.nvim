@@ -600,25 +600,19 @@ def load_trace_messages_from_path(trace_file: Path) -> TraceDTO:
     if str(trace_file).endswith(".jsonl"):
         records = list(load_jsonl_records(trace_file))
         model_name = get_model_name_from_jsonl_messages(records)
-        # FYI clanker_mode first is only vllm
-        if not "clanker_mode" in str(trace_file):
-            print("not ready to support jsonl timings outside of clanker_mode")
-            # TODO test timings for other JSONL logs (verify what's what as far as what you capture and where it is stored)
-            # TODO long term converge on one JSONL format across all AI tools (including nvim harness and clanker_mode et al)
-            messages = [
-                TraceMessageDTO.from_dict(r["message"])
-                for r in records
-                if "message" in r and "type" in r and r["type"] == "message"
-            ]
-            return TraceDTO(messages=messages, model_name=model_name)
 
         def hack_copy_timings_if_present_to_raw_message(record):
+            if not "clanker_mode" in str(trace_file):
+                print("not ready to support jsonl timings outside of clanker_mode")
+                return TraceMessageDTO.from_dict(record["message"])
+
+            # FYI clanker_mode first is only vllm
             raw_message = record.get("message")
-            rich.print(record)
+            # rich.print(record)
             # FYI right now clanker_mode uses deepseek v4 flash only which is exclusively vllm
             # we can start with that limitation too
-            metadata = record.get("metadata")
-            if metadata:
+            if "metadata" in record:
+                metadata = record.get("metadata")
                 # if "usage" in metadata:
                 #     raw_message["usage"] = metadata["usage"]
                 response = metadata.get("response")
@@ -634,7 +628,7 @@ def load_trace_messages_from_path(trace_file: Path) -> TraceDTO:
             raw_message["response_backend"] = "vllm"
             return TraceMessageDTO.from_dict(raw_message)
 
-        messages = [
+        messages = [ \
             hack_copy_timings_if_present_to_raw_message(r)
             for r in records
             if "message" in r and "type" in r and r["type"] == "message"
