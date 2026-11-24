@@ -200,9 +200,8 @@ def parse_vllm_message_timings(message):
     usage = message.get("usage")
     completion_details = usage.get("completion_tokens_details") or {}
     prompt_details = usage.get("prompt_tokens_details") or {}
-    rich.print("[red bold]FUCK YEAH[/]")
-    rich.print(metrics)
-    rich.print(usage)
+    # rich.print(metrics)
+    # rich.print(usage)
     return AssistantMessageTimingsDTO(
         backend="vllm",
         prompt_tokens=usage.get("prompt_tokens") or 0,
