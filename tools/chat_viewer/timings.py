@@ -308,69 +308,71 @@ def parse_timings_from_message(message: dict[str, Any] | None) -> AssistantMessa
         return parse_vllm_message_timings(message)
 
     def try_parse_sglang_message_timings(message):
+        if not timings or not isinstance(timings, dict):
+            return None
+
         sglang_choices = timings.get("choices") if isinstance(timings, dict) else None
         patched_sglang = isinstance(sglang_choices, list)
         if not patched_sglang:
             return None
 
-        if not timings or not isinstance(timings, dict):
-            usage = message.get("usage")
+        usage = message.get("usage")
 
-            # * attempt to read meta_info off of completion choice objects
-            # Usage can aggregate choices. Never attach one choice's timings to that total.
-            single_choice = sglang_choices[0] if (len(sglang_choices) == 1 and isinstance(sglang_choices[0], dict)) else {}
-            native_meta = single_choice or message.get("meta_info") or {}
-            if not native_meta and isinstance(message.get("choices"), list):
-                choices = message["choices"]
-                if len(choices) == 1 and isinstance(choices[0], dict):
-                    native_meta = choices[0].get("meta_info") or {}
+        # * attempt to read meta_info off of completion choice objects
+        # Usage can aggregate choices. Never attach one choice's timings to that total.
+        single_choice = sglang_choices[0] if (len(sglang_choices) == 1 and isinstance(sglang_choices[0], dict)) else {}
+        native_meta = single_choice or message.get("meta_info") or {}
+        if not native_meta and isinstance(message.get("choices"), list):
+            choices = message["choices"]
+            if len(choices) == 1 and isinstance(choices[0], dict):
+                native_meta = choices[0].get("meta_info") or {}
 
-            # * construct synthetic usage from meta_info
-            if not isinstance(usage, dict) and isinstance(native_meta, dict) and "prompt_tokens" in native_meta:
-                usage = {"prompt_tokens": native_meta.get("prompt_tokens"),
-                         "completion_tokens": native_meta.get("completion_tokens"),
-                         "prompt_tokens_details": {"cached_tokens": native_meta.get("cached_tokens")},
-                         "reasoning_tokens": native_meta.get("reasoning_tokens")}
+        # * construct synthetic usage from meta_info
+        if not isinstance(usage, dict) and isinstance(native_meta, dict) and "prompt_tokens" in native_meta:
+            usage = {"prompt_tokens": native_meta.get("prompt_tokens"),
+                     "completion_tokens": native_meta.get("completion_tokens"),
+                     "prompt_tokens_details": {"cached_tokens": native_meta.get("cached_tokens")},
+                     "reasoning_tokens": native_meta.get("reasoning_tokens")}
 
-            if not isinstance(usage, dict) or not usage:
-                return None
+        if not isinstance(usage, dict) or not usage:
+            return None
 
-            is_sglang = (backend == "sglang" \
-                         or "sglext" in message
-                         or bool(native_meta))
-            if not is_sglang:
-                return None
+        is_sglang = (backend == "sglang" \
+                     or "sglext" in message
+                     or bool(native_meta))
+        if not is_sglang:
+            return None
 
-            sglext = message.get("sglext") or {}
-            spec = native_meta or sglext.get("spec_tokens_details") or {}
-            def milliseconds(key):
-                value = native_meta.get(key)
-                return value * 1000 if isinstance(value, (int, float)) and value >= 0 else None
-            ttft = milliseconds("first_token_latency")
-            elapsed = milliseconds("e2e_latency")
-            decode = elapsed - ttft if elapsed is not None and ttft is not None and elapsed >= ttft else None
-            # Multiple choices have distinct speculative stats; don't pick one.
-            if not isinstance(spec, dict):
-                spec = {}
+        sglext = message.get("sglext") or {}
+        spec = native_meta or sglext.get("spec_tokens_details") or {}
+        def milliseconds(key):
+            value = native_meta.get(key)
+            return value * 1000 if isinstance(value, (int, float)) and value >= 0 else None
+        ttft = milliseconds("first_token_latency")
+        elapsed = milliseconds("e2e_latency")
+        decode = elapsed - ttft if elapsed is not None and ttft is not None and elapsed >= ttft else None
+        # Multiple choices have distinct speculative stats; don't pick one.
+        if not isinstance(spec, dict):
+            spec = {}
 
-            prompt_details = usage.get("prompt_tokens_details") or {}
-            return AssistantMessageTimingsDTO(
-                backend="sglang", prompt_tokens=usage.get("prompt_tokens") or 0,
-                predicted_tokens=usage.get("completion_tokens") or 0,
-                cached_tokens=prompt_details.get("cached_tokens", native_meta.get("cached_tokens")),
-                reasoning_tokens=usage.get("reasoning_tokens"),
-                time_to_first_token_ms=ttft, queue_time_ms=milliseconds("queue_time"),
-                generation_time_ms=decode,
-                predicted_tokens_per_second=native_meta.get("decode_throughput") or 0,
-                mean_itl_ms=(1000 / native_meta["decode_throughput"]
-                             if (native_meta.get("decode_throughput") or 0) > 0 else None),
-                overall_output_tokens_per_second=(usage.get("completion_tokens", 0) * 1000 / elapsed
-                                                  if elapsed and elapsed > 0 else None),
-                draft_tokens=spec.get("spec_num_proposed_drafts"),
-                draft_tokens_accepted=spec.get("spec_num_correct_drafts"),
-                reported_draft_acceptance_rate=spec.get("spec_accept_rate"),
-                mean_acceptance_length=spec.get("spec_accept_length"),
-            )
+        prompt_details = usage.get("prompt_tokens_details") or {}
+        return AssistantMessageTimingsDTO(
+            backend="sglang", prompt_tokens=usage.get("prompt_tokens") or 0,
+            predicted_tokens=usage.get("completion_tokens") or 0,
+            cached_tokens=prompt_details.get("cached_tokens", native_meta.get("cached_tokens")),
+            reasoning_tokens=usage.get("reasoning_tokens"),
+            time_to_first_token_ms=ttft, queue_time_ms=milliseconds("queue_time"),
+            generation_time_ms=decode,
+            predicted_tokens_per_second=native_meta.get("decode_throughput") or 0,
+            mean_itl_ms=(1000 / native_meta["decode_throughput"]
+                         if (native_meta.get("decode_throughput") or 0) > 0 else None),
+            overall_output_tokens_per_second=(usage.get("completion_tokens", 0) * 1000 / elapsed
+                                              if elapsed and elapsed > 0 else None),
+            draft_tokens=spec.get("spec_num_proposed_drafts"),
+            draft_tokens_accepted=spec.get("spec_num_correct_drafts"),
+            reported_draft_acceptance_rate=spec.get("spec_accept_rate"),
+            mean_acceptance_length=spec.get("spec_accept_length"),
+        )
 
     def fallback_timings():
         rich.print("[italic dim]no timings - TODO what to do in this case?[/]")
