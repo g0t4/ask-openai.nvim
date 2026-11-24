@@ -299,8 +299,7 @@ def parse_timings_from_message(message: dict[str, Any] | None) -> AssistantMessa
 
     # llama-server has timings w/o timings.choices
     # also llama-server doesn't have sglext
-    sglang_choices = timings.get("choices") if isinstance(timings, dict) else None
-    is_llama_server_timings = timings and isinstance(timings, dict) and not sglang_choices and not "sglext" in message
+    is_llama_server_timings = timings and isinstance(timings, dict) and (not "choices" in timings) and (not "sglext" in message)
     if is_llama_server_timings:
         return parse_llama_server_timings(timings)
 
@@ -309,6 +308,7 @@ def parse_timings_from_message(message: dict[str, Any] | None) -> AssistantMessa
         return parse_vllm_message_timings(message)
 
     def try_parse_sglang_message_timings(message):
+        sglang_choices = timings.get("choices") if isinstance(timings, dict) else None
         patched_sglang = isinstance(sglang_choices, list)
         if not patched_sglang:
             return None
