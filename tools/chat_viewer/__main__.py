@@ -137,12 +137,11 @@ EXCLUDED_CONTENT_HASHES: list[str] = [
     "d19df70165c3e1214bfe6ca4fc12c03abf07b1dba26df369f2340e7387e33864",  ## Current directory - dotfiles
     #
     # FIM system prompt
-    "fb1842d9f11887b8a23baf27c8faa6c1ee58ed9047b8b6431ef8b277787dd156", ## You are completing code from a Neovim plugin...
-    "80c4c3b46c1c387c83a08d102d4a89a869b006ed8bf054a6c3217c9dca1d0a49", ## Example: suggest middle of line (cursor has existing code before and after it)
-    "21e6255cbed477f7d444b57093d4a3a5ad517eab0f0c5a65b78ac1cb1033bb07", ## Example: cursor is indented
+    "fb1842d9f11887b8a23baf27c8faa6c1ee58ed9047b8b6431ef8b277787dd156",  ## You are completing code from a Neovim plugin...
+    "80c4c3b46c1c387c83a08d102d4a89a869b006ed8bf054a6c3217c9dca1d0a49",  ## Example: suggest middle of line (cursor has existing code before and after it)
+    "21e6255cbed477f7d444b57093d4a3a5ad517eab0f0c5a65b78ac1cb1033bb07",  ## Example: cursor is indented
     #
     "8d81ff4c004007e887bee0462ab6e1de3d712c62d856c3b004b3771c1784501e",  # Here is context that's automatically provided, that MAY be relevant.
-
 ]
 
 FIM_PREFIX = "<|fim_prefix|>"
@@ -458,9 +457,7 @@ def build_user_auto_rag_matches_message(raw_content: str) -> (bool, TreeWrapper 
 
     # FYI no indentation with RAG matches so just use a root tree and everything is top level (headers differentiate sections)
     root = TreeWrapper.hidden_root()
-    root.add_with_markup(
-        "[dim]Semantic Grep matches:[/]"
-    )
+    root.add_with_markup("[dim]Semantic Grep matches:[/]")
     has_visible_match = add_semantic_grep_markdown_sections(root, raw_content)
 
     if has_visible_match:
@@ -497,7 +494,7 @@ def add_semantic_grep_markdown_sections(root: TreeWrapper, markdown: str) -> boo
             continue
 
         root.add_with_markup(f"🔍 MATCH {file_location}")  # keep the original format!
-        md_fence = "\n".join(lines[1:]).strip("\n") # strip("\n") strips blanks before/after fence indicators (NOT within the code chunk, I do not want within stripping)
+        md_fence = "\n".join(lines[1:]).strip("\n")  # strip("\n") strips blanks before/after fence indicators (NOT within the code chunk, I do not want within stripping)
         root.add(_markdown(md_fence))
         root.blank_line()
         has_visible_match = True
@@ -537,12 +534,13 @@ def load_jsonl_records(path: Path) -> Iterable[dict[str, Any]]:
             _console.print(f"record must be a dict (object)... aborting:")
             _console.print(f"  actual type: {type(record)}")
             _console.print(f"  {record=}")
-            return # stop for now so user sees the problem (not glossed over)
+            return  # stop for now so user sees the problem (not glossed over)
         if not "type" in record:
             _console.print(f"record is missing type:")
             _console.print(f"  {record=}")
             return
         yield record
+
 
 def print_model_info(name: str | None, timings: ModelTimings | None = None) -> None:
     """Print model name and optional timing stats.
@@ -558,7 +556,8 @@ def print_model_info(name: str | None, timings: ModelTimings | None = None) -> N
             _console.print(f"[dim]{stats_line}[/]")
         _console.print()
 
-def get_model_name_from_jsonl_messages(records) -> str|None:
+
+def get_model_name_from_jsonl_messages(records) -> str | None:
     # TODO turn this into a print_model_name so we dont pass it around
     # TODO lets take old formats and wrap them as records too? so I can pass records into the main loop to print messages (and then I can print other recrod info) and long term move to records
     assistant_records = [r for r in records if r["type"] == "message" and r["message"]["role"] == "assistant"]
@@ -732,7 +731,7 @@ def build_empty_user_message(msg):
     return root
 
 
-def build_default_user_message(raw_content: str) -> TreeWrapper|None:
+def build_default_user_message(raw_content: str) -> TreeWrapper | None:
     sections = _split_content_into_sections(raw_content)
     if not sections:
         return None
@@ -764,6 +763,7 @@ def decode_if_json(content):
             return insert_newlines(content)
     # keep w/e type (dict, list, etc... don't care)
     return content
+
 
 def build_semantic_grep_markdown_result(root: TreeWrapper, content: str, request: dict[str, Any] | None = None) -> bool:
     """Render the flattened markdown format (``## file:loc`` + fenced code block)."""
@@ -798,7 +798,7 @@ def build_semantic_grep_result(root: TreeWrapper, content: Any, request: dict[st
 
     return build_semantic_grep_markdown_result(root, content, request) \
         or _unhandled()
-        # or build_semantic_grep_lsp_matches_result(root, content, request) \
+    # or build_semantic_grep_lsp_matches_result(root, content, request) \
 
 
 def _extract_semantic_grep_query(request: dict[str, Any] | None) -> str | None:
@@ -883,7 +883,7 @@ def build_tool_call_requests_by_id(messages: list[dict[str, Any]]) -> dict[str, 
         for call in msg.get("tool_calls", []) or []:
             call_id = call.get("id")
             if call_id:
-                requests_by_id[call_id] = deepcopy(call) # copy so other mods to original don't affect this copy
+                requests_by_id[call_id] = deepcopy(call)  # copy so other mods to original don't affect this copy
     return requests_by_id
 
 
@@ -909,7 +909,7 @@ def build_tool_result_message(
     msg: dict[str, Any],
     color: str,
     requests_by_id: dict[str, dict[str, Any]],
-) -> TreeWrapper|None:
+) -> TreeWrapper | None:
     root = TreeWrapper.hidden_root()
 
     timings = parse_tool_call_timings(msg)
@@ -1068,7 +1068,7 @@ def _add_apply_patch(arguments: str, tree: TreeWrapper):
 
 
 # SYNTAX_THEME = "ansi_dark"
-SYNTAX_THEME = "one-dark" # also try: material, github-dark, night-owl
+SYNTAX_THEME = "one-dark"  # also try: material, github-dark, night-owl
 
 
 def _syntax(source: str, lexer: str) -> Syntax:
@@ -1089,14 +1089,18 @@ def _markdown(source: str):
         source = markdown_tables.pad_tables(source)
     return themed_syntax(source, "markdown", line_numbers=False, word_wrap=True)
 
+
 def _lua(source: str) -> Syntax:
     return themed_syntax(source, "lua", line_numbers=False, word_wrap=True)
+
 
 def _bash(source: str):
     return themed_syntax(source, "bash", line_numbers=False, word_wrap=True)
 
+
 def _diff(source: str) -> Syntax:
     return themed_syntax(source, "diff", line_numbers=False, word_wrap=True)
+
 
 def _commandline_via_bat_high_contrast(
     content: str,
@@ -1331,11 +1335,11 @@ def build_assistant_message(msg: dict, color: str) -> TreeWrapper:
         # fence markers and list markers are dimmed so they recede. The rest
         # is shown verbatim (no rich markup interpretation).
         reasoning_text = style_markdown_text(
-                insert_newlines(reasoning),
-                base_style="bright_black italic",
-                code_style="bold bright_black italic",
-                backtick_style="dim bright_black italic",
-                bold_style="bold bright_black italic",
+            insert_newlines(reasoning),
+            base_style="bright_black italic",
+            code_style="bold bright_black italic",
+            backtick_style="dim bright_black italic",
+            bold_style="bold bright_black italic",
         )
         root.add(_reasoning_row(reasoning_text))
         root.blank_line()
@@ -1404,12 +1408,11 @@ def is_model_input(role: str) -> bool:
     return role in ("user", "user_raw", "tool", "system", "developer")
 
 
-
 def print_message(msg: dict, idx: int, requests_by_id: dict[str, dict[str, Any]], *, full_width: bool = False):
-    msg = deepcopy(msg) # some builders progressively strip the key/value pairs and then use a final generic dump for the rest, so clone first so we don't wipe out the message that we might need to use elsewhere
+    msg = deepcopy(msg)  # some builders progressively strip the key/value pairs and then use a final generic dump for the rest, so clone first so we don't wipe out the message that we might need to use elsewhere
     role = msg.get("role", "").lower()
     display_role = get_display_role(role)
-    icon = role_icon(role) # TODO! decide if keep icon or not
+    icon = role_icon(role)  # TODO! decide if keep icon or not
     title = f"{idx}: {icon} {display_role}"
     if "output.json" in msg:
         title = f"{title} (output.json)"
@@ -1444,7 +1447,7 @@ def render_messages_to_console(console, messages, *, start_index=1, context_mess
     previous_console = _console
     _console = console
     try:
-        requests_by_id = build_tool_call_requests_by_id(
+        requests_by_id = build_tool_call_requests_by_id( \
             messages if context_messages is None else context_messages
         )
         for index, message in enumerate(messages, start=start_index):
@@ -1452,10 +1455,12 @@ def render_messages_to_console(console, messages, *, start_index=1, context_mess
     finally:
         _console = previous_console
 
+
 def show_model_info(model_name):
     if model_name:
         _console.print(f"[dim]Model:[/] [bold]{model_name}[/]")
         _console.print()
+
 
 def render_trace_to_console(console, trace: TraceDTO, *, full_width=False) -> None:
     """Render a full trace to the given rich Console.
@@ -1547,7 +1552,6 @@ args = ChatViewerArgs()
 SHOW_ALL = False
 
 
-
 def main() -> None:
     global _console
     global args
@@ -1555,7 +1559,6 @@ def main() -> None:
     parser = build_parser()
     enable_argcomplete(parser)
     args = parser.parse_args(namespace=ChatViewerArgs())
-
 
     load_preapproved_files()
 
@@ -1581,8 +1584,7 @@ def main() -> None:
     terminal_width = _console.width
     width = min(terminal_width, args.max_width) if args.max_width else terminal_width
     margin = max(0, (terminal_width - width) // 2)
-    _console = Console(file=CenteredOutput(_console.file, margin), width=width,
-                       color_system="truecolor", force_terminal=True)
+    _console = Console(file=CenteredOutput(_console.file, margin), width=width, color_system="truecolor", force_terminal=True)
     render_trace_to_console(_console, trace, full_width=True)
 
 
