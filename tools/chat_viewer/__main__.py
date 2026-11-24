@@ -28,14 +28,13 @@ from tools.chat_viewer.cli import (
     ChatViewerArgs,
     build_parser,
     enable_argcomplete,
-    parse_max_width,
 )
 from tools.chat_viewer.markdown_utils import split_h2_markdown_sections
 from tools.chat_viewer.markdown_inline import style_markdown_text
 from tools.chat_viewer.tree_wrapper import TreeWrapper
 from tools.chat_viewer.run_bash_formatter import commandline_equivalent_for_argv, format_heredoc_stdin
 from tools.chat_viewer.xonsh_formatter import parse_run_xonsh_arguments
-from tools.chat_viewer.timings import ModelTimings, parse_timings, format_stats_line, format_timings_display, _humanize_float, _humanize_int, detect_cache_misses
+from tools.chat_viewer.timings import ModelTimings, parse_timings, format_stats_line
 from tools.chat_viewer.timing_utils import parse_tool_call_timings
 from tools.chat_viewer.theme import (
     header_bar,
