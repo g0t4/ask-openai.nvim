@@ -218,7 +218,7 @@ def parse_vllm_message_timings(message):
     )
 
 
-def try_parse_sglang_message_timings(message):
+def parse_sglang_message_timings(message):
     timings = message.get("timings")
     if not timings or not isinstance(timings, dict):
         return None
@@ -248,8 +248,7 @@ def try_parse_sglang_message_timings(message):
     if not isinstance(usage, dict) or not usage:
         return None
 
-    is_sglang = ("sglext" in message
-                 or bool(native_meta))
+    is_sglang = "sglext" in message or bool(native_meta)
     if not is_sglang:
         return None
 
@@ -363,7 +362,7 @@ def parse_timings_from_message(message: dict[str, Any] | None) -> AssistantMessa
     if backend == "vllm":
         return parse_vllm_message_timings(message)
     if backend == "sglang":
-        return try_parse_sglang_message_timings(message)
+        return parse_sglang_message_timings(message)
 
     # * implicit backend (unique presence of timing fields)
     # llama-server has timings w/o timings.choices
@@ -379,7 +378,7 @@ def parse_timings_from_message(message: dict[str, Any] | None) -> AssistantMessa
     def fallback_timings():
         rich.print("[italic dim]no timings - TODO what to do in this case?[/]")
 
-    return try_parse_sglang_message_timings(message) or fallback_timings()
+    return parse_sglang_message_timings(message) or fallback_timings()
 
 def _humanize_int(value: int) -> str:
     """Format an integer with comma separators for readability.
