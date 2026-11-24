@@ -38,7 +38,9 @@ function M.request_timings_too(generic_body, endpoint_model_info)
     if endpoint_model_info then
         if endpoint_model_info.backend == "vllm" then
             log:info("endpoint_model_info", endpoint_model_info)
-            generic_body.stream_options = { include_usage = true }
+            generic_body = vim.tbl_deep_extend("force", {}, generic_body, {
+                stream_options = { include_usage = true },
+            })
             -- TODO any other fields in vllm?
         elseif endpoint_model_info.backend == "sglang" then
             generic_body = vim.tbl_deep_extend("force", {}, generic_body, {
@@ -48,7 +50,7 @@ function M.request_timings_too(generic_body, endpoint_model_info)
                 -- opt-in, custom final-SSE timing overlay (assume available for all local sglang deployments)
                 return_timings = true,
             })
-        -- elseif endpoint_model_info == "llama-server" then
+            -- elseif endpoint_model_info == "llama-server" then
         else
             -- intended for llama-server only, leave it on as a fallback
             -- TODO do I want this off normally? how heavy of a penalty is this? could I get timings alone w/o the rest? (i.e. raw prompt in last sse?)
