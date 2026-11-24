@@ -76,24 +76,6 @@ Assistant tool calls are expanded in a rich Tree structure:
 - `run_in_neovim` - shows Lua code with syntax highlighting
 - Other tools - shown as JSON key-value pairs in the tree
 
-## Timing Stats
-
-Model info section (print_model_info) displays multi-line timing stats below model name:
-```
-Model: ggml-org/gpt-oss-120b-GGUF
-cached: 11,702 tokens
-in: 342 tokens @ 4,009.5 tok/s
-out: 41 tokens @ 241.6 tok/s
-  draft: 80.8% accepted (101 / 125 tokens)
-```
-
-Stats are parsed from `last_sse.timings` in the trace:
-- `prompt_n` / `predicted_n` - token counts
-- `cache_n` - cached tokens
-- `draft_n` / `draft_n_accepted` - speculative decoding stats
-- `prompt_per_second` / `predicted_per_second` - speed metrics
-- Numbers are humanized with comma separators (e.g., `11,702`)
-
 ## Content Exclusions
 
 - `EXCLUDED_CONTENT_HASHES` - list of SHA-256 hashes to exclude by default
