@@ -227,8 +227,6 @@ def parse_sglang_message_timings(message):
     if not isinstance(timings_choices, list):
         return None
 
-    usage = message.get("usage")
-
     # * attempt to read meta_info off of completion choice objects
     # Usage can aggregate choices. Never attach one choice's timings to that total.
     single_choice = timings_choices[0] if (len(timings_choices) == 1 and isinstance(timings_choices[0], dict)) else {}
@@ -239,6 +237,7 @@ def parse_sglang_message_timings(message):
             native_meta = message_choices[0].get("meta_info") or {}
 
     # * construct synthetic usage from meta_info
+    usage = message.get("usage")
     if not isinstance(usage, dict) and isinstance(native_meta, dict) and "prompt_tokens" in native_meta:
         usage = {"prompt_tokens": native_meta.get("prompt_tokens"),
                  "completion_tokens": native_meta.get("completion_tokens"),
