@@ -287,7 +287,6 @@ def parse_timings_from_message(message: dict[str, Any] | None) -> AssistantMessa
     # when we get to JSONL records it will be record.metadata that holds the timings... and that won't be even close to last_sse so lets drop that name
 
     timings = message.get("timings")
-    sglang_choices = timings.get("choices") if isinstance(timings, dict) else None
 
     # * use response_backend if captured (historically not always captured, going forward it will be)
     backend = message.get("response_backend")
@@ -300,6 +299,7 @@ def parse_timings_from_message(message: dict[str, Any] | None) -> AssistantMessa
 
     # llama-server has timings w/o timings.choices
     # also llama-server doesn't have sglext
+    sglang_choices = timings.get("choices") if isinstance(timings, dict) else None
     is_llama_server_timings = timings and isinstance(timings, dict) and not sglang_choices and not "sglext" in message
     if is_llama_server_timings:
         return parse_llama_server_timings(timings)
