@@ -117,10 +117,8 @@ local MODEL_PATTERNS = {
     --
     -- ALSO, order matters: more specific patterns first
     --
-    -- ggml-org/Qwen3.6-35B-A3B-MTP-GGUF:Q8_0
-    { pattern = "/Qwen3%.6.*%-MTP",     abbrev = "qwen3mtp" },
     -- ggml-org/Qwen3.6-35B-A3B-GGUF:Q8_0
-    { pattern = "/Qwen3%.6",            abbrev = "qwen3" },
+    { pattern = "/Qwen3%.6",            abbrev = "qwen3.6" },
     -- g0t4/Qwen-AgentWorld-35B-A3B-GGUF:Q8_0
     { pattern = "/Qwen%-AgentWorld",    abbrev = "agentworld" },
     -- ggml-org/gpt-oss-120b-GGUF
