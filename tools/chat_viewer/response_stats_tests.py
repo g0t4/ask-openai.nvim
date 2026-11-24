@@ -15,9 +15,9 @@ def test_usage_metrics_render_per_message_summary_and_trace_fallback(monkeypatch
                     "tokens_per_second": 11.7},
     }
     output = StringIO()
+    # FYI this test might be moot now that I removed using last_sse for timings on TraceDTO level (might bring it back on message DTO level)
     viewer.render_trace_to_console(Console(file=output, width=300, color_system=None),
-                                   viewer.TraceDTO(messages=[viewer.TraceMessageDTO.from_dict(response)], model_name="deepseek-v4.1-flash",
-                                                   last_assistant_msg_timings=parse_timings(response)))
+                                   viewer.TraceDTO(messages=[viewer.TraceMessageDTO.from_dict(response)], model_name="deepseek-v4.1-flash",))
     text = output.getvalue()
     assert "overall output" not in text
     assert "TTFT: 118.6 ms" in text
