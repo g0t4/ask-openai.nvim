@@ -269,6 +269,10 @@ def parse_timings_from_message(message: dict[str, Any] | None) -> AssistantMessa
     backend = message.get("response_backend")
     if backend == "llama-server":
         return parse_llama_server_timings(timings)
+    if backend == "vllm":
+        pass # TODO
+    if backend == "sglang":
+        pass # TODO
 
     # llama-server has timings w/o timings.choices
     # also llama-server doesn't have sglext
