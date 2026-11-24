@@ -123,6 +123,7 @@ function parse_sse_v1_chat_completions(sse)
         error("SSE is missing choices - I don't think this ever happens so if it does... then raise hard error")
     end
 
+    log:info("raw sse", sse)
     local sse = values.nil_ify(sse) -- do the full thing here (TODO or somewhere else?) sglang will own you with vim.NIL on like every unused field somehow gets set null egads...
 
     local first_choice = sse.choices[1]

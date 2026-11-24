@@ -190,6 +190,67 @@ def parse_timings(last_sse: dict[str, Any] | None) -> ModelTimings | None:
     if not last_sse:
         return None
 
+    # TODO long term move to record type that contains the message object
+    #   put timing on to the record (not message) object under metadata is fine
+
+    #
+    # links:
+    #   nvim harness - copies timings from last_sse to message in M.copy() in response_metadata.lua#L15-L26
+    #      called here: agents/messages/tx.lua#L137
+    #
+    # timings data:
+    #  * vLLM:
+    #    `usage` and `metrics` (both via stream_options.include_usage)
+    #    nvim harness: ~/repos/github/g0t4/datasets/ask_traces/agents/2026-11/2026-11-24_001/1795500324-trace.json
+    #     .request_body.messages =>
+    #       msg.usage
+    #       msg.metrics
+    #    clanker mode: ~/repos/github/g0t4/datasets/ask_traces/clanker_mode/2026-11/2026-11-23_003/2026-11-23_2254.jsonl
+    #      record.metadata.usage, .metadata.response.token_usage (mostly mirrors usage, is this langchain added?)
+    #      record.metadata.response.metrics
+    #      record.metadata.system_fingerprint (starts w/ vllm)
+    #
+    #  * sglang:
+    #    send true for: stream_options.include_usage, return_timings, return_spec_tokens_details, return_cached_tokens_details
+    #    nvim harness: ~/.local/state/nvim/ask-openai/agents/1795499422-trace.json
+    #     .request_body.messages =>
+    #       msg.usage
+    #       msg.timings.choices[0] - timings/rates
+    #       msg.sglext.spec_tokens_details
+    #     clanker_mode: not setup for multiple backends yet
+    #       TODO
+    #
+    #  * llama-server: `usage` and `timings`
+    #     nvim harness: ~/.local/state/nvim/ask-openai/agents/1794790598-trace.json
+    #       only copying `timings` at this point (IIRC it's there if I wanted to copy it usage too)
+    #     clanker_mode: not setup for multiple backends yet
+    #       TODO
+    #
+    #    vllm's "metrics" https://docs.vllm.ai/en/stable/design/metrics/
+    #       "metrics": {
+    #         "speculative_decoding": {
+    #           "num_spec_steps": 67,
+    #           "num_spec_tokens": 5,
+    #           "num_draft_tokens": 335,
+    #           "mean_acceptance_length": 4.0298507462687,
+    #           "draft_acceptance_rate": 0.60597014925373,
+    #           "num_accepted_draft_tokens": 203,
+    #           "acceptance_histogram": [
+    #             10,
+    #             8,
+    #             6,
+    #             10,
+    #             12,
+    #             21
+    #           ]
+    #         },
+    #         "queue_time_ms": 0.024417000531685,
+    #         "mean_itl_ms": 3.5958748843252,
+    #         "time_to_first_token_ms": 121.27525100368,
+    #         "generation_time_ms": 963.69446899917,
+    #         "tokens_per_second": 247.93318655869
+    #       }
+
     timings = last_sse.get("timings")
     sglang_choices = timings.get("choices") if isinstance(timings, dict) else None
     patched_sglang = isinstance(sglang_choices, list)
