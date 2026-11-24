@@ -602,34 +602,45 @@ def load_trace_messages_from_path(trace_file: Path) -> TraceDTO:
         model_name = get_model_name_from_jsonl_messages(records)
 
         def hack_copy_timings_if_present_to_raw_message(record):
-            if not "clanker_mode" in str(trace_file):
-                print("not ready to support jsonl timings outside of clanker_mode")
-                return TraceMessageDTO.from_dict(record["message"])
-
-            # FYI clanker_mode first is only vllm
             raw_message = record.get("message")
-            # rich.print(record)
+
+            if not "clanker_mode" in str(trace_file):
+                rich.print("[yellow]not ready to support JSON outside clanker_mode[/]")
+                rich.print(record)
+                return raw_message
+
+            # FYI clanker_mode first is only vllm (for now)
+            raw_message["response_backend"] = "vllm" # TODO copy response_backend if set? where will we set it?
+
             # FYI right now clanker_mode uses deepseek v4 flash only which is exclusively vllm
             # we can start with that limitation too
-            if "metadata" in record:
-                metadata = record.get("metadata")
-                # if "usage" in metadata:
-                #     raw_message["usage"] = metadata["usage"]
-                response = metadata.get("response")
-                if response:
-                    # langchain takes openai's `usage` and returns it under `response.token_usage`
-                    # likewise `metrics` is put under `response.metrics` (not renamed in this case)
-                    # then langchain creates a new `usage` by transforming names in `response.token_usage`
-                    # IOTW if I want the original `usage` then take it from `token_usage`
-                    if "token_usage" in response:
-                        raw_message["usage"] = response["token_usage"]
-                    if "metrics" in response:
-                        raw_message["metrics"] = response["metrics"]
-            raw_message["response_backend"] = "vllm"
-            return TraceMessageDTO.from_dict(raw_message)
+            if not "metadata" in record:
+                rich.print("[yellow]missing metadata, cannot find record's timing[/]")
+                rich.print(record)
+                return raw_message
+
+            metadata = record.get("metadata")
+
+            is_langchain = "response" in metadata and "token_usage" in metadata["response"]
+            if not is_langchain:
+                rich.print("[yellow]only JSONL via langchain is supported, cannot find record's timing[/]")
+                rich.print(record)
+                return raw_message
+
+            # FYI metadata["usage"] is langchain's mapping if it was a langchain client (not original openai formatted usage)
+            response = metadata.get("response")
+            # langchain takes openai's `usage` and returns it under `response.token_usage`
+            # likewise `metrics` is put under `response.metrics` (not renamed in this case)
+            # then langchain creates a new `usage` by transforming names in `response.token_usage`
+            # IOTW if I want the original `usage` then take it from `token_usage`
+            if "token_usage" in response:
+                raw_message["usage"] = response["token_usage"]
+            if "metrics" in response:
+                raw_message["metrics"] = response["metrics"]
+            return raw_message
 
         messages = [ \
-            hack_copy_timings_if_present_to_raw_message(r)
+            TraceMessageDTO.from_dict(hack_copy_timings_if_present_to_raw_message(r))
             for r in records
             if "message" in r and "type" in r and r["type"] == "message"
         ]
