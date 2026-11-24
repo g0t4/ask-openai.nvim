@@ -2,7 +2,7 @@
 from io import StringIO
 from rich.console import Console
 from tools.chat_viewer import __main__ as viewer
-from tools.chat_viewer.timings import parse_timings
+from tools.chat_viewer.timings import parse_timings_from_message
 
 
 def test_usage_metrics_render_per_message_summary_and_trace_fallback(monkeypatch):

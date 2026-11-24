@@ -1,7 +1,7 @@
 from io import StringIO
 import re
 from rich.console import Console
-from tools.chat_viewer.timings import parse_timings, detect_cache_misses
+from tools.chat_viewer.timings import parse_timings_from_message, detect_cache_misses
 from tools.chat_viewer.timings_summary import TimingEntry, build_timings_summary, _token_rate
 
 
@@ -11,11 +11,11 @@ def strip_markup(text):
 
 
 def test_vllm_summary_uses_new_input_and_reasoning_split_and_sums_durations():
-    first = parse_timings({'usage': {'prompt_tokens':1000, 'completion_tokens':100,
+    first = parse_timings_from_message({'usage': {'prompt_tokens':1000, 'completion_tokens':100,
         'prompt_tokens_details':{'cached_tokens':800}, 'completion_tokens_details':{'reasoning_tokens':60}},
         'metrics':{'time_to_first_token_ms':200, 'generation_time_ms':990,
                    'speculative_decoding':{'num_draft_tokens':120,'num_accepted_draft_tokens':60,'mean_acceptance_length':3}}})
-    second = parse_timings({'usage': {'prompt_tokens':1300, 'completion_tokens':200,
+    second = parse_timings_from_message({'usage': {'prompt_tokens':1300, 'completion_tokens':200,
         'prompt_tokens_details':{'cached_tokens':1100}, 'completion_tokens_details':{'reasoning_tokens':40}},
         'metrics':{'time_to_first_token_ms':100, 'generation_time_ms':1990}})
     table = build_timings_summary([TimingEntry(1, first), TimingEntry(3, second)], 'vllm', expanded=True)
@@ -45,10 +45,10 @@ def test_vllm_summary_uses_new_input_and_reasoning_split_and_sums_durations():
 
 
 def test_llama_and_vllm_cache_continuity_use_the_same_total_input_math():
-    llama = [parse_timings({'timings':{'cache_n':80,'prompt_n':20,'predicted_n':10}}),
-             parse_timings({'timings':{'cache_n':100,'prompt_n':20,'predicted_n':5}})]
-    vllm = [parse_timings({'usage':{'prompt_tokens':100,'completion_tokens':10,'prompt_tokens_details':{'cached_tokens':80}}}),
-            parse_timings({'usage':{'prompt_tokens':120,'completion_tokens':5,'prompt_tokens_details':{'cached_tokens':100}}})]
+    llama = [parse_timings_from_message({'timings':{'cache_n':80,'prompt_n':20,'predicted_n':10}}),
+             parse_timings_from_message({'timings':{'cache_n':100,'prompt_n':20,'predicted_n':5}})]
+    vllm = [parse_timings_from_message({'usage':{'prompt_tokens':100,'completion_tokens':10,'prompt_tokens_details':{'cached_tokens':80}}}),
+            parse_timings_from_message({'usage':{'prompt_tokens':120,'completion_tokens':5,'prompt_tokens_details':{'cached_tokens':100}}})]
     assert detect_cache_misses(llama)[1] == detect_cache_misses(vllm)[1]
     assert detect_cache_misses(vllm)[1].missing_tokens == -10
     assert detect_cache_misses([llama[0], vllm[1]]) == [None, None]
@@ -57,7 +57,7 @@ def test_llama_and_vllm_cache_continuity_use_the_same_total_input_math():
 
 
 def test_unknown_cache_or_reasoning_does_not_fabricate_new_or_final_counts():
-    stats = parse_timings({'usage':{'prompt_tokens':100,'completion_tokens':20}})
+    stats = parse_timings_from_message({'usage':{'prompt_tokens':100,'completion_tokens':20}})
     table = build_timings_summary([TimingEntry(1, stats)], 'vllm', expanded=True)
     cells = [list(c._cells) for c in table.columns]
     assert [strip_markup(x) for x in cells[1]] == ['—']   # no new-input count
@@ -65,7 +65,7 @@ def test_unknown_cache_or_reasoning_does_not_fabricate_new_or_final_counts():
     assert strip_markup(cells[7][-1]) == ''               # no fabricated final
 
 def test_zero_reasoning_leaves_reasoning_column_blank():
-    stats = parse_timings({'usage':{'prompt_tokens':100,'completion_tokens':50,
+    stats = parse_timings_from_message({'usage':{'prompt_tokens':100,'completion_tokens':50,
         'completion_tokens_details':{'reasoning_tokens':0}}})
     table = build_timings_summary([TimingEntry(1, stats)], 'vllm', expanded=True)
     cells = [list(c._cells) for c in table.columns]
@@ -73,7 +73,7 @@ def test_zero_reasoning_leaves_reasoning_column_blank():
     assert strip_markup(cells[7][0]) == '50'              # all output is final
 
 def test_expanded_only_columns_hidden_by_default():
-    stats = parse_timings({'usage':{'prompt_tokens':100,'completion_tokens':50,
+    stats = parse_timings_from_message({'usage':{'prompt_tokens':100,'completion_tokens':50,
         'completion_tokens_details':{'reasoning_tokens':20}},
         'metrics':{'speculative_decoding':{'num_draft_tokens':120,'num_accepted_draft_tokens':60,'mean_acceptance_length':3}}})
     # without --all the expanded columns are omitted
@@ -87,9 +87,9 @@ def test_expanded_only_columns_hidden_by_default():
         'draft','','accept len','in','out','']
 
 def test_overall_mean_accept_len_is_weighted_by_draft_tokens():
-    first = parse_timings({'usage':{'prompt_tokens':100,'completion_tokens':50},
+    first = parse_timings_from_message({'usage':{'prompt_tokens':100,'completion_tokens':50},
         'metrics':{'speculative_decoding':{'num_draft_tokens':100,'num_accepted_draft_tokens':50,'mean_acceptance_length':2.0}}})
-    second = parse_timings({'usage':{'prompt_tokens':100,'completion_tokens':50},
+    second = parse_timings_from_message({'usage':{'prompt_tokens':100,'completion_tokens':50},
         'metrics':{'speculative_decoding':{'num_draft_tokens':300,'num_accepted_draft_tokens':150,'mean_acceptance_length':4.0}}})
     table = build_timings_summary([TimingEntry(1, first), TimingEntry(2, second)], 'vllm', expanded=True)
     cells = [list(c._cells) for c in table.columns]

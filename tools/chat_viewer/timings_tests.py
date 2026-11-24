@@ -8,7 +8,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
 from tools.chat_viewer.timings import (
     AssistantMessageTimingsDTO,
-    parse_timings,
+    parse_timings_from_message,
     format_stats_line,
     _humanize_int,
     _humanize_float,
@@ -56,7 +56,7 @@ def test_parse_timings_basic() -> None:
         }
     }
 
-    timings = parse_timings(last_sse)
+    timings = parse_timings_from_message(last_sse)
 
     assert timings is not None
     assert timings.prompt_tokens == 129
@@ -82,7 +82,7 @@ def test_parse_timings_with_draft() -> None:
         }
     }
 
-    timings = parse_timings(last_sse)
+    timings = parse_timings_from_message(last_sse)
 
     assert timings is not None
     assert timings.draft_tokens == 125
@@ -91,17 +91,17 @@ def test_parse_timings_with_draft() -> None:
 
 def test_parse_timings_no_timings() -> None:
     """Test that None is returned when timings data is missing."""
-    assert parse_timings(None) is None
-    assert parse_timings({}) is None
-    assert parse_timings({"model": "test"}) is None
-    assert parse_timings({"timings": None}) is None
-    assert parse_timings({"timings": {}}) is None
+    assert parse_timings_from_message(None) is None
+    assert parse_timings_from_message({}) is None
+    assert parse_timings_from_message({"model": "test"}) is None
+    assert parse_timings_from_message({"timings": None}) is None
+    assert parse_timings_from_message({"timings": {}}) is None
 
 
 def test_parse_timings_empty_timings() -> None:
     """Test parsing when timings dict is empty returns None."""
     last_sse = {"timings": {}}
-    timings = parse_timings(last_sse)
+    timings = parse_timings_from_message(last_sse)
 
     # Empty timings dict should return None
     assert timings is None
@@ -116,7 +116,7 @@ def test_parse_timings_missing_cache() -> None:
         }
     }
 
-    timings = parse_timings(last_sse)
+    timings = parse_timings_from_message(last_sse)
 
     assert timings is not None
     assert timings.cached_tokens is None
@@ -485,7 +485,7 @@ def test_vllm_usage_metrics_keep_distinct_semantics() -> None:
                                              "draft_acceptance_rate": 0.2, "mean_acceptance_length": 2}},
     }
     original = deepcopy(response)
-    parsed = parse_timings(response)
+    parsed = parse_timings_from_message(response)
     assert parsed is not None
     assert parsed.context_tokens == 120
     assert parsed.prompt_tokens_per_second == 0  # unavailable, never derived from TTFT
@@ -500,7 +500,7 @@ def test_vllm_usage_metrics_keep_distinct_semantics() -> None:
 
 
 def test_vllm_null_metrics_still_show_usage() -> None:
-    parsed = parse_timings({"usage": {"prompt_tokens": 6, "completion_tokens": 2,
+    parsed = parse_timings_from_message({"usage": {"prompt_tokens": 6, "completion_tokens": 2,
                                      "prompt_tokens_details": None}, "metrics": None})
     assert parsed is not None
     text = format_stats_line(parsed)
@@ -513,14 +513,14 @@ def test_vllm_null_metrics_still_show_usage() -> None:
 
 def test_vllm_cache_is_not_compared_with_llama_cache() -> None:
     llama = AssistantMessageTimingsDTO(prompt_tokens=100, predicted_tokens=20, cached_tokens=80)
-    vllm = parse_timings({"usage": {"prompt_tokens": 100, "completion_tokens": 20,
+    vllm = parse_timings_from_message({"usage": {"prompt_tokens": 100, "completion_tokens": 20,
                                   "prompt_tokens_details": {"cached_tokens": 80}}})
     assert vllm is not None
     assert detect_cache_misses([llama, vllm, llama]) == [None, None, None]
 
 
 def test_vllm_null_optional_metrics_do_not_fabricate_values() -> None:
-    parsed = parse_timings({
+    parsed = parse_timings_from_message({
         "usage": {"prompt_tokens": 6, "completion_tokens": 2,
                   "prompt_tokens_details": None, "completion_tokens_details": None},
         "metrics": {"time_to_first_token_ms": None, "mean_itl_ms": None,
@@ -535,7 +535,7 @@ def test_vllm_null_optional_metrics_do_not_fabricate_values() -> None:
 
 
 def test_vllm_rates_are_estimates_using_uncached_input_and_n_minus_one_output() -> None:
-    parsed = parse_timings({
+    parsed = parse_timings_from_message({
         "usage": {"prompt_tokens": 100, "completion_tokens": 11,
                   "prompt_tokens_details": {"cached_tokens": 80}},
         "metrics": {"time_to_first_token_ms": 200, "generation_time_ms": 1000, "mean_itl_ms": 100},
@@ -578,7 +578,7 @@ def test_vllm_output_details_nested_and_zero_noise_hidden() -> None:
                                 "mean_acceptance_length": 2}},
             }
             original = deepcopy(response)
-            text = format_stats_line(parse_timings(response))
+            text = format_stats_line(parse_timings_from_message(response))
             assert ("queue:" in text) == (queue is not None and queue >= 0.05)
             assert ("reasoning:" in text) == (reasoning == 7)
             if reasoning:
@@ -596,7 +596,7 @@ def test_sglang_openai_extensions_and_native_metadata_are_verbatim():
         'sglext':{'spec_tokens_details':{'spec_num_correct_drafts':12,'spec_num_proposed_drafts':18,
                                        'spec_accept_rate':2/3,'spec_accept_length':8/3}}}
     original = deepcopy(response)
-    stats = parse_timings(response)
+    stats = parse_timings_from_message(response)
     assert stats.backend == 'sglang'
     assert stats.uncached_prompt_tokens == 20
     assert stats.reasoning_tokens == 7
@@ -609,17 +609,17 @@ def test_sglang_openai_extensions_and_native_metadata_are_verbatim():
     assert 'in: 20' in text and 'reasoning: 7' in text and '67%' in text
     assert 'TTFT' not in text and 'tok/s' not in text and 'overall' not in text
     assert response == original
-    assert parse_timings({'meta_info':{'prompt_tokens':100,'completion_tokens':20,'cached_tokens':80}}).uncached_prompt_tokens == 20
+    assert parse_timings_from_message({'meta_info':{'prompt_tokens':100,'completion_tokens':20,'cached_tokens':80}}).uncached_prompt_tokens == 20
     # Never attribute a multi-choice speculative array to a single assistant.
     response['sglext']['spec_tokens_details'] = [original['sglext']['spec_tokens_details']] * 2
-    assert parse_timings(response).draft_tokens is None
+    assert parse_timings_from_message(response).draft_tokens is None
 
 
 def test_sglang_final_sse_timings_and_usage():
     import json
     from pathlib import Path
     event = json.loads((Path(__file__).parent / 'fixtures/sglang-sse-timings.json').read_text())
-    stats = parse_timings(event)
+    stats = parse_timings_from_message(event)
     assert stats.backend == 'sglang'
     assert stats.input_tokens == 1000 and stats.uncached_prompt_tokens == 200
     assert stats.time_to_first_token_ms == 400 and stats.queue_time_ms == 10
@@ -631,11 +631,11 @@ def test_sglang_final_sse_timings_and_usage():
     display = format_stats_line(stats)
     assert '200.0 tok/s' in display and '400.0 ms' in display
     del event['usage']
-    stats = parse_timings(event)
+    stats = parse_timings_from_message(event)
     assert stats.backend == 'sglang' and stats.predicted_tokens == 101
     event['timings']['choices'].append(dict(event['timings']['choices'][0], index=1))
     event['usage'] = {'prompt_tokens': 1000, 'completion_tokens': 202}
-    stats = parse_timings(event)
+    stats = parse_timings_from_message(event)
     assert stats.backend == 'sglang' and stats.predicted_tokens == 202
     assert stats.time_to_first_token_ms is None
     assert stats.estimated_decode_tokens_per_second is None

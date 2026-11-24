@@ -179,7 +179,7 @@ def detect_cache_misses(
     return states
 
 
-def parse_timings(message: dict[str, Any] | None) -> AssistantMessageTimingsDTO | None:
+def parse_timings_from_message(message: dict[str, Any] | None) -> AssistantMessageTimingsDTO | None:
     """Extract timing information"""
     if not message:
         return None
