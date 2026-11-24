@@ -1554,7 +1554,11 @@ def render_trace_to_console(console, trace: TraceDTO, *, full_width=False) -> No
             summaries.setdefault(stats.backend, []).append(TimingEntry(message_number=message_number, timings=stats))
     names = {"llama-server": "llama-server", "vllm": "vLLM", "sglang": "SGLang"}
     for backend, entries in summaries.items():
-        title = f"{names.get(backend, backend)} assistant timings"
+        model_name = trace.model_name
+        if model_name is None or model_name.strip() == "":
+            model_name = "(unnamed model)"
+        title = f"{names.get(backend, backend)} + {model_name} timings"
+
         color = "#77c676"
         # color = "#7677c6"
         # color = "#b576c6"
