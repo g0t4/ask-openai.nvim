@@ -325,9 +325,9 @@ def parse_timings_from_message(message: dict[str, Any] | None) -> AssistantMessa
         single_choice = timings_choices[0] if (len(timings_choices) == 1 and isinstance(timings_choices[0], dict)) else {}
         native_meta = single_choice or message.get("meta_info") or {}
         if not native_meta and isinstance(message.get("choices"), list):
-            choices = message["choices"]
-            if len(choices) == 1 and isinstance(choices[0], dict):
-                native_meta = choices[0].get("meta_info") or {}
+            message_choices = message["choices"]
+            if len(message_choices) == 1 and isinstance(message_choices[0], dict):
+                native_meta = message_choices[0].get("meta_info") or {}
 
         # * construct synthetic usage from meta_info
         if not isinstance(usage, dict) and isinstance(native_meta, dict) and "prompt_tokens" in native_meta:
