@@ -1,7 +1,7 @@
 """Parse and format model inference timings from trace data."""
 
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Literal
 
 
 @dataclass
@@ -17,8 +17,7 @@ class ModelTimings:
     predicted_ms: float = 0.0
     prompt_tokens_per_second: float = 0.0
     predicted_tokens_per_second: float = 0.0
-
-    backend: str = "llama-server"
+    backend: Literal["llama-server"] | Literal["vllm"] | Literal["sglang"] = "llama-server"
     time_to_first_token_ms: float | None = None
     queue_time_ms: float | None = None
     generation_time_ms: float | None = None
@@ -259,18 +258,23 @@ def parse_timings(last_sse: dict[str, Any] | None) -> ModelTimings | None:
                      and isinstance(sglang_choices[0], dict) else {})
     if patched_sglang or not timings or not isinstance(timings, dict):
         usage = last_sse.get("usage")
+
+        # IIUC meta_info is sglang for non-streaming completions only
         native_meta = single_choice or last_sse.get("meta_info") or {}
         if not native_meta and isinstance(last_sse.get("choices"), list):
             choices = last_sse["choices"]
             if len(choices) == 1 and isinstance(choices[0], dict):
                 native_meta = choices[0].get("meta_info") or {}
+
         if not isinstance(usage, dict) and isinstance(native_meta, dict) and "prompt_tokens" in native_meta:
             usage = {"prompt_tokens": native_meta.get("prompt_tokens"),
                      "completion_tokens": native_meta.get("completion_tokens"),
                      "prompt_tokens_details": {"cached_tokens": native_meta.get("cached_tokens")},
                      "reasoning_tokens": native_meta.get("reasoning_tokens")}
+
         if not isinstance(usage, dict) or not usage:
             return None
+
         metrics = last_sse.get("metrics") or {}
         prompt_details = usage.get("prompt_tokens_details") or {}
         completion_details = usage.get("completion_tokens_details") or {}
@@ -324,6 +328,7 @@ def parse_timings(last_sse: dict[str, Any] | None) -> ModelTimings | None:
         )
 
     return ModelTimings(
+        backend = "llama-server", # default, still make it explicit here
         prompt_tokens=timings.get("prompt_n", 0),
         predicted_tokens=timings.get("predicted_n", 0),
         cached_tokens=timings.get("cache_n"),
