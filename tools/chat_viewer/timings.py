@@ -339,26 +339,29 @@ def parse_timings_from_message(message: dict[str, Any] | None) -> AssistantMessa
                 mean_acceptance_length=spec.get("spec_accept_length"),
             )
 
-        usage = message.get("usage")
-        metrics = message.get("metrics") or {}
-        speculative = metrics.get("speculative_decoding") or {}
-        completion_details = usage.get("completion_tokens_details") or {}
-        return AssistantMessageTimingsDTO(
-            backend="vllm",
-            prompt_tokens=usage.get("prompt_tokens") or 0,
-            predicted_tokens=usage.get("completion_tokens") or 0,
-            cached_tokens=prompt_details.get("cached_tokens"),
-            reasoning_tokens=completion_details.get("reasoning_tokens"),
-            time_to_first_token_ms=metrics.get("time_to_first_token_ms"),
-            queue_time_ms=metrics.get("queue_time_ms"),
-            generation_time_ms=metrics.get("generation_time_ms"),
-            mean_itl_ms=metrics.get("mean_itl_ms"),
-            overall_output_tokens_per_second=metrics.get("tokens_per_second"),
-            draft_tokens=speculative.get("num_draft_tokens"),
-            draft_tokens_accepted=speculative.get("num_accepted_draft_tokens"),
-            reported_draft_acceptance_rate=speculative.get("draft_acceptance_rate"),
-            mean_acceptance_length=speculative.get("mean_acceptance_length"),
-        )
+        def parse_vllm_message_timings(message):
+            metrics = message.get("metrics") or {}
+            speculative = metrics.get("speculative_decoding") or {}
+            usage = message.get("usage")
+            completion_details = usage.get("completion_tokens_details") or {}
+            prompt_details = usage.get("prompt_tokens_details") or {}
+            return AssistantMessageTimingsDTO(
+                backend="vllm",
+                prompt_tokens=usage.get("prompt_tokens") or 0,
+                predicted_tokens=usage.get("completion_tokens") or 0,
+                cached_tokens=prompt_details.get("cached_tokens"),
+                reasoning_tokens=completion_details.get("reasoning_tokens"),
+                time_to_first_token_ms=metrics.get("time_to_first_token_ms"),
+                queue_time_ms=metrics.get("queue_time_ms"),
+                generation_time_ms=metrics.get("generation_time_ms"),
+                mean_itl_ms=metrics.get("mean_itl_ms"),
+                overall_output_tokens_per_second=metrics.get("tokens_per_second"),
+                draft_tokens=speculative.get("num_draft_tokens"),
+                draft_tokens_accepted=speculative.get("num_accepted_draft_tokens"),
+                reported_draft_acceptance_rate=speculative.get("draft_acceptance_rate"),
+                mean_acceptance_length=speculative.get("mean_acceptance_length"),
+            )
+        parse_vllm_message_timings(message)
 
     # raise ValueError("unexpected error mapping timings")
     rich.print("[red]no timings - TODO what to do in this case?[/]") # TODO IIAC this is just a non event
