@@ -294,7 +294,7 @@ def parse_timings_from_message(message: dict[str, Any] | None) -> AssistantMessa
     if backend == "llama-server":
         return parse_llama_server_timings(timings)
     if backend == "vllm":
-        pass # TODO
+        return parse_vllm_message_timings(message)
     if backend == "sglang":
         pass # TODO
 
