@@ -34,7 +34,7 @@ from tools.chat_viewer.markdown_inline import style_markdown_text
 from tools.chat_viewer.tree_wrapper import TreeWrapper
 from tools.chat_viewer.run_bash_formatter import commandline_equivalent_for_argv, format_heredoc_stdin
 from tools.chat_viewer.xonsh_formatter import parse_run_xonsh_arguments
-from tools.chat_viewer.timings import ModelTimings, parse_timings, format_stats_line
+from tools.chat_viewer.timings import ModelTimingsDTO, parse_timings, format_stats_line
 from tools.chat_viewer.timing_utils import parse_tool_call_timings
 from tools.chat_viewer.theme import (
     header_bar,
@@ -577,7 +577,7 @@ def load_jsonl_records(path: Path) -> Iterable[dict[str, Any]]:
         yield record
 
 
-def print_model_info(name: str | None, timings: ModelTimings | None = None) -> None:
+def print_model_info(name: str | None, timings: ModelTimingsDTO | None = None) -> None:
     """Print model name and optional timing stats.
 
     Args:

@@ -7,7 +7,7 @@ import rich
 
 
 @dataclass
-class ModelTimings:
+class ModelTimingsDTO:
     """Parsed timing information from a model inference response."""
 
     prompt_tokens: int = 0
@@ -124,7 +124,7 @@ class CacheState:
         return _humanize_int(self.missing_tokens)
 
 
-def expected_next_cache(prev: ModelTimings) -> int | None:
+def expected_next_cache(prev: ModelTimingsDTO) -> int | None:
     """Expected ``cache_n`` for the request following ``prev``'s generation.
 
     Use total input (cached plus new), so OpenAI prompt usage is not double counted.
@@ -141,7 +141,7 @@ def expected_next_cache(prev: ModelTimings) -> int | None:
 
 
 def detect_cache_misses(
-    timings_list: list[ModelTimings], tolerance: int = 1
+    timings_list: list[ModelTimingsDTO], tolerance: int = 1
 ) -> list[CacheState | None]:
     """Compare each generation's cache against the prior generation's state.
 
@@ -157,7 +157,7 @@ def detect_cache_misses(
         cache data is unavailable on either side.
     """
     states: list[CacheState | None] = []
-    prev: ModelTimings | None = None
+    prev: ModelTimingsDTO | None = None
     for timings in timings_list:
         if prev is None or timings.backend != prev.backend:
             states.append(None)
@@ -179,7 +179,7 @@ def detect_cache_misses(
     return states
 
 
-def parse_timings(message: dict[str, Any] | None) -> ModelTimings | None:
+def parse_timings(message: dict[str, Any] | None) -> ModelTimingsDTO | None:
     """Extract timing information"""
     if not message:
         return None
@@ -245,7 +245,8 @@ def parse_timings(message: dict[str, Any] | None) -> ModelTimings | None:
     #         "tokens_per_second": 247.93318655869
     #       }
 
-    # TODO move away from using last_sse entirely? this is messy as F and not that critical to keep historically
+    # FYI in the past `message` was very close to `last_sse`
+    # when we get to JSONL records it will be record.metadata that holds the timings... and that won't be even close to last_sse so lets drop that name
     timings = message.get("timings")
     sglang_choices = timings.get("choices") if isinstance(timings, dict) else None
 
@@ -255,7 +256,7 @@ def parse_timings(message: dict[str, Any] | None) -> ModelTimings | None:
     # also llama-server doesn't have sglext
     is_llama_server = timings and isinstance(timings, dict) and not sglang_choices and not "sglext" in message
     if is_llama_server:
-        return ModelTimings(
+        return ModelTimingsDTO(
             backend = "llama-server", # default, still make it explicit here
             prompt_tokens=timings.get("prompt_n", 0),
             predicted_tokens=timings.get("predicted_n", 0),
@@ -311,7 +312,7 @@ def parse_timings(message: dict[str, Any] | None) -> ModelTimings | None:
             # Multiple choices have distinct speculative stats; don't pick one.
             if not isinstance(spec, dict):
                 spec = {}
-            return ModelTimings(
+            return ModelTimingsDTO(
                 backend="sglang", prompt_tokens=usage.get("prompt_tokens") or 0,
                 predicted_tokens=usage.get("completion_tokens") or 0,
                 cached_tokens=prompt_details.get("cached_tokens", native_meta.get("cached_tokens")),
@@ -328,7 +329,7 @@ def parse_timings(message: dict[str, Any] | None) -> ModelTimings | None:
                 reported_draft_acceptance_rate=spec.get("spec_accept_rate"),
                 mean_acceptance_length=spec.get("spec_accept_length"),
             )
-        return ModelTimings(
+        return ModelTimingsDTO(
             backend="vllm",
             prompt_tokens=usage.get("prompt_tokens") or 0,
             predicted_tokens=usage.get("completion_tokens") or 0,
@@ -369,7 +370,7 @@ def _humanize_float(value: float, decimals: int = 1) -> str:
     return f"{value:,.{decimals}f}"
 
 
-def format_timings_display(timings: ModelTimings | None) -> str:
+def format_timings_display(timings: ModelTimingsDTO | None) -> str:
     """Format timings for display under the model name.
 
     Args:
@@ -407,7 +408,7 @@ def format_timings_display(timings: ModelTimings | None) -> str:
     return " | ".join(parts)
 
 
-def format_stats_line(timings: ModelTimings | None, color: str = "dim") -> str:
+def format_stats_line(timings: ModelTimingsDTO | None, color: str = "dim") -> str:
     """Format multi-line stats for display (similar to AskRewrite format).
 
     Args:

@@ -3,7 +3,7 @@ from dataclasses import dataclass
 
 import rich
 from rich.table import Table
-from .timings import ModelTimings, detect_cache_misses
+from .timings import ModelTimingsDTO, detect_cache_misses
 
 
 @dataclass(frozen=True)
@@ -11,7 +11,7 @@ class TimingEntry:
     """A single assistant timing row, keyed by its message number in the trace."""
 
     message_number: int
-    timings: ModelTimings
+    timings: ModelTimingsDTO
 
 
 def _count(value):
