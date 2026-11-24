@@ -1,3 +1,5 @@
+local log = require("devtools.logs.logger").universal()
+
 -- Preserve server fields without translating their units or semantics.
 local M = {}
 
@@ -18,9 +20,12 @@ function M.copy(sse, message)
             message[field] = sse[field]
         end
     end
-    if type(sse.sglext) == "table" or type(sse.meta_info) == "table"
-        or (type(sse.usage) == "table" and sse.usage.reasoning_tokens ~= nil) then
+    if type(sse.sglext) == "table" or type(sse.meta_info) == "table" then
         message.response_backend = "sglang"
+    elseif type(sse.metrics) == "table" and sse.system_fingerprint and sse.system_fingerprint:find("^vllm") then
+        message.response_backend = "vllm"
+    elseif type(sse.timings) == "table" then
+        message.response_backend = "llama-server"
     end
 end
 
