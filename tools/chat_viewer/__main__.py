@@ -189,6 +189,8 @@ class TraceDTO:
 
     messages: list[TraceMessageDTO]
     model_name: str | None = None
+    # FYI this `timings` is just last_assistant_timings... I don't care about supporting this right now... if I do, I can move this into loader logic that maps this to the last assistant message object (raw/DTO)... tracking it here is super confusing, especially plural timings
+    #   nice thing about this DTO is it brought out this oddity!
     timings: ModelTimings | None = None
 
 
