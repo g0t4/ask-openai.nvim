@@ -368,7 +368,7 @@ def parse_timings_from_message(message: dict[str, Any] | None) -> AssistantMessa
                 )
 
     def fallback_timings():
-        rich.print("[red]no timings - TODO what to do in this case?[/]")
+        rich.print("[italic dim]no timings - TODO what to do in this case?[/]")
 
     return try_parse_sglang_message_timings(message) or fallback_timings()
 
