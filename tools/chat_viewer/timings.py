@@ -353,7 +353,7 @@ def parse_timings_from_message(message: dict[str, Any] | None) -> AssistantMessa
 
     timings = message.get("timings")
 
-    # * explicit backend
+    # * explicit backend (only allow explicit backend to parse timing, else None)
     # * use response_backend if captured (historically not always captured, going forward it will be)
     backend = message.get("response_backend")
     if backend == "llama-server":
