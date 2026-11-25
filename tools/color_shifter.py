@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 """
-Interactive color shifter for two colors.
+Interactive color shifter for a list of colors.
+
+Add or remove entries in COLORS to change which colors you can shift.
 
 Controls:
     Up        +step lightness
     Down      -step lightness
     Right     +step saturation
     Left      -step saturation
-    Tab / t   toggle selected color
-    1         select IN_HUE
-    2         select OUT_HUE
+    Tab / t   cycle to next color
+    1-9       select the Nth color
     s         toggle step (10% <-> 5%)
     [         step -1   (min 1)
     ]         step +1   (max 100)
@@ -24,8 +25,11 @@ import colorsys
 import shutil
 
 
-IN_DEFAULT = "#acadcf"
-OUT_DEFAULT = "#cfacb4"
+# (name, default hex) pairs; add or remove entries to taste.
+COLORS = [
+    ("IN_HUE", "#acadcf"),
+    ("OUT_HUE", "#cfacb4"),
+]
 STEP = 10
 
 
@@ -98,18 +102,17 @@ def read_key():
     return ch
 
 
-def draw(in_color, out_color, active, step):
+def draw(colors, active, step):
     print(clear, end="")
     cols = term_cols()
-    title = trunc("Color Shifter  —  IN_HUE / OUT_HUE  (foreground color only)".strip(), cols - 1)
+    title = trunc("Color Shifter  —  {} colors  (foreground color only)".format(len(colors)).strip(), cols - 1)
     emit(bold + " " + title + reset)
-    help_ = trunc(" ↑/↓ lightness ±{}%   ←/→ saturation ±{}%   Tab/t switch   s 5/10   [ ] +/-1 step:{}   r reset   q quit".format(step, step, step), cols - 1)
+    help_ = trunc(" ↑/↓ lightness ±{}%   ←/→ saturation ±{}%   Tab/t cycle   s 5/10   [ ] +/-1 step:{}   r reset   q quit".format(step, step, step), cols - 1)
     emit(help_)
     emit()
 
-    selected = [in_color, out_color][active]
-    for color in (in_color, out_color):
-        marker = ">" if color is selected else " "
+    for index, color in enumerate(colors):
+        marker = ">" if index == active else " "
         r, g, b = color.rgb()
         # Foreground color only; strip leading/trailing whitespace from the label.
         plain = "{} {}  {}  H{} S{} L{}".format(
@@ -121,8 +124,11 @@ def draw(in_color, out_color, active, step):
 
 
 def main():
-    in_color = Color("IN_HUE", IN_DEFAULT)
-    out_color = Color("OUT_HUE", OUT_DEFAULT)
+    if not COLORS:
+        print("No colors defined in COLORS.")
+        return
+
+    colors = [Color(name, default) for name, default in COLORS]
     active = 0
     step = STEP
 
@@ -134,10 +140,10 @@ def main():
     old = termios.tcgetattr(fd)
     try:
         tty.setraw(fd)
-        draw(in_color, out_color, active, step)
+        draw(colors, active, step)
         while True:
             key = read_key()
-            selected = (in_color, out_color)[active]
+            selected = colors[active]
             change = False
             if key == "up":
                 selected.l = clamp(selected.l + step)
@@ -152,14 +158,13 @@ def main():
                 selected.s = clamp(selected.s - step)
                 change = True
             elif key in ("\t", "t", "T"):
-                active = 1 - active
+                active = (active + 1) % len(colors)
                 change = True
-            elif key == "1":
-                active = 0
-                change = True
-            elif key == "2":
-                active = 1
-                change = True
+            elif key in ("1", "2", "3", "4", "5", "6", "7", "8", "9"):
+                index = int(key) - 1
+                if index < len(colors):
+                    active = index
+                    change = True
             elif key in ("s", "S"):
                 step = 5 if step == 10 else 10
                 change = True
@@ -175,12 +180,13 @@ def main():
             elif key in ("q", "Q", "\x03"):
                 break
             if change:
-                draw(in_color, out_color, active, step)
+                draw(colors, active, step)
     finally:
         termios.tcsetattr(fd, termios.TCSADRAIN, old)
 
     emit(reset)
-    emit("IN_HUE = " + in_color.hex().strip())
+    for color in colors:
+        emit("{} = {}".format(color.name, color.hex()))
 
 
 if __name__ == "__main__":
