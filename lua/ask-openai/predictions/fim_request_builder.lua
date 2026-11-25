@@ -93,59 +93,59 @@ function FimRequestBuilder:fim_request()
     local base_url = config.get_endpoints()[model].base_url
     local endpoint_model_info = discovery.get(base_url)
     -- log:info("endpoint_model_info", endpoint_model_info)
-    local curl_params = CurlParamsBuilder:new(base_url)
-    curl_params.body = params.request_timings_too(curl_params.body, endpoint_model_info)
-    curl_params.body.stream = true
+    local curl = CurlParamsBuilder:new(base_url)
+    curl.body = params.request_timings_too(curl.body, endpoint_model_info)
+    curl.body.stream = true
     if logging_tokens.SHOW_PROBABILITIES then
         -- how much overhead does this add?
-        curl_params.body.logprobs = true
-        curl_params.body.post_sampling_probs = true -- map to 0 to 1.0 (appears to truncate anything that ~0 for probability
+        curl.body.logprobs = true
+        curl.body.post_sampling_probs = true -- map to 0 to 1.0 (appears to truncate anything that ~0 for probability
         --  whereas if you turn off post_sampling_probs=false => will include very low probability tokens too and not normalize values
-        curl_params.body.top_logprobs = 5
+        curl.body.top_logprobs = 5
     end
 
     if string.find(model, "codellama") then
-        curl_params:set_raw_completions()
+        curl:set_raw_completions()
 
         -- codellama uses (codellama.EOT) that seems to not be set as param in modelfile (at least for FIM?)
         --   without this change you will see (codellama.EOT) in code at end of completions
-        curl_params.body.options.stop = { meta.codellama.sentinel_tokens.EOT }
-        curl_params.body.prompt = meta.codellama.get_fim_prompt(self)
+        curl.body.options.stop = { meta.codellama.sentinel_tokens.EOT }
+        curl.body.prompt = meta.codellama.get_fim_prompt(self)
 
         error("review FIM requirements for codellama, make sure you are using expected template, it used to work with qwen like FIM but I changed that to repo level now and would need to test it")
     elseif string.find(model, "Mellum") then
-        curl_params:set_raw_completions()
-        -- curl_params.body.options.stop = {
+        curl:set_raw_completions()
+        -- curl.body.options.stop = {
         --     fim.mellum.sentinel_tokens.EOS_TOKEN,
         --     fim.mellum.sentinel_tokens.FILE_SEP
         -- }
-        curl_params.body.prompt = fim.mellum.get_fim_prompt(self)
+        curl.body.prompt = fim.mellum.get_fim_prompt(self)
     elseif string.find(model, "starcoder2") then
-        curl_params:set_raw_completions()
-        curl_params.body.prompt = fim.starcoder2.get_fim_prompt(self)
+        curl:set_raw_completions()
+        curl.body.prompt = fim.starcoder2.get_fim_prompt(self)
     elseif string.find(model, "qwen3coder", nil, true) then
-        curl_params:set_raw_completions()
-        curl_params.body.prompt = fim.qwen25coder.get_fim_prompt(self)
+        curl:set_raw_completions()
+        curl.body.prompt = fim.qwen25coder.get_fim_prompt(self)
 
-        curl_params.body.temperature = 0.7
-        curl_params.body.repeat_penalty = 1.05
-        curl_params.body.top_p = 0.8
-        curl_params.body.top_k = 20
+        curl.body.temperature = 0.7
+        curl.body.repeat_penalty = 1.05
+        curl.body.top_p = 0.8
+        curl.body.top_k = 20
     elseif string.find(model, "qwen", nil, true) then
-        curl_params:set_raw_completions()
-        curl_params.body.prompt = fim.qwen25coder.get_fim_prompt(self)
+        curl:set_raw_completions()
+        curl.body.prompt = fim.qwen25coder.get_fim_prompt(self)
         local level = config.get_fim_reasoning_level()
         if level ~= "off" then
             log:warn("qwen FIM style does not support thinking, OFF is only logical value.. if you setup chat completions style with qwen3 then you can have thinking")
         end
     elseif string.find(model, "bytedance-seed-coder-8b", nil, true) then
-        curl_params:set_raw_completions()
-        curl_params.body.prompt = fim.qwen25coder.get_fim_prompt(self) -- WORKS FOR repo level using qwen's format entirely! (plus set qwen's stop_tokens to avoid rambles / trailing stop tokens)
-        -- curl_params.body.prompt = fim.bytedance_seed_coder.get_fim_prompt_file_level_only(self) -- WORKS well for file level using its own SPM format
-        -- curl_params.body.prompt = fim.bytedance_seed_coder.get_fim_prompt_repo_level(self)
+        curl:set_raw_completions()
+        curl.body.prompt = fim.qwen25coder.get_fim_prompt(self) -- WORKS FOR repo level using qwen's format entirely! (plus set qwen's stop_tokens to avoid rambles / trailing stop tokens)
+        -- curl.body.prompt = fim.bytedance_seed_coder.get_fim_prompt_file_level_only(self) -- WORKS well for file level using its own SPM format
+        -- curl.body.prompt = fim.bytedance_seed_coder.get_fim_prompt_repo_level(self)
         -- MUST set qwent's tokens as stop tokens too (when using Qwen's repo level fim format)
-        curl_params.body.stop = fim.bytedance_seed_coder.qwen_sentinels.fim_stop_tokens_from_qwen25_coder -- llama-server /completions endpoint uses top-level stop
-        curl_params.body.options.stop = fim.bytedance_seed_coder.qwen_sentinels.fim_stop_tokens_from_qwen25_coder
+        curl.body.stop = fim.bytedance_seed_coder.qwen_sentinels.fim_stop_tokens_from_qwen25_coder -- llama-server /completions endpoint uses top-level stop
+        curl.body.options.stop = fim.bytedance_seed_coder.qwen_sentinels.fim_stop_tokens_from_qwen25_coder
     elseif model == models.GPTOSS
         or model == models.GEMMA4
         or model == models.GLM
@@ -154,39 +154,39 @@ function FimRequestBuilder:fim_request()
         or model == models.INKLING2
     then
         if USE_GPTOSS_RAW and model == models.GPTOSS then
-            curl_params:set_raw_completions()
+            curl:set_raw_completions()
             -- ? get rid of raw approach entirely now that prefix is working
-            curl_params.body.prompt = fim_harmony.gptoss.RETIRED_get_fim_raw_prompt_no_thinking(self)
-            curl_params.body.raw = true
-            curl_params.body.max_tokens = 2000 -- FYI if I cut off all thinking
+            curl.body.prompt = fim_harmony.gptoss.RETIRED_get_fim_raw_prompt_no_thinking(self)
+            curl.body.raw = true
+            curl.body.max_tokens = 2000 -- FYI if I cut off all thinking
         else
             -- * chat completions approach
-            curl_params:set_chat_completions()
+            curl:set_chat_completions()
             local level = config.get_fim_reasoning_level()
-            curl_params.body.messages = fim_harmony.gptoss.get_fim_chat_messages(self, level, model)
-            curl_params.body.raw = false
+            curl.body.messages = fim_harmony.gptoss.get_fim_chat_messages(self, level, model)
+            curl.body.raw = false
             if model == models.GPTOSS then
-                curl_params.body.chat_template_kwargs = {
+                curl.body.chat_template_kwargs = {
                     reasoning_effort = level
                 }
-                curl_params.body.max_tokens = gptoss_tokenizer.get_gptoss_max_tokens_for_level(level)
+                curl.body.max_tokens = gptoss_tokenizer.get_gptoss_max_tokens_for_level(level)
             elseif model == models.GLM
                 or model == models.GEMMA4
                 or model == models.NEMO then
 
                 -- enable_thinking confirmed works with glm and nemo-lightning
                 --   (nemo-lightning's chat template has no effort/strength level kwarg)
-                curl_params.body.chat_template_kwargs = {
+                curl.body.chat_template_kwargs = {
                     enable_thinking = level ~= "off"
                 }
                 -- TODO other models use their overrides in params.
                 -- TODO max_tokens?
             elseif model == models.MUSE then
                 body = params.body_for_muse_glimmer(body, level, true)
-                curl_params.body = body
+                curl.body = body
                 -- TODO max_tokens?
             elseif model == models.INKLING2 then
-                curl_params.body.chat_template_kwargs = {
+                curl.body.chat_template_kwargs = {
                     reasoning_effort = level
                 }
                 -- TODO max_tokens?
@@ -196,38 +196,38 @@ function FimRequestBuilder:fim_request()
 
         -- * common settings
         --   https://github.com/openai/gpt-oss?tab=readme-ov-file#recommended-sampling-parameters
-        curl_params.body.temperature = 1.0
-        curl_params.body.top_p = 1.0
+        curl.body.temperature = 1.0
+        curl.body.top_p = 1.0
     elseif string.find(model, "codestral", nil, true) then
-        curl_params:set_raw_completions()
-        curl_params.body.prompt = fim.codestral.get_fim_prompt(self)
+        curl:set_raw_completions()
+        curl.body.prompt = fim.codestral.get_fim_prompt(self)
     elseif model == models.DEEPSEEK then
-        curl_params.body.max_tokens = nil -- clear default 200 max tokens
+        curl.body.max_tokens = nil -- clear default 200 max tokens
         local level = config.get_fim_reasoning_level()
         if level == models.DEEPSEEK_REASONING_EFFORT.PSM then
             -- FYI WORKING WELL for FILE LEVEL with deepseek_v4_flash_0731
-            curl_params.body.prompt = fim.deepseek_v4_flash.get_fim_prompt(self)
-            curl_params:set_raw_completions()
+            curl.body.prompt = fim.deepseek_v4_flash.get_fim_prompt(self)
+            curl:set_raw_completions()
             -- TODO set max_tokens? deepseek-coder-v2 IIRC had 4k limit on output tokens for FIM prompt... is there a limit on v4 flash too, that would be wise to set to cut off rambling?
             -- only add back stop tokens if needed and then you'll need to look up what they are
-            -- curl_params.body.options.stop = fim.deepseek_v4_flash.sentinel_tokens.FIM_STOP_TOKENS
+            -- curl.body.options.stop = fim.deepseek_v4_flash.sentinel_tokens.FIM_STOP_TOKENS
         else
             -- TODO set explicit max tokens?
-            curl_params.body.messages = fim.deepseek_v4_flash.get_fim_chat_messages(self, level)
-            curl_params:set_chat_completions()
+            curl.body.messages = fim.deepseek_v4_flash.get_fim_chat_messages(self, level)
+            curl:set_chat_completions()
             -- apply deepseek recommended sampling + reasoning kwargs (mirrors agents/rewrite frontend)
             --   handles: temperature/top_p/max_tokens + chat_template_kwargs for enable_thinking & reasoning_effort
-            curl_params.body = params.body_for_deepseek4flash(curl_params.body, level)
+            curl.body = params.body_for_deepseek4flash(curl.body, level)
         end
     else
         error("MODEL NOT SUPPORTED '" .. tostring(model) .. "'")
     end
 
-    if not curl_params.body.prompt and not curl_params.body.messages then
+    if not curl.body.prompt and not curl.body.messages then
         error("you must define either the prompt OR messages for chat like FIM for: " .. model)
     end
 
-    return CurlRequest:new(curl_params:build())
+    return CurlRequest:new(curl:build())
 end
 
 function FimRequestBuilder.inject_file_path_test_seam()
