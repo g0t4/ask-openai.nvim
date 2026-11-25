@@ -41,7 +41,6 @@ function M.request_timings_too(generic_body, endpoint_model_info)
             stream_options = { include_usage = true }, -- openai "usage" on last SSE before [DONE], vllm: this also includes `metrics`
         })
         if endpoint_model_info.backend == "vllm" then
-            log:info("endpoint_model_info", endpoint_model_info)
             -- TODO any other fields in vllm?
         elseif endpoint_model_info.backend == "sglang" then
             generic_body = vim.tbl_deep_extend("force", {}, generic_body, {
@@ -52,7 +51,7 @@ function M.request_timings_too(generic_body, endpoint_model_info)
             })
             -- elseif endpoint_model_info == "llama-server" then
         else
-            -- intended for llama-server only, leave it on as a fallback
+            -- * assume llama-server
             -- TODO do I want this off normally? how heavy of a penalty is this? could I get timings alone w/o the rest? (i.e. raw prompt in last sse?)
             generic_body.verbose = true -- timings, raw input prompt, etc
         end

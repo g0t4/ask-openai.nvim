@@ -93,8 +93,8 @@ function M.matches_to_markdown(matches, explanation)
         })
     end
     local markdown = table.concat(lines, "\n")
-    log:info("original", matches)
-    log:info("matches_to_markdown\n", markdown)
+    -- log:info("original", matches)
+    -- log:info("matches_to_markdown\n", markdown)
     return markdown
 end
 
