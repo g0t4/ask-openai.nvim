@@ -24,7 +24,7 @@ from tools.summarize_video.summarize import (
     transcribe_audio,
 )
 
-SAMPLE_VIDEO = Path(__file__).resolve().parents[1] / "video" / "video1.mkv"
+SAMPLE_VIDEO = Path(os.getenv("dropbox_sync_dir")).resolve().parents[1] / "auto-edit-videos/summarize_video/video1.mkv"
 
 
 def _server_available(base_url: str = DEFAULT_BASE_URL) -> bool:
