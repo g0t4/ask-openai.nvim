@@ -35,6 +35,10 @@ THEME2_ROLE_COLORS["developer"] = THEME2_ROLE_COLORS["system"]
 THEME2_ROLE_COLORS["user_raw"] = THEME2_ROLE_COLORS["user"]
 THEME2_ROLE_COLORS["assistant_raw"] = THEME2_ROLE_COLORS["assistant"]
 
+THEME2_SUCCESS_COLOR = "#98C379"
+THEME2_WARNING_COLOR = "#D9B65D"
+THEME2_FAILURE_COLOR = "#E06C75"
+
 # * THEME1 Role -> accent color (used for section headers, labels, timing lines).
 THEME1_ROLE_COLORS = {
     # color ideas from:
@@ -90,6 +94,24 @@ TOOL_ICONS = {
     "locate_anything": "🖼️",
     "screencap": "󰹑 ",
 }
+
+
+def get_success_color() -> str:
+    return THEME2_SUCCESS_COLOR
+
+
+def get_warning_color() -> str:
+    return THEME2_WARNING_COLOR
+
+
+def get_failure_color() -> str:
+    return THEME2_FAILURE_COLOR
+
+
+def get_pass_fail_color(successful) -> str:
+    if successful:
+        return get_success_color()
+    return get_failure_color()
 
 
 def role_color(role: str) -> str:
