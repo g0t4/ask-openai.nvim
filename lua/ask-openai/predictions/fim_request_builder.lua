@@ -26,11 +26,10 @@ local CurlParamsBuilder = {}
 CurlParamsBuilder.__index = CurlParamsBuilder
 
 ---@param base_url string
----@param body table<string, any>
 ---@return CurlParamsBuilder
-function CurlParamsBuilder:new(base_url, body)
+function CurlParamsBuilder:new(base_url)
     local instance = {
-        body = body,
+        body = {},
         base_url = base_url,
         endpoint = CompletionsEndpoints.llamacpp_completions,
         type = "fim",
@@ -90,35 +89,20 @@ function FimRequestBuilder:new(ps_chunk, rag_matches)
 end
 
 function FimRequestBuilder:fim_request()
-    local body = {
-        stream = true,
-
-        -- things to try:
-        --
-        --  n_cmpl = 1, -- PRN add multi completion support and have a mechanism to show multiple completions when single line and then cycle otherwise?
-        --
-        --  response_fields = ["field1", "field2", ... ] -- limit what is sent back, IIGC this helps with transmission overall and processing on client but it adds overhead to processing on server? or no?
-        --  id_slot
-        --  samplers (try dry w/ Qwen thinking loops?)
-        --    mirostat, xtc - alternative samplers
-        --    dry_* dry sampler params (if/when using)
-        --  seed
-    }
-    if logging_tokens.SHOW_PROBABILITIES then
-        -- how much overhead does this add?
-        body.logprobs = true
-        body.post_sampling_probs = true -- map to 0 to 1.0 (appears to truncate anything that ~0 for probability
-        --  whereas if you turn off post_sampling_probs=false => will include very low probability tokens too and not normalize values
-        body.top_logprobs = 5
-    end
-
     local model = config.get_fim_model()
     local base_url = config.get_endpoints()[model].base_url
     local endpoint_model_info = discovery.get(base_url)
     -- log:info("endpoint_model_info", endpoint_model_info)
-    -- TODO fix this hack of two body refs
-    body = params.request_timings_too(body, endpoint_model_info)
-    local curl_params = CurlParamsBuilder:new(base_url, body)
+    local curl_params = CurlParamsBuilder:new(base_url)
+    curl_params.body = params.request_timings_too(curl_params.body, endpoint_model_info)
+    curl_params.body.stream = true
+    if logging_tokens.SHOW_PROBABILITIES then
+        -- how much overhead does this add?
+        curl_params.body.logprobs = true
+        curl_params.body.post_sampling_probs = true -- map to 0 to 1.0 (appears to truncate anything that ~0 for probability
+        --  whereas if you turn off post_sampling_probs=false => will include very low probability tokens too and not normalize values
+        curl_params.body.top_logprobs = 5
+    end
 
     if string.find(model, "codellama") then
         curl_params:set_raw_completions()
