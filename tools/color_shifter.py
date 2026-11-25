@@ -4,6 +4,12 @@ Interactive color shifter for a list of colors.
 
 Add or remove entries in COLORS to change which colors you can shift.
 
+Usage:
+    color_shifter.py [HEX ...]
+
+Each positional argument is a hex color (3 or 6 digits, '#' optional)
+appended to the list, e.g. `color_shifter.py 61AFEF`.
+
 Controls:
     Up        +step lightness
     Down      -step lightness
@@ -23,6 +29,7 @@ import termios
 import tty
 import colorsys
 import shutil
+import re
 
 
 # (name, default hex) pairs; add or remove entries to taste.
@@ -31,6 +38,23 @@ COLORS = [
     ("OUT_HUE", "#cfacb4"),
 ]
 STEP = 10
+
+HEX_RE = re.compile(r"^#?([0-9a-f]{3}|[0-9a-f]{6})$", re.IGNORECASE)
+
+
+def parse_cli_colors(argv):
+    """Turn CLI hex args like `61AFEF` into (name, default) pairs."""
+    cli_colors = []
+    for index, arg in enumerate(argv, start=1):
+        match = HEX_RE.match(arg)
+        if match is None:
+            print("Invalid hex color: {!r} (expected e.g. 61AFEF)".format(arg))
+            sys.exit(1)
+        digits = match.group(1)
+        if len(digits) == 3:
+            digits = "".join(ch * 2 for ch in digits)
+        cli_colors.append(("ARG_{}".format(index), "#" + digits.lower()))
+    return cli_colors
 
 
 def hex_to_hsl(hex_code):
@@ -124,11 +148,16 @@ def draw(colors, active, step):
 
 
 def main():
-    if not COLORS:
+    argv = sys.argv[1:]
+    if argv:
+        all_colors = COLORS + parse_cli_colors(argv)
+    else:
+        all_colors = COLORS
+    if not all_colors:
         print("No colors defined in COLORS.")
         return
 
-    colors = [Color(name, default) for name, default in COLORS]
+    colors = [Color(name, default) for name, default in all_colors]
     active = 0
     step = STEP
 
