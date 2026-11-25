@@ -73,6 +73,11 @@ ROLE_ICONS = {
 
     "tool": "🔧",
 }
+import os
+
+WES_VULGAR = os.getenv("WES_VULGAR", "").lower() in ("1", "true", "yes")
+if not WES_VULGAR:
+    ROLE_ICONS["assistant"] = "✨"
 ROLE_ICONS["assistant_raw"] = ROLE_ICONS["assistant"]
 
 # Tool name -> icon shown in the call title.
