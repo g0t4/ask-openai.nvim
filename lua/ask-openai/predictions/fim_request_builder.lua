@@ -175,6 +175,7 @@ function FimRequestBuilder:fim_request()
             body.raw = true
             body.max_tokens = 2000 -- FYI if I cut off all thinking
         else
+            -- * chat completions approach
             curl_params:set_chat_completions()
             local level = config.get_fim_reasoning_level()
             body.messages = fim_harmony.gptoss.get_fim_chat_messages(self, level, model)
