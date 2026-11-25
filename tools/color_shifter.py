@@ -150,7 +150,7 @@ def draw(colors, active, step):
 def main():
     argv = sys.argv[1:]
     if argv:
-        all_colors = COLORS + parse_cli_colors(argv)
+        all_colors = parse_cli_colors(argv) + COLORS
     else:
         all_colors = COLORS
     if not all_colors:
