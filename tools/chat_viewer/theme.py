@@ -92,7 +92,7 @@ TOOL_ICONS = {
 
 def role_color(role: str) -> str:
     """Return the accent color for a message role."""
-    return THEME1_THEME1_ROLE_COLORS.get(role.lower(), THEME1_WHITE)
+    return THEME1_ROLE_COLORS.get(role.lower(), THEME1_WHITE)
 
 
 def role_icon(role: str) -> str:
