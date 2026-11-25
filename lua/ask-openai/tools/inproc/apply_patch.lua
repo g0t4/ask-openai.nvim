@@ -40,7 +40,6 @@ function M.get_system_message_instructions()
     local files = require("ask-openai.helpers.files")
 
     M.DevMessageInstructions = files.read_text("~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/tools/inproc/apply_patch.md")
-        .. "\n\n" .. files.read_text("~/repos/github/g0t4/ask-openai.nvim/lua/ask-openai/tools/inproc/apply_patch_extended.md")
     return M.DevMessageInstructions
 end
 
