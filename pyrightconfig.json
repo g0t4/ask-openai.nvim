@@ -19,6 +19,7 @@
     "reportUnknownArgumentType": "none",
     "reportUnknownMemberType": "none",
     "reportAny": "none", // usage of Any is a report?!
+    "reportExplicitAny": "none", // same, but for explicit Any annotations
     "reportMissingTypeStubs": "none", // WTF requires a stub file for libraries?
     "reportUnannotatedClassAttribute": "hint", // ok to hint for now, given I can add the annotations (at least on my own types)
 
