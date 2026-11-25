@@ -37,6 +37,7 @@ from tools.chat_viewer.xonsh_formatter import parse_run_xonsh_arguments
 from tools.chat_viewer.timings import AssistantMessageTimingsDTO, parse_timings_from_message, format_stats_line
 from tools.chat_viewer.timing_utils import parse_tool_call_timings
 from tools.chat_viewer.theme import (
+    contrast_color_for,
     header_bar,
     role_color,
     role_icon,
@@ -1445,8 +1446,6 @@ def get_display_role(role: str) -> str:
 
 def get_font_color_for_bg(bg_color: str) -> str:
     """Pick black or white text for best contrast on the given background."""
-    from tools.chat_viewer.theme import contrast_color_for
-
     return contrast_color_for(bg_color)
 
 
