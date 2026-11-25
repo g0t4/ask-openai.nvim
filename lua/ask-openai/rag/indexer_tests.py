@@ -6,7 +6,6 @@ logger = get_logger(__name__)
 # logging_fwk_to_console("INFO") # start info level to capture timing logs (add with logger.timer to below)
 
 from pathlib import Path
-import subprocess
 import pytest
 
 import faiss
@@ -24,44 +23,36 @@ from index import workspace
 # logging_fwk_to_console("WARN") # stop INFO logs after timing captured
 
 my_dir = Path(__file__).parent
-dot_rag_dir = my_dir / "tests/.rag"
-dot_rag_dir.mkdir(exist_ok=True, parents=True)
 index_test_cases_source_dir = my_dir / "index" / "test_cases"
-temp_workspace_folder = index_test_cases_source_dir / "tmp_source_code"
 
-def copy_file(original_file, destination_file):
-    original_text = (my_dir / "chunks/test_cases" / original_file).read_text()
-    (temp_workspace_folder / destination_file).write_text(original_text)
-
-def trash_path(dir):
-    if dir.exists():
-        subprocess.run(["trash", dir])
-
-def reset_testing():
-    # TODO review workspace usage
-    workspace.project.dot_rag_dir = dot_rag_dir
-    workspace.project.folder = temp_workspace_folder  # use this as default, override if different below
-    workspace.project.config = RagConfig.default()
-
-    reset_cache_bewteen_tests()  # fix for changing the cached root_path dir
-    trash_path(dot_rag_dir)
-
-    # recreate source directory with nothing at start of each test
-    trash_path(temp_workspace_folder)
-    temp_workspace_folder.mkdir(exist_ok=True, parents=True)
 
 class TestBuildIndex:
+    @pytest.fixture(autouse=True)
+    def setup_workspace(self, tmp_path, monkeypatch):
+        self.dot_rag_dir = tmp_path / ".rag"
+        self.temp_workspace_folder = tmp_path / "source"
+        self.temp_workspace_folder.mkdir()
+        monkeypatch.setattr(workspace.project, "dot_rag_dir", self.dot_rag_dir)
+        monkeypatch.setattr(workspace.project, "folder", self.temp_workspace_folder)
+        monkeypatch.setattr(workspace.project, "config", RagConfig.default())
+        reset_cache_bewteen_tests()
+        yield
+        reset_cache_bewteen_tests()
+
+    def copy_file(self, original_file, destination_file):
+        original_text = (my_dir / "chunks/test_cases" / original_file).read_text()
+        (self.temp_workspace_folder / destination_file).write_text(original_text)
 
     def get_vector_index(self):
-        vectors_index_path = dot_rag_dir / "lua" / "vectors.index"
+        vectors_index_path = self.dot_rag_dir / "lua" / "vectors.index"
         index = faiss.read_index(str(vectors_index_path))
         return index
 
     def get_chunks_by_file(self):
-        return load_chunks_by_file(dot_rag_dir / "lua/chunks.json")
+        return load_chunks_by_file(self.dot_rag_dir / "lua/chunks.json")
 
     def get_files(self):
-        return load_file_stats_by_file(dot_rag_dir / "lua" / "files.json")
+        return load_file_stats_by_file(self.dot_rag_dir / "lua" / "files.json")
 
     async def build_lua_index(self):
         files_by_domain = find_files_by_semantic_domain(workspace.project.folder)
@@ -74,7 +65,6 @@ class TestBuildIndex:
         # FYI! this duplicates some low level line range chunking tests but I want to keep it to include the end to end picture
         #   i.e. for computing chunk id which relies on path to file
         #   here I am testing end to end chunking outputs even if most logic is shared with low level tests, still valuable
-        reset_testing()
         workspace.project.folder = index_test_cases_source_dir
 
         await self.build_lua_index()
@@ -146,14 +136,13 @@ class TestBuildIndex:
 
     @pytest.mark.asyncio
     async def test_search_index_to_trigger_OpenMP_error(self):
-        reset_testing()
         workspace.project.folder = index_test_cases_source_dir
 
         # * setup same index as in the first test
         #   FYI updater tests will alter the index and break this test
         await self.build_lua_index()
 
-        chunks_by_file = load_chunks_by_file(dot_rag_dir / "lua/chunks.json")
+        chunks_by_file = load_chunks_by_file(self.dot_rag_dir / "lua/chunks.json")
         assert len(chunks_by_file) == 1
         chunks = next(iter(chunks_by_file.values()))
         # I do not to replicate tests of building id/id_int and hard coding the values so...
@@ -202,10 +191,9 @@ class TestBuildIndex:
 
     @pytest.mark.asyncio
     async def test_update_index_removed_file(self):
-        reset_testing()
 
-        copy_file("numbers.30.txt", "numbers.lua")  # 30 lines, 2 chunks
-        copy_file("unchanged.lua.txt", "unchanged.lua")  # 31 lines, 2 chunks
+        self.copy_file("numbers.30.txt", "numbers.lua")  # 30 lines, 2 chunks
+        self.copy_file("unchanged.lua.txt", "unchanged.lua")  # 31 lines, 2 chunks
 
         # * build initial index
         await self.build_lua_index()
@@ -218,15 +206,15 @@ class TestBuildIndex:
         assert len(files) == 2
         #
         assert len(chunks_by_file) == 2  # 2 files
-        first_file_chunks = chunks_by_file[str(temp_workspace_folder / "numbers.lua")]
-        second_file_chunks = chunks_by_file[str(temp_workspace_folder / "unchanged.lua")]
+        first_file_chunks = chunks_by_file[str(self.temp_workspace_folder / "numbers.lua")]
+        second_file_chunks = chunks_by_file[str(self.temp_workspace_folder / "unchanged.lua")]
         assert len(first_file_chunks) == 2  # 2 chunks
         assert len(second_file_chunks) == 2
         #
         assert index.ntotal == 4
 
         # * update a file and rebuild
-        copy_file("numbers.50.txt", "numbers.lua")  # 50 lines, 3 chunks (starts = 1-20, 16-35, 31-50)
+        self.copy_file("numbers.50.txt", "numbers.lua")  # 50 lines, 3 chunks (starts = 1-20, 16-35, 31-50)
         await self.build_lua_index()
 
         # * check counts
@@ -236,15 +224,15 @@ class TestBuildIndex:
         #
         assert len(chunks_by_file) == 2
         #
-        first_file_chunks = chunks_by_file[str(temp_workspace_folder / "numbers.lua")]
-        second_file_chunks = chunks_by_file[str(temp_workspace_folder / "unchanged.lua")]
+        first_file_chunks = chunks_by_file[str(self.temp_workspace_folder / "numbers.lua")]
+        second_file_chunks = chunks_by_file[str(self.temp_workspace_folder / "unchanged.lua")]
         assert len(first_file_chunks) == 3
         assert len(second_file_chunks) == 2
         assert len(files) == 2
         assert index.ntotal == 5
 
         # * delete a file and rebuild
-        (temp_workspace_folder / "numbers.lua").unlink()
+        (self.temp_workspace_folder / "numbers.lua").unlink()
         await self.build_lua_index()
         #
         chunks_by_file = self.get_chunks_by_file()
@@ -253,14 +241,14 @@ class TestBuildIndex:
         #
         assert len(chunks_by_file) == 1
         #
-        only_file_chunks = chunks_by_file[str(temp_workspace_folder / "unchanged.lua")]
+        only_file_chunks = chunks_by_file[str(self.temp_workspace_folder / "unchanged.lua")]
         assert len(only_file_chunks) == 2
         assert len(files) == 1
         assert index.ntotal == 2
 
         # * add a file
         # FYI car.lua.txt was designed to catch issues with overlap (32 lines => 0 to 20, 15 to 35, but NOT 30 to 50 b/c only overlap exists so the next chunk has nothing unique in its non-overlapping segment) so maybe use a diff input file... if this causes issues here (move car.lua to a new test then)
-        copy_file("car.lua.txt", "car.lua")
+        self.copy_file("car.lua.txt", "car.lua")
         await self.build_lua_index()
         #
         chunks_by_file = self.get_chunks_by_file()
@@ -269,8 +257,8 @@ class TestBuildIndex:
         #
         assert len(chunks_by_file) == 2
         #
-        first_file_chunks = chunks_by_file[str(temp_workspace_folder / "unchanged.lua")]
-        second_file_chunks = chunks_by_file[str(temp_workspace_folder / "car.lua")]
+        first_file_chunks = chunks_by_file[str(self.temp_workspace_folder / "unchanged.lua")]
+        second_file_chunks = chunks_by_file[str(self.temp_workspace_folder / "car.lua")]
         assert len(first_file_chunks) == 2
         assert len(second_file_chunks) == 2
         #
@@ -279,10 +267,9 @@ class TestBuildIndex:
 
     @pytest.mark.asyncio
     async def test_reproduce_file_mod_time_updated_but_not_chunks_should_not_duplicate_vectors_in_index(self):
-        reset_testing()
 
-        copy_file("numbers.30.txt", "numbers.lua")  # 30 lines, 2 chunks
-        # copy_file("unchanged.lua.txt", "unchanged.lua")  # 31 lines, 2 chunks
+        self.copy_file("numbers.30.txt", "numbers.lua")  # 30 lines, 2 chunks
+        # self.copy_file("unchanged.lua.txt", "unchanged.lua")  # 31 lines, 2 chunks
 
         # * build initial index
         await self.build_lua_index()
@@ -295,14 +282,14 @@ class TestBuildIndex:
         assert len(files) == 1
         #
         assert len(chunks_by_file) == 1  # 2 files
-        first_file_chunks = chunks_by_file[str(temp_workspace_folder / "numbers.lua")]
+        first_file_chunks = chunks_by_file[str(self.temp_workspace_folder / "numbers.lua")]
         # second_file_chunks = chunks_by_file[str(tmp_source_code_dir / "unchanged.lua")]
         assert len(first_file_chunks) == 2  # 2 chunks
         # assert len(second_file_chunks) == 2
         #
         assert index.ntotal == 2, "index.ntotal (num vectors) should be 1"
 
-        copy_file("numbers.30.txt", "numbers.lua")
+        self.copy_file("numbers.30.txt", "numbers.lua")
         await self.build_lua_index()
 
         # * check counts
@@ -330,18 +317,17 @@ class TestBuildIndex:
 
     @pytest.mark.asyncio
     async def test_update_file_from_language_server(self):
-        reset_testing()
 
-        copy_file("numbers.30.txt", "numbers.lua")  # 30 lines, 2 chunks
-        copy_file("unchanged.lua.txt", "unchanged.lua")  # 31 lines, 2 chunks
+        self.copy_file("numbers.30.txt", "numbers.lua")  # 30 lines, 2 chunks
+        self.copy_file("unchanged.lua.txt", "unchanged.lua")  # 31 lines, 2 chunks
 
         # * build initial index
         await self.build_lua_index()
 
-        workspace.datasets = load_all_domains(dot_rag_dir)
+        workspace.datasets = load_all_domains(self.dot_rag_dir)
 
-        copy_file("numbers.50.txt", "numbers.lua")  # 50 lines, 3 chunks
-        target_file_path = temp_workspace_folder / "numbers.lua"
+        self.copy_file("numbers.50.txt", "numbers.lua")  # 50 lines, 3 chunks
+        target_file_path = self.temp_workspace_folder / "numbers.lua"
 
         from pygls.workspace import TextDocument  # 130ms so leave it here
         fake_lsp_doc = TextDocument(
@@ -360,8 +346,8 @@ class TestBuildIndex:
 
         assert len(ds.chunks_by_file) == 2
         # * assert the list of chunks was updated for the file
-        first_file_chunks = ds.chunks_by_file[str(temp_workspace_folder / "numbers.lua")]
-        second_file_chunks = ds.chunks_by_file[str(temp_workspace_folder / "unchanged.lua")]
+        first_file_chunks = ds.chunks_by_file[str(self.temp_workspace_folder / "numbers.lua")]
+        second_file_chunks = ds.chunks_by_file[str(self.temp_workspace_folder / "unchanged.lua")]
         assert len(first_file_chunks) == 3
         assert len(second_file_chunks) == 2
         hash_50nums = "02d36ee22aefffbb3eac4f90f703dd0be636851031144132b43af85384a2afcd"

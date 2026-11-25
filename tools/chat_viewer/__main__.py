@@ -420,8 +420,10 @@ def create_raw_completion_messages(data: dict) -> list[TraceMessageDTO]:
 
 
 def load_preapproved_files() -> None:
-    # Use the user‑level configuration location instead of the repository copy.
-    preapproved_path = Path.home() / ".config" / "ask-openai" / "preapproved.txt"
+    sync_dir = os.getenv("dropbox_sync_dir")
+    if not sync_dir:
+        return
+    preapproved_path = Path(sync_dir) / "dotfiles" / "preapproved.txt"
     if not preapproved_path.is_file():
         return
     for raw in preapproved_path.read_text(encoding="utf-8").splitlines():

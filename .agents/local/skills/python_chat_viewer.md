@@ -79,7 +79,7 @@ Assistant tool calls are expanded in a rich Tree structure:
 ## Content Exclusions
 
 - `EXCLUDED_CONTENT_HASHES` - list of SHA-256 hashes to exclude by default
-- `preapproved_file_patterns` - regex patterns for preapproved file paths (from ~/.config/ask-openai/preapproved.txt)
+- `preapproved_file_patterns` - regex patterns for preapproved file paths (from $dropbox_sync_dir/dotfiles/preapproved.txt)
 - `--all` flag shows everything (including excluded content)
 - Semantic grep matches are checked against preapproved patterns
 
