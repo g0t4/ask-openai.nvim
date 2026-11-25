@@ -47,7 +47,9 @@ describe("get_prefix_suffix", function()
         vim.api.nvim_win_set_cursor(0, { line_base1, col_base0 })
 
         local take_lines = 2
-        local prefix, suffix = ps.get_prefix_suffix(take_lines)
+        local ps_chunk = ps.get_prefix_suffix_chunk(take_lines)
+        local prefix = ps_chunk.prefix
+        local suffix = ps_chunk.suffix
 
         -- assert.equal("", prefix) -- TODO FIX FOR new line not expected!
         assert.equal("line 1\nline 2\nline 3\nline 4\nline 5", suffix)
@@ -88,7 +90,9 @@ describe("get_prefix_suffix", function()
                 vim.api.nvim_win_set_cursor(0, { line_base1, col_base0 })
 
                 local take_lines = 2 -- mostly focus on cursor line
-                local prefix, suffix = ps.get_prefix_suffix(take_lines)
+                local ps_chunk = ps.get_prefix_suffix_chunk(take_lines)
+                local prefix = ps_chunk.prefix
+                local suffix = ps_chunk.suffix
 
                 assert.equal("line 2\nline 3\n", prefix)
                 assert.equal("line 4\nline 5\nline 6", suffix)
@@ -101,7 +105,9 @@ describe("get_prefix_suffix", function()
                 vim.api.nvim_win_set_cursor(0, { line_base1, col_base0 })
 
                 local take_lines = 2
-                local prefix, suffix = ps.get_prefix_suffix(take_lines)
+                local ps_chunk = ps.get_prefix_suffix_chunk(take_lines)
+                local prefix = ps_chunk.prefix
+                local suffix = ps_chunk.suffix
 
                 assert.equal("line 2\nline 3\nlin", prefix)
                 assert.equal("e 4\nline 5\nline 6", suffix)
@@ -114,7 +120,9 @@ describe("get_prefix_suffix", function()
                 vim.api.nvim_win_set_cursor(0, { line_base1, col_base0 })
 
                 local take_lines = 2
-                local prefix, suffix = ps.get_prefix_suffix(take_lines)
+                local ps_chunk = ps.get_prefix_suffix_chunk(take_lines)
+                local prefix = ps_chunk.prefix
+                local suffix = ps_chunk.suffix
 
                 assert.equal("line 2\nline 3\nline ", prefix)
                 assert.equal("4\nline 5\nline 6", suffix)
@@ -140,7 +148,9 @@ describe("get_prefix_suffix", function()
                     local cusror = vim.api.nvim_win_get_cursor(0)
 
                     local take_lines = 2
-                    local prefix, suffix = ps.get_prefix_suffix(take_lines)
+                    local ps_chunk = ps.get_prefix_suffix_chunk(take_lines)
+                    local prefix = ps_chunk.prefix
+                    local suffix = ps_chunk.suffix
 
                     assert.equal("line 2\nline 3\nline 4", prefix)
                     assert.equal("\nline 5\nline 6", suffix)
@@ -160,7 +170,9 @@ describe("get_prefix_suffix", function()
                 vim.api.nvim_win_set_cursor(0, { line_base1, col_base0 })
 
                 local take_lines = 2
-                local prefix, suffix = ps.get_prefix_suffix(take_lines)
+                local ps_chunk = ps.get_prefix_suffix_chunk(take_lines)
+                local prefix = ps_chunk.prefix
+                local suffix = ps_chunk.suffix
 
                 assert.equal("one\ntwo\n", prefix)
                 assert.equal("\nfour\nfive", suffix)

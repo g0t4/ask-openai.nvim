@@ -127,10 +127,4 @@ function PrefixSuffixChunk.get_prefix_suffix_chunk(take_num_lines_each_way, conf
     }
     return ps_chunk
 end
-
-function PrefixSuffixChunk.get_prefix_suffix(take_num_lines_each_way)
-    local ps_chunk = PrefixSuffixChunk.get_prefix_suffix_chunk(take_num_lines_each_way)
-    return ps_chunk.prefix, ps_chunk.suffix
-end
-
 return PrefixSuffixChunk
