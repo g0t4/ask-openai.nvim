@@ -49,6 +49,9 @@ THEME1_ROLE_COLORS["developer"] = THEME1_ROLE_COLORS["system"]
 THEME1_ROLE_COLORS["user_raw"] = THEME1_ROLE_COLORS["user"]
 THEME1_ROLE_COLORS["assistant_raw"] = THEME1_ROLE_COLORS["assistant"]
 
+THEME1_BLACK = "#1F2229"
+THEME1_WHITE = "#EEEEEE"
+
 # Role -> icon shown next to the message header.
 ROLE_ICONS = {
     "system": "📢",
@@ -89,7 +92,7 @@ TOOL_ICONS = {
 
 def role_color(role: str) -> str:
     """Return the accent color for a message role."""
-    return THEME1_ROLE_COLORS.get(role.lower(), "white")
+    return THEME1_THEME1_ROLE_COLORS.get(role.lower(), THEME1_WHITE)
 
 
 def role_icon(role: str) -> str:
@@ -112,7 +115,7 @@ def contrast_color_for(bg_color: str) -> str:
         return channel / 12.92 if channel <= 0.03928 else ((channel + 0.055) / 1.055) ** 2.4
 
     luminance = 0.2126 * linearize(r) + 0.7152 * linearize(g) + 0.0722 * linearize(b)
-    return "black" if luminance > 0.4 else "white"
+    return THEME1_BLACK if luminance > 0.4 else THEME1_WHITE
 
 
 def header_bar(title: str, color: str, width: int, font_color = None) -> Text:
