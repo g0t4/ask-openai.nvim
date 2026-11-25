@@ -165,6 +165,7 @@ class TraceMessageDTO:
     reasoning_content: str | None = None
     partial: bool = False
     output_json: bool = False
+    timings: AssistantMessageTimingsDTO | None = None
     raw: dict[str, Any] = field(default_factory=dict)
 
     @classmethod
@@ -177,6 +178,7 @@ class TraceMessageDTO:
             reasoning_content=raw.get("reasoning_content"),
             partial=bool(raw.get("_partial")),
             output_json="output.json" in raw,
+            timings=parse_timings_from_message(raw),
             raw=raw,
         )
 
@@ -1373,7 +1375,7 @@ def build_assistant_message(msg: TraceMessageDTO, color: str) -> TreeWrapper:
 
     # Show per-message timings if present
     if args.show_all or args.show_stats:
-        msg_timings = parse_timings_from_message(msg.raw)
+        msg_timings = msg.timings
         if msg_timings:
             # Skip the compact one-liner (format_timings_display); the verbose
             # per-second stats + draft acceptance lines below are more useful.
@@ -1549,7 +1551,7 @@ def render_trace_to_console(console, trace: TraceDTO, *, full_width=False) -> No
     for message_number, message in enumerate(messages, start=1):
         if message.role != "assistant":
             continue
-        stats = parse_timings_from_message(message.raw)
+        stats = message.timings
         if stats is not None:
             summaries.setdefault(stats.backend, []).append(TimingEntry(message_number=message_number, timings=stats))
     names = {"llama-server": "llama-server", "vllm": "vLLM", "sglang": "SGLang"}
