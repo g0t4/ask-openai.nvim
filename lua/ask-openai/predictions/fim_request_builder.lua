@@ -117,7 +117,7 @@ function FimRequestBuilder:fim_request()
     local curl_params = CurlParamsBuilder:new(base_url, body)
     local endpoint_model_info = discovery.get(base_url)
     -- log:info("endpoint_model_info", endpoint_model_info)
-    body = params.request_timings_too(body, endpoint_model_info)
+    curl_params.body = params.request_timings_too(body, endpoint_model_info)
 
     if string.find(model, "codellama") then
         curl_params:set_raw_completions()
