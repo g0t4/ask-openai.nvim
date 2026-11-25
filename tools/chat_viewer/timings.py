@@ -288,6 +288,8 @@ def parse_sglang_message_timings(message):
 def parse_timings_from_message(message: dict[str, Any] | None) -> AssistantMessageTimingsDTO | None:
     if not message:
         return None
+    if message["role"] != "assistant":
+        return None
 
     # TODO long term move to record type that contains the message object
     #   put timing on to the record (not message) object under metadata is fine
