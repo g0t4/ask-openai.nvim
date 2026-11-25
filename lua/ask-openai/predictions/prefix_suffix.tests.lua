@@ -62,7 +62,7 @@ describe("get_prefix_suffix", function()
         vim.api.nvim_win_set_cursor(0, { line_base1, col_base0 })
 
         local take_lines = 2
-        local ps_chunk = ps.get_prefix_suffix_chunk(2)
+        local ps_chunk = ps.get_prefix_suffix_chunk(take_lines)
 
         -- to make this consistent I probably should make line range take 3 to 7 here
         --  like with start of doc, which takes 1 to 5
