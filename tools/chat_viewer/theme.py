@@ -65,13 +65,15 @@ ROLE_ICONS = {
     "user": "👤",
     "user_raw": "👤",
 
-    "assistant": "✨",
+    # "assistant": "✨",
+    "assistant": "🖕", # TODO I need a mode to toggle this for my own humor :)
+
     #   nf-oct-sparkle_fill \u
     #   nf-cod-sparkle \uec10
-    "assistant_raw": "✨",
 
     "tool": "🔧",
 }
+ROLE_ICONS["assistant_raw"] = ROLE_ICONS["assistant"]
 
 # Tool name -> icon shown in the call title.
 TOOL_ICONS = {
