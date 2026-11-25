@@ -1444,11 +1444,6 @@ def get_display_role(role: str) -> str:
     return role.upper()
 
 
-def get_font_color_for_bg(bg_color: str) -> str:
-    """Pick black or white text for best contrast on the given background."""
-    return contrast_color_for(bg_color)
-
-
 def print_section_header(title, color, font_color=None):
     _console.print(header_bar(title, color, _console.width, font_color=font_color))
 
