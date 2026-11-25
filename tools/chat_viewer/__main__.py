@@ -267,6 +267,7 @@ def print_fim_diff(prompt: str, completion: str) -> None:
     parsed = parse_fim_diff(prompt, completion)
     if not parsed:
         return
+    # TODO differentiate Edit Prediction from FIM completion
 
     # Limit context to last 10 lines before and first 10 lines after
     CONTEXT_LINES = 10
