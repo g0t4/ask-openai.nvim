@@ -10,22 +10,44 @@ from rich.color import Color
 from rich.style import Style
 from rich.text import Text
 
+# * THEME2 (proposed by chatgpt, try these)
+# | Role | Color | Character |
+# |---|---|---|
+# | Background | `#1F2229` | your existing bg |
+# | Normal text | `#C8CDD5` | soft gray |
+# | Dim / metadata | `#737A86` | subdued |
+# | Borders | `#3A3F4B` | visible, not distracting |
+# | Primary accent | `#FF0071` | hot pink |
+# | Blue | `#61AFEF` | cool contrast |
+# | Cyan | `#56B6C2` | calmer informational |
+# | Green | `#98C379` | success |
+# | Yellow | `#D9B65D` | warning/timing |
+# | Red | `#E06C75` | error |
+# | Purple | `#B48EED` | secondary accent |
+THEME2_ROLE_COLORS = {
+    "system": "#B48EED",
+    "user": "#56B6C2",
+    "assistant": "#C8CDD5",
+    "tool": "#61AFEF",
+}
+# reuse similar roles
+THEME2_ROLE_COLORS["developer"] = THEME2_ROLE_COLORS["system"]
+THEME2_ROLE_COLORS["user_raw"] = THEME2_ROLE_COLORS["user"]
+THEME2_ROLE_COLORS["assistant_raw"] = THEME2_ROLE_COLORS["assistant"]
 
-# Role -> accent color (used for section headers, labels, timing lines).
-ROLE_COLORS = {
+# * THEME1 Role -> accent color (used for section headers, labels, timing lines).
+THEME1_ROLE_COLORS = {
     # color ideas from:
     # https://imagecolorpicker.com/color-code/76c6b5?skipGenerate=true
     "system": "#7677c6",
-    "developer": "#7677c6",
     "user": "#76c6b5",
-    "user_raw": "#76c6b5",
     # "user": "#afc676",
-    # "user_raw": "#afc676",
-
     "assistant": "#c6b576",
-    "assistant_raw": "#c6b576",
     "tool": "#c67687",
 }
+THEME1_ROLE_COLORS["developer"] = THEME1_ROLE_COLORS["system"]
+THEME1_ROLE_COLORS["user_raw"] = THEME1_ROLE_COLORS["user"]
+THEME1_ROLE_COLORS["assistant_raw"] = THEME1_ROLE_COLORS["assistant"]
 
 # Role -> icon shown next to the message header.
 ROLE_ICONS = {
@@ -67,7 +89,7 @@ TOOL_ICONS = {
 
 def role_color(role: str) -> str:
     """Return the accent color for a message role."""
-    return ROLE_COLORS.get(role.lower(), "white")
+    return THEME1_ROLE_COLORS.get(role.lower(), "white")
 
 
 def role_icon(role: str) -> str:
