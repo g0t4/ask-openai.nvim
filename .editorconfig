@@ -11,7 +11,7 @@ trim_trailing_whitespace = true
 # https://github.com/CppCXY/EmmyLuaCodeStyle/blob/master/docs/format_config_EN.md
 # https://github.com/CppCXY/EmmyLuaCodeStyle/blob/master/lua.template.editorconfig
 indent_size = 4
-max_line_length = 200
+max_line_length = 300
 align_continuous_inline_comment = false
 align_continuous_assign_statement = false
 
