@@ -12,7 +12,7 @@ from rich.console import Console, Group
 from rich.align import Align
 from rich.syntax import Syntax
 from tools.chat_viewer.message_panel import construct_message_panel
-from wes_syntax import syntax as themed_syntax, markdown_tables
+from wes.syntax import syntax as themed_syntax, markdown_tables
 from rich.panel import Panel
 from rich.pretty import Pretty
 from rich.text import Text
