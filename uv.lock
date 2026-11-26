@@ -187,7 +187,7 @@ requires-dist = [
     { name = "tree-sitter", specifier = ">=0.25.2" },
     { name = "tree-sitter-language-pack", specifier = "==1.3.3" },
     { name = "tree-sitter-xonsh", specifier = ">=0.2.2" },
-    { name = "wes-syntax", editable = "../dotfiles/tools/syntax-lab" },
+    { name = "wes-syntax", editable = "../dotfiles/tools/wes_package" },
     { name = "whoosh", specifier = ">=2.7.4" },
     { name = "yapf", specifier = ">=0.43.0" },
 ]
@@ -3816,7 +3816,7 @@ wheels = [
 [[package]]
 name = "wes-syntax"
 version = "0.1.0"
-source = { editable = "../dotfiles/tools/syntax-lab" }
+source = { editable = "../dotfiles/tools/wes_package" }
 dependencies = [
     { name = "argcomplete" },
     { name = "colorspacious" },

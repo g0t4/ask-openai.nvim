@@ -50,7 +50,7 @@ dependencies = [
 ]
 
 [tool.uv.sources]
-wes-syntax = { path = "../dotfiles/tools/syntax-lab", editable = true }
+wes-syntax = { path = "../dotfiles/tools/wes_package", editable = true }
 langchain-llama-server = { path = "../langchain-llama-server" }
 langchain-mcp-adapters = { path = "../../langchain-ai/langchain-mcp-adapters" }
 
