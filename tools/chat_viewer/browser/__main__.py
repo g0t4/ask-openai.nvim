@@ -14,7 +14,7 @@ from rich.table import Table
 from typing import List, Optional
 from tools.chat_viewer.humanize import humanize_size, relative_age
 
-from tools.chat_viewer.tree_wrapper import TreeWrapper
+from wes.printing.tree_wrapper import TreeWrapper
 from tools.chat_viewer.browser.cli import build_parser, enable_argcomplete
 
 def find_trace_files(base_dir: Path) -> List[Path]:

@@ -8,7 +8,7 @@ from rich.syntax import Syntax
 from xonsh.pyghooks import XonshLexer
 
 from tools.chat_viewer.__main__ import _markdown, add_tool_call_request
-from tools.chat_viewer.tree_wrapper import TreeWrapper
+from wes.printing.tree_wrapper import TreeWrapper
 
 
 def test_markdown_uses_shared_palette_with_wrapping_and_no_background():

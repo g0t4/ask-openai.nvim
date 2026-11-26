@@ -31,7 +31,7 @@ from tools.chat_viewer.cli import (
 )
 from tools.chat_viewer.markdown_utils import split_h2_markdown_sections
 from tools.chat_viewer.markdown_inline import style_markdown_text
-from tools.chat_viewer.tree_wrapper import TreeWrapper
+from wes.printing.tree_wrapper import TreeWrapper
 from tools.chat_viewer.run_bash_formatter import commandline_equivalent_for_argv, format_heredoc_stdin
 from tools.chat_viewer.xonsh_formatter import parse_run_xonsh_arguments
 from tools.chat_viewer.timings import AssistantMessageTimingsDTO, parse_timings_from_message, format_stats_line

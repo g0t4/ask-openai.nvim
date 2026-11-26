@@ -5,7 +5,7 @@ from rich.console import Console
 from rich.measure import measure_renderables
 from rich.panel import Panel
 
-from tools.chat_viewer.tree_wrapper import TreeWrapper
+from wes.printing.tree_wrapper import TreeWrapper
 
 # # Chat-style panel boxes: only a top border plus the border on the aligned edge,
 # # so messages read as open speech bubbles flowing toward the aligned side.

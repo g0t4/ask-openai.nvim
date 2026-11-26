@@ -9,8 +9,6 @@ description: commandline AI chat (thread) viewer written in python, used to revi
 - <tools/chat_viewer/timings_tests.py> tests for the timings module
 - <tools/chat_viewer/markdown_utils.py> helper for splitting H2 markdown sections
 - <tools/chat_viewer/markdown_utils_tests.py> tests for markdown utils
-- <tools/chat_viewer/tree_wrapper.py> rich Tree wrapper for building message trees
-- <tools/chat_viewer/tree_wrapper_tests.py> tests for tree wrapper
 
 ## Test structure:
 - Test files use `_tests.py` suffix next to their module (i.e., `foo.py` next to `foo_tests.py`)
