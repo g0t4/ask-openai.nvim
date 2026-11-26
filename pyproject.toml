@@ -76,19 +76,3 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 include = ["tools*"]
-
-# # * uv_build setup
-# [build-system]
-# requires = ["uv_build>=0.9,<0.10"]
-# build-backend = "uv_build"
-#
-# [tool.uv.build-backend]
-# module-name = "tools"
-# module-root = ""
-
-# [tool.setuptools.packages.find]
-# where to find packages (when using setuptools)
-# where = ["lua/ask-openai/rag"]
-#
-# FYI only problem with uv pip install -e is that you still need the venv to be activated to run these commands (i.e. globally) ... and so that's basically the same hoop as my fish wrapper function applies, so just go with fish wrapper function for now
-# also I am a bit leery to be installing executablers via uv/pip and getting in a habit of doing that when it's my own script/module... b/c if I mess up the package name I can end up installing someone else's stuff... yuck
