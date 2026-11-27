@@ -128,23 +128,22 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         local accum = request.accum or {}
         request.accum = accum
 
-        local choices = sse_parsed.choices
-        if not choices then
-            return
-        end
-
         -- accumulate timings and other NON-delta details
         response_metadata.accumulate(sse_parsed, accum)
 
         local function accumulate_delta()
-            -- PRN warn if > 1 choices? ... we might have done that elsewhere already?
-            local first_choice = choices[1]
+            if not sse_parsed.choices then
+                return
+            end
 
-            local no_delta = not first_choice
+            local no_delta = #sse_parsed.choices == 0
             if no_delta then
                 return
             end
-            local delta = first_choice and first_choice.delta or {}
+
+            local choice = sse_parsed.choices[1]
+            -- PRN warn if > 1 choices? ... we might have done that elsewhere already?
+            local delta = choice and choice.delta or {}
             if type(delta) ~= "table" then return end
 
             if delta.role and delta.role ~= vim.NIL then
@@ -157,8 +156,8 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
             if delta.content and delta.content ~= vim.NIL then
                 accum.content = (accum.content or "") .. delta.content
             end
-            if first_choice and first_choice.finish_reason and first_choice.finish_reason ~= vim.NIL then
-                accum.finish_reason = first_choice.finish_reason
+            if choice and choice.finish_reason and choice.finish_reason ~= vim.NIL then
+                accum.finish_reason = choice.finish_reason
             end
         end
 
