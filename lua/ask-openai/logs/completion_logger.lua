@@ -134,6 +134,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         --   and FYI this can affect any frontend, not just Agents... i.e. PredictionsFrontend using non reasoning FIM with Muse Glimmer
 
         -- TODO do I add to accumulated_message (via request.accum) in AgentsFrontend for tool calls?
+        --   TODO oh wait... when I save this as done does it not have tool call args? until I save a future turn's messages that does have it? cuz I accumulate different message object in frontend?! yikes
         -- PRN track tool call deltas too? on the response (for output.json)?
         --   FYI request.body, on next turn, already has the tool call
         --   so for now, this is not urgent to add to logs here... I can grab trace logs for after model responds to tool call result
