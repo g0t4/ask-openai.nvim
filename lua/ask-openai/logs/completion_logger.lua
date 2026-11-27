@@ -132,7 +132,8 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
             return
         end
         local first = choices[1]
-        if not first and not is_last_sse then
+        local no_delta = not first
+        if no_delta and not is_last_sse then
             return
         end
         local delta = first and first.delta or {}
