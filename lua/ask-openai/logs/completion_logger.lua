@@ -131,12 +131,13 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         if not choices then
             return
         end
-        local first = choices[1]
-        local no_delta = not first
+        local first_choice = choices[1]
+        -- TODO warn if > 1 choices?
+        local no_delta = not first_choice
         if no_delta and not is_last_sse then
             return
         end
-        local delta = first and first.delta or {}
+        local delta = first_choice and first_choice.delta or {}
         if type(delta) ~= "table" then return end
 
         if delta.role and delta.role ~= vim.NIL then
@@ -149,8 +150,8 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         if delta.content and delta.content ~= vim.NIL then
             accum.content = (accum.content or "") .. delta.content
         end
-        if first and first.finish_reason and first.finish_reason ~= vim.NIL then
-            accum.finish_reason = first.finish_reason
+        if first_choice and first_choice.finish_reason and first_choice.finish_reason ~= vim.NIL then
+            accum.finish_reason = first_choice.finish_reason
         end
 
         -- PRN drop assistant prefill message before last message in trace?
