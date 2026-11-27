@@ -1,6 +1,10 @@
 require("ask-openai.helpers.test_setup").modify_package_path()
 local metadata = require("ask-openai.backends.response_metadata")
 
+-- TODO review what I even need of this later on ... if I keep my tracing logic
+-- plan is to move to python based langchain clients for even my neovim AI tooling so I can standardize on one AI client fwk and reuse all that goodness that we setup with langchain ChatOpenAICompatible chat model client
+-- FYI when I removed the last_sse from traces I didn't review which of these tests are redundant and/or not needed anymore I just removed usages of last_sse in them
+
 describe("verbatim response metadata", function()
     it("ignores null usage and continuous usage on content chunks", function()
         assert.is_false(metadata.is_final({ choices = {}, usage = vim.NIL }))
