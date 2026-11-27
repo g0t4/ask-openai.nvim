@@ -22,13 +22,16 @@ function M.accumulate(sse, message)
     end
 
     -- * determinbe backend+done
-    if message.backend == nil then
+    -- I am not thrilled about needing to append `done` but... not the end of the world
+    --  TODO move all this to metadata and not message level or on a record level?
+    if message.done == nil then
         local has_sglang_timings = (type(sse.timings) == "table" and type(sse.timings.choices) == "table")
         local has_llama_server_timings = type(sse.timings) == "table" and sse.timings.choices == nil
         local has_usage = type(sse.usage) == "table"
         local has_sglext = type(sse.sglext) == "table"
         local has_metrics = type(sse.metrics) == "table"
 
+        -- * ONLY set backend when done so I don't have to store done too
         if has_sglext and has_sglang_timings and has_usage then
             -- FYI must have sglext is enough (our extension)
             -- OR, timings.choices if we dont have our extension but our extension is going to be the deployment standard going forward so this is less important
