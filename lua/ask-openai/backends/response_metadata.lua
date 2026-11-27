@@ -12,8 +12,10 @@ function M.is_final(sse)
         end
     end
     local has_timings = type(sse.timings) == "table"
+    local has_usage = type(sse.usage) == "table"
+    local has_sglext = type(sse.sglext) == "table"
     return has_timings
-        or ((type(sse.usage) == "table" or type(sse.sglext) == "table" or type(sse.meta_info) == "table")
+        or ((has_usage or has_sglext or type(sse.meta_info) == "table")
             and type(sse.choices) == "table" and next(sse.choices) == nil)
 end
 
