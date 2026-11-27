@@ -622,20 +622,24 @@ def hack_copy_jsonl_record_timings_to_raw_message_like_nvim_harness(record):
 
     metadata = record.get("metadata")
 
-    is_langchain = "response" in metadata and "token_usage" in metadata["response"]
-    if not is_langchain:
-        rich.print("[yellow]only JSONL via langchain is supported (detected via presence of record.metadata.response.token_usage), cannot find record's timing[/]")
+    response = metadata.get("response") or {}
+    is_langchain = "token_usage" in response
+    if not is_langchain and "usage" not in response:
+        rich.print("[yellow]only JSONL via langchain is supported (detected via presence of record.metadata.response.token_usage or record.metadata.response.usage), cannot find record's timing[/]")
         rich.print(record)
         return raw_message
 
     # FYI metadata["usage"] is langchain's mapping if it was a langchain client (not original openai formatted usage)
-    response = metadata.get("response")
     # langchain takes openai's `usage` and returns it under `response.token_usage`
     # likewise `metrics` is put under `response.metrics` (not renamed in this case)
     # then langchain creates a new `usage` by transforming names in `response.token_usage`
     # IOTW if I want the original `usage` then take it from `token_usage`
     if "token_usage" in response:
         raw_message["usage"] = response["token_usage"]
+    elif "usage" in response:
+        raw_message["usage"] = response["usage"]
+    elif "usage" in metadata:
+        raw_message["usage"] = metadata["usage"]
     if "metrics" in response:
         raw_message["metrics"] = response["metrics"]
     return raw_message
