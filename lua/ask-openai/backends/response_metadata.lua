@@ -36,8 +36,9 @@ function M.copy(sse, message)
         local has_sglext = type(sse.sglext) == "table"
         local has_metrics = type(sse.metrics) == "table"
 
-        if has_sglext and timings_with_choices and has_usage then
-            -- FYI must have sglext + timings + usage to ensure you're using merged last_sse for sglang stats
+        if has_sglext or timings_with_choices then
+            -- FYI must have sglext is enough (our extension)
+            -- OR, timings.choices if we dont have our extension but our extension is going to be the deployment standard going forward so this is less important
             message.response_backend = "sglang"
         elseif has_metrics and sse.system_fingerprint and sse.system_fingerprint:find("^vllm") then
             message.response_backend = "vllm"
