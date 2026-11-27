@@ -22,6 +22,7 @@
 ---   fake.uninstall()
 
 local log = require("devtools.logs.logger").universal()
+local completion_logger = require("ask-openai.logs.completion_logger")
 
 ---@class PredictionsFakeModelServer
 local FakeModelServer = {}
@@ -291,6 +292,13 @@ local function deliver_next_chunk()
         active_frontend.on_parsed_data_sse(chunk)
     end
 
+    -- * mirror the real curl path (backends/curl.lua on_one_data_value):
+    --   log the SSE (trace saving) and fan out timings to the frontend
+    completion_logger.log_sse_to_request(chunk, active_request, active_frontend)
+    if chunk.timings and active_frontend.on_sse_llama_server_timings then
+        active_frontend.on_sse_llama_server_timings(chunk)
+    end
+
     -- * schedule the next chunk (or the completion check)
     --   Always schedule the next delivery even for the final chunk so that
     --   the next invocation (which sees `chunk == nil`) triggers completion.
@@ -324,7 +332,7 @@ function FakeModelServer.spawn(request, frontend)
 
     -- * pick up the scripted chunks
     if current_script_name and scripts[current_script_name] then
-        active_chunks = scripts[current_script_name]
+        active_chunks = vim.deepcopy(scripts[current_script_name])
         log:info("PredictionsFakeModelServer: using script '" .. current_script_name .. "' with "
             .. #active_chunks .. " chunks")
     else
@@ -334,6 +342,27 @@ function FakeModelServer.spawn(request, frontend)
             FakeModelServer.finish_chunk("stop"),
         }
         log:warn("PredictionsFakeModelServer: no script selected, using default response")
+    end
+
+    -- * mirror llama-server: append a trailing timings-only SSE chunk so the
+    --   trace adder thread (completion_logger) sees a "done" signal
+    local has_timings_chunk = false
+    for _, c in ipairs(active_chunks) do
+        if c and c.timings then
+            has_timings_chunk = true
+            break
+        end
+    end
+    if not has_timings_chunk then
+        table.insert(active_chunks, build_sse_chunk({
+            timings = {
+                cache_n = 100,
+                predicted_per_second = 120,
+                predicted_n = 50,
+                prompt_per_second = 200,
+                prompt_n = 400,
+            },
+        }))
     end
 
     active_request = request

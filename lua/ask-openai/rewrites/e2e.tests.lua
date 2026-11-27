@@ -97,7 +97,7 @@ describe("E2E - AskRewrite", function()
         -- This is similar to simulate_instant_rewrite_command but with actual content
         local simulated_response = "    sum_value = x + y\n    return sum_value"
         local simulated_sse = {
-            choices = { { delta = { content = simulated_response } } },
+            choices = { { delta = { role = "assistant", content = simulated_response } } },
             timings = {
                 cache_n = 100,
                 predicted_per_second = 120,
@@ -113,6 +113,10 @@ describe("E2E - AskRewrite", function()
 
         -- Feed the simulated SSE response to the frontend
         rewrite_frontend.on_parsed_data_sse(simulated_sse)
+
+        -- * Mirror the real curl path: log the SSE so the trace file is saved
+        local completion_logger = require("ask-openai.logs.completion_logger")
+        completion_logger.log_sse_to_request(simulated_sse, rewrite_frontend.last_request, rewrite_frontend)
 
         -- * Verify: response was accumulated
         local response = rewrite_frontend.response
