@@ -78,6 +78,8 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         }
         vim.schedule(function()
             local no_messages = nil -- b/c not chat endpoint
+            local vars = { request = request, frontend = frontend, messages_snapshot = no_messages, sse_parsed = sse_parsed, trace_data = trace_data }
+            log:info("save_trace log_raw_completion_sse", vars)
             M.save_trace(request, frontend, no_messages, sse_parsed, trace_data)
         end)
     end
@@ -164,7 +166,10 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         -- FYI it is possible the distill in AgentsFrontend has a difference that you need to keep, if so then call save_trace from that spot and not here just for AgentsFrontend (find a way to pass last_sse, that's the only complexity)
         table.insert(messages_snapshot, accum)
         vim.schedule(function()
-            M.save_trace(request, frontend, messages_snapshot, final_sse, {})
+            local vars = { request = request, frontend = frontend, messages_snapshot = messages_snapshot, final_sse = final_sse }
+            log:info("save_trace log_raw_completion_sse", vars)
+            local trace_data = {}
+            M.save_trace(request, frontend, messages_snapshot, final_sse, trace_data)
         end)
     end
 
