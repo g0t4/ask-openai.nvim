@@ -131,12 +131,12 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         -- accumulate timings and other NON-delta details
         response_metadata.accumulate(sse_parsed, accum)
 
-        local function accumulate_delta()
-            if type(sse_parsed.choices) ~= "table" or #sse_parsed.choices == 0 then
+        local function accumulate_delta(sse)
+            if type(sse.choices) ~= "table" or #sse.choices == 0 then
                 return
             end
 
-            local choice = sse_parsed.choices[1]
+            local choice = sse.choices[1]
             -- PRN warn if > 1 choices? ... we might have done that elsewhere already?
             local delta = choice and choice.delta or {}
             if type(delta) ~= "table" then return end
@@ -156,7 +156,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
             end
         end
 
-        accumulate_delta()
+        accumulate_delta(sse_parsed)
 
         -- PRN drop assistant prefill message before last message in trace?
         --  else these become part of trace too that is sent back to agents!?
