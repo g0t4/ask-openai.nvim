@@ -625,11 +625,19 @@ def hack_copy_jsonl_record_timings_to_raw_message_like_nvim_harness(record):
         backend = response.get("backend") or metadata.get("backend")
         if backend:
             raw_message["backend"] = backend
-    is_langchain = "token_usage" in response
-    if not is_langchain and "usage" not in response:
-        rich.print("[yellow]only JSONL via langchain is supported (detected via presence of record.metadata.response.token_usage or record.metadata.response.usage), cannot find record's timing[/]")
+    has_timing_data = (
+        "token_usage" in response
+        or "usage" in response
+        or "usage" in metadata
+        or "timings" in response
+        or "metrics" in response
+    )
+    if not has_timing_data:
+        rich.print("[yellow]no timing data found in record.metadata, cannot find record's timing[/]")
         rich.print(record)
         return raw_message
+
+    is_langchain = "token_usage" in response
 
     # FYI metadata["usage"] is langchain's mapping if it was a langchain client (not original openai formatted usage)
     # langchain takes openai's `usage` and returns it under `response.token_usage`
