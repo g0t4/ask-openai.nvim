@@ -8,9 +8,9 @@ function M.accumulate(sse, accumulated_message)
     --  so do not bother with finish_reason as a part of being "done"... b/c that always comes before timings anyways
     -- FYI model is on SSE level for sglang, llama-server and vllm
 
-    -- ensure response_metadata exists
-    accumulated_message.response_metadata = accumulated_message.response_metadata or {}
-    metadata = accumulated_message.response_metadata
+    -- ensure metadata exists
+    accumulated_message.metadata = accumulated_message.metadata or {}
+    metadata = accumulated_message.metadata
 
     -- * preserve fields
     for _, field in ipairs({ "timings", "usage", "metrics", "sglext", "backend", "model" }) do
