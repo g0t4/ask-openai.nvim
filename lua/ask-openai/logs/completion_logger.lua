@@ -1,6 +1,7 @@
 local log = require("devtools.logs.logger").universal()
 local json = require("dkjson")
 local tables = require("ask-openai.helpers.tables")
+local ansi = require("devtools.ansi")
 
 local response_metadata = require("ask-openai.backends.response_metadata")
 local response_reasoning = require("ask-openai.backends.response_reasoning")

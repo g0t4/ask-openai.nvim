@@ -25,7 +25,7 @@ describe("verbatim response metadata", function()
         assert.is_true(metadata.is_final({ timings = {} }))
         local saved = {}
         metadata.copy({ usage = {}, metrics = vim.NIL }, saved)
-        assert.equals(vim.NIL, saved.metrics)
+        assert.equals(nil, saved.metrics)
     end)
 
     it("does not attribute request totals to multiple choices", function()
