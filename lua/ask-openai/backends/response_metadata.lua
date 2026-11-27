@@ -45,8 +45,7 @@ function M.copy(sse, message)
             message.response_backend = "llama-server"
         end
     else
-        -- TODO I don't think this should ever happen so lets flag it if so
-        log:warn("response_backend already set, unexpected... check notes in code", sse)
+        log:info("response_backend already set, unexpected... not a problem just you wanted to know", sse)
     end
 end
 
