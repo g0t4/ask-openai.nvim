@@ -58,11 +58,10 @@ The complete `sglext` object is saved verbatim, including histograms and cache
 breakdowns that do not yet have dedicated display columns. Multi-choice arrays
 are preserved without attributing one choice's speculative counters to another.
 
-SGLang's current `/v1/chat/completions` streaming response does **not** expose
-server prefill/decode phase durations. Its `return_meta_info` option is rejected
-with streaming enabled. Consequently SGLang's duration/rate cells remain unknown;
-we do not call end-to-end latency a decode duration or invent a prefill rate.
-Existing native `meta_info` counters can also be read by the Python parser.
+On deployments with the timing extension enabled, the Python summary reads
+`timings.choices`. A single timing choice supplies TTFT, queue time, and decode
+throughput when reported. Its token counts also let the summary work when
+`usage` is absent.
 
 Verified against the live GLM 5.3 Flash server on 2026-10-23: separate speculative
 and usage chunks, and cached prompt counts on a repeated prompt.

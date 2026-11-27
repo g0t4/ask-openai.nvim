@@ -589,9 +589,9 @@ def test_vllm_output_details_nested_and_zero_noise_hidden() -> None:
             assert response == original
 
 
-def test_sglang_openai_extensions_and_native_metadata_are_verbatim():
+def test_sglang_usage_and_speculative_extension_are_verbatim():
     from copy import deepcopy
-    response = {'response_backend':'sglang', 'usage':{'prompt_tokens':100,'completion_tokens':20,
+    response = {'role':'assistant', 'timings':{'choices':[]}, 'response_backend':'sglang', 'usage':{'prompt_tokens':100,'completion_tokens':20,
         'reasoning_tokens':7,'prompt_tokens_details':{'cached_tokens':80}},
         'sglext':{'spec_tokens_details':{'spec_num_correct_drafts':12,'spec_num_proposed_drafts':18,
                                        'spec_accept_rate':2/3,'spec_accept_length':8/3}}}
@@ -609,7 +609,6 @@ def test_sglang_openai_extensions_and_native_metadata_are_verbatim():
     assert 'in: 20' in text and 'reasoning: 7' in text and '67%' in text
     assert 'TTFT' not in text and 'tok/s' not in text and 'overall' not in text
     assert response == original
-    assert parse_timings_from_message({'meta_info':{'prompt_tokens':100,'completion_tokens':20,'cached_tokens':80}}).uncached_prompt_tokens == 20
     # Never attribute a multi-choice speculative array to a single assistant.
     response['sglext']['spec_tokens_details'] = [original['sglext']['spec_tokens_details']] * 2
     assert parse_timings_from_message(response).draft_tokens is None
@@ -619,6 +618,7 @@ def test_sglang_final_sse_timings_and_usage():
     import json
     from pathlib import Path
     event = json.loads((Path(__file__).parent / 'fixtures/sglang-sse-timings.json').read_text())
+    event["role"] = "assistant"
     stats = parse_timings_from_message(event)
     assert stats.backend == 'sglang'
     assert stats.input_tokens == 1000 and stats.uncached_prompt_tokens == 200

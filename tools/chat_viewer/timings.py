@@ -230,37 +230,26 @@ def parse_sglang_message_timings(message):
         return None
     # TODO long term use the new calculations in the ChatOpenAICompatible chat model client instead of these
 
-    # * attempt to read meta_info off of completion choice objects
-    # Usage can aggregate choices. Never attach one choice's timings to that total.
-    single_choice = timings_choices[0] if (len(timings_choices) == 1 and isinstance(timings_choices[0], dict)) else {}
-    # TODO is meta_info ever on the top level? I don't think it is
-    native_meta = single_choice or message.get("meta_info") or {}
-    #  FYI meta_info is only returned with non-streaming completions (AFAICT) + you have to set set `"return_meta_info": true`
-    #  right now I am not using return_meta_info in my AI tooling (not even for non-streaming cases) but we can leave it since the same structure comes back with timings.choices AFAICT
-    if not native_meta and isinstance(message.get("choices"), list):
-        message_choices = message["choices"]
-        if len(message_choices) == 1 and isinstance(message_choices[0], dict):
-            native_meta = message_choices[0].get("meta_info") or {}
+    # Usage can aggregate choices. Per-choice timings describe a single response.
+    choice_timings = timings_choices[0] if len(timings_choices) == 1 and isinstance(timings_choices[0], dict) else {}
 
-    # * construct synthetic usage from meta_info
     usage = message.get("usage")
-    if not isinstance(usage, dict) and isinstance(native_meta, dict) and "prompt_tokens" in native_meta:
-        usage = {"prompt_tokens": native_meta.get("prompt_tokens"),
-                 "completion_tokens": native_meta.get("completion_tokens"),
-                 "prompt_tokens_details": {"cached_tokens": native_meta.get("cached_tokens")},
-                 "reasoning_tokens": native_meta.get("reasoning_tokens")}
+    if not isinstance(usage, dict) and "prompt_tokens" in choice_timings:
+        usage = {"prompt_tokens": choice_timings.get("prompt_tokens"),
+                 "completion_tokens": choice_timings.get("completion_tokens"),
+                 "prompt_tokens_details": {"cached_tokens": choice_timings.get("cached_tokens")},
+                 "reasoning_tokens": choice_timings.get("reasoning_tokens")}
 
     if not isinstance(usage, dict) or not usage:
         return None
 
-    has_rest_of_timings = "sglext" in message or bool(native_meta)
-    if not has_rest_of_timings:
+    if not timings_choices and "sglext" not in message:
         return None
 
     sglext = message.get("sglext") or {}
-    spec = native_meta or sglext.get("spec_tokens_details") or {}
+    spec = choice_timings or sglext.get("spec_tokens_details") or {}
     def milliseconds(key):
-        value = native_meta.get(key)
+        value = choice_timings.get(key)
         return value * 1000 if isinstance(value, (int, float)) and value >= 0 else None
     ttft = milliseconds("first_token_latency")
     elapsed = milliseconds("e2e_latency")
@@ -273,13 +262,13 @@ def parse_sglang_message_timings(message):
     return AssistantMessageTimingsDTO(
         backend="sglang", prompt_tokens=usage.get("prompt_tokens") or 0,
         predicted_tokens=usage.get("completion_tokens") or 0,
-        cached_tokens=prompt_details.get("cached_tokens", native_meta.get("cached_tokens")),
+        cached_tokens=prompt_details.get("cached_tokens", choice_timings.get("cached_tokens")),
         reasoning_tokens=usage.get("reasoning_tokens"),
         time_to_first_token_ms=ttft, queue_time_ms=milliseconds("queue_time"),
         generation_time_ms=decode,
-        predicted_tokens_per_second=native_meta.get("decode_throughput") or 0,
-        mean_itl_ms=(1000 / native_meta["decode_throughput"]
-                     if (native_meta.get("decode_throughput") or 0) > 0 else None),
+        predicted_tokens_per_second=choice_timings.get("decode_throughput") or 0,
+        mean_itl_ms=(1000 / choice_timings["decode_throughput"]
+                     if (choice_timings.get("decode_throughput") or 0) > 0 else None),
         overall_output_tokens_per_second=(usage.get("completion_tokens", 0) * 1000 / elapsed
                                           if elapsed and elapsed > 0 else None),
         draft_tokens=spec.get("spec_num_proposed_drafts"),
