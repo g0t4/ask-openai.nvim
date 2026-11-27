@@ -639,6 +639,7 @@ def hack_copy_jsonl_record_timings_to_raw_message_like_nvim_harness(record):
         raw_message["metrics"] = response["metrics"]
     return raw_message
 
+
 def load_trace_messages_from_path(trace_file: Path) -> TraceDTO:
     if not trace_file.is_file():
         print(f"File not found: {trace_file}")
@@ -655,9 +656,10 @@ def load_trace_messages_from_path(trace_file: Path) -> TraceDTO:
 
     with trace_file.open("r", encoding="utf-8") as f:
         data = json.load(f)
-    model_name = data.get("last_sse", {}).get("model")
+
     # FYI if you want to support old traces that had last_see for only the last assistant message timings then graft that onto the last message's raw/DTO object
     messages = load_messages(data)
+    model_name = get_model_name_from_legacy_nvim_trace(messages, data)
 
     # * include response message at end of trace
     if "response_message" in data:
@@ -677,6 +679,14 @@ def load_trace_messages_from_path(trace_file: Path) -> TraceDTO:
                     messages.append(TraceMessageDTO.from_dict(response))
 
     return TraceDTO(messages=messages, model_name=model_name)
+
+
+def get_model_name_from_legacy_nvim_trace(messages, data):
+    # when I say legacy nvim I mean before (if we do) convert to langchain tooling in neovim
+    # legacy nvim traces stored per model (after removing last_sse)
+    # with last_sse (older format) the model was only stored for last assistant message via global last_sse
+    return messages[-1].raw.get("model") \
+        or data.get("last_sse", {}).get("model")
 
 
 def show_rest_of_request_body_properties(data):
@@ -716,8 +726,8 @@ def load_trace_messages_from_stream(stream) -> TraceDTO:
     #   cat input-messages.json | this
     data = json.load(stream)
     # FYI if you want to support old traces that had last_see for only the last assistant message timings then graft that onto the last message's raw/DTO object
-    model_name = data.get("last_sse", {}).get("model")
     messages = load_messages(data)
+    model_name = get_model_name_from_legacy_nvim_trace(messages, data)
 
     if "response_message" in data:
         # * trace
