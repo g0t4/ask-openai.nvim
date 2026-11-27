@@ -228,11 +228,15 @@ def parse_sglang_message_timings(message):
     timings_choices = timings.get("choices")
     if not isinstance(timings_choices, list):
         return None
+    # TODO long term use the new calculations in the ChatOpenAICompatible chat model client instead of these
 
     # * attempt to read meta_info off of completion choice objects
     # Usage can aggregate choices. Never attach one choice's timings to that total.
     single_choice = timings_choices[0] if (len(timings_choices) == 1 and isinstance(timings_choices[0], dict)) else {}
+    # TODO is meta_info ever on the top level? I don't think it is
     native_meta = single_choice or message.get("meta_info") or {}
+    #  FYI meta_info is only returned with non-streaming completions (AFAICT) + you have to set set `"return_meta_info": true`
+    #  right now I am not using return_meta_info in my AI tooling (not even for non-streaming cases) but we can leave it since the same structure comes back with timings.choices AFAICT
     if not native_meta and isinstance(message.get("choices"), list):
         message_choices = message["choices"]
         if len(message_choices) == 1 and isinstance(message_choices[0], dict):
