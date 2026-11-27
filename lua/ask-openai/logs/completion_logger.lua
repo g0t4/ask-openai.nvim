@@ -32,7 +32,8 @@ end
 ---@param request CurlRequest|CurlRequestForTrace
 ---@param frontend StreamingFrontend
 function M.log_sse_to_request(sse_parsed, request, frontend)
-    local is_last_sse = response_metadata.is_final(sse_parsed)
+    -- TODO! didn't last_sse cause some havoc for AgentsFrontend logging the last agent message? is that fixed now that I took out last_sse?
+    local is_last_sse = response_metadata.is_end_of_stream(sse_parsed)
 
     local function log_raw_completion_sse()
         -- /v1/completions endpoint

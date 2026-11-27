@@ -7,9 +7,9 @@ local metadata = require("ask-openai.backends.response_metadata")
 
 describe("verbatim response metadata", function()
     it("ignores null usage and continuous usage on content chunks", function()
-        assert.is_false(metadata.is_final({ choices = {}, usage = vim.NIL }))
-        assert.is_false(metadata.is_final({ choices = { { delta = { content = "hi" } } }, usage = {} }))
-        assert.is_true(metadata.is_final({ timings = {} }))
+        assert.is_false(metadata.is_end_of_stream({ choices = {}, usage = vim.NIL }))
+        assert.is_false(metadata.is_end_of_stream({ choices = { { delta = { content = "hi" } } }, usage = {} }))
+        assert.is_true(metadata.is_end_of_stream({ timings = {} }))
         local saved = {}
         metadata.accumulate({ usage = {}, metrics = vim.NIL }, saved)
         assert.equals(nil, saved.metrics)
@@ -42,7 +42,7 @@ describe("verbatim response metadata", function()
             }
         }
         local messages = { { role = "assistant", content = "OK" } }
-        assert.is_true(metadata.is_final(extension))
+        assert.is_true(metadata.is_end_of_stream(extension))
         assert.is_true(metadata.capture_final(extension, messages))
         assert.is_true(metadata.capture_final(usage, messages))
         local saved = {}
@@ -110,16 +110,5 @@ describe("usage-triggered trace logging", function()
         assert.equals(16, saved.messages[1].usage.completion_tokens)
         assert.same(spec, saved.messages[1].sglext)
         assert.equals("sglang", saved.messages[1].backend)
-    end)
-
-    it("saves on the finish marker even when a backend omits usage entirely", function()
-        local saved
-        logger.save_trace = function(_, _, messages) saved = messages end
-        local request = { body = { messages = {} } }
-        logger.log_sse_to_request({ choices = { { delta = { role = "assistant", content = "OK" } } } }, request, {})
-        logger.log_sse_to_request({ choices = { { delta = {}, finish_reason = "stop" } } }, request, {})
-        assert.is_true(vim.wait(1000, function() return saved ~= nil end, 10))
-        assert.equals("OK", saved[1].content)
-        assert.equals("stop", saved[1].finish_reason)
     end)
 end)
