@@ -28,7 +28,7 @@ function M.log_request_with(request, frontend)
     return save_dir, trace_id
 end
 
-local function should_save_trace(accumulated_message)
+local function done_accumulating(accumulated_message)
     -- FYI safe to assume timings are always present in our deployment standards
     --  so we can simplify and not bother with is_final / finish_reason as a trigger to save the trace
     --  instead we only save when we hit a timings sse
@@ -65,7 +65,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         end
         -- PRN accumulate the finish_reason too?
 
-        if not should_save_trace(accumulated_message) then
+        if not done_accumulating(accumulated_message) then
             return
         end
 
@@ -151,7 +151,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         -- PRN track tool call deltas too? on the response (for output.json)?
         --   FYI request.body, on next turn, already has the tool call
         --   so for now, this is not urgent to add to logs here... I can grab trace logs for after model responds to tool call result
-        if not should_save_trace(accumulated_message) then
+        if not done_accumulating(accumulated_message) then
             return
         end
 
