@@ -29,19 +29,17 @@ function M.log_request_with(request, frontend)
 end
 
 local function should_save_trace(sse)
-    -- OK now this literally is ONLY for when we hit the end to trigger logging
-    local choices = type(sse.choices) == "table" and sse.choices or {}
     -- FYI safe to assume timings are always present in our deployment standards
     --  so we can simplify and not bother with is_final / finish_reason as a trigger to save the trace
     --  instead we only save when we hit a timings sse
     --  well technically we should only save when we have accumulated all of our expected timings fields (or the last expected one so we don't repeatedly save a trace)
+
     local has_timings = type(sse.timings) == "table"
     local has_usage = type(sse.usage) == "table"
     local has_sglext = type(sse.sglext) == "table"
-    -- TODO! assert all accumulated timing fields are presenmt on the message, not the SSE
-    return has_timings
-        or ((has_usage or has_sglext)
-            and type(sse.choices) == "table" and next(sse.choices) == nil)
+    -- OK we do not want to repeatedly save a trace, but we're going to with sse based save triggering...
+    -- TODO move to accum based trigger
+    return has_timings or has_usage or has_sglext
 end
 
 ---@param sse_parsed table
