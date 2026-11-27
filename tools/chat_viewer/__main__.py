@@ -610,7 +610,7 @@ def hack_copy_jsonl_record_timings_to_raw_message_like_nvim_harness(record):
     #     return raw_message
 
     # FYI clanker_mode first is only vllm (for now)
-    raw_message["response_backend"] = "vllm" # TODO copy response_backend if set? where will we set it?
+    raw_message["backend"] = "vllm" # FYI this will be set in traces from new ChatOpenAICompatible client + set in nvim harness too
 
     # FYI right now clanker_mode uses deepseek v4 flash only which is exclusively vllm
     # we can start with that limitation too

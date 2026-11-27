@@ -591,7 +591,7 @@ def test_vllm_output_details_nested_and_zero_noise_hidden() -> None:
 
 def test_sglang_usage_and_speculative_extension_are_verbatim():
     from copy import deepcopy
-    response = {'role':'assistant', 'timings':{'choices':[]}, 'response_backend':'sglang', 'usage':{'prompt_tokens':100,'completion_tokens':20,
+    response = {'role':'assistant', 'timings':{'choices':[]}, 'backend':'sglang', 'usage':{'prompt_tokens':100,'completion_tokens':20,
         'reasoning_tokens':7,'prompt_tokens_details':{'cached_tokens':80}},
         'sglext':{'spec_tokens_details':{'spec_num_correct_drafts':12,'spec_num_proposed_drafts':18,
                                        'spec_accept_rate':2/3,'spec_accept_length':8/3}}}

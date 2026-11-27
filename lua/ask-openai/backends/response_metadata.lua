@@ -22,7 +22,7 @@ end
 function M.accumulate(sse, message)
     -- log:info("copy", sse)
     -- FYI model is on SSE level for sglang, llama-server and vllm
-    for _, field in ipairs({ "timings", "usage", "metrics", "sglext", "response_backend", "model" }) do
+    for _, field in ipairs({ "timings", "usage", "metrics", "sglext", "backend", "model" }) do
         -- do not ever treat nil/vim.NIL as a value that we set
         if sse[field] ~= nil and sse[field] ~= vim.NIL then
             if message[field] ~= nil and message[field] ~= sse[field] then
@@ -33,7 +33,7 @@ function M.accumulate(sse, message)
             message[field] = sse[field]
         end
     end
-    if message.response_backend == nil then
+    if message.backend == nil then
         -- TODO vet sglang marked
         -- TODO vet llama-server marked
         -- TODO vet vllm marked
@@ -46,14 +46,14 @@ function M.accumulate(sse, message)
         if has_sglext or timings_with_choices then
             -- FYI must have sglext is enough (our extension)
             -- OR, timings.choices if we dont have our extension but our extension is going to be the deployment standard going forward so this is less important
-            message.response_backend = "sglang"
+            message.backend = "sglang"
         elseif has_metrics and sse.system_fingerprint and sse.system_fingerprint:find("^vllm") then
-            message.response_backend = "vllm"
+            message.backend = "vllm"
         elseif timings_without_choices and sse.sglext == nil then
-            message.response_backend = "llama-server"
+            message.backend = "llama-server"
         end
     else
-        log:info("response_backend already set, unexpected... not a problem just you wanted to know", sse)
+        log:info("backend already set, unexpected... not a problem just you wanted to know", sse)
     end
 end
 
