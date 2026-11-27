@@ -197,13 +197,13 @@ function M.save_trace(request, frontend, messages_snapshot, trace_data)
             -- clone so we can strip metadata from the message itself without
             -- mutating the accumulated_message object still held in-memory
             local message_clone = vim.deepcopy(message)
-            local metadata = message_clone.metadata
+            local message_metadata = message_clone.metadata
             message_clone.metadata = nil
 
             local record = {
                 message = message_clone,
                 type = "message",
-                metadata = metadata,
+                metadata = message_metadata and { response = message_metadata } or nil,
             }
 
             local encoded = json.encode(record, {
