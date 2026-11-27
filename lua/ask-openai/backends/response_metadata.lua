@@ -11,7 +11,8 @@ function M.is_final(sse)
             return true
         end
     end
-    return type(sse.timings) == "table"
+    local has_timings = type(sse.timings) == "table"
+    return has_timings
         or ((type(sse.usage) == "table" or type(sse.sglext) == "table" or type(sse.meta_info) == "table")
             and type(sse.choices) == "table" and next(sse.choices) == nil)
 end
