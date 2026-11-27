@@ -15,14 +15,14 @@ function M.is_final(sse)
     local has_usage = type(sse.usage) == "table"
     local has_sglext = type(sse.sglext) == "table"
     return has_timings
-        or ((has_usage or has_sglext or type(sse.meta_info) == "table")
+        or ((has_usage or has_sglext)
             and type(sse.choices) == "table" and next(sse.choices) == nil)
 end
 
 function M.accumulate(sse, message)
     -- log:info("copy", sse)
     -- FYI model is on SSE level for sglang, llama-server and vllm
-    for _, field in ipairs({ "timings", "usage", "metrics", "sglext", "meta_info", "response_backend", "model" }) do
+    for _, field in ipairs({ "timings", "usage", "metrics", "sglext", "response_backend", "model" }) do
         -- do not ever treat nil/vim.NIL as a value that we set
         if sse[field] ~= nil and sse[field] ~= vim.NIL then
             if message[field] ~= nil and message[field] ~= sse[field] then
