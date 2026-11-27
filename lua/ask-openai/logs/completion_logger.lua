@@ -124,6 +124,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         -- last SSE choices:
         -- choices = { { delta = vim.empty_dict(), finish_reason = "stop", index = 0 } },
         -- accum the full message (from streaming SSEs) so I can log for all frontends here
+        -- * init accum object and store it on request
         local accum = request.accum or {}
         request.accum = accum
 
@@ -135,28 +136,33 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         -- accumulate timings and other NON-delta details
         response_metadata.accumulate(sse_parsed, accum)
 
-        local first_choice = choices[1]
-        -- TODO warn if > 1 choices?
-        local no_delta = not first_choice
-        if no_delta then
-            return
-        end
-        local delta = first_choice and first_choice.delta or {}
-        if type(delta) ~= "table" then return end
+        local function accumulate_delta()
+            -- PRN warn if > 1 choices? ... we might have done that elsewhere already?
+            local first_choice = choices[1]
 
-        if delta.role and delta.role ~= vim.NIL then
-            accum.role = delta.role
+            local no_delta = not first_choice
+            if no_delta then
+                return
+            end
+            local delta = first_choice and first_choice.delta or {}
+            if type(delta) ~= "table" then return end
+
+            if delta.role and delta.role ~= vim.NIL then
+                accum.role = delta.role
+            end
+            local reasoning_content = response_reasoning.get_content(delta)
+            if reasoning_content ~= nil then
+                accum.reasoning_content = (accum.reasoning_content or "") .. reasoning_content
+            end
+            if delta.content and delta.content ~= vim.NIL then
+                accum.content = (accum.content or "") .. delta.content
+            end
+            if first_choice and first_choice.finish_reason and first_choice.finish_reason ~= vim.NIL then
+                accum.finish_reason = first_choice.finish_reason
+            end
         end
-        local reasoning_content = response_reasoning.get_content(delta)
-        if reasoning_content ~= nil then
-            accum.reasoning_content = (accum.reasoning_content or "") .. reasoning_content
-        end
-        if delta.content and delta.content ~= vim.NIL then
-            accum.content = (accum.content or "") .. delta.content
-        end
-        if first_choice and first_choice.finish_reason and first_choice.finish_reason ~= vim.NIL then
-            accum.finish_reason = first_choice.finish_reason
-        end
+
+        accumulate_delta()
 
         -- PRN drop assistant prefill message before last message in trace?
         --  else these become part of trace too that is sent back to agents!?
