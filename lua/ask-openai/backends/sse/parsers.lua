@@ -111,7 +111,8 @@ function parse_sse_v1_chat_completions(sse)
         log:info("skipping SSE with error b/c that will be handled elsewhere", sse)
         return nil
     end
-    if type(sse.choices) == "table" and next(sse.choices) == nil
+    local no_choices = type(sse.choices) == "table" and next(sse.choices) == nil
+    if no_choices
         and require("ask-openai.backends.response_metadata").is_final(sse) then
         return { content = "", reasoning_content = "", done = false }
     end
