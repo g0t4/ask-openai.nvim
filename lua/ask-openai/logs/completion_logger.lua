@@ -159,7 +159,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         --  TODO see notes in AgentsFrontend to figure out where I want this
         --   and FYI this can affect any frontend, not just Agents... i.e. PredictionsFrontend using non reasoning FIM with Muse Glimmer
 
-        -- TODO jsonl_record logs
+        -- TODO jsonl_record logs (take .request_body.messages => message records,  rest of .request_body => type=request ? to capture inputs, and type=tools? for tool definitions specifically?)
         response_metadata.accumulate(sse_parsed, accum)
 
         -- PRN track tool call deltas too? on the response (for output.json)?
