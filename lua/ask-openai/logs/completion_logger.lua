@@ -132,12 +132,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         response_metadata.accumulate(sse_parsed, accum)
 
         local function accumulate_delta()
-            if not sse_parsed.choices then
-                return
-            end
-
-            local no_delta = #sse_parsed.choices == 0
-            if no_delta then
+            if type(sse_parsed.choices) ~= "table" or #sse_parsed.choices == 0 then
                 return
             end
 
