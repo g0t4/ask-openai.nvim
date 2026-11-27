@@ -40,6 +40,7 @@ local ansi = require("devtools.ansi")
 local safely = require("ask-openai.helpers.safely")
 local live_trace_stream = require("ask-openai.agents.live_trace_stream")
 local values = require("ask-openai.helpers.values")
+local response_metadata = require("ask-openai.backends.response_metadata")
 
 ---@class AgentsFrontend : StreamingFrontend
 local AgentsFrontend = {}
@@ -827,7 +828,6 @@ function AgentsFrontend.on_parsed_data_sse(sse_parsed)
         return
     end
 
-    local response_metadata = require("ask-openai.backends.response_metadata")
     if response_metadata.capture_final(sse_parsed, request.accumulated_model_response_messages) then
         live_trace_stream.changed(trace, sse_parsed.model)
         update_ui_chat_viewer(trace)
