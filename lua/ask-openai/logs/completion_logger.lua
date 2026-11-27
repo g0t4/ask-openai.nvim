@@ -28,15 +28,15 @@ function M.log_request_with(request, frontend)
     return save_dir, trace_id
 end
 
-local function should_save_trace(sse)
+local function should_save_trace(accumulated_message)
     -- FYI safe to assume timings are always present in our deployment standards
     --  so we can simplify and not bother with is_final / finish_reason as a trigger to save the trace
     --  instead we only save when we hit a timings sse
     --  well technically we should only save when we have accumulated all of our expected timings fields (or the last expected one so we don't repeatedly save a trace)
 
-    local has_timings = type(sse.timings) == "table"
-    local has_usage = type(sse.usage) == "table"
-    local has_sglext = type(sse.sglext) == "table"
+    local has_timings = type(accumulated_message.timings) == "table"
+    local has_usage = type(accumulated_message.usage) == "table"
+    local has_sglext = type(accumulated_message.sglext) == "table"
     -- OK we do not want to repeatedly save a trace, but we're going to with sse based save triggering...
     -- TODO move to accum based trigger
     return has_timings or has_usage or has_sglext
@@ -80,7 +80,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         end
 
 
-        if not should_save_trace(sse_parsed) then
+        if not should_save_trace(accum) then
             return
         end
 
@@ -166,7 +166,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         -- PRN track tool call deltas too? on the response (for output.json)?
         --   FYI request.body, on next turn, already has the tool call
         --   so for now, this is not urgent to add to logs here... I can grab trace logs for after model responds to tool call result
-        if not should_save_trace(sse_parsed) then
+        if not should_save_trace(accum) then
             return
         end
 
