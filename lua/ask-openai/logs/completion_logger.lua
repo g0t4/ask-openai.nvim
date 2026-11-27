@@ -202,7 +202,7 @@ function M.save_trace(request, frontend, messages_snapshot, trace_data)
 
             local record = {
                 message = message_clone,
-                type = "record",
+                type = "message",
                 response_metadata = response_metadata,
             }
 
