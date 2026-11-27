@@ -71,16 +71,16 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         --
         --  TODO look into llama-server option to return .__verbose.content with raw completion even on chat completions and even on streaming responses!
         --     OR tag it onto my verbose flag that I already read off of request body!
-        local accum = request.accum or {}
-        request.accum = accum
+        local accumulated_message = request.accum or {}
+        request.accum = accumulated_message
 
         -- * accumulate content
         if sse_parsed.content ~= nil and sse_parsed.content ~= vim.NIL then
-            accum.content = (accum.content or "") .. sse_parsed.content
+            accumulated_message.content = (accumulated_message.content or "") .. sse_parsed.content
         end
 
 
-        if not should_save_trace(accum) then
+        if not should_save_trace(accumulated_message) then
             return
         end
 
@@ -90,7 +90,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         }
         local trace_data = {
             -- put content on trace_data top-level
-            content = accum.content,
+            content = accumulated_message.content,
         }
         vim.schedule(function()
             local no_messages = nil -- b/c not chat endpoint
