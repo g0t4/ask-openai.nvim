@@ -34,10 +34,13 @@ end
 function M.log_sse_to_request(sse_parsed, request, frontend)
     -- TODO! didn't last_sse cause some havoc for AgentsFrontend logging the last agent message? is that fixed now that I took out last_sse?
 
-    local function log_raw_completion_sse()
+    local function is_raw_completion_sse(sse)
         -- /v1/completions endpoint
-        local is_raw_completion_sse = sse_parsed.content ~= nil
-        if not is_raw_completion_sse then
+        return sse.content ~= nil
+    end
+
+    local function log_raw_completion_sse()
+        if not is_raw_completion_sse(sse_parsed) then
             return
         end
 
