@@ -6,8 +6,8 @@ local M = {}
 function M.is_final(sse)
     local choices = type(sse.choices) == "table" and sse.choices or {}
     for _, choice in ipairs(choices) do
-        local has_finish_reason = type(choice) == "table" and choice.finish_reason ~= nil and choice.finish_reason ~= vim.NIL
-        if has_finish_reason then
+        local choice_has_finish_reason = type(choice) == "table" and choice.finish_reason ~= nil and choice.finish_reason ~= vim.NIL
+        if choice_has_finish_reason then
             return true
         end
     end
