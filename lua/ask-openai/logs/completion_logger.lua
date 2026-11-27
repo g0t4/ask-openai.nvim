@@ -28,12 +28,28 @@ function M.log_request_with(request, frontend)
     return save_dir, trace_id
 end
 
+local function is_end_of_stream(sse)
+    -- OK now this literally is ONLY for when we hit the end to trigger logging
+    local choices = type(sse.choices) == "table" and sse.choices or {}
+    -- FYI safe to assume timings are always present in our deployment standards
+    --  so we can simplify and not bother with is_final / finish_reason as a trigger to save the trace
+    --  instead we only save when we hit a timings sse
+    --  well technically we should only save when we have accumulated all of our expected timings fields (or the last expected one so we don't repeatedly save a trace)
+    local has_timings = type(sse.timings) == "table"
+    local has_usage = type(sse.usage) == "table"
+    local has_sglext = type(sse.sglext) == "table"
+    -- TODO! assert all accumulated timing fields are presenmt on the message, not the SSE
+    return has_timings
+        or ((has_usage or has_sglext)
+            and type(sse.choices) == "table" and next(sse.choices) == nil)
+end
+
 ---@param sse_parsed table
 ---@param request CurlRequest|CurlRequestForTrace
 ---@param frontend StreamingFrontend
 function M.log_sse_to_request(sse_parsed, request, frontend)
     -- TODO! didn't last_sse cause some havoc for AgentsFrontend logging the last agent message? is that fixed now that I took out last_sse?
-    local is_last_sse = response_metadata.is_end_of_stream(sse_parsed)
+    local is_last_sse = is_end_of_stream(sse_parsed)
 
     local function log_raw_completion_sse()
         -- /v1/completions endpoint

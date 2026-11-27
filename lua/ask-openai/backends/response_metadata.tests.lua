@@ -7,9 +7,6 @@ local metadata = require("ask-openai.backends.response_metadata")
 
 describe("verbatim response metadata", function()
     it("ignores null usage and continuous usage on content chunks", function()
-        assert.is_false(metadata.is_end_of_stream({ choices = {}, usage = vim.NIL }))
-        assert.is_false(metadata.is_end_of_stream({ choices = { { delta = { content = "hi" } } }, usage = {} }))
-        assert.is_true(metadata.is_end_of_stream({ timings = {} }))
         local saved = {}
         metadata.accumulate({ usage = {}, metrics = vim.NIL }, saved)
         assert.equals(nil, saved.metrics)
@@ -39,7 +36,6 @@ describe("verbatim response metadata", function()
             }
         }
         local messages = { { role = "assistant", content = "OK" } }
-        assert.is_true(metadata.is_end_of_stream(extension))
         local saved = {}
         --
         -- accumulate across all SSEs
