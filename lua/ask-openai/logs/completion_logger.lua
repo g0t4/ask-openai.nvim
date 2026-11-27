@@ -34,17 +34,16 @@ end
 function M.log_sse_to_request(sse_parsed, request, frontend)
     -- TODO! didn't last_sse cause some havoc for AgentsFrontend logging the last agent message? is that fixed now that I took out last_sse?
 
-    local function is_raw_completion_sse(sse)
-        -- /v1/completions endpoint
+    local function is_raw_completion_endpoint(sse)
         return sse.content ~= nil
     end
 
     local function log_raw_completion_sse()
-        if not is_raw_completion_sse(sse_parsed) then
+        -- * /v1/completions endpoint
+        if not is_raw_completion_endpoint(sse_parsed) then
             return
         end
 
-        -- * /v1/completions endpoint
         local accumulated_message = request.accum or {}
         request.accum = accumulated_message
 
@@ -74,13 +73,16 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         end)
     end
 
+    local function is_chat_completion_endpoint(sse)
+        return sse.choices ~= nil
+    end
+
     local function log_chat_completion_sse()
-        local is_chat_completion_sse = sse_parsed.choices ~= nil
-        if not is_chat_completion_sse then
+        -- * /v1/chat/completions endpoint llama-server
+        if not is_chat_completion_endpoint(sse_parsed) then
             return
         end
 
-        -- * /v1/chat/completions endpoint llama-server
         -- FYI delta is the part that changes per SSE, except for last SSE which sets other fields like finish_reason
         -- * key parts (in order):
         --
