@@ -28,20 +28,6 @@ function M.log_request_with(request, frontend)
     return save_dir, trace_id
 end
 
-local function done_accumulating(accumulated_message)
-    -- FYI safe to assume timings are always present in our deployment standards
-    --  so we can simplify and not bother with is_final / finish_reason as a trigger to save the trace
-    --  instead we only save when we hit a timings sse
-    --  well technically we should only save when we have accumulated all of our expected timings fields (or the last expected one so we don't repeatedly save a trace)
-
-    local has_timings = type(accumulated_message.timings) == "table"
-    local has_usage = type(accumulated_message.usage) == "table"
-    local has_sglext = type(accumulated_message.sglext) == "table"
-    -- OK we do not want to repeatedly save a trace, but we're going to with sse based save triggering...
-    -- TODO move to accum based trigger
-    return has_timings or has_usage or has_sglext
-end
-
 ---@param sse_parsed table
 ---@param request CurlRequest|CurlRequestForTrace
 ---@param frontend StreamingFrontend
@@ -65,7 +51,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         end
         -- PRN accumulate the finish_reason too?
 
-        if not done_accumulating(accumulated_message) then
+        if not accumulated_message.done then
             return
         end
 
@@ -111,7 +97,6 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         local accumulated_message = request.accum or {}
         request.accum = accumulated_message
 
-        -- accumulate timings and other NON-delta details
         response_metadata.accumulate(sse_parsed, accumulated_message)
 
         local function accumulate_choice(sse)
@@ -148,10 +133,11 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         --  TODO see notes in AgentsFrontend to figure out where I want this
         --   and FYI this can affect any frontend, not just Agents... i.e. PredictionsFrontend using non reasoning FIM with Muse Glimmer
 
+        -- TODO do I add to accumulated_message (via request.accum) in AgentsFrontend for tool calls?
         -- PRN track tool call deltas too? on the response (for output.json)?
         --   FYI request.body, on next turn, already has the tool call
         --   so for now, this is not urgent to add to logs here... I can grab trace logs for after model responds to tool call result
-        if not done_accumulating(accumulated_message) then
+        if not accumulated_message.done then
             return
         end
 

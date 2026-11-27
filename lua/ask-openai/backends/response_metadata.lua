@@ -4,8 +4,11 @@ local log = require("devtools.logs.logger").universal()
 local M = {}
 
 function M.accumulate(sse, message)
-    -- log:info("copy", sse)
+    -- FYI safe to assume timings are always present in our deployment standards
+    --  so do not bother with finish_reason as a part of being "done"... b/c that always comes before timings anyways
     -- FYI model is on SSE level for sglang, llama-server and vllm
+
+    -- * preserve fields
     for _, field in ipairs({ "timings", "usage", "metrics", "sglext", "backend", "model" }) do
         -- do not ever treat nil/vim.NIL as a value that we set
         if sse[field] ~= nil and sse[field] ~= vim.NIL then
@@ -17,24 +20,28 @@ function M.accumulate(sse, message)
             message[field] = sse[field]
         end
     end
+
+    -- * determinbe backend+done
     if message.backend == nil then
-        -- TODO vet sglang marked
-        -- TODO vet llama-server marked
-        -- TODO vet vllm marked
-        local timings_with_choices = (type(sse.timings) == "table" and type(sse.timings.choices) == "table")
-        local timings_without_choices = type(sse.timings) == "table" and sse.timings.choices == nil
+        local has_sglang_timings = (type(sse.timings) == "table" and type(sse.timings.choices) == "table")
+        local has_llama_server_timings = type(sse.timings) == "table" and sse.timings.choices == nil
         local has_usage = type(sse.usage) == "table"
         local has_sglext = type(sse.sglext) == "table"
         local has_metrics = type(sse.metrics) == "table"
 
-        if has_sglext or timings_with_choices then
+        if has_sglext and has_sglang_timings and has_usage then
             -- FYI must have sglext is enough (our extension)
             -- OR, timings.choices if we dont have our extension but our extension is going to be the deployment standard going forward so this is less important
             message.backend = "sglang"
-        elseif has_metrics and sse.system_fingerprint and sse.system_fingerprint:find("^vllm") then
+            message.done = true
+        elseif has_metrics and has_usage then
+            -- FYI system_fingerprint is redundant to check b/c metrics+usage tells us this
+            -- and sse.system_fingerprint and sse.system_fingerprint:find("^vllm")
             message.backend = "vllm"
-        elseif timings_without_choices and sse.sglext == nil then
+            message.done = true
+        elseif has_llama_server_timings and not has_sglext then
             message.backend = "llama-server"
+            message.done = true
         end
     else
         log:info("backend already set, unexpected... not a problem just you wanted to know", sse)
