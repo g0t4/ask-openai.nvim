@@ -49,7 +49,6 @@ end
 ---@param frontend StreamingFrontend
 function M.log_sse_to_request(sse_parsed, request, frontend)
     -- TODO! didn't last_sse cause some havoc for AgentsFrontend logging the last agent message? is that fixed now that I took out last_sse?
-    local is_last_sse = is_end_of_stream(sse_parsed)
 
     local function log_raw_completion_sse()
         -- /v1/completions endpoint
@@ -82,6 +81,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
             accum.content = (accum.content or "") .. sse_parsed.content
         end
 
+        local is_last_sse = is_end_of_stream(sse_parsed)
         if not is_last_sse then
             return
         end
@@ -168,6 +168,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         -- PRN track tool call deltas too? on the response (for output.json)?
         --   FYI request.body, on next turn, already has the tool call
         --   so for now, this is not urgent to add to logs here... I can grab trace logs for after model responds to tool call result
+        local is_last_sse = is_end_of_stream(sse_parsed)
         if not is_last_sse then
             return
         end
