@@ -29,11 +29,11 @@ function M.accumulate(sse, accumulated_message)
     -- I am not thrilled about needing to append `done` but... not the end of the world
     --  TODO move all this to metadata and not message level or on a record level?
     if metadata.done == nil then
-        local has_sglang_timings = (type(sse.timings) == "table" and type(sse.timings.choices) == "table")
-        local has_llama_server_timings = type(sse.timings) == "table" and sse.timings.choices == nil
-        local has_usage = type(sse.usage) == "table"
-        local has_sglext = type(sse.sglext) == "table"
-        local has_metrics = type(sse.metrics) == "table"
+        local has_sglang_timings = (type(metadata.timings) == "table" and type(metadata.timings.choices) == "table")
+        local has_llama_server_timings = type(metadata.timings) == "table" and metadata.timings.choices == nil
+        local has_usage = type(metadata.usage) == "table"
+        local has_sglext = type(metadata.sglext) == "table"
+        local has_metrics = type(metadata.metrics) == "table"
 
         -- * ONLY set backend when done so I don't have to store done too
         if has_sglext and has_sglang_timings and has_usage then
@@ -43,15 +43,13 @@ function M.accumulate(sse, accumulated_message)
             metadata.done = true
         elseif has_metrics and has_usage then
             -- FYI system_fingerprint is redundant to check b/c metrics+usage tells us this
-            -- and sse.system_fingerprint and sse.system_fingerprint:find("^vllm")
+            -- and metadata.system_fingerprint and metadata.system_fingerprint:find("^vllm")
             metadata.backend = "vllm"
             metadata.done = true
         elseif has_llama_server_timings and not has_sglext then
             metadata.backend = "llama-server"
             metadata.done = true
         end
-    else
-        log:info("backend already set, unexpected... not a problem just you wanted to know", sse)
     end
 end
 
