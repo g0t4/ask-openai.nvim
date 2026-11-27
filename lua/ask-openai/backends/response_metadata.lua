@@ -28,29 +28,32 @@ function M.accumulate(sse, accumulated_message)
     -- * determinbe backend+done
     -- I am not thrilled about needing to append `done` but... not the end of the world
     --  TODO move all this to metadata and not message level or on a record level?
-    if metadata.done == nil then
-        local has_sglang_timings = (type(metadata.timings) == "table" and type(metadata.timings.choices) == "table")
-        local has_llama_server_timings = type(metadata.timings) == "table" and metadata.timings.choices == nil
-        local has_usage = type(metadata.usage) == "table"
-        local has_sglext = type(metadata.sglext) == "table"
-        local has_metrics = type(metadata.metrics) == "table"
-
-        -- * ONLY set backend when done so I don't have to store done too
-        if has_sglext and has_sglang_timings and has_usage then
-            -- FYI must have sglext is enough (our extension)
-            -- OR, timings.choices if we dont have our extension but our extension is going to be the deployment standard going forward so this is less important
-            metadata.backend = "sglang"
-            metadata.done = true
-        elseif has_metrics and has_usage then
-            -- FYI system_fingerprint is redundant to check b/c metrics+usage tells us this
-            -- and metadata.system_fingerprint and metadata.system_fingerprint:find("^vllm")
-            metadata.backend = "vllm"
-            metadata.done = true
-        elseif has_llama_server_timings and not has_sglext then
-            metadata.backend = "llama-server"
-            metadata.done = true
-        end
+    if metadata.done ~= nil then
+        return
     end
+
+    local has_sglang_timings = (type(metadata.timings) == "table" and type(metadata.timings.choices) == "table")
+    local has_llama_server_timings = type(metadata.timings) == "table" and metadata.timings.choices == nil
+    local has_usage = type(metadata.usage) == "table"
+    local has_sglext = type(metadata.sglext) == "table"
+    local has_metrics = type(metadata.metrics) == "table"
+
+    -- * ONLY set backend when done so I don't have to store done too
+    if has_sglext and has_sglang_timings and has_usage then
+        -- FYI must have sglext is enough (our extension)
+        -- OR, timings.choices if we dont have our extension but our extension is going to be the deployment standard going forward so this is less important
+        metadata.backend = "sglang"
+        metadata.done = true
+    elseif has_metrics and has_usage then
+        -- FYI system_fingerprint is redundant to check b/c metrics+usage tells us this
+        -- and metadata.system_fingerprint and metadata.system_fingerprint:find("^vllm")
+        metadata.backend = "vllm"
+        metadata.done = true
+    elseif has_llama_server_timings and not has_sglext then
+        metadata.backend = "llama-server"
+        metadata.done = true
+    end
+
 end
 
 return M
