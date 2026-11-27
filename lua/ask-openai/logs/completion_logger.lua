@@ -44,7 +44,9 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
             return
         end
 
-        local accumulated_message = request.accum or {}
+        local accumulated_message = request.accum or {
+            request_metadata = {}
+        }
         request.accum = accumulated_message
 
         -- * accumulate content
@@ -53,7 +55,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         end
         -- PRN accumulate the finish_reason too?
 
-        if not accumulated_message.done then
+        if not accumulated_message.request_metadata.done then
             return
         end
 
@@ -99,7 +101,9 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         -- choices = { { delta = vim.empty_dict(), finish_reason = "stop", index = 0 } },
         -- accum the full message (from streaming SSEs) so I can log for all frontends here
         -- * init accum object and store it on request
-        local accumulated_message = request.accum or {}
+        local accumulated_message = request.accum or {
+            request_metadata = {}
+        }
         request.accum = accumulated_message
 
         response_metadata.accumulate(sse_parsed, accumulated_message)
@@ -143,7 +147,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         -- PRN track tool call deltas too? on the response (for output.json)?
         --   FYI request.body, on next turn, already has the tool call
         --   so for now, this is not urgent to add to logs here... I can grab trace logs for after model responds to tool call result
-        if not accumulated_message.done then
+        if not accumulated_message.request_metadata.done then
             return
         end
 
