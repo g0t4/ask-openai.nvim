@@ -610,11 +610,6 @@ def hack_copy_jsonl_record_timings_to_raw_message_like_nvim_harness(record):
     #     rich.print(record)
     #     return raw_message
 
-    # FYI clanker_mode first is only vllm (for now)
-    raw_message["backend"] = "vllm" # FYI this will be set in traces from new ChatOpenAICompatible client + set in nvim harness too
-
-    # FYI right now clanker_mode uses deepseek v4 flash only which is exclusively vllm
-    # we can start with that limitation too
     if not "metadata" in record:
         rich.print("[yellow]missing metadata, cannot find record's timing[/]")
         rich.print(record)
@@ -623,6 +618,13 @@ def hack_copy_jsonl_record_timings_to_raw_message_like_nvim_harness(record):
     metadata = record.get("metadata")
 
     response = metadata.get("response") or {}
+
+    # FYI backend is set in traces by the nvim harness and the new ChatOpenAICompatible client
+    # only set a default when the trace itself doesn't carry one
+    if "backend" not in raw_message:
+        backend = response.get("backend") or metadata.get("backend")
+        if backend:
+            raw_message["backend"] = backend
     is_langchain = "token_usage" in response
     if not is_langchain and "usage" not in response:
         rich.print("[yellow]only JSONL via langchain is supported (detected via presence of record.metadata.response.token_usage or record.metadata.response.usage), cannot find record's timing[/]")
@@ -642,6 +644,8 @@ def hack_copy_jsonl_record_timings_to_raw_message_like_nvim_harness(record):
         raw_message["usage"] = metadata["usage"]
     if "metrics" in response:
         raw_message["metrics"] = response["metrics"]
+    if "timings" in response:
+        raw_message["timings"] = response["timings"]
     return raw_message
 
 
