@@ -28,7 +28,7 @@ function M.log_request_with(request, frontend)
     return save_dir, trace_id
 end
 
-local function is_end_of_stream(sse)
+local function should_save_trace(sse)
     -- OK now this literally is ONLY for when we hit the end to trigger logging
     local choices = type(sse.choices) == "table" and sse.choices or {}
     -- FYI safe to assume timings are always present in our deployment standards
@@ -81,8 +81,8 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
             accum.content = (accum.content or "") .. sse_parsed.content
         end
 
-        local is_last_sse = is_end_of_stream(sse_parsed)
-        if not is_last_sse then
+
+        if not should_save_trace(sse_parsed) then
             return
         end
 
@@ -168,8 +168,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         -- PRN track tool call deltas too? on the response (for output.json)?
         --   FYI request.body, on next turn, already has the tool call
         --   so for now, this is not urgent to add to logs here... I can grab trace logs for after model responds to tool call result
-        local is_last_sse = is_end_of_stream(sse_parsed)
-        if not is_last_sse then
+        if not should_save_trace(sse_parsed) then
             return
         end
 
