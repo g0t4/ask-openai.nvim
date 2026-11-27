@@ -2,23 +2,6 @@ require("ask-openai.helpers.test_setup").modify_package_path()
 local metadata = require("ask-openai.backends.response_metadata")
 
 describe("verbatim response metadata", function()
-    it("captures the empty-choices final chunk without changing fields", function()
-        -- TODO is this even necessary after I moved tracking last_sse on traces? (I removed code here for that too)
-        local sse = {
-            choices = {},
-            usage = { prompt_tokens = 6, completion_tokens = 2, total_tokens = 8 },
-            metrics = { generation_time_ms = 52.29, speculative_decoding = { num_draft_tokens = 5 } },
-        }
-        local messages = { { content = "OK", finish_reason = "stop" } }
-        assert.is_true(metadata.capture_final(sse, messages))
-        local saved = {}
-        metadata.accumulate(sse, saved)
-        assert.equals(sse.usage, saved.usage)
-        assert.equals(sse.metrics, saved.metrics)
-        assert.is_nil(saved.timings)
-        assert.equals("OK", messages[1].content)
-    end)
-
     it("ignores null usage and continuous usage on content chunks", function()
         assert.is_false(metadata.is_final({ choices = {}, usage = vim.NIL }))
         assert.is_false(metadata.is_final({ choices = { { delta = { content = "hi" } } }, usage = {} }))
