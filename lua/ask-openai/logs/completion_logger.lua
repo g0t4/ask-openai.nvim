@@ -187,41 +187,36 @@ function M.save_trace(request, frontend, messages_snapshot, trace_data)
     -- FYI if this doesn't exist before the save_trace io write happens, the io write will fail silently
     vim.fn.mkdir(save_dir, "p")
 
-    local path = save_dir .. "/" .. trace_id .. "-trace.json"
+    local path = save_dir .. "/" .. trace_id .. "-trace.jsonl"
     -- log:info("trace path", path)
+    local messages = messages_snapshot or (request.body and request.body.messages) or {}
+
     local file = io.open(path, "w")
     if file then
-        local request_body_copy = tables.shallow_copy(request.body)
-        -- this way I can avoid issues with timing and AgentsFrontend modifying request.body.messages to add its distilled version of the assistant message
-        -- TODO FYI it is confusing that you add the new message to the messages collection that is marked as request_body.messages... maybe you should just store them separately? and nuke request_body.messages to avoid duplication? like top-level messages?
-        if messages_snapshot ~= nil then
-            -- PRN move this out to caller of save_trace? use trace_data object?
-            request_body_copy.messages = messages_snapshot
+        for _, message in ipairs(messages) do
+            -- clone so we can strip response_metadata from the message itself without
+            -- mutating the accumulated_message object still held in-memory
+            local message_clone = vim.deepcopy(message)
+            local response_metadata = message_clone.response_metadata
+            message_clone.response_metadata = nil
+
+            local record = {
+                message = message_clone,
+                type = "record",
+                response_metadata = response_metadata,
+            }
+
+            local encoded = json.encode(record, {
+                exception = function(reason, bad_value, _, default_message)
+                    if reason == "unsupported type" and bad_value == vim.NIL then
+                        return "null"
+                    end
+
+                    return nil, default_message
+                end,
+            })
+            file:write(encoded .. "\n")
         end
-        trace_data = trace_data or {}
-        trace_data.request_body = request_body_copy
-
-        if frontend.get_flags_wrapper then
-            -- flag traces for later review, especially traces with a knonw issue that you're working on
-            -- TODO add a thumbs up keymap for all trace types?
-            --  ? OR,  update file on accept using jq command to insert thumbs up or w/e details? (rewrites and predictions would use that)
-            local flags = frontend.get_flags_wrapper()
-            if flags then
-                trace_data.flags = flags
-            end
-        end
-
-        local encoded = json.encode(trace_data, {
-            indent = true,
-            exception = function(reason, bad_value, _, default_message)
-                if reason == "unsupported type" and bad_value == vim.NIL then
-                    return "null"
-                end
-
-                return nil, default_message
-            end,
-        })
-        file:write(encoded)
         file:close()
     end
 end
