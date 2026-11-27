@@ -21,7 +21,8 @@ end
 
 function M.accumulate(sse, message)
     -- log:info("copy", sse)
-    for _, field in ipairs({ "timings", "usage", "metrics", "sglext", "meta_info", "response_backend" }) do
+    -- FYI model is on SSE level for sglang, llama-server and vllm
+    for _, field in ipairs({ "timings", "usage", "metrics", "sglext", "meta_info", "response_backend", "model" }) do
         -- do not ever treat nil/vim.NIL as a value that we set
         if sse[field] ~= nil and sse[field] ~= vim.NIL then
             if message[field] ~= nil and message[field] ~= sse[field] then
