@@ -114,11 +114,10 @@ function parse_sse_v1_chat_completions(sse)
     local no_choices = type(sse.choices) == "table" and next(sse.choices) == nil
     if no_choices then
         if response_metadata.is_final(sse) then
-            -- WTF is this for? why?
+            -- why do we need a fake choice object when it's a timing SSE (final originally mean finish reson one one of choices ... or SSE has timing stats)
+            -- so this means only is a timings SSE... why do we need choices in that case at all?
             return { content = "", reasoning_content = "", done = false }
         end
-    end
-    if not sse.choices or not sse.choices[1] then
         log:error("SSE is missing choices", sse)
         -- leave as hard stop error b/c I don't think this ever happens... but error will help me figure out if it does!
         -- this would be for chat completions endpoint only... that's part of expectation already in calling this parse_sse_v1_chat_completions
