@@ -22,7 +22,12 @@ end
 function M.copy(sse, message)
     -- log:info("copy", sse)
     for _, field in ipairs({ "timings", "usage", "metrics", "sglext", "meta_info", "response_backend" }) do
-        if sse[field] ~= nil and (sse[field] ~= vim.NIL or message[field] == nil) then
+        if sse[field] ~= nil and sse[field] ~= vim.NIL then
+            if message[field] ~= nil and message[field] ~= sse[field] then
+                -- checking if value is new => we shouldn't ever see a different value per field and really shouldn't be seeing any field twice (in diff SSEs anyways)...
+                --   we could see it twice if we call this copy() repeatedly
+                log:error("YIKES message['" .. field .. "'] already set with: ", message[field], "will replace with:  ", sse[field])
+            end
             message[field] = sse[field]
         end
     end
