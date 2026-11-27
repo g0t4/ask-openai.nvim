@@ -4,7 +4,8 @@ local log = require("devtools.logs.logger").universal()
 local M = {}
 
 function M.is_final(sse)
-    for _, choice in ipairs(type(sse.choices) == "table" and sse.choices or {}) do
+    local choices = type(sse.choices) == "table" and sse.choices or {}
+    for _, choice in ipairs(choices) do
         if type(choice) == "table" and choice.finish_reason ~= nil and choice.finish_reason ~= vim.NIL then
             return true
         end
