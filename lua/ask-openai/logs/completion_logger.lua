@@ -56,21 +56,6 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         end
 
         -- * /v1/completions endpoint
-        -- raw as in there is no chat template that is used to transform messages => raw prompt
-        -- instead you provide the raw prompt in the request
-        --
-        -- NOTE: llama.cpp /completions endpoint works with raw prompt and response (content)
-        -- llama.cpp /completions SSEs are split: early SSEs have { content: "...", stop: false }
-        -- and the final SSE has { stop: true, timing: true, timings: {...} } WITHOUT content.
-        -- So we accumulate content across events, just like the chat endpoint does for delta.content.
-        --
-        -- TODO modify chat viewers to support this format (.content .request_body.prompt) => can even support raw prompt on regular chat completions too if .__verbose.prompt is present
-        --  if no messages => if prompt => show raw prompt, if content => show raw content
-        --    add model specific syntax prompt highligthing ... at least color key tags like <im_start> in basic chat formats
-        --    could lookup on model id/name
-        --
-        --  TODO look into llama-server option to return .__verbose.content with raw completion even on chat completions and even on streaming responses!
-        --     OR tag it onto my verbose flag that I already read off of request body!
         local accumulated_message = request.accum or {}
         request.accum = accumulated_message
 
@@ -78,7 +63,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         if sse_parsed.content ~= nil and sse_parsed.content ~= vim.NIL then
             accumulated_message.content = (accumulated_message.content or "") .. sse_parsed.content
         end
-
+        -- PRN accumulate the finish_reason too?
 
         if not should_save_trace(accumulated_message) then
             return
