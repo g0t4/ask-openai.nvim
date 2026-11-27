@@ -160,9 +160,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         --   and FYI this can affect any frontend, not just Agents... i.e. PredictionsFrontend using non reasoning FIM with Muse Glimmer
 
         -- TODO jsonl_record logs
-        if is_last_sse then
-            response_metadata.accumulate(sse_parsed, accum)
-        end
+        response_metadata.accumulate(sse_parsed, accum)
 
         -- PRN track tool call deltas too? on the response (for output.json)?
         --   FYI request.body, on next turn, already has the tool call
