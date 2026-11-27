@@ -49,7 +49,7 @@ local function partial_message(message)
     local result = { role = message.role or "assistant", content = message.content or "",
         reasoning_content = message.reasoning_content, _partial = true }
     local metadata = require("ask-openai.backends.response_metadata")
-    metadata.copy(message.last_sse or {}, result)
+    metadata.accumulate(message.last_sse or {}, result)
     result.tool_calls = {}
     for _, call in ipairs(message.tool_calls or {}) do
         result.tool_calls[#result.tool_calls + 1] = { id = call.id, type = call.type or "function",

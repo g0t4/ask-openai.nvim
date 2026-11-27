@@ -145,8 +145,8 @@ function TxChatMessage:from_assistant_rx_message(rx_message)
     -- Preserve raw statistics alongside assistant history for trace viewers.
     if rx_message.last_sse then
         -- TODO move to record object's metadata - record object completion logging refactor
-        require("ask-openai.backends.response_metadata").copy(rx_message.last_sse, tx_message)
-        require("ask-openai.backends.response_metadata").copy(rx_message.last_sse, jsonl_record.metadata)
+        require("ask-openai.backends.response_metadata").accumulate(rx_message.last_sse, tx_message)
+        require("ask-openai.backends.response_metadata").accumulate(rx_message.last_sse, jsonl_record.metadata)
     end
 
     -- FYI qwen3-8b's template exploded after tool call w/ reasoning_content included: (smth about lstrip).. if I comment out next line, then it works fine (tool calls and all):

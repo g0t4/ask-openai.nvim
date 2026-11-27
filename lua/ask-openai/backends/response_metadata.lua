@@ -19,7 +19,7 @@ function M.is_final(sse)
             and type(sse.choices) == "table" and next(sse.choices) == nil)
 end
 
-function M.copy(sse, message)
+function M.accumulate(sse, message)
     -- log:info("copy", sse)
     for _, field in ipairs({ "timings", "usage", "metrics", "sglext", "meta_info", "response_backend" }) do
         -- do not ever treat nil/vim.NIL as a value that we set
@@ -64,7 +64,7 @@ function M.merge(previous, sse)
     for key, value in pairs(sse) do
         if value ~= vim.NIL or merged[key] == nil then merged[key] = value end
     end
-    M.copy(sse, merged)
+    M.accumulate(sse, merged)
     return merged
 end
 
