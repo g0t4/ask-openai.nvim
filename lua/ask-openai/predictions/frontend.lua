@@ -148,6 +148,8 @@ function PredictionsFrontend.ask_for_prediction(params)
 
                 if sse_fields == nil then
                     -- skip if nil (can happen when SSE.error is defined)
+                    -- or on timings only SSEs at the end of a trace
+                    -- might have seen this at start of trace too (when role is defined but nothing else?)
                     return
                 end
 

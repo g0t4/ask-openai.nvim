@@ -103,7 +103,7 @@ function get_probs(choice)
 end
 
 ---@param sse LlamaServerChatCompletionSSE
----@return SseFieldsResult?
+---@return SseFieldsResult? -- nil == no content/reasoning/finish_reason
 function parse_sse_v1_chat_completions(sse)
     if sse.error ~= nil then
         -- error examples:
@@ -111,18 +111,12 @@ function parse_sse_v1_chat_completions(sse)
         log:info("skipping SSE with error b/c that will be handled elsewhere", sse)
         return nil
     end
-    local no_choices = type(sse.choices) == "table" and next(sse.choices) == nil
+    local no_choices = type(sse.choices) == "table" and #sse.choices == 0
     if no_choices then
-        if response_metadata.is_final(sse) then
-            -- why do we need a fake choice object when it's a timing SSE (final originally mean finish reson one one of choices ... or SSE has timing stats)
-            -- so this means only is a timings SSE... why do we need choices in that case at all?
-            return { content = "", reasoning_content = "", done = false }
-        end
-        log:error("SSE is missing choices", sse)
-        -- leave as hard stop error b/c I don't think this ever happens... but error will help me figure out if it does!
-        -- this would be for chat completions endpoint only... that's part of expectation already in calling this parse_sse_v1_chat_completions
-        -- and right now I only use this for predictions
-        error("SSE is missing choices - I don't think this ever happens so if it does... then raise hard error")
+        -- skip if no choices (can happen on SSEs at end with timing)
+        -- if it happens elsewhere just skip it for now
+        -- PRN consider logging if not an timings SSE where this is known to happen
+        return nil
     end
 
     log:info("raw sse", sse)
