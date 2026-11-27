@@ -57,18 +57,6 @@ function M.accumulate(sse, message)
     end
 end
 
--- SGLang emits extensions and usage in separate terminal chunks. Preserve both
--- without mutating either raw SSE object or letting null placeholders erase data.
-function M.merge(previous, sse)
-    local merged = {}
-    for key, value in pairs(previous or {}) do merged[key] = value end
-    for key, value in pairs(sse) do
-        if value ~= vim.NIL or merged[key] == nil then merged[key] = value end
-    end
-    M.accumulate(sse, merged)
-    return merged
-end
-
 -- Usage on an empty-choices chunk describes the request. Attribute it to a
 -- message only for the single-choice requests we currently send.
 function M.capture_final(sse, messages)
@@ -76,7 +64,6 @@ function M.capture_final(sse, messages)
         return false
     end
     if messages and #messages == 1 then
-        messages[1].last_sse = messages[1].last_sse and M.merge(messages[1].last_sse, sse) or sse
         return true
     end
     return false

@@ -3,6 +3,7 @@ local metadata = require("ask-openai.backends.response_metadata")
 
 describe("verbatim response metadata", function()
     it("captures the empty-choices final chunk without changing fields", function()
+        -- TODO is this even necessary after I moved tracking last_sse on traces? (I removed code here for that too)
         local sse = {
             choices = {},
             usage = { prompt_tokens = 6, completion_tokens = 2, total_tokens = 8 },
@@ -10,9 +11,8 @@ describe("verbatim response metadata", function()
         }
         local messages = { { content = "OK", finish_reason = "stop" } }
         assert.is_true(metadata.capture_final(sse, messages))
-        assert.equals(sse, messages[1].last_sse)
         local saved = {}
-        metadata.accumulate(messages[1].last_sse, saved)
+        metadata.accumulate(sse, saved)
         assert.equals(sse.usage, saved.usage)
         assert.equals(sse.metrics, saved.metrics)
         assert.is_nil(saved.timings)
@@ -38,15 +38,15 @@ describe("verbatim response metadata", function()
         local usage = { choices = {}, sglext = vim.NIL, usage = { prompt_tokens = 14,
             completion_tokens = 16, reasoning_tokens = 9, prompt_tokens_details = { cached_tokens = 4 } } }
         local messages = { { role = "assistant", content = "OK" } }
-        local original = vim.deepcopy(extension)
         assert.is_true(metadata.is_final(extension))
         assert.is_true(metadata.capture_final(extension, messages))
         assert.is_true(metadata.capture_final(usage, messages))
-        assert.same(extension.sglext, messages[1].last_sse.sglext)
-        assert.same(usage.usage, messages[1].last_sse.usage)
-        assert.same(original, extension)
         local saved = {}
-        metadata.accumulate(messages[1].last_sse, saved)
+        --
+        -- accumulate across all SSEs
+        metadata.accumulate(extension, saved)
+        metadata.accumulate(usage, saved)
+        --
         assert.equals("sglang", saved.response_backend)
         assert.equals(12, saved.sglext.spec_tokens_details.spec_num_correct_drafts)
     end)
@@ -65,8 +65,8 @@ describe("usage-triggered trace logging", function()
 
     it("saves accumulated content and verbatim usage/metrics without timings", function()
         local saved
-        logger.save_trace = function(_, _, messages, last_sse)
-            saved = { messages = messages, last_sse = last_sse }
+        logger.save_trace = function(_, _, messages)
+            saved = { messages = messages }
         end
         local request = { body = { messages = {} } }
         local function emit(sse) logger.log_sse_to_request(sse, request, {}) end
@@ -78,7 +78,6 @@ describe("usage-triggered trace logging", function()
         local final = { choices = {}, usage = { total_tokens = 8 }, metrics = { tokens_per_second = 11.7 } }
         emit(final)
         assert.is_true(vim.wait(1000, function() return saved ~= nil end, 10))
-        assert.same(final, saved.last_sse)
         assert.equals("OK", saved.messages[1].content)
         assert.equals("first second", saved.messages[1].reasoning_content)
         assert.equals("stop", saved.messages[1].finish_reason)
@@ -87,18 +86,18 @@ describe("usage-triggered trace logging", function()
     end)
     it("saves SGLang stats after separate terminal chunks even without timings", function()
         local saved
-        logger.save_trace = function(_, _, messages, last_sse) saved = { messages = messages, last_sse = last_sse } end
+        logger.save_trace = function(_, _, messages) saved = { messages = messages } end
         local request = { body = { messages = {} } }
         logger.log_sse_to_request({ choices = { { delta = { role = "assistant", content = "OK" } } } }, request, {})
         local spec = { spec_tokens_details = { spec_num_correct_drafts = 12, spec_num_proposed_drafts = 18 } }
         logger.log_sse_to_request({ choices = {}, usage = vim.NIL, sglext = spec }, request, {})
         logger.log_sse_to_request({ choices = {}, usage = { prompt_tokens = 14, completion_tokens = 16,
             reasoning_tokens = 9 }, sglext = vim.NIL }, request, {})
-        assert.is_true(vim.wait(1000, function() return saved and type(saved.last_sse.usage) == "table" end, 10))
+        assert.is_true(vim.wait(1000, function()
+            return saved and type(saved.messages[1].usage) == "table" end, 10))
         assert.equals("OK", saved.messages[1].content)
         assert.equals(16, saved.messages[1].usage.completion_tokens)
         assert.same(spec, saved.messages[1].sglext)
-        assert.same(spec, saved.last_sse.sglext)
         assert.equals("sglang", saved.messages[1].response_backend)
     end)
 

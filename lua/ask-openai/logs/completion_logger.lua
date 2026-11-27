@@ -60,6 +60,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         local accum = request.accum or {}
         request.accum = accum
 
+        -- * accumulate content
         if sse_parsed.content ~= nil and sse_parsed.content ~= vim.NIL then
             accum.content = (accum.content or "") .. sse_parsed.content
         end
@@ -69,7 +70,6 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         end
 
         M.last_done = {
-            sse_parsed = sse_parsed,
             request    = request,
             frontend   = frontend,
         }
@@ -79,9 +79,9 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         }
         vim.schedule(function()
             local no_messages = nil -- b/c not chat endpoint
-            local vars = { request = request, frontend = frontend, messages_snapshot = no_messages, sse_parsed = sse_parsed, trace_data = trace_data }
+            local vars = { request = request, frontend = frontend, messages_snapshot = no_messages, trace_data = trace_data }
             log:info("save_trace log_raw_completion_sse", vars)
-            M.save_trace(request, frontend, no_messages, sse_parsed, trace_data)
+            M.save_trace(request, frontend, no_messages, trace_data)
         end)
     end
 
@@ -145,7 +145,6 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         -- TODO jsonl_record logs
         if is_last_sse then
             response_metadata.accumulate(sse_parsed, accum)
-            request.response_metadata_sse = response_metadata.merge(request.response_metadata_sse, sse_parsed)
         end
 
         -- PRN track tool call deltas too? on the response (for output.json)?
@@ -155,26 +154,25 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
             return
         end
 
-        local final_sse = request.response_metadata_sse or sse_parsed
         -- store for convenient access in-memory, that way if smth fails on save I can still see it here
         M.last_done = {
-            sse_parsed = final_sse,
             request = request,
             frontend = frontend,
         }
 
+        -- FYI going forward we will capture entire SSE as metadata (so we'd have raw prompt from llama-server there if we enable verbose mode)
+        --  and we'd have it for every turn!
+
         local messages_snapshot = tables.shallow_copy(request.body.messages or {})
-        -- FYI it is possible the distill in AgentsFrontend has a difference that you need to keep, if so then call save_trace from that spot and not here just for AgentsFrontend (find a way to pass last_sse, that's the only complexity)
         table.insert(messages_snapshot, accum)
         vim.schedule(function()
-            local vars = { request = request, frontend = frontend, messages_snapshot = messages_snapshot, final_sse = final_sse }
+            local vars = { request = request, frontend = frontend, messages_snapshot = messages_snapshot }
             log:info("save_trace log_raw_completion_sse", vars)
             local trace_data = {}
-            M.save_trace(request, frontend, messages_snapshot, final_sse, trace_data)
+            M.save_trace(request, frontend, messages_snapshot, trace_data)
         end)
     end
 
-    -- log:info("sse_parsed", vim.inspect(sse_parsed))
     log_raw_completion_sse()
     log_chat_completion_sse()
 end
@@ -182,8 +180,7 @@ end
 ---@param request CurlRequest|CurlRequestForTrace
 ---@param frontend StreamingFrontend
 ---@param messages_snapshot? table[]
----@param last_sse table
-function M.save_trace(request, frontend, messages_snapshot, last_sse, trace_data)
+function M.save_trace(request, frontend, messages_snapshot, trace_data)
     local save_dir, trace_id = M.log_request_with(request, frontend)
     -- FYI if this doesn't exist before the save_trace io write happens, the io write will fail silently
     vim.fn.mkdir(save_dir, "p")
@@ -201,11 +198,6 @@ function M.save_trace(request, frontend, messages_snapshot, last_sse, trace_data
         end
         trace_data = trace_data or {}
         trace_data.request_body = request_body_copy
-        -- last_sse has:
-        --   .timings (top-level and under .__verbose.timings)
-        --   .__verbose.(prompt, generation_settings)
-        --   .__verbose.content (generated raw outputs, but ONLY for stream=false)
-        trace_data.last_sse = last_sse
 
         if frontend.get_flags_wrapper then
             -- flag traces for later review, especially traces with a knonw issue that you're working on
