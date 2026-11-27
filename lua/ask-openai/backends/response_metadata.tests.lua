@@ -15,9 +15,6 @@ describe("verbatim response metadata", function()
         assert.equals(nil, saved.metrics)
     end)
 
-    it("does not attribute request totals to multiple choices", function()
-        assert.is_false(metadata.capture_final({ choices = {}, usage = {} }, { {}, {} }))
-    end)
     it("merges SGLang's extension and usage chunks without mutating either", function()
         local extension = {
             choices = {},
@@ -43,8 +40,6 @@ describe("verbatim response metadata", function()
         }
         local messages = { { role = "assistant", content = "OK" } }
         assert.is_true(metadata.is_end_of_stream(extension))
-        assert.is_true(metadata.capture_final(extension, messages))
-        assert.is_true(metadata.capture_final(usage, messages))
         local saved = {}
         --
         -- accumulate across all SSEs

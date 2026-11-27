@@ -828,17 +828,13 @@ function AgentsFrontend.on_parsed_data_sse(sse_parsed)
         return
     end
 
-    if response_metadata.capture_final(sse_parsed, request.accumulated_model_response_messages) then
-        live_trace_stream.changed(trace, sse_parsed.model)
-        update_ui_chat_viewer(trace)
+    local has_choice = sse_parsed.choices ~= nil and #sse_parsed.choices > 0
+    if has_choice then
+        -- FYI could warn if > 1 choice
+        local first_choice = sse_parsed.choices[1]
+        AgentsFrontend.on_streaming_delta_update_message_history(first_choice, request, sse_parsed)
         return
     end
-
-    if sse_parsed.choices == nil or sse_parsed.choices[1] == nil then
-        return
-    end
-    local first_choice = sse_parsed.choices[1]
-    AgentsFrontend.on_streaming_delta_update_message_history(first_choice, request, sse_parsed)
     live_trace_stream.changed(trace, sse_parsed.model)
     update_ui_chat_viewer(trace)
 end

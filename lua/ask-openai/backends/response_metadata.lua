@@ -55,16 +55,4 @@ function M.accumulate(sse, message)
     end
 end
 
--- Usage on an empty-choices chunk describes the request. Attribute it to a
--- message only for the single-choice requests we currently send.
-function M.capture_final(sse, messages)
-    if not M.is_end_of_stream(sse) or type(sse.choices) ~= "table" or next(sse.choices) ~= nil then
-        return false
-    end
-    if messages and #messages == 1 then
-        return true
-    end
-    return false
-end
-
 return M
