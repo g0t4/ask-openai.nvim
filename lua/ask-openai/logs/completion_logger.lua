@@ -87,8 +87,8 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         end
 
         M.last_done = {
-            request    = request,
-            frontend   = frontend,
+            request  = request,
+            frontend = frontend,
         }
         local trace_data = {
             -- put content on trace_data top-level
