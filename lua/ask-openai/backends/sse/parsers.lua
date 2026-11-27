@@ -1,7 +1,7 @@
 local log = require("devtools.logs.logger"):universal()
 local values = require("ask-openai.helpers.values")
 local response_reasoning = require("ask-openai.backends.response_reasoning")
-
+local response_metadata = require("ask-openai.backends.response_metadata")
 -- logic for parsing SSEs from all completion backends
 
 ---@class SseFieldsResult
@@ -112,8 +112,7 @@ function parse_sse_v1_chat_completions(sse)
         return nil
     end
     local no_choices = type(sse.choices) == "table" and next(sse.choices) == nil
-    if no_choices
-        and require("ask-openai.backends.response_metadata").is_final(sse) then
+    if no_choices and response_metadata.is_final(sse) then
         return { content = "", reasoning_content = "", done = false }
     end
     if not sse.choices or not sse.choices[1] then
