@@ -112,8 +112,11 @@ function parse_sse_v1_chat_completions(sse)
         return nil
     end
     local no_choices = type(sse.choices) == "table" and next(sse.choices) == nil
-    if no_choices and response_metadata.is_final(sse) then
-        return { content = "", reasoning_content = "", done = false }
+    if no_choices then
+        if response_metadata.is_final(sse) then
+            -- WTF is this for? why?
+            return { content = "", reasoning_content = "", done = false }
+        end
     end
     if not sse.choices or not sse.choices[1] then
         log:error("SSE is missing choices", sse)
