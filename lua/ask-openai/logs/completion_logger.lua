@@ -49,6 +49,9 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         }
         request.accum = accumulated_message
 
+        -- FYI no idea if this would even work beyond llama-server but it would be pluggable for llama-server's timings even if the others never apply in this case
+        response_metadata.accumulate(sse_parsed, accumulated_message)
+
         -- * accumulate content
         if sse_parsed.content ~= nil and sse_parsed.content ~= vim.NIL then
             accumulated_message.content = (accumulated_message.content or "") .. sse_parsed.content
