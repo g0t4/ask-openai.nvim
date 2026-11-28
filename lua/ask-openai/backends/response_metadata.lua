@@ -3,7 +3,7 @@ local log = require("devtools.logs.logger").universal()
 -- Preserve server fields without translating their units or semantics.
 local M = {}
 
-function M.accumulate(sse, accumulated_message)
+function M.accumulate_metadata(sse, accumulated_message)
     -- FYI safe to assume timings are always present in our deployment standards
     --  so do not bother with finish_reason as a part of being "done"... b/c that always comes before timings anyways
     -- FYI model is on SSE level for sglang, llama-server and vllm

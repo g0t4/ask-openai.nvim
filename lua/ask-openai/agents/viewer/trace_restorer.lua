@@ -412,7 +412,7 @@ local function convert_trace_messages_to_tx_messages(messages)
                 end
             end
 
-            require("ask-openai.backends.response_metadata").accumulate(msg, tx_msg)
+            require("ask-openai.backends.response_metadata").accumulate_metadata(msg, tx_msg)
 
             table.insert(tx_messages, tx_msg)
         elseif role == "tool" then

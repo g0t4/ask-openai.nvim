@@ -8,7 +8,7 @@ local metadata = require("ask-openai.backends.response_metadata")
 describe("verbatim response metadata", function()
     it("ignores null usage and continuous usage on content chunks", function()
         local saved = {}
-        metadata.accumulate({ usage = {}, metrics = vim.NIL }, saved)
+        metadata.accumulate_metadata({ usage = {}, metrics = vim.NIL }, saved)
         assert.equals(nil, saved.metrics)
     end)
 
@@ -39,8 +39,8 @@ describe("verbatim response metadata", function()
         local saved = {}
         --
         -- accumulate across all SSEs
-        metadata.accumulate(extension, saved)
-        metadata.accumulate(usage, saved)
+        metadata.accumulate_metadata(extension, saved)
+        metadata.accumulate_metadata(usage, saved)
         --
         assert.equals("sglang", saved.backend)
         assert.equals(12, saved.sglext.spec_tokens_details.spec_num_correct_drafts)
