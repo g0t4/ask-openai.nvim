@@ -79,10 +79,9 @@ function M.log_sse_to_request(sse_wrapped, request, frontend)
             content = accumulated_completion.content,
         }
         vim.schedule(function()
-            local no_messages = nil -- b/c not chat endpoint
-            local vars = { request = request, frontend = frontend, messages_snapshot = no_messages, trace_data = trace_data }
-            log:info("save_trace log_raw_completion_sse", vars)
-            M.save_trace(request, frontend, no_messages, trace_data)
+            local vars = { request = request, frontend = frontend, trace_data = trace_data }
+            log:info("save_raw_prompt log_raw_completion_sse", vars)
+            M.save_raw_prompt(request, frontend, trace_data)
         end)
     end
 
@@ -169,6 +168,23 @@ function M.log_sse_to_request(sse_wrapped, request, frontend)
     log_chat_completion_sse()
 end
 
+--- Encode a trace record to JSON, mapping vim.NIL to null.
+---@param record table
+---@return string
+local function encode_record(record)
+    return json.encode(record, {
+        exception = function(reason, bad_value, _, default_message)
+            -- FYI vim.NIL shouldn't ever happen, still handle it and log an error
+            if reason == "unsupported type" and bad_value == vim.NIL then
+                log:error("encountered vim.NIL when it should not be present in completion_logger", reason, bad_value, default_message)
+                return "null"
+            end
+
+            return nil, default_message
+        end,
+    })
+end
+
 ---@param request CurlRequest|CurlRequestForTrace
 ---@param frontend StreamingFrontend
 ---@param messages_snapshot? table[]
@@ -176,9 +192,6 @@ function M.save_trace(request, frontend, messages_snapshot, trace_data)
     local save_dir, trace_id = M.log_request_with(request, frontend)
     -- FYI io write (below) fails if this doesn't exist:
     vim.fn.mkdir(save_dir, "p")
-
-    -- TODO raw completions will not have messages... need to use a diff log format entirely (stay with what we had before)
-    --   TODO split out separate save_raw_prompt() for the case that we have a raw prompt (/completions endpoint, so not chat completions)
 
     -- TODO jsonl records:
     -- TODO add turn start/end records
@@ -203,20 +216,34 @@ function M.save_trace(request, frontend, messages_snapshot, trace_data)
                 type = "message",
                 metadata = message_metadata and { response = message_metadata } or nil,
             }
-
-            local encoded = json.encode(record, {
-                exception = function(reason, bad_value, _, default_message)
-                    -- FYI vim.NIL shouldn't ever happen, still handle it and log an error
-                    if reason == "unsupported type" and bad_value == vim.NIL then
-                        log:error("encountered vim.NIL when it should not be present in completion_logger", reason, bad_value, default_message)
-                        return "null"
-                    end
-
-                    return nil, default_message
-                end,
-            })
-            file:write(encoded .. "\n")
+            file:write(encode_record(record) .. "\n")
         end
+        file:close()
+    end
+end
+
+
+--- Save a raw /v1/completions trace (no chat messages).
+---@param request CurlRequest|CurlRequestForTrace
+---@param frontend StreamingFrontend
+---@param trace_data table
+function M.save_raw_prompt(request, frontend, trace_data)
+    local save_dir, trace_id = M.log_request_with(request, frontend)
+    -- FYI io write (below) fails if this doesn't exist:
+    vim.fn.mkdir(save_dir, "p")
+
+    local path = save_dir .. "/" .. trace_id .. "-trace.jsonl"
+
+    local accumulated = request.accum
+    local record = {
+        type = "raw_completion",
+        content = trace_data and trace_data.content or nil,
+        metadata = accumulated and accumulated.metadata or nil,
+    }
+
+    local file = io.open(path, "w")
+    if file then
+        file:write(encode_record(record) .. "\n")
         file:close()
     end
 end
