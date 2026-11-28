@@ -83,13 +83,9 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         end)
     end
 
-    local function is_chat_completion_endpoint(sse)
-        return sse.choices ~= nil
-    end
-
     local function log_chat_completion_sse()
         -- * /v1/chat/completions endpoint llama-server
-        if not is_chat_completion_endpoint(sse_parsed) then
+        if sse_parsed.choices == nil then
             return
         end
 
