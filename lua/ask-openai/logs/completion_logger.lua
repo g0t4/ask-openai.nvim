@@ -38,10 +38,11 @@ function AccumulatedCompletion.new()
     return setmetatable({ metadata = {} }, { __index = AccumulatedCompletion })
 end
 
----@param sse_parsed table
+---@param sse_wrapped SSEWrapped
 ---@param request CurlRequest|CurlRequestForTrace
 ---@param frontend StreamingFrontend
-function M.log_sse_to_request(sse_parsed, request, frontend)
+function M.log_sse_to_request(sse_wrapped, request, frontend)
+    local sse_parsed = sse_wrapped.sse_parsed
     -- TODO! 2026-11-27 didn't last_sse cause some havoc for AgentsFrontend logging the last agent message? is that fixed now that I took out last_sse?
     -- TODO! 2026-11-27 once we pass sse_wrapped then remove vim.NIL checks that are relevant below
 

@@ -62,7 +62,11 @@ describe("usage-triggered trace logging", function()
             saved = { messages = messages }
         end
         local request = { body = { messages = {} } }
-        local function emit(sse) logger.log_sse_to_request(sse, request, {}) end
+        local function emit(sse)
+            local SSEWrapped = require("ask-openai.backends.sse_wrapped")
+            sse_wrapped = SSEWrapped.new(sse)
+            logger.log_sse_to_request(sse_wrapped, request, {})
+        end
         emit({ choices = { { delta = { role = "assistant", reasoning = "first " } } } })
         emit({ choices = { { delta = { reasoning_content = nil, reasoning = "second" } } } })
         emit({ choices = { { delta = { content = "OK" } } }, usage = nil })

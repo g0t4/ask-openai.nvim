@@ -353,7 +353,7 @@ function Curl.on_one_data_value(data_value, frontend, request)
         sse_wrapped:log("on_one_data_value[" .. tostring(request.type) .. "]")
         frontend.on_parsed_data_sse(sse_wrapped)
         -- FYI not every SSE has to have generated tokens (choices), no need to warn if no parsed value
-        completion_logger.log_sse_to_request(sse_parsed, request, frontend)
+        completion_logger.log_sse_to_request(sse_wrapped, request, frontend)
 
         if sse_wrapped:has_error() then
             -- only confirmed this on llama_server

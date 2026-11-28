@@ -118,7 +118,7 @@ describe("E2E - AskRewrite", function()
 
         -- * Mirror the real curl path: log the SSE so the trace file is saved
         local completion_logger = require("ask-openai.logs.completion_logger")
-        completion_logger.log_sse_to_request(simulated_sse, rewrite_frontend.last_request, rewrite_frontend)
+        completion_logger.log_sse_to_request(sse_wrapped, rewrite_frontend.last_request, rewrite_frontend)
 
         -- * Verify: response was accumulated
         local response = rewrite_frontend.response
