@@ -129,7 +129,6 @@ function PredictionsFrontend.ask_for_prediction(params)
         ---@type OnParsedSSE
         local function on_parsed_data_sse(sse_wrapped)
             this_prediction.performance:token_arrived()
-            sse_wrapped:log("predictions")
 
             -- use defer_fn w/ 500ms to reproduce "stuck" predictions
             -- also found that toggling off the copilot while a prediction is visible, results in a stuck prediction

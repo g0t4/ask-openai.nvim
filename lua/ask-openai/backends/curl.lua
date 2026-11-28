@@ -138,7 +138,6 @@ function Curl.spawn(request, frontend)
         -- local start_ns = perf.get_time_in_ns()
         ---@param data_value string
         local function on_raw_data_value(data_value)
-
             if request.tcp_handle == nil then
                 return
             end
@@ -351,6 +350,7 @@ function Curl.on_one_data_value(data_value, frontend, request)
     local success, sse_parsed = safely.decode_json(data_value)
     if success and sse_parsed then
         local sse_wrapped = SSEWrapped.new(sse_parsed)
+        sse_wrapped:log("on_one_data_value[" .. tostring(request.type) .. "]")
         frontend.on_parsed_data_sse(sse_wrapped)
         -- FYI not every SSE has to have generated tokens (choices), no need to warn if no parsed value
         completion_logger.log_sse_to_request(sse_parsed, request, frontend)

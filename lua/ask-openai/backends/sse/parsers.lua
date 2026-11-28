@@ -118,8 +118,6 @@ function parse_sse_v1_chat_completions(sse_wrapped)
         return nil
     end
 
-    sse_wrapped:log("raw sse")
-
     local first_choice = sse_wrapped:first_choice()
     local delta = first_choice.delta
     if delta == nil then
@@ -172,8 +170,6 @@ function parse_sse_llamacpp_completions(sse_wrapped)
     --
     -- Going forward, use /completions for RAW only
     -- use /v1/chat/completions for any chat template conversations
-    sse_wrapped:log("raw sse")
-
     return {
         content           = values.empty_for_nil(sse.content),
         done              = sse.stop == true, -- ensure always a boolean even if stop were nil

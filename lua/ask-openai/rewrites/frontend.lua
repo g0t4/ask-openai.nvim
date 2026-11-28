@@ -164,7 +164,6 @@ function RewriteFrontend.on_parsed_data_sse(sse_wrapped)
     if first_choice == nil then
         return
     end
-    sse_wrapped:log("rewrite")
     local extract_generated_text = get_extract_generated_text_func(RewriteFrontend.last_request.endpoint)
     local content_chunk, reasoning_chunk = extract_generated_text(first_choice)
 
