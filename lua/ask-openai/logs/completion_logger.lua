@@ -74,14 +74,8 @@ function M.log_sse_to_request(sse_wrapped, request, frontend)
             request  = request,
             frontend = frontend,
         }
-        local trace_data = {
-            -- put content on trace_data top-level
-            content = accumulated_completion.content,
-        }
         vim.schedule(function()
-            local vars = { request = request, frontend = frontend, trace_data = trace_data }
-            log:info("save_raw_prompt log_raw_completion_sse", vars)
-            M.save_raw_prompt(request, frontend, trace_data)
+            M.save_raw_prompt(request, frontend, accumulated_completion)
         end)
     end
 
@@ -224,20 +218,23 @@ end
 --- Save a raw /v1/completions trace (no chat messages).
 ---@param request CurlRequest|CurlRequestForTrace
 ---@param frontend StreamingFrontend
----@param trace_data table
-function M.save_raw_prompt(request, frontend, trace_data)
+---@param accumulated_completion AccumulatedCompletion
+function M.save_raw_prompt(request, frontend, accumulated_completion)
     local save_dir, trace_id = M.log_request_with(request, frontend)
     -- FYI io write (below) fails if this doesn't exist:
     vim.fn.mkdir(save_dir, "p")
 
     local path = save_dir .. "/" .. trace_id .. "-trace.jsonl"
 
-    local accumulated = request.accum
     local record = {
         type = "raw_completion",
-        content = trace_data and trace_data.content or nil,
-        metadata = accumulated and accumulated.metadata or nil,
+        -- TODO also prompt?
+        content = accumulated_completion.content,
+        metadata = accumulated_completion.metadata,
     }
+
+    local vars = { request = request, frontend = frontend, record }
+    log:info("save_raw_prompt log_raw_completion_sse", vars)
 
     local file = io.open(path, "w")
     if file then
