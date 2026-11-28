@@ -53,7 +53,6 @@ function M.accumulate_metadata(sse, accumulated_message)
         metadata.backend = "llama-server"
         metadata.done = true
     end
-
 end
 
 return M
