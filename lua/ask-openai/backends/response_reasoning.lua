@@ -6,8 +6,9 @@ local M = {}
 ---@param delta table
 ---@return string|nil
 function M.get_content(delta)
-    return values.vim_NIL_to_nil(delta.reasoning_content)
-        or values.vim_NIL_to_nil(delta.reasoning)
+    -- TODO build a delta wrapper type to do this on the instance
+    -- btw I verified all paths to this currently already use sse_wrapped and thus I don't need to check vim.NIL here
+    return delta.reasoning_content or delta.reasoning
 end
 
 return M
