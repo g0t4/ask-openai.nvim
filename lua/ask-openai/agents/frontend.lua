@@ -829,10 +829,10 @@ function AgentsFrontend.on_parsed_data_sse(sse_parsed)
         return
     end
 
-    local sse_wrapped = SSEWrapped.new(sse_parsed) -- TODO as it makes sense, expand usage of SSEWrapped
-    if sse_wrapped:has_choices() then
+    local sse_wrapped = SSEWrapped.new(sse_parsed)
+    local first_choice = sse_wrapped:first_choice()
+    if first_choice ~= nil then
         -- FYI could warn if > 1 choice
-        local first_choice = sse_parsed.choices[1]
         AgentsFrontend.on_streaming_delta_update_message_history(first_choice, request, sse_parsed)
         return
     end

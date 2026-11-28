@@ -25,6 +25,7 @@ local prompt_parser = require("ask-openai.frontends.context.prompt_parser")
 local RewritePerformance = require("ask-openai.rewrites.performance")
 local perf = require("ask-openai.perf")
 local values = require("ask-openai.helpers.values")
+local SSEWrapped = require("ask-openai.agents.sse_wrapped")
 
 ---@class RewriteFrontend : StreamingFrontend
 local RewriteFrontend = {}
@@ -163,12 +164,12 @@ function RewriteFrontend.on_parsed_data_sse(sse_parsed)
     sse_parsed = values.nil_ify(sse_parsed) -- FYI added proactively, vim.NIL wasn't causing any issues (yet)
 
     -- log:info("sse", vim.inspect(sse_parsed))
-    if sse_parsed.choices == nil or sse_parsed.choices[1] == nil then
+    local sse_wrapped = SSEWrapped.new(sse_parsed)
+    local first_choice = sse_wrapped:first_choice()
+    if first_choice == nil then
         return
     end
     log:info("rewrite", sse_parsed)
-
-    local first_choice = sse_parsed.choices[1]
     local extract_generated_text = get_extract_generated_text_func(RewriteFrontend.last_request.endpoint)
     local content_chunk, reasoning_chunk = extract_generated_text(first_choice)
 
