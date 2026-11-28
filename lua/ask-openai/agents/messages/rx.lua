@@ -45,10 +45,8 @@ function RxAccumulatedMessage:new(role, content)
     self.tool_calls = {} -- empty == None (enforce invariant)
 
     if self.role ~= RX_MESSAGE_ROLES.ASSISTANT then
-        -- NOT really an error, I just want it to stand out
-        -- mostly I am interested in when this happens so I can build that into my mental model of this RxAccumulatedMessage type
-        log:error("[WARN] unexpected role (not a problem, just heads up so you can think about it): " .. tostring(self.role))
-        -- TODO remove this logging when you think you have enough history collected
+        -- FYI can remove this logging, mostly out of curiosity
+        log:warn("[WARN] unexpected role (not a problem, just heads up so you can think about it): " .. tostring(self.role))
     end
 
     return self
