@@ -809,9 +809,7 @@ end
 
 ---@type OnParsedSSE
 function AgentsFrontend.on_parsed_data_sse(sse_parsed)
-    -- log:info("sse", vim.inspect(sse_parsed))
-    -- FYI right now this is desingned for /v1/chat/completions only
-    --   I added this guard based on review of on-on_streaming_delta_update_message_history that appears (IIRC) to be using /v1/chat/completions ONLY compatible fields
+    -- FYI this only works with /v1/chat/completions
     local trace = AgentsFrontend.trace
     local request = trace.last_request
     if request.endpoint ~= CompletionsEndpoints.v1_chat_completions then
