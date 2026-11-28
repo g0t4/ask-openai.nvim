@@ -738,7 +738,7 @@ function AgentsFrontend.on_streaming_delta_update_message_history(sse_wrapped, r
         -- rx_accum_message.timings = sse_parsed.timings -- ? should I just copy this one part only and skip rest of last_sse?
     end
 
-    if choice.delta.content ~= nil and choice.delta.content ~= vim.NIL then
+    if choice.delta.content ~= nil then
         -- by tracking _verbatim_content, I can trim the end every single time
         -- and if it is not a full match it will show back up once it's past the match point
         rx_accum_message._verbatim_content = (rx_accum_message._verbatim_content or "") .. choice.delta.content
@@ -750,7 +750,6 @@ function AgentsFrontend.on_streaming_delta_update_message_history(sse_wrapped, r
     end
 
     if choice.finish_reason ~= nil then
-        -- FYI this is vim.NIL on first too
         rx_accum_message.finish_reason = choice.finish_reason -- on last delta per index/role (aka message)
     end
 

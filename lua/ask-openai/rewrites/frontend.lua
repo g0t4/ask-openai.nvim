@@ -145,7 +145,7 @@ local function get_extract_generated_text_func(endpoint)
                 return "", ""
             end
             local content = choice.delta.content or ""
-            if content == vim.NIL then content = "" end
+            if content == nil then content = "" end
             local reasoning = response_reasoning.get_content(choice.delta) or ""
             return content, reasoning
         end

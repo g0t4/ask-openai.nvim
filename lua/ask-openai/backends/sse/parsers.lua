@@ -92,7 +92,7 @@ function get_probs(choice)
     end
     logprob_content = choice.logprobs.content[1]
 
-    if logprob_content.logprob ~= nil and logprob_content.logprob ~= vim.NIL then
+    if logprob_content.logprob ~= nil then
         log:error("raw logprob is not supported, submit post_sampling_probs=true to receive probabilities directly")
         return nil
     end
