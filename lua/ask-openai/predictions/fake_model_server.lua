@@ -288,16 +288,17 @@ local function deliver_next_chunk()
         return
     end
 
+    local sse_wrapped = SSEWrapped.new(chunk)
     -- * feed the SSE chunk through the frontend
     if active_frontend.on_parsed_data_sse then
-        active_frontend.on_parsed_data_sse(SSEWrapped.new(chunk))
+        active_frontend.on_parsed_data_sse(sse_wrapped)
     end
 
     -- * mirror the real curl path (backends/curl.lua on_one_data_value):
     --   log the SSE (trace saving) and fan out timings to the frontend
     completion_logger.log_sse_to_request(chunk, active_request, active_frontend)
     if chunk.timings and active_frontend.on_sse_llama_server_timings then
-        active_frontend.on_sse_llama_server_timings(SSEWrapped.new(chunk))
+        active_frontend.on_sse_llama_server_timings(sse_wrapped)
     end
 
     -- * schedule the next chunk (or the completion check)

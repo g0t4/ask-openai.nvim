@@ -113,7 +113,8 @@ describe("E2E - AskRewrite", function()
         print("==============================================\n")
 
         -- Feed the simulated SSE response to the frontend
-        rewrite_frontend.on_parsed_data_sse(SSEWrapped.new(simulated_sse))
+        local sse_wrapped = SSEWrapped.new(simulated_sse)
+        rewrite_frontend.on_parsed_data_sse(sse_wrapped)
 
         -- * Mirror the real curl path: log the SSE so the trace file is saved
         local completion_logger = require("ask-openai.logs.completion_logger")
