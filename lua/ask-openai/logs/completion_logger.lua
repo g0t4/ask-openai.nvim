@@ -177,16 +177,12 @@ end
 ---@param frontend StreamingFrontend
 ---@param messages_snapshot? table[]
 function M.save_chat_trace(request, frontend, messages_snapshot)
-    local save_dir, trace_id = M.log_request_with(request, frontend)
-    -- FYI io write (below) fails if this doesn't exist:
-    vim.fn.mkdir(save_dir, "p")
-
     -- TODO jsonl records:
     -- TODO add turn start/end records
     -- TODO add record w/ type=request_body per turn
     -- TODO add record w/ type=tools at start of trace? and if ever changed
 
-    local path = save_dir .. "/" .. trace_id .. "-trace.jsonl"
+    local path = path_for(request, frontend)
     -- log:info("trace path", path)
     local messages = messages_snapshot or (request.body and request.body.messages) or {}
 
