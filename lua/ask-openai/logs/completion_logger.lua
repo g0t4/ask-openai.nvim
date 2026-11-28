@@ -57,7 +57,7 @@ function M.log_sse_to_request(sse_wrapped, request, frontend)
         request.accum = accumulated_completion
 
         -- FYI no idea if this would even work beyond llama-server but it would be pluggable for llama-server's timings even if the others never apply in this case
-        response_metadata.accumulate_metadata(sse_parsed, accumulated_completion)
+        response_metadata.accumulate_metadata(sse_wrapped, accumulated_completion)
 
         local function accumulate_content()
             if sse_parsed.content ~= nil and sse_parsed.content ~= vim.NIL then
@@ -97,7 +97,7 @@ function M.log_sse_to_request(sse_wrapped, request, frontend)
         local accumulated_completion = request.accum or AccumulatedCompletion.new()
         request.accum = accumulated_completion
 
-        response_metadata.accumulate_metadata(sse_parsed, accumulated_completion)
+        response_metadata.accumulate_metadata(sse_wrapped, accumulated_completion)
 
         local function accumulate_choice(sse)
             if type(sse.choices) ~= "table" or #sse.choices == 0 then

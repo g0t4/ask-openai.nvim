@@ -146,8 +146,12 @@ function TxChatMessage:from_assistant_rx_message(rx_message)
     -- TODO! 2026-11-27 get a real `AccumulatedCompletion.done` boolean that is agnostic of backend
     if rx_message.last_sse then
         -- TODO move to record object's metadata - record object completion logging refactor
-        require("ask-openai.backends.response_metadata").accumulate_metadata(rx_message.last_sse, tx_message)
-        require("ask-openai.backends.response_metadata").accumulate_metadata(rx_message.last_sse, jsonl_record.metadata.response)
+        -- TODO! 2026-11-28 do I really need a new instance of SSEWrapped here?
+        local SSEWrapped = require("ask-openai.backends.sse_wrapped")
+        local sse_wrapped = SSEWrapped.new(rx_message.last_sse)
+        local response_metadata = require("ask-openai.backends.response_metadata")
+        response_metadata.accumulate_metadata(sse_wrapped, tx_message)
+        response_metadata.accumulate_metadata(sse_wrapped, jsonl_record.metadata.response)
     end
 
     -- TODO! 2026-11-27 either remove this or add it to the projection logic above, it has no business here:

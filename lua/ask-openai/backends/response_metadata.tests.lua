@@ -1,5 +1,6 @@
 require("ask-openai.helpers.test_setup").modify_package_path()
 local metadata = require("ask-openai.backends.response_metadata")
+local SSEWrapped = require("ask-openai.backends.sse_wrapped")
 
 -- TODO review what I even need of this later on ... if I keep my tracing logic
 -- plan is to move to python based langchain clients for even my neovim AI tooling so I can standardize on one AI client fwk and reuse all that goodness that we setup with langchain ChatOpenAICompatible chat model client
@@ -37,9 +38,9 @@ describe("verbatim response metadata", function()
         --
         -- accumulate across all SSEs
         -- FYI real order per testing
-        -- finish_reason is first (not part of this accumulate_metadata)
-        metadata.accumulate_metadata(sse_with_sglext, saved) -- then an SSE with sglext
-        metadata.accumulate_metadata(sse_with_timings_choices_and_usage, saved) -- last, usage+timings.choices SSE
+        -- FYI finish_reason is on SSE before the next two
+        metadata.accumulate_metadata(SSEWrapped.new(sse_with_sglext), saved) -- then an SSE with sglext
+        metadata.accumulate_metadata(SSEWrapped.new(sse_with_timings_choices_and_usage), saved) -- last, usage+timings.choices SSE
         --
         assert.equals("sglang", saved.metadata.backend)
         assert.equals(12, saved.metadata.sglext.spec_tokens_details.spec_num_correct_drafts)

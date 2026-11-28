@@ -416,7 +416,12 @@ local function convert_trace_messages_to_tx_messages(messages)
                 end
             end
 
-            require("ask-openai.backends.response_metadata").accumulate_metadata(msg, tx_msg)
+            -- TODO! 2026-11-28 DOES THIS WORK?! to parse as wrapped SSE? WHY THE FUCK ARE WE NEEDING TO EVEN CALL accumulate_metadata here?
+            local SSEWrapped = require("ask-openai.backends.sse_wrapped")
+            sse_wrapped = SSEWrapped.new(msg)
+            local response_metadata = require("ask-openai.backends.response_metadata")
+            -- TODO something feels fucking horribly wrong here, there is no reason my SSE aggregation logic needs called here, none whatsoever... WTF
+            response_metadata.accumulate_metadata(sse_wrapped, tx_msg)
 
             table.insert(tx_messages, tx_msg)
         elseif role == "tool" then

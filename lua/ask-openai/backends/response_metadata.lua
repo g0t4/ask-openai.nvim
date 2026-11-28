@@ -3,7 +3,10 @@ local log = require("devtools.logs.logger").universal()
 -- Preserve server fields without translating their units or semantics.
 local M = {}
 
-function M.accumulate_metadata(sse, accumulated_message)
+---@param sse_wrapped table
+---@param accumulated_message table
+function M.accumulate_metadata(sse_wrapped, accumulated_message)
+    local sse = sse_wrapped.sse_parsed
     -- TODO! 2026-11-27 move this into AccumulatedCompletion's builder
     -- FYI safe to assume timings are always present in our deployment standards
     --  so do not bother with finish_reason as a part of being "done"... b/c that always comes before timings anyways
