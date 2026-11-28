@@ -151,9 +151,11 @@ function parse_sse_v1_chat_completions(sse_wrapped)
     }
 end
 
----@param sse LlamaServerRawCompletionSSE
+---@param sse_wrapped SSEWrapped
 ---@return SseFieldsResult
-function parse_sse_llamacpp_completions(sse)
+function parse_sse_llamacpp_completions(sse_wrapped)
+    ---@cast sse_wrapped.sse_parsed LlamaServerRawCompletionSSE
+    local sse = sse_wrapped.sse_parsed
     -- FYI response_fields limits fields per SSE...
     --    I set it to stop prompt and generation_settings on final SSE
 

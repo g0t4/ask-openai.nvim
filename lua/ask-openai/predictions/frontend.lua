@@ -118,8 +118,7 @@ function PredictionsFrontend.ask_for_prediction(params)
         local function _extract_sse_fields(sse_wrapped)
             if fim_request.endpoint == CompletionsEndpoints.llamacpp_completions then
                 -- FYI so far all these requests are for raw completions (otherwise I'd use chat completions)
-                ---@cast sse_wrapped.sse_parsed LlamaServerRawCompletionSSE
-                return parse_sse_llamacpp_completions(sse_wrapped.sse_parsed)
+                return parse_sse_llamacpp_completions(sse_wrapped)
             end
             if fim_request.endpoint == CompletionsEndpoints.v1_chat_completions then
                 return parse_sse_v1_chat_completions(sse_wrapped)
