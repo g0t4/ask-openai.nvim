@@ -212,20 +212,25 @@ end
 function M.save_raw_prompt(request, frontend, accumulated_completion)
     local path = path_for(request, frontend)
 
-    local record = {
+    local raw_prompt_record = {
+        type = "raw_prompt",
+        content = request.body and request.body.prompt,
+        metadata = {},
+    }
+
+    local raw_completion_record = {
         type = "raw_completion",
-        -- TODO long prompt as raw_prompt record too (no need to accumulate, just get it off of body)
-        -- in fact, why not just treat them as messages?
         content = accumulated_completion.content,
         metadata = { response = accumulated_completion.metadata },
     }
 
-    local vars = { request = request, frontend = frontend, record }
+    local vars = { request = request, frontend = frontend, raw_prompt_record = raw_prompt_record, record = raw_completion_record }
     log:info("save_raw_prompt log_raw_completion_sse", vars)
 
     local file = io.open(path, "w")
     if file then
-        file:write(encode_record(record) .. "\n")
+        file:write(encode_record(raw_prompt_record) .. "\n")
+        file:write(encode_record(raw_completion_record) .. "\n")
         file:close()
     end
 end
