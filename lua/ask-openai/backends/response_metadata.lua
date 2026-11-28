@@ -4,6 +4,7 @@ local log = require("devtools.logs.logger").universal()
 local M = {}
 
 function M.accumulate_metadata(sse, accumulated_message)
+    -- TODO! 2026-11-27 move this into AccumulatedCompletion's builder
     -- FYI safe to assume timings are always present in our deployment standards
     --  so do not bother with finish_reason as a part of being "done"... b/c that always comes before timings anyways
     -- FYI model is on SSE level for sglang, llama-server and vllm
