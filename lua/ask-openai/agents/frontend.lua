@@ -737,11 +737,10 @@ function AgentsFrontend.on_streaming_delta_update_message_history(sse_wrapped, r
 
     -- TODO! 2026-11-27 this is why you don't log anything for non-llama-server traces beyond the first request :)
     -- TODO! 2026-11-27 get a real `AccumulatedCompletion.done` boolean that is agnostic of backend
-    local is_last_sse = sse_parsed.timings
-    if is_last_sse then
+    local is_done = sse_parsed.timings
+    if is_done then
         -- TODO! 2026-11-27 update to merge with new accumulated_message logic in completion logger
         rx_accum_message.last_sse = sse_parsed
-        -- rx_accum_message.timings = sse_parsed.timings -- ? should I just copy this one part only and skip rest of last_sse?
     end
 
     if choice.delta.content ~= nil then
