@@ -15,6 +15,7 @@ local FimRequestBuilder = require("ask-openai.predictions.fim_request_builder")
 local config = require("ask-openai.config")
 local buffer_state = require("ask-openai.predictions.buffer_state")
 local ansi = require("devtools.ansi")
+local SSEWrapped = require("ask-openai.agents.sse_wrapped")
 
 ---@class PredictionsFrontend : StreamingFrontend
 local PredictionsFrontend = {}
@@ -121,6 +122,11 @@ function PredictionsFrontend.ask_for_prediction(params)
                 return parse_sse_llamacpp_completions(sse_parsed)
             end
             if fim_request.endpoint == CompletionsEndpoints.v1_chat_completions then
+                local sse_wrapped = SSEWrapped.new(sse_parsed)
+                if sse_wrapped:no_choices() then
+                    -- skip (can happen on SSEs at end with timing)
+                    return nil
+                end
                 ---@cast sse_parsed LlamaServerChatCompletionSSE
                 return parse_sse_v1_chat_completions(sse_parsed)
             end
