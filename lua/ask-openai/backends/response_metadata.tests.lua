@@ -8,9 +8,8 @@ local metadata = require("ask-openai.backends.response_metadata")
 describe("verbatim response metadata", function()
 
     it("merges SGLang's extension and usage chunks without mutating either", function()
-        local extension = {
+        local sse_with_sglext = {
             choices = {},
-            usage = vim.NIL,
             sglext = {
                 spec_tokens_details = {
                     spec_num_correct_drafts = 12,
@@ -20,9 +19,13 @@ describe("verbatim response metadata", function()
                 }
             }
         }
-        local usage = {
+        local sse_with_timings_choices_and_usage = {
             choices = {},
-            sglext = vim.NIL,
+            timings = {
+                choices = {
+                    -- TODO do I need to set anything here?
+                }
+            },
             usage = {
                 prompt_tokens = 14,
                 completion_tokens = 16,
@@ -34,11 +37,13 @@ describe("verbatim response metadata", function()
         local saved = {}
         --
         -- accumulate across all SSEs
-        metadata.accumulate_metadata(extension, saved)
-        metadata.accumulate_metadata(usage, saved)
+        -- FYI real order per testing
+        -- finish_reason is first (not part of this accumulate_metadata)
+        metadata.accumulate_metadata(sse_with_sglext, saved) -- then an SSE with sglext
+        metadata.accumulate_metadata(sse_with_timings_choices_and_usage, saved) -- last, usage+timings.choices SSE
         --
-        assert.equals("sglang", saved.backend)
-        assert.equals(12, saved.sglext.spec_tokens_details.spec_num_correct_drafts)
+        assert.equals("sglang", saved.metadata.backend)
+        assert.equals(12, saved.metadata.sglext.spec_tokens_details.spec_num_correct_drafts)
     end)
 end)
 
