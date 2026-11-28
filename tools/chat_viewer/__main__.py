@@ -37,7 +37,6 @@ from tools.chat_viewer.xonsh_formatter import parse_run_xonsh_arguments
 from tools.chat_viewer.timings import AssistantMessageTimingsDTO, parse_timings_from_message, format_stats_line
 from tools.chat_viewer.timing_utils import parse_tool_call_timings
 from tools.chat_viewer.theme import (
-    contrast_color_for,
     header_bar,
     role_color,
     role_icon,
