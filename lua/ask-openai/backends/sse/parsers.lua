@@ -103,15 +103,13 @@ function get_probs(choice)
     return selected_token_prob
 end
 
----@param sse LlamaServerChatCompletionSSE
+---@param sse_wrapped SSEWrapped
 ---@return SseFieldsResult? -- nil == no content/reasoning/finish_reason
-function parse_sse_v1_chat_completions(sse)
-    local sse_wrapped = SSEWrapped.new(sse) -- nil_ified in ctor
-
+function parse_sse_v1_chat_completions(sse_wrapped)
     if sse_wrapped:has_error() then
         -- error examples:
         -- { error = { code = 503, message = "Loading model", type = "unavailable_error" } }
-        log:info("skipping SSE with error b/c that will be handled elsewhere", sse)
+        log:info("skipping SSE with error b/c that will be handled elsewhere", sse_wrapped.sse_parsed)
         return nil
     end
     if sse_wrapped:no_choices() then

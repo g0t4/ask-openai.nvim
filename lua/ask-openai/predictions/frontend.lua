@@ -1,6 +1,7 @@
 local uv = vim.uv
 local Prediction = require("ask-openai.predictions.prediction")
 local ansi = require("devtools.ansi")
+local SSEWrapped = require("ask-openai.agents.sse_wrapped")
 local rag_client = require("ask-openai.rag.client")
 local perf = require("ask-openai.perf")
 local log = require("devtools.logs.logger").universal()
@@ -112,17 +113,16 @@ function PredictionsFrontend.ask_for_prediction(params)
 
         this_prediction.fim_request = fim_request
 
-        ---@param sse_parsed LlamaServerSSEBase
+        ---@param sse_wrapped SSEWrapped
         ---@return SseFieldsResult? sse_result
-        local function _extract_sse_fields(sse_parsed)
+        local function _extract_sse_fields(sse_wrapped)
             if fim_request.endpoint == CompletionsEndpoints.llamacpp_completions then
                 -- FYI so far all these requests are for raw completions (otherwise I'd use chat completions)
-                ---@cast sse_parsed LlamaServerRawCompletionSSE
-                return parse_sse_llamacpp_completions(sse_parsed)
+                ---@cast sse_wrapped.sse_parsed LlamaServerRawCompletionSSE
+                return parse_sse_llamacpp_completions(sse_wrapped.sse_parsed)
             end
             if fim_request.endpoint == CompletionsEndpoints.v1_chat_completions then
-                ---@cast sse_parsed LlamaServerChatCompletionSSE
-                return parse_sse_v1_chat_completions(sse_parsed)
+                return parse_sse_v1_chat_completions(sse_wrapped)
             end
             error("Unsupported FIM endpoint: " .. tostring(fim_request.endpoint))
         end
@@ -130,6 +130,7 @@ function PredictionsFrontend.ask_for_prediction(params)
         ---@type fun(sse_parsd: LlamaServerSSEBase)
         local function on_parsed_data_sse(sse_parsed)
             this_prediction.performance:token_arrived()
+            local sse_wrapped = SSEWrapped.new(sse_parsed)
 
             -- use defer_fn w/ 500ms to reproduce "stuck" predictions
             -- also found that toggling off the copilot while a prediction is visible, results in a stuck prediction
@@ -143,7 +144,7 @@ function PredictionsFrontend.ask_for_prediction(params)
                     return
                 end
 
-                local sse_fields = _extract_sse_fields(sse_parsed)
+                local sse_fields = _extract_sse_fields(sse_wrapped)
 
                 if sse_fields == nil then
                     -- skip if nil (can happen when SSE.error is defined)
