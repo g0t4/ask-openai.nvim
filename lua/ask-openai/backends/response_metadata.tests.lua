@@ -65,8 +65,8 @@ describe("usage-triggered trace logging", function()
         local request = { body = { messages = {} } }
         local function emit(sse) logger.log_sse_to_request(sse, request, {}) end
         emit({ choices = { { delta = { role = "assistant", reasoning = "first " } } } })
-        emit({ choices = { { delta = { reasoning_content = vim.NIL, reasoning = "second" } } } })
-        emit({ choices = { { delta = { content = "OK" } } }, usage = vim.NIL })
+        emit({ choices = { { delta = { reasoning_content = nil, reasoning = "second" } } } })
+        emit({ choices = { { delta = { content = "OK" } } }, usage = nil })
         emit({ choices = { { delta = {}, finish_reason = "stop" } } })
         assert.is_nil(saved)
         local final = { choices = {}, usage = { total_tokens = 8 }, metrics = { tokens_per_second = 11.7 } }
@@ -75,8 +75,8 @@ describe("usage-triggered trace logging", function()
         assert.equals("OK", saved.messages[1].content)
         assert.equals("first second", saved.messages[1].reasoning_content)
         assert.equals("stop", saved.messages[1].finish_reason)
-        assert.equals(final.usage, saved.messages[1].usage)
-        assert.equals(final.metrics, saved.messages[1].metrics)
+        assert.equals(final.usage, saved.messages[1].metadata.usage)
+        assert.equals(final.metrics, saved.messages[1].metadata.metrics)
     end)
     it("saves SGLang stats after separate terminal chunks even without timings", function()
         local saved
