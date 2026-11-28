@@ -109,7 +109,6 @@ function parse_sse_v1_chat_completions(sse_wrapped)
     if sse_wrapped:has_error() then
         -- error examples:
         -- { error = { code = 503, message = "Loading model", type = "unavailable_error" } }
-        sse_wrapped:log("skipping SSE with error b/c that will be handled elsewhere")
         return nil
     end
     if sse_wrapped:no_choices() then
