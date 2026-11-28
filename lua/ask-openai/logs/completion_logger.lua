@@ -228,7 +228,8 @@ function M.save_raw_prompt(request, frontend, accumulated_completion)
 
     local record = {
         type = "raw_completion",
-        -- TODO also prompt?
+        -- TODO long prompt as separate record! that effectively gives us messages
+        -- in fact, why not just treat them as messages?
         content = accumulated_completion.content,
         metadata = accumulated_completion.metadata,
     }
