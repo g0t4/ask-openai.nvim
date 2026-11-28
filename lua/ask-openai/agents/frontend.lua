@@ -812,6 +812,26 @@ function AgentsFrontend.on_sse_llama_server_timings(sse)
     -- PRN use this to extract timing like in rewrites
 end
 
+---@class SSEParsed
+---@field sse_parsed LlamaServerSSEBase
+local SSEParsed = {}
+
+---@param sse_parsed LlamaServerSSEBase
+---@return SSEParsed
+function SSEParsed.new(sse_parsed)
+    return setmetatable({ sse_parsed = sse_parsed }, { __index = SSEParsed })
+end
+
+---@return boolean
+function SSEParsed:has_choices()
+    return self.sse_parsed.choices ~= nil and #self.sse_parsed.choices > 0
+end
+
+---@return boolean
+function SSEParsed:no_choices()
+    return not self:has_choices()
+end
+
 ---@type OnParsedSSE
 function AgentsFrontend.on_parsed_data_sse(sse_parsed)
     -- log:info("sse", vim.inspect(sse_parsed))
@@ -828,15 +848,17 @@ function AgentsFrontend.on_parsed_data_sse(sse_parsed)
         return
     end
 
-    local has_choice = sse_parsed.choices ~= nil and #sse_parsed.choices > 0
-    if has_choice then
+    local sse_wrapped = SSEParsed.new(sse_parsed)
+    if sse_wrapped:has_choices() then
         -- FYI could warn if > 1 choice
         local first_choice = sse_parsed.choices[1]
         AgentsFrontend.on_streaming_delta_update_message_history(first_choice, request, sse_parsed)
         return
     end
-    live_trace_stream.changed(trace, sse_parsed.model)
-    update_ui_chat_viewer(trace)
+    if sse_wrapped:no_choices() then
+        live_trace_stream.changed(trace, sse_parsed.model)
+        update_ui_chat_viewer(trace)
+    end
 end
 
 ---@type OnCurlExitedSuccessfully
