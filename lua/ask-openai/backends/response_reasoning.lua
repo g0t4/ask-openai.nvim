@@ -6,7 +6,7 @@ local M = {}
 ---@param delta table
 ---@return string|nil
 function M.get_content(delta)
-    -- TODO build a delta wrapper type to do this on the instance
+    -- TODO! 2026-11-28 build SSEDeltaWrapped and hide the logic in that so we don't need a standalone function
     -- btw I verified all paths to this currently already use sse_wrapped and thus I don't need to check vim.NIL here
     return delta.reasoning_content or delta.reasoning
 end
