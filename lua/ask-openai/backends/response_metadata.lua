@@ -18,8 +18,7 @@ function M.accumulate_metadata(sse_wrapped, accumulated_message)
 
     -- * preserve fields
     for _, field in ipairs({ "timings", "usage", "metrics", "sglext", "backend", "model" }) do
-        -- do not ever treat nil/vim.NIL as a value that we set
-        if sse[field] ~= nil and sse[field] ~= vim.NIL then
+        if sse[field] ~= nil then
             if metadata[field] ~= nil and metadata[field] ~= sse[field] then
                 -- checking if value is new => we shouldn't ever see a different value per field and really shouldn't be seeing any field twice (in diff SSEs anyways)...
                 --   we could see it twice if we call this copy() repeatedly
