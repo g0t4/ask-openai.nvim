@@ -39,7 +39,7 @@ local trace_restorer = require("ask-openai.agents.viewer.trace_restorer")
 local ansi = require("devtools.ansi")
 local safely = require("ask-openai.helpers.safely")
 local live_trace_stream = require("ask-openai.agents.live_trace_stream")
-local SSEParsed = require("ask-openai.agents.sse_parsed")
+local SSEWrapped = require("ask-openai.agents.sse_wrapped")
 local values = require("ask-openai.helpers.values")
 local response_metadata = require("ask-openai.backends.response_metadata")
 
@@ -829,7 +829,7 @@ function AgentsFrontend.on_parsed_data_sse(sse_parsed)
         return
     end
 
-    local sse_wrapped = SSEParsed.new(sse_parsed)
+    local sse_wrapped = SSEWrapped.new(sse_parsed)
     if sse_wrapped:has_choices() then
         -- FYI could warn if > 1 choice
         local first_choice = sse_parsed.choices[1]
