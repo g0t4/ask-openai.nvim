@@ -57,11 +57,13 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         -- FYI no idea if this would even work beyond llama-server but it would be pluggable for llama-server's timings even if the others never apply in this case
         response_metadata.accumulate_metadata(sse_parsed, accumulated_completion)
 
-        -- * accumulate content
-        if sse_parsed.content ~= nil and sse_parsed.content ~= vim.NIL then
-            accumulated_completion.content = (accumulated_completion.content or "") .. sse_parsed.content
+        local function accumulate_content()
+            if sse_parsed.content ~= nil and sse_parsed.content ~= vim.NIL then
+                accumulated_completion.content = (accumulated_completion.content or "") .. sse_parsed.content
+            end
+            -- PRN accumulate the finish_reason too?
         end
-        -- PRN accumulate the finish_reason too?
+        accumulate_content()
 
         if not accumulated_completion.metadata.done then
             return
