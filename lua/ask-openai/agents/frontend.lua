@@ -836,10 +836,8 @@ function AgentsFrontend.on_parsed_data_sse(sse_parsed)
         AgentsFrontend.on_streaming_delta_update_message_history(first_choice, request, sse_parsed)
         return
     end
-    if sse_wrapped:no_choices() then
-        live_trace_stream.changed(trace, sse_parsed.model)
-        update_ui_chat_viewer(trace)
-    end
+    live_trace_stream.changed(trace, sse_parsed.model)
+    update_ui_chat_viewer(trace)
 end
 
 ---@type OnCurlExitedSuccessfully
