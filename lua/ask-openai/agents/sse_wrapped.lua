@@ -35,6 +35,11 @@ function SSEWrapped:has_error()
 end
 
 ---@return string?
+function SSEWrapped:model()
+    return self.sse_parsed.model
+end
+
+---@return string?
 function SSEWrapped:finish_reason()
     local first_choice = self:first_choice()
     if first_choice == nil then

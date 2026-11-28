@@ -827,7 +827,7 @@ function AgentsFrontend.on_parsed_data_sse(sse_wrapped)
         AgentsFrontend.on_streaming_delta_update_message_history(first_choice, request, sse_wrapped)
         return
     end
-    live_trace_stream.changed(trace, sse_wrapped.sse_parsed.model)
+    live_trace_stream.changed(trace, sse_wrapped:model())
     update_ui_chat_viewer(trace)
 end
 
