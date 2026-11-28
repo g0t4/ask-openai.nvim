@@ -39,6 +39,7 @@ local trace_restorer = require("ask-openai.agents.viewer.trace_restorer")
 local ansi = require("devtools.ansi")
 local safely = require("ask-openai.helpers.safely")
 local live_trace_stream = require("ask-openai.agents.live_trace_stream")
+local SSEParsed = require("ask-openai.agents.sse_parsed")
 local values = require("ask-openai.helpers.values")
 local response_metadata = require("ask-openai.backends.response_metadata")
 
@@ -810,26 +811,6 @@ end
 ---@type OnParsedSSE
 function AgentsFrontend.on_sse_llama_server_timings(sse)
     -- PRN use this to extract timing like in rewrites
-end
-
----@class SSEParsed
----@field sse_parsed LlamaServerSSEBase
-local SSEParsed = {}
-
----@param sse_parsed LlamaServerSSEBase
----@return SSEParsed
-function SSEParsed.new(sse_parsed)
-    return setmetatable({ sse_parsed = sse_parsed }, { __index = SSEParsed })
-end
-
----@return boolean
-function SSEParsed:has_choices()
-    return self.sse_parsed.choices ~= nil and #self.sse_parsed.choices > 0
-end
-
----@return boolean
-function SSEParsed:no_choices()
-    return not self:has_choices()
 end
 
 ---@type OnParsedSSE
