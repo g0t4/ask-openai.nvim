@@ -84,7 +84,7 @@ describe("usage-triggered trace logging", function()
         local request = { body = { messages = {} } }
         logger.log_sse_to_request({ choices = { { delta = { role = "assistant", content = "OK" } } } }, request, {})
         local spec = { spec_tokens_details = { spec_num_correct_drafts = 12, spec_num_proposed_drafts = 18 } }
-        logger.log_sse_to_request({ choices = {}, usage = vim.NIL, sglext = spec }, request, {})
+        logger.log_sse_to_request({ choices = {}, usage = nil, sglext = spec }, request, {})
         logger.log_sse_to_request({
             choices = {},
             usage = {
@@ -92,7 +92,7 @@ describe("usage-triggered trace logging", function()
                 completion_tokens = 16,
                 reasoning_tokens = 9
             },
-            sglext = vim.NIL
+            sglext = nil -- FYI setting to nil is to emphasize that it is not set (same as literally removing this line)
         }, request, {})
         assert.is_true(vim.wait(1000, function()
             return saved and type(saved.messages[1].usage) == "table"
