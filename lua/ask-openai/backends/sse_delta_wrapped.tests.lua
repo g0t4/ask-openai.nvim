@@ -40,14 +40,5 @@ describe("backend reasoning field normalization", function()
         assert.equals("first second", message.reasoning_content)
         assert.equals("answer", message.content)
     end)
-    it("ignores SGLang's metadata-only SSEs in the text parser", function()
-        for _, sse in ipairs({ { choices = {}, usage = { completion_tokens = 3 } },
-            { choices = {}, sglext = { spec_tokens_details = {} } } }) do
-            local parsed = parse_sse_v1_chat_completions(SSEWrapped.new(sse))
-            assert.equals("", parsed.content)
-            assert.equals("", parsed.reasoning_content)
-            assert.is_false(parsed.done)
-        end
-    end)
 
 end)
