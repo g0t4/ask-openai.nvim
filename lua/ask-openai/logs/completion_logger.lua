@@ -44,7 +44,6 @@ end
 function M.log_sse_to_request(sse_wrapped, request, frontend)
     local sse_parsed = sse_wrapped.sse_parsed
     -- TODO! 2026-11-27 didn't last_sse cause some havoc for AgentsFrontend logging the last agent message? is that fixed now that I took out last_sse?
-    -- TODO! 2026-11-27 once we pass sse_wrapped then remove vim.NIL checks that are relevant below
 
     local function log_raw_completion_sse()
         -- * /v1/completions endpoint
@@ -60,7 +59,7 @@ function M.log_sse_to_request(sse_wrapped, request, frontend)
         response_metadata.accumulate_metadata(sse_wrapped, accumulated_completion)
 
         local function accumulate_content()
-            if sse_parsed.content ~= nil and sse_parsed.content ~= vim.NIL then
+            if sse_parsed.content ~= nil then
                 accumulated_completion.content = (accumulated_completion.content or "") .. sse_parsed.content
             end
             -- PRN accumulate the finish_reason too?
@@ -117,17 +116,17 @@ function M.log_sse_to_request(sse_wrapped, request, frontend)
             --  and that's good b/c the SSE w/ finish_reason has a choice w/o a delta:
             --    choices = { { delta = vim.empty_dict(), finish_reason = "stop", index = 0 } }
 
-            if delta.role and delta.role ~= vim.NIL then
+            if delta.role ~= nil then
                 accumulated_completion.role = delta.role
             end
             local reasoning_content = SSEDeltaWrapped.new(delta):reasoning()
             if reasoning_content ~= nil then
                 accumulated_completion.reasoning_content = (accumulated_completion.reasoning_content or "") .. reasoning_content
             end
-            if delta.content and delta.content ~= vim.NIL then
+            if delta.content ~= nil then
                 accumulated_completion.content = (accumulated_completion.content or "") .. delta.content
             end
-            if choice and choice.finish_reason and choice.finish_reason ~= vim.NIL then
+            if choice and choice.finish_reason ~= nil then
                 accumulated_completion.finish_reason = choice.finish_reason
             end
         end
@@ -204,7 +203,9 @@ function M.save_trace(request, frontend, messages_snapshot, trace_data)
 
             local encoded = json.encode(record, {
                 exception = function(reason, bad_value, _, default_message)
+                    -- FYI vim.NIL shouldn't ever happen, still handle it and log an error
                     if reason == "unsupported type" and bad_value == vim.NIL then
+                        log:error("encountered vim.NIL when it should not be present in completion_logger", reason, bad_value, default_message)
                         return "null"
                     end
 
