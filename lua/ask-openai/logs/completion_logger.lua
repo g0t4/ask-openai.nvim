@@ -195,9 +195,9 @@ function M.save_chat_trace(request, frontend, messages_snapshot)
             message_clone.metadata = nil
 
             local record = {
-                message = message_clone,
                 type = "message",
-                metadata = message_metadata and { response = message_metadata } or nil,
+                message = message_clone,
+                metadata = { response = message_metadata },
             }
             file:write(encode_record(record) .. "\n")
         end
@@ -217,7 +217,7 @@ function M.save_raw_prompt(request, frontend, accumulated_completion)
         -- TODO long prompt as separate record! that effectively gives us messages
         -- in fact, why not just treat them as messages?
         content = accumulated_completion.content,
-        metadata = accumulated_completion.metadata,
+        metadata = { response = accumulated_completion.metadata },
     }
 
     local vars = { request = request, frontend = frontend, record }
