@@ -12,8 +12,16 @@ function SSEWrapped.new(sse_parsed)
 end
 
 ---@return boolean
-function SSEWrapped:has_choices()
-    return self.sse_parsed.choices ~= nil and #self.sse_parsed.choices > 0
+function SSEWrapped:has_choice()
+    local choices = self.sse_parsed.choices
+    if choices == nil or #choices == 0 then
+        return false
+    end
+    if #choices > 1 then
+        local log = require("devtools.logs.logger").universal()
+        log:warn("SSEWrapped: has > 1 choice, raw data: " .. vim.inspect(self.sse_parsed))
+    end
+    return true
 end
 
 ---@return LlamaServerChatCompletionSSE_Choice?
@@ -26,7 +34,7 @@ end
 
 ---@return boolean
 function SSEWrapped:no_choices()
-    return not self:has_choices()
+    return not self:has_choice()
 end
 
 ---@return boolean

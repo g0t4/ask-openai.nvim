@@ -821,7 +821,7 @@ function AgentsFrontend.on_parsed_data_sse(sse_wrapped)
         return
     end
 
-    if sse_wrapped:has_choices() then
+    if sse_wrapped:has_choice() then
         -- FYI could warn if > 1 choice
         AgentsFrontend.on_streaming_delta_update_message_history(sse_wrapped, request)
         return
