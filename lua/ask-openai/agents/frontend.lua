@@ -716,8 +716,6 @@ function AgentsFrontend.on_streaming_delta_update_message_history(choice, reques
         return
     end
 
-    -- NOTE: choice is already nil_ified in place by the SSEWrapped ctor (curl backend)
-
     -- * lookup or create message
     -- FYI this is not well vetted for multi message responses, in fact is this using choice.index for message.index?!
     --   that said, one message per request is it... unless I am doing something funky with the raw prompt to trigger mulitple messages?
