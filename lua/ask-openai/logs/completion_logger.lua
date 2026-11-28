@@ -177,6 +177,9 @@ function M.save_trace(request, frontend, messages_snapshot, trace_data)
     -- FYI io write (below) fails if this doesn't exist:
     vim.fn.mkdir(save_dir, "p")
 
+    -- TODO raw completions will not have messages... need to use a diff log format entirely (stay with what we had before)
+    --   TODO split out separate save_raw_prompt() for the case that we have a raw prompt (/completions endpoint, so not chat completions)
+
     -- TODO jsonl records:
     -- TODO add turn start/end records
     -- TODO add record w/ type=request_body per turn
