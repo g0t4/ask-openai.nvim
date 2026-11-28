@@ -2,6 +2,7 @@ require("ask-openai.helpers.test_setup").modify_package_path()
 local response_reasoning = require("ask-openai.backends.response_reasoning")
 require("ask-openai.backends.sse.parsers")
 local frontend = require("ask-openai.agents.frontend")
+local SSEWrapped = require("ask-openai.agents.sse_wrapped")
 
 describe("backend reasoning field normalization", function()
     local cases = {
@@ -19,10 +20,10 @@ describe("backend reasoning field normalization", function()
             local sse = { choices = { choice } }
             local original = vim.deepcopy(sse)
             assert.equals(case.expected, response_reasoning.get_content(choice.delta))
-            assert.equals(case.expected or "", parse_sse_v1_chat_completions(sse).reasoning_content)
+            assert.equals(case.expected or "", parse_sse_v1_chat_completions(SSEWrapped.new(sse)).reasoning_content)
             assert.same(original, sse)
             local request = { accumulated_model_response_messages = {} }
-            frontend.on_streaming_delta_update_message_history(vim.deepcopy(choice), request, sse)
+            frontend.on_streaming_delta_update_message_history(vim.deepcopy(choice), request, SSEWrapped.new(sse))
             local message = request.accumulated_model_response_messages[1]
             assert.equals(case.expected, message.reasoning_content)
             assert.is_nil(message.reasoning)
@@ -36,7 +37,7 @@ describe("backend reasoning field normalization", function()
             { reasoning_content = vim.NIL, reasoning = "second " },
             { reasoning_content = "third", reasoning = "duplicate" },
             { content = "answer" } }) do
-            frontend.on_streaming_delta_update_message_history({ index = 0, delta = delta }, request, {})
+            frontend.on_streaming_delta_update_message_history({ index = 0, delta = delta }, request, SSEWrapped.new({}))
         end
         local message = request.accumulated_model_response_messages[1]
         assert.equals("first second third", message.reasoning_content)
@@ -45,7 +46,7 @@ describe("backend reasoning field normalization", function()
     it("ignores SGLang's metadata-only SSEs in the text parser", function()
         for _, sse in ipairs({ { choices = {}, usage = { completion_tokens = 3 } },
             { choices = {}, sglext = { spec_tokens_details = {} } } }) do
-            local parsed = parse_sse_v1_chat_completions(sse)
+            local parsed = parse_sse_v1_chat_completions(SSEWrapped.new(sse))
             assert.equals("", parsed.content)
             assert.equals("", parsed.reasoning_content)
             assert.is_false(parsed.done)

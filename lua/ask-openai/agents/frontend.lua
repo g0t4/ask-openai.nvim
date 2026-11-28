@@ -702,8 +702,10 @@ end
 --- think of this as denormalizing SSEs => into aggregate RxAccumulatedMessage
 ---@param choice OpenAIChoice|nil
 ---@param request CurlRequestForTrace
----@param sse_parsed LlamaServerSSEBase
-function AgentsFrontend.on_streaming_delta_update_message_history(choice, request, sse_parsed)
+---@param sse_wrapped SSEWrapped
+function AgentsFrontend.on_streaming_delta_update_message_history(choice, request, sse_wrapped)
+    ---@cast sse_wrapped.sse_parsed LlamaServerChatCompletionSSE
+    local sse_parsed = sse_wrapped.sse_parsed
     -- *** this is a DENORMALIZER (AGGREGATOR) - CQRS style
     -- rebuilds message as if sent `stream: false`
     -- for message history / follow up
@@ -825,7 +827,7 @@ function AgentsFrontend.on_parsed_data_sse(sse_parsed)
     local first_choice = sse_wrapped:first_choice()
     if first_choice ~= nil then
         -- FYI could warn if > 1 choice
-        AgentsFrontend.on_streaming_delta_update_message_history(first_choice, request, sse_parsed)
+        AgentsFrontend.on_streaming_delta_update_message_history(first_choice, request, sse_wrapped)
         return
     end
     live_trace_stream.changed(trace, sse_parsed.model)
