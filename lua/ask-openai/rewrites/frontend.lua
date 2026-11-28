@@ -160,7 +160,6 @@ end
 
 ---@type OnParsedSSE
 function RewriteFrontend.on_parsed_data_sse(sse_parsed)
-    -- log:info("sse", vim.inspect(sse_parsed))
     local sse_wrapped = SSEWrapped.new(sse_parsed)
     local first_choice = sse_wrapped:first_choice()
     if first_choice == nil then
