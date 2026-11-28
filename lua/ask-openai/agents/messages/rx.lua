@@ -52,12 +52,6 @@ function RxAccumulatedMessage:new(role, content)
     return self
 end
 
---- not set when still streaming
----@return string
-function RxAccumulatedMessage:get_finish_reason()
-    return self.finish_reason
-end
-
 ---@return boolean
 function RxAccumulatedMessage:is_still_streaming()
     return self.finish_reason == nil
