@@ -114,10 +114,10 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         -- accum the full message (from streaming SSEs) so I can log for all frontends here
 
         -- * init accum object and store it on request
-        local accumulated_message = request.accum or AccumulatedCompletion.new()
-        request.accum = accumulated_message
+        local accumulated_completion = request.accum or AccumulatedCompletion.new()
+        request.accum = accumulated_completion
 
-        response_metadata.accumulate_metadata(sse_parsed, accumulated_message)
+        response_metadata.accumulate_metadata(sse_parsed, accumulated_completion)
 
         local function accumulate_choice(sse)
             if type(sse.choices) ~= "table" or #sse.choices == 0 then
@@ -130,17 +130,17 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
             if type(delta) ~= "table" then return end
 
             if delta.role and delta.role ~= vim.NIL then
-                accumulated_message.role = delta.role
+                accumulated_completion.role = delta.role
             end
             local reasoning_content = response_reasoning.get_content(delta)
             if reasoning_content ~= nil then
-                accumulated_message.reasoning_content = (accumulated_message.reasoning_content or "") .. reasoning_content
+                accumulated_completion.reasoning_content = (accumulated_completion.reasoning_content or "") .. reasoning_content
             end
             if delta.content and delta.content ~= vim.NIL then
-                accumulated_message.content = (accumulated_message.content or "") .. delta.content
+                accumulated_completion.content = (accumulated_completion.content or "") .. delta.content
             end
             if choice and choice.finish_reason and choice.finish_reason ~= vim.NIL then
-                accumulated_message.finish_reason = choice.finish_reason
+                accumulated_completion.finish_reason = choice.finish_reason
             end
         end
 
@@ -158,7 +158,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         -- PRN track tool call deltas too? on the response (for output.json)?
         --   FYI request.body, on next turn, already has the tool call
         --   so for now, this is not urgent to add to logs here... I can grab trace logs for after model responds to tool call result
-        if not accumulated_message.metadata.done then
+        if not accumulated_completion.metadata.done then
             return
         end
 
@@ -174,7 +174,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         --  and we'd have it for every turn!
 
         local messages_snapshot = tables.shallow_copy(request.body.messages or {})
-        table.insert(messages_snapshot, accumulated_message)
+        table.insert(messages_snapshot, accumulated_completion)
         vim.schedule(function()
             local vars = { request = request, frontend = frontend, messages_snapshot = messages_snapshot }
             log:info("save_trace log_raw_completion_sse", vars)
