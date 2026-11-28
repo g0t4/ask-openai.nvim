@@ -136,9 +136,9 @@ function parse_sse_v1_chat_completions(sse_wrapped)
         --   - likely due to roles/channels token(s) in harmony parser (among others)
         -- content == nil
         --   - 2+ SSEs are for reasoning and use reasoning_content until thinking is complete (these don't even set the content field, so it's nil in this case)
-        content = values.empty_for_nil(delta.content),
+        content = delta.content or "",
 
-        reasoning_content = values.empty_for_nil(response_reasoning.get_content(delta)),
+        reasoning_content = response_reasoning.get_content(delta) or "",
 
         -- FYI finish_reason is vim.NIL until it is set (end of completion)
         finish_reason = finish_reason,
