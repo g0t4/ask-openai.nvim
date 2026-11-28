@@ -28,6 +28,16 @@ function M.log_request_with(request, frontend)
     return save_dir, trace_id
 end
 
+-- TODO! 2026-11-27 move to new file when we accumulate in curl backend
+---@class AccumulatedCompletion
+---@field metadata table
+local AccumulatedCompletion = {}
+
+---@return AccumulatedCompletion
+function AccumulatedCompletion.new()
+    return setmetatable({ metadata = {} }, { __index = AccumulatedCompletion })
+end
+
 ---@param sse_parsed table
 ---@param request CurlRequest|CurlRequestForTrace
 ---@param frontend StreamingFrontend
@@ -44,9 +54,8 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
             return
         end
 
-        local accumulated_message = request.accum or {
-            metadata = {}
-        }
+        -- * ensure accumulated_message
+        local accumulated_message = request.accum or AccumulatedCompletion.new()
         request.accum = accumulated_message
 
         -- FYI no idea if this would even work beyond llama-server but it would be pluggable for llama-server's timings even if the others never apply in this case
@@ -104,9 +113,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         -- choices = { { delta = vim.empty_dict(), finish_reason = "stop", index = 0 } },
         -- accum the full message (from streaming SSEs) so I can log for all frontends here
         -- * init accum object and store it on request
-        local accumulated_message = request.accum or {
-            metadata = {}
-        }
+        local accumulated_message = request.accum or AccumulatedCompletion.new()
         request.accum = accumulated_message
 
         response_metadata.accumulate_metadata(sse_parsed, accumulated_message)
