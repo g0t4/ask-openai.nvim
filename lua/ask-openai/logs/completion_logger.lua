@@ -54,20 +54,20 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
             return
         end
 
-        -- * ensure accumulated_message
-        local accumulated_message = request.accum or AccumulatedCompletion.new()
-        request.accum = accumulated_message
+        -- * init accum object and store it on request
+        local accumulated_completion = request.accum or AccumulatedCompletion.new()
+        request.accum = accumulated_completion
 
         -- FYI no idea if this would even work beyond llama-server but it would be pluggable for llama-server's timings even if the others never apply in this case
-        response_metadata.accumulate_metadata(sse_parsed, accumulated_message)
+        response_metadata.accumulate_metadata(sse_parsed, accumulated_completion)
 
         -- * accumulate content
         if sse_parsed.content ~= nil and sse_parsed.content ~= vim.NIL then
-            accumulated_message.content = (accumulated_message.content or "") .. sse_parsed.content
+            accumulated_completion.content = (accumulated_completion.content or "") .. sse_parsed.content
         end
         -- PRN accumulate the finish_reason too?
 
-        if not accumulated_message.metadata.done then
+        if not accumulated_completion.metadata.done then
             return
         end
 
@@ -77,7 +77,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         }
         local trace_data = {
             -- put content on trace_data top-level
-            content = accumulated_message.content,
+            content = accumulated_completion.content,
         }
         vim.schedule(function()
             local no_messages = nil -- b/c not chat endpoint
@@ -112,6 +112,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
         -- last SSE choices:
         -- choices = { { delta = vim.empty_dict(), finish_reason = "stop", index = 0 } },
         -- accum the full message (from streaming SSEs) so I can log for all frontends here
+
         -- * init accum object and store it on request
         local accumulated_message = request.accum or AccumulatedCompletion.new()
         request.accum = accumulated_message
