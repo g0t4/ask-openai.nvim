@@ -721,6 +721,10 @@ function AgentsFrontend.on_streaming_delta_update_message_history(sse_wrapped, r
     -- FYI this is not well vetted for multi message responses, in fact is this using choice.index for message.index?!
     --   that said, one message per request is it... unless I am doing something funky with the raw prompt to trigger mulitple messages?
     local index_base1 = choice.index + 1
+    if index_base1 > 1 then
+        -- FYI it's ok to remove this logging, mostly out of curiosity:
+        log:info("FYI, just flagging non-zero choice.index which AFAICT shouldn't happen in any tooling/models I use so far", choice)
+    end
 
     local rx_accum_message = request.accumulated_model_response_messages[index_base1]
     if rx_accum_message == nil then
