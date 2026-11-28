@@ -146,7 +146,7 @@ function TxChatMessage:from_assistant_rx_message(rx_message)
     -- TODO! 2026-11-27 get a real `AccumulatedCompletion.done` boolean that is agnostic of backend
     if rx_message.last_sse then
         -- TODO move to record object's metadata - record object completion logging refactor
-        -- TODO! 2026-11-28 do I really need a new instance of SSEWrapped here?
+        -- FYI I could reuse sse_wrapped from agents/frontend (only spot that sets it has a note and has sse_wrapped in scope but I don't plan to keep that so as long as it doesn't hurt to reconstruct sse_wrapped here, lets just do that):
         local SSEWrapped = require("ask-openai.backends.sse_wrapped")
         local sse_wrapped = SSEWrapped.new(rx_message.last_sse)
         local response_metadata = require("ask-openai.backends.response_metadata")

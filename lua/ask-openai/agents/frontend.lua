@@ -744,6 +744,7 @@ function AgentsFrontend.append_sse_to_accumulated_completion(sse_wrapped, reques
     local is_done = sse_parsed.timings ~= nil
     if is_done then
         -- TODO! 2026-11-27 update to merge with new accumulated_message logic in completion logger
+        -- PRN? STOP GAP set rx_accum_message.last_sse_wrapped = sse_wrapped? (and use it in tx.lua where I build a new sse_wrapped b/c I don't have the one in scope here accessible)
         rx_accum_message.last_sse = sse_parsed
     end
 
