@@ -6,7 +6,6 @@ local metadata = require("ask-openai.backends.response_metadata")
 -- FYI when I removed the last_sse from traces I didn't review which of these tests are redundant and/or not needed anymore I just removed usages of last_sse in them
 
 describe("verbatim response metadata", function()
-
     it("merges SGLang's extension and usage chunks without mutating either", function()
         local sse_with_sglext = {
             choices = {},
