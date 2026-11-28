@@ -51,15 +51,15 @@ describe("usage-triggered trace logging", function()
     local logger, original_save
     before_each(function()
         logger = require("ask-openai.logs.completion_logger")
-        original_save = logger.save_trace
+        original_save = logger.save_chat_trace
     end)
     after_each(function()
-        logger.save_trace = original_save
+        logger.save_chat_trace = original_save
     end)
 
     it("saves accumulated content and verbatim usage/metrics without timings", function()
         local saved
-        logger.save_trace = function(_, _, messages)
+        logger.save_chat_trace = function(_, _, messages)
             saved = { messages = messages }
         end
         local request = { body = { messages = {} } }

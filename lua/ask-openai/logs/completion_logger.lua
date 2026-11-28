@@ -158,9 +158,9 @@ function M.log_sse_to_request(sse_wrapped, request, frontend)
         table.insert(messages_snapshot, accumulated_completion)
         vim.schedule(function()
             local vars = { request = request, frontend = frontend, messages_snapshot = messages_snapshot }
-            log:info("save_trace log_raw_completion_sse", vars)
+            log:info("save_chat_trace log_chat_completion_sse", vars)
             local trace_data = {}
-            M.save_trace(request, frontend, messages_snapshot, trace_data)
+            M.save_chat_trace(request, frontend, messages_snapshot, trace_data)
         end)
     end
 
@@ -188,7 +188,7 @@ end
 ---@param request CurlRequest|CurlRequestForTrace
 ---@param frontend StreamingFrontend
 ---@param messages_snapshot? table[]
-function M.save_trace(request, frontend, messages_snapshot, trace_data)
+function M.save_chat_trace(request, frontend, messages_snapshot, trace_data)
     local save_dir, trace_id = M.log_request_with(request, frontend)
     -- FYI io write (below) fails if this doesn't exist:
     vim.fn.mkdir(save_dir, "p")
