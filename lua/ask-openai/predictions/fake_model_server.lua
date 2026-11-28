@@ -90,7 +90,7 @@ local function build_sse_chunk(opts)
     if opts.finish_reason ~= nil then
         choice.finish_reason = opts.finish_reason
     else
-        choice.finish_reason = vim.NIL
+        choice.finish_reason = nil
     end
 
     choice.index = opts.index or 0
