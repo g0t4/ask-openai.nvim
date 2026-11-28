@@ -686,9 +686,10 @@ local function update_ui_chat_viewer(trace)
             local last_sse = last_message.last_sse
             local footers = {}
             if last_sse.model then
+                -- TODO! 2026-11-27 use accumulated_message instead of last_sse AND show both backend+model
                 table.insert(footers, last_sse.model)
             end
-            local total_token_count = response_stats.total_tokens(last_sse)
+            local total_token_count = response_stats.total_tokens(last_sse) -- TODO! 2026-11-27 use accumulated_message instead of last_sse
             if total_token_count then
                 AgentsFrontend.chat_window:set_token_count(total_token_count)
             end
@@ -734,6 +735,7 @@ function AgentsFrontend.on_streaming_delta_update_message_history(choice, reques
     -- TODO this won't work with non llama-server backends
     local is_last_sse = sse_parsed.timings
     if is_last_sse then
+        -- TODO! 2026-11-27 update to merge with new accumulated_message logic in completion logger
         rx_accum_message.last_sse = sse_parsed
         -- rx_accum_message.timings = sse_parsed.timings -- ? should I just copy this one part only and skip rest of last_sse?
     end
