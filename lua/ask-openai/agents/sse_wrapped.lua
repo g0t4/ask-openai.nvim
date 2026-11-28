@@ -7,6 +7,7 @@ local SSEWrapped = {}
 ---@param sse_parsed LlamaServerSSEBase
 ---@return SSEWrapped
 function SSEWrapped.new(sse_parsed)
+    sse_parsed = values.nil_ify(sse_parsed) -- mutates in place
     return setmetatable({ sse_parsed = sse_parsed }, { __index = SSEWrapped })
 end
 

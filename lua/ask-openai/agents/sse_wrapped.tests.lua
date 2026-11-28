@@ -37,6 +37,13 @@ describe("SSEWrapped", function()
         assert.is_false(wrapped:is_finished())
     end)
 
+    it("nil_ifies vim.NIL in the ctor", function()
+        local raw = { choices = { { delta = { content = vim.NIL }, finish_reason = vim.NIL } } }
+        local wrapped = SSEWrapped.new(raw)
+        assert.is_nil(wrapped:first_choice().delta.content)
+        assert.is_nil(wrapped:finish_reason())
+    end)
+
     it("detects errors", function()
         local wrapped = SSEWrapped.new({ error = { code = 503, message = "Loading model", type = "unavailable_error" } })
         assert.is_true(wrapped:has_error())

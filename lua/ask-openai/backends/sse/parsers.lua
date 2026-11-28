@@ -106,8 +106,7 @@ end
 ---@param sse LlamaServerChatCompletionSSE
 ---@return SseFieldsResult? -- nil == no content/reasoning/finish_reason
 function parse_sse_v1_chat_completions(sse)
-    sse = values.nil_ify(sse) -- sglang will own you with vim.NIL on like every unused field somehow gets set null egads...
-    local sse_wrapped = SSEWrapped.new(sse)
+    local sse_wrapped = SSEWrapped.new(sse) -- nil_ified in ctor
 
     if sse_wrapped:has_error() then
         -- error examples:
