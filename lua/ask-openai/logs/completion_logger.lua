@@ -155,11 +155,6 @@ function M.log_sse_to_request(sse_wrapped, request, frontend)
             frontend = frontend,
         }
 
-        -- TODO jsonl_record logs (take .request_body.messages => message records,  rest of .request_body => type=request ? to capture inputs, and type=tools? for tool definitions specifically?)
-
-        -- FYI going forward we will capture entire SSE as metadata (so we'd have raw prompt from llama-server there if we enable verbose mode)
-        --  and we'd have it for every turn!
-
         local messages_snapshot = tables.shallow_copy(request.body.messages or {})
         table.insert(messages_snapshot, accumulated_completion)
         vim.schedule(function()
@@ -179,8 +174,13 @@ end
 ---@param messages_snapshot? table[]
 function M.save_trace(request, frontend, messages_snapshot, trace_data)
     local save_dir, trace_id = M.log_request_with(request, frontend)
-    -- FYI if this doesn't exist before the save_trace io write happens, the io write will fail silently
+    -- FYI io write (below) fails if this doesn't exist:
     vim.fn.mkdir(save_dir, "p")
+
+    -- TODO jsonl records:
+    -- TODO add turn start/end records
+    -- TODO add record w/ type=request_body per turn
+    -- TODO add record w/ type=tools at start of trace? and if ever changed
 
     local path = save_dir .. "/" .. trace_id .. "-trace.jsonl"
     -- log:info("trace path", path)

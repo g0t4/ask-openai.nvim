@@ -367,7 +367,7 @@ function Curl.on_one_data_value(data_value, frontend, request)
             frontend.explain_error(message)
         end
 
-        -- PRN use AccumulatedCompletion for timings across backends (not just llama-server)
+        -- TODO! 2026-11-28 use AccumulatedCompletion for timings across backends (not just llama-server)
         if sse_parsed.timings then
             frontend.on_sse_llama_server_timings(sse_wrapped)
         end
