@@ -2,6 +2,7 @@ local log = require("devtools.logs.logger"):universal()
 local values = require("ask-openai.helpers.values")
 local response_reasoning = require("ask-openai.backends.response_reasoning")
 local response_metadata = require("ask-openai.backends.response_metadata")
+local SSEWrapped = require("ask-openai.agents.sse_wrapped")
 -- logic for parsing SSEs from all completion backends
 
 ---@class SseFieldsResult
@@ -105,14 +106,16 @@ end
 ---@param sse LlamaServerChatCompletionSSE
 ---@return SseFieldsResult? -- nil == no content/reasoning/finish_reason
 function parse_sse_v1_chat_completions(sse)
-    if sse.error ~= nil then
+    sse = values.nil_ify(sse) -- sglang will own you with vim.NIL on like every unused field somehow gets set null egads...
+    local sse_wrapped = SSEWrapped.new(sse)
+
+    if sse_wrapped:has_error() then
         -- error examples:
         -- { error = { code = 503, message = "Loading model", type = "unavailable_error" } }
         log:info("skipping SSE with error b/c that will be handled elsewhere", sse)
         return nil
     end
-    local no_choices = type(sse.choices) == "table" and #sse.choices == 0
-    if no_choices then
+    if sse_wrapped:no_choices() then
         -- skip if no choices (can happen on SSEs at end with timing)
         -- if it happens elsewhere just skip it for now
         -- PRN consider logging if not an timings SSE where this is known to happen
@@ -120,9 +123,8 @@ function parse_sse_v1_chat_completions(sse)
     end
 
     log:info("raw sse", sse)
-    local sse = values.nil_ify(sse) -- do the full thing here (TODO or somewhere else?) sglang will own you with vim.NIL on like every unused field somehow gets set null egads...
 
-    local first_choice = sse.choices[1]
+    local first_choice = sse_wrapped:first_choice()
     local delta = first_choice.delta
     if delta == nil then
         -- TODO get rid of this log if never happens and/or doesn't matter
@@ -133,7 +135,7 @@ function parse_sse_v1_chat_completions(sse)
     local prob = get_probs(first_choice)
     -- log:info("prob", prob)
 
-    local finish_reason = values.vim_NIL_to_nil(first_choice.finish_reason)
+    local finish_reason = sse_wrapped:finish_reason()
 
     return {
         -- content == vim.NIL => first response has `content: null` b/c it is setting the role to asssistant
@@ -146,7 +148,7 @@ function parse_sse_v1_chat_completions(sse)
 
         -- FYI finish_reason is vim.NIL until it is set (end of completion)
         finish_reason = finish_reason,
-        done = finish_reason ~= nil,
+        done = sse_wrapped:is_finished(),
 
         prob = prob,
     }
