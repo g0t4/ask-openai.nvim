@@ -21,7 +21,7 @@ function ToolCall:new(o)
 end
 
 -- Validate only after the final delta. Partial argument strings are normal while streaming.
-function ToolCall:finish_arguments()
+function ToolCall:flag_invalid_arguments()
     local arguments = self["function"].arguments
     if type(arguments) ~= "string" or not arguments:match("^%s*{") or not pcall(vim.json.decode, arguments) then
         self.arguments_error = "Tool was not run. Retry with arguments encoded as a valid JSON object."

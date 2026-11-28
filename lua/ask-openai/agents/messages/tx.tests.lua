@@ -86,7 +86,7 @@ describe("completed tool arguments", function()
     it("rejects malformed calls before dispatch and preserves replayable history", function()
         for _, raw in ipairs({ "", "  ", '{"argv":', "[]", "null" }) do
             local call = ToolCall:new({ id = "bad", type = "function", ["function"] = { name = "run_bash", arguments = raw } })
-            call:finish_arguments()
+            call:flag_invalid_arguments()
             local result
             router.send_tool_call_router(call, function(output) result = output.result end)
             assert.is_true(result.isError)
@@ -101,7 +101,7 @@ describe("completed tool arguments", function()
     it("preserves valid arguments including no-argument calls", function()
         for _, raw in ipairs({ "{}", ' {"argv":["ls"]}' }) do
             local call = ToolCall:new({ ["function"] = { name = "test", arguments = raw } })
-            call:finish_arguments()
+            call:flag_invalid_arguments()
             assert.is_nil(call.arguments_error)
             local history = Tx:from_assistant_rx_message({ tool_calls = { call } })
             assert.equals(raw, history.tool_calls[1]["function"].arguments)

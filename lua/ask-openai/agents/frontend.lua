@@ -850,7 +850,7 @@ function AgentsFrontend.on_curl_exited_successfully()
             --   (must come before tool result messages)
             --   theoretically there can be multiple messages, with any role (not just assitant)
             for _, tool_call in ipairs(rx_message.tool_calls) do
-                tool_call:finish_arguments()
+                tool_call:flag_invalid_arguments()
             end
             local trace_message = TxChatMessage:from_assistant_rx_message(rx_message)
             trace:add_message(trace_message)
