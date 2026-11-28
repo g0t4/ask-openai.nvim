@@ -705,7 +705,7 @@ end
 --- think of this as denormalizing SSEs => into aggregate RxAccumulatedMessage
 ---@param sse_wrapped SSEWrapped
 ---@param request CurlRequestForTrace
-function AgentsFrontend.on_streaming_delta_update_message_history(sse_wrapped, request)
+function AgentsFrontend.append_sse_to_accumulated_completion(sse_wrapped, request)
     ---@cast sse_wrapped.sse_parsed LlamaServerChatCompletionSSE
     local sse_parsed = sse_wrapped.sse_parsed
     local choice = sse_wrapped:first_choice()
@@ -737,6 +737,7 @@ function AgentsFrontend.on_streaming_delta_update_message_history(sse_wrapped, r
         request.accumulated_model_response_messages[index_base1] = rx_accum_message
     end
 
+    -- * detect if done
     -- TODO! 2026-11-27 this is why you don't log anything for non-llama-server traces beyond the first request :)
     -- TODO! 2026-11-27 get a real `AccumulatedCompletion.done` boolean that is agnostic of backend
     local is_done = sse_parsed.timings ~= nil
@@ -745,17 +746,20 @@ function AgentsFrontend.on_streaming_delta_update_message_history(sse_wrapped, r
         rx_accum_message.last_sse = sse_parsed
     end
 
+    -- * accumulate content
     if choice.delta.content ~= nil then
         -- by tracking _verbatim_content, I can trim the end every single time
         -- and if it is not a full match it will show back up once it's past the match point
         rx_accum_message._verbatim_content = (rx_accum_message._verbatim_content or "") .. choice.delta.content
     end
 
+    -- * accumulate reasoning_content
     local reasoning_content = response_reasoning.get_content(choice.delta)
     if reasoning_content ~= nil then
         rx_accum_message.reasoning_content = (rx_accum_message.reasoning_content or "") .. reasoning_content
     end
 
+    -- * accumulate finish_reason
     if choice.finish_reason ~= nil then
         rx_accum_message.finish_reason = choice.finish_reason -- on last delta per index/role (aka message)
     end
@@ -772,7 +776,7 @@ function AgentsFrontend.on_streaming_delta_update_message_history(sse_wrapped, r
         return
     end
 
-    -- * parse tool calls (streaming)
+    -- * accumulate tool calls
     for _, call_delta in ipairs(calls) do
         -- * lookup or create new parsed_call
         local parsed_call = rx_accum_message.tool_calls[call_delta.index + 1]
@@ -826,7 +830,7 @@ function AgentsFrontend.on_parsed_data_sse(sse_wrapped)
     end
 
     if sse_wrapped:has_choice() then
-        AgentsFrontend.on_streaming_delta_update_message_history(sse_wrapped, request)
+        AgentsFrontend.append_sse_to_accumulated_completion(sse_wrapped, request)
         return
     end
     live_trace_stream.changed(trace, sse_wrapped:model())

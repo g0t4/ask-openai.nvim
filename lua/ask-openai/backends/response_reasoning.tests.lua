@@ -23,7 +23,7 @@ describe("backend reasoning field normalization", function()
             assert.equals(case.expected or "", parse_sse_v1_chat_completions(SSEWrapped.new(sse)).reasoning_content)
             assert.same(original, sse)
             local request = { accumulated_model_response_messages = {} }
-            frontend.on_streaming_delta_update_message_history(SSEWrapped.new({ choices = { vim.deepcopy(choice) } }), request)
+            frontend.append_sse_to_accumulated_completion(SSEWrapped.new({ choices = { vim.deepcopy(choice) } }), request)
             local message = request.accumulated_model_response_messages[1]
             assert.equals(case.expected, message.reasoning_content)
             assert.is_nil(message.reasoning)
@@ -37,7 +37,7 @@ describe("backend reasoning field normalization", function()
             { reasoning_content = vim.NIL, reasoning = "second " },
             { reasoning_content = "third", reasoning = "duplicate" },
             { content = "answer" } }) do
-            frontend.on_streaming_delta_update_message_history(SSEWrapped.new({ choices = { { index = 0, delta = delta } } }), request)
+            frontend.append_sse_to_accumulated_completion(SSEWrapped.new({ choices = { { index = 0, delta = delta } } }), request)
         end
         local message = request.accumulated_model_response_messages[1]
         assert.equals("first second third", message.reasoning_content)
