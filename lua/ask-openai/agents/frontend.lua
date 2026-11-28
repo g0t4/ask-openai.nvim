@@ -735,7 +735,8 @@ function AgentsFrontend.on_streaming_delta_update_message_history(sse_wrapped, r
         request.accumulated_model_response_messages[index_base1] = rx_accum_message
     end
 
-    -- TODO this won't work with non llama-server backends
+    -- TODO! 2026-11-27 this is why you don't log anything for non-llama-server traces beyond the first request :)
+    -- TODO! 2026-11-27 get a real `AccumulatedCompletion.done` boolean that is agnostic of backend
     local is_last_sse = sse_parsed.timings
     if is_last_sse then
         -- TODO! 2026-11-27 update to merge with new accumulated_message logic in completion logger
