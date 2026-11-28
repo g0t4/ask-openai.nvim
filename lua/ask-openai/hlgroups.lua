@@ -46,10 +46,6 @@ HLGroups.PREDICTION_THINKING = "AskPredictionThinking"
 vim.api.nvim_set_hl(0, HLGroups.PREDICTION_THINKING, { italic = true, fg = "#2EBE10" })
 vim.api.nvim_set_hl(0, HLGroups.PREDICTION_REASONING, { fg = "#808080", italic = true })
 
--- * FIM duplicate prefix highlighting (when model repeats cursor line's indentation)
-HLGroups.PREDICTION_DUPLICATE_PREFIX = "AskPredictionDuplicatePrefix"
-vim.api.nvim_set_hl(0, HLGroups.PREDICTION_DUPLICATE_PREFIX, { bg = "#5f0000", fg = "#ff6666", bold = true })
-
 --- * STATS
 HLGroups.STATS_PROMPT = "AskStatsPrompt"
 HLGroups.STATS_PREDICTED = "AskStatsPredicted"

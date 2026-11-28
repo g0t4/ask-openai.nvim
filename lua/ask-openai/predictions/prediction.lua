@@ -24,7 +24,6 @@ local combined_diff = require("devtools.diff.combined")
 ---@field _original_conceallevel: integer?   -- saved conceallevel for diff display
 ---@field _original_concealcursor: string?   -- saved concealcursor for diff display
 ---@field _completion_after_anchor: string[]? -- completion lines from anchor onwards
----@field has_duplicate_prefix: boolean
 ---@field has_prediction: boolean
 ---@field extmarks table
 ---@field abandoned boolean         # user aborted prediction
@@ -301,23 +300,6 @@ function Prediction:fix_fim_and_redraw_extmarks()
         return
     end
 
-    -- * highlight cursor line prefix overlap with red bg
-    if self.has_duplicate_prefix then
-        self.extmarks.dup_highlight = vim.api.nvim_buf_set_extmark(
-            self.bufnr,
-            extmarks_ns_id,
-            cursor.line_base0,
-            -- TODO if we only match part of prefix... we shouldn't highlight all of it! rare but still support this?
-            0, -- start from beginning of line
-            {
-                end_line = cursor.line_base0,
-                end_col = cursor.col_base0,
-                hl_group = HLGroups.PREDICTION_DUPLICATE_PREFIX,
-                hl_eol = false,
-            }
-        )
-    end
-
     local virt_lines = {}
     for i, line in ipairs(self.rest_of_lines) do
         table.insert(virt_lines, { { line, HLGroups.PREDICTION_TEXT } })
@@ -465,11 +447,6 @@ function Prediction:clear_extmarks()
     -- Explicitly remove the duplicate prefix highlight if it exists
     if not self.extmarks then
         return
-    end
-
-    if self.extmarks.dup_highlight then
-        pcall(vim.api.nvim_buf_del_extmark, self.bufnr, extmarks_ns_id, self.extmarks.dup_highlight)
-        self.extmarks.dup_highlight = nil
     end
 
     if self.extmarks.failures then

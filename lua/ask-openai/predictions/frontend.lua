@@ -209,22 +209,12 @@ function PredictionsFrontend.ask_for_prediction(params)
             stats.show_prediction_stats(sse_wrapped.sse_parsed, this_prediction.performance)
         end
 
-        local function get_flags()
-            local flags = {}
-            if this_prediction.has_duplicate_prefix then
-                flags["fim_duplicate_prefix"] = this_prediction._trace_only_duplicate_prefix
-            end
-            return flags
-        end
-
         ---@type StreamingFrontend
         local frontend = {
             on_parsed_data_sse = on_parsed_data_sse,
             on_curl_exited_successfully = on_curl_exited_successfully,
             explain_error = explain_error,
-            on_sse_llama_server_timings = on_sse_llama_server_timings,
-            -- FYI for now leave _wrapper in name for now to differentiate from actual function get_flags
-            get_flags_wrapper = get_flags,
+            on_sse_llama_server_timings = on_sse_llama_server_timings
         }
 
         -- log:info("Curl.spawn(fim)")

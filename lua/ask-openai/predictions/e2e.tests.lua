@@ -113,7 +113,6 @@ describe("E2E - FIM predictions", function()
         -- -- * Display the prediction for debugging
         -- print("========== PREDICTION RESULT ==========")
         -- print("  Prediction text: '" .. current_prediction.prediction .. "'")
-        -- print("  Has duplicate prefix: " .. tostring(current_prediction.has_duplicate_prefix))
         -- print("  First line: '" .. (current_prediction.first_line or "(none)") .. "'")
         -- print("----------------------------------------------\n")
 
