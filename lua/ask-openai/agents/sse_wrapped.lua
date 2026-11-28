@@ -53,7 +53,7 @@ function SSEWrapped:finish_reason()
     if first_choice == nil then
         return nil
     end
-    return values.vim_NIL_to_nil(first_choice.finish_reason)
+    return first_choice.finish_reason
 end
 
 ---@return boolean
