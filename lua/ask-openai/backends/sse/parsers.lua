@@ -174,8 +174,8 @@ function parse_sse_llamacpp_completions(sse_wrapped)
         content           = values.empty_for_nil(sse.content),
         done              = sse.stop == true, -- ensure always a boolean even if stop were nil
 
-        -- FYI I have not encountered sse.stop_type == vim.NIL, doesn't hurt to check
-        finish_reason     = values.vim_NIL_to_nil(sse.stop_type),
+        -- already nil_ified by the SSEWrapped ctor
+        finish_reason     = sse.stop_type,
 
         -- unused for this endpoint, set default values:
         reasoning_content = "",
