@@ -22,6 +22,7 @@
 ---   fake.uninstall()
 
 local log = require("devtools.logs.logger").universal()
+local SSEWrapped = require("ask-openai.agents.sse_wrapped")
 local completion_logger = require("ask-openai.logs.completion_logger")
 
 ---@class PredictionsFakeModelServer
@@ -289,14 +290,14 @@ local function deliver_next_chunk()
 
     -- * feed the SSE chunk through the frontend
     if active_frontend.on_parsed_data_sse then
-        active_frontend.on_parsed_data_sse(chunk)
+        active_frontend.on_parsed_data_sse(SSEWrapped.new(chunk))
     end
 
     -- * mirror the real curl path (backends/curl.lua on_one_data_value):
     --   log the SSE (trace saving) and fan out timings to the frontend
     completion_logger.log_sse_to_request(chunk, active_request, active_frontend)
     if chunk.timings and active_frontend.on_sse_llama_server_timings then
-        active_frontend.on_sse_llama_server_timings(chunk)
+        active_frontend.on_sse_llama_server_timings(SSEWrapped.new(chunk))
     end
 
     -- * schedule the next chunk (or the completion check)

@@ -1,3 +1,4 @@
+local SSEWrapped = require("ask-openai.agents.sse_wrapped")
 require("ask-openai.helpers.test_setup").modify_package_path()
 local config = require("ask-openai.config")
 
@@ -112,7 +113,7 @@ describe("E2E - AskRewrite", function()
         print("==============================================\n")
 
         -- Feed the simulated SSE response to the frontend
-        rewrite_frontend.on_parsed_data_sse(simulated_sse)
+        rewrite_frontend.on_parsed_data_sse(SSEWrapped.new(simulated_sse))
 
         -- * Mirror the real curl path: log the SSE so the trace file is saved
         local completion_logger = require("ask-openai.logs.completion_logger")

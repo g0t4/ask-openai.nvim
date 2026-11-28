@@ -126,11 +126,10 @@ function PredictionsFrontend.ask_for_prediction(params)
             error("Unsupported FIM endpoint: " .. tostring(fim_request.endpoint))
         end
 
-        ---@type fun(sse_parsd: LlamaServerSSEBase)
-        local function on_parsed_data_sse(sse_parsed)
+        ---@type OnParsedSSE
+        local function on_parsed_data_sse(sse_wrapped)
             this_prediction.performance:token_arrived()
-            local sse_wrapped = SSEWrapped.new(sse_parsed)
-            -- sse_wrapped:log("predictions")
+            sse_wrapped:log("predictions")
 
             -- use defer_fn w/ 500ms to reproduce "stuck" predictions
             -- also found that toggling off the copilot while a prediction is visible, results in a stuck prediction
@@ -206,9 +205,9 @@ function PredictionsFrontend.ask_for_prediction(params)
         end
 
         ---@type OnParsedSSE
-        local function on_sse_llama_server_timings(sse)
+        local function on_sse_llama_server_timings(sse_wrapped)
             this_prediction.performance:overall_done()
-            stats.show_prediction_stats(sse, this_prediction.performance)
+            stats.show_prediction_stats(sse_wrapped.sse_parsed, this_prediction.performance)
         end
 
         local function get_flags()

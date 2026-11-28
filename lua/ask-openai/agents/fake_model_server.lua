@@ -16,6 +16,7 @@
 ---   fake.uninstall()
 
 local log = require("devtools.logs.logger").universal()
+local SSEWrapped = require("ask-openai.agents.sse_wrapped")
 local CurlRequestForTrace = require("ask-openai.agents.curl_request_for_trace")
 
 ---@class FakeModelServer
@@ -287,7 +288,7 @@ local function deliver_next_chunk()
 
     -- * feed the SSE chunk through the frontend
     if active_frontend.on_parsed_data_sse then
-        active_frontend.on_parsed_data_sse(chunk)
+        active_frontend.on_parsed_data_sse(SSEWrapped.new(chunk))
     end
 
     -- * schedule the next chunk (or the completion check)

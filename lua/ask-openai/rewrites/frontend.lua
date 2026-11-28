@@ -159,8 +159,7 @@ local function get_extract_generated_text_func(endpoint)
 end
 
 ---@type OnParsedSSE
-function RewriteFrontend.on_parsed_data_sse(sse_parsed)
-    local sse_wrapped = SSEWrapped.new(sse_parsed)
+function RewriteFrontend.on_parsed_data_sse(sse_wrapped)
     local first_choice = sse_wrapped:first_choice()
     if first_choice == nil then
         return
@@ -191,8 +190,9 @@ function RewriteFrontend.on_parsed_data_sse(sse_parsed)
 end
 
 ---@type OnParsedSSE
-function RewriteFrontend.on_sse_llama_server_timings(sse)
+function RewriteFrontend.on_sse_llama_server_timings(sse_wrapped)
     -- FYI coupled to llama-server timings
+    local sse = sse_wrapped.sse_parsed
     if sse == nil or sse.timings == nil then
         return
     end
@@ -578,7 +578,7 @@ and foo the bar and bbbbbb the foo the bar bar the foobar and foo the bar bar
                 prompt_n = 400,
             }
         end
-        RewriteFrontend.on_parsed_data_sse(simulated_sse)
+        RewriteFrontend.on_parsed_data_sse(SSEWrapped.new(simulated_sse))
 
         -- delay and do next
         -- FYI can adjust interval to visually slow down and see what is happening with each chunk, s/b especially helpful with streaming diff
@@ -608,7 +608,7 @@ local function simulate_instant_rewrite_command(opts)
             prompt_n = 400,
         }
     }
-    RewriteFrontend.on_parsed_data_sse(simulated_sse)
+    RewriteFrontend.on_parsed_data_sse(SSEWrapped.new(simulated_sse))
 end
 
 ---@type ExplainError

@@ -716,7 +716,7 @@ function AgentsFrontend.on_streaming_delta_update_message_history(choice, reques
         return
     end
 
-    -- NOTE: choice is already nil_ified in place by the SSEWrapped ctor in on_parsed_data_sse
+    -- NOTE: choice is already nil_ified in place by the SSEWrapped ctor (curl backend)
 
     -- * lookup or create message
     -- FYI this is not well vetted for multi message responses, in fact is this using choice.index for message.index?!
@@ -805,12 +805,12 @@ function AgentsFrontend.on_streaming_delta_update_message_history(choice, reques
 end
 
 ---@type OnParsedSSE
-function AgentsFrontend.on_sse_llama_server_timings(sse)
+function AgentsFrontend.on_sse_llama_server_timings(sse_wrapped)
     -- PRN use this to extract timing like in rewrites
 end
 
 ---@type OnParsedSSE
-function AgentsFrontend.on_parsed_data_sse(sse_parsed)
+function AgentsFrontend.on_parsed_data_sse(sse_wrapped)
     -- FYI this only works with /v1/chat/completions
     local trace = AgentsFrontend.trace
     local request = trace.last_request
@@ -823,14 +823,13 @@ function AgentsFrontend.on_parsed_data_sse(sse_parsed)
         return
     end
 
-    local sse_wrapped = SSEWrapped.new(sse_parsed)
     local first_choice = sse_wrapped:first_choice()
     if first_choice ~= nil then
         -- FYI could warn if > 1 choice
         AgentsFrontend.on_streaming_delta_update_message_history(first_choice, request, sse_wrapped)
         return
     end
-    live_trace_stream.changed(trace, sse_parsed.model)
+    live_trace_stream.changed(trace, sse_wrapped.sse_parsed.model)
     update_ui_chat_viewer(trace)
 end
 

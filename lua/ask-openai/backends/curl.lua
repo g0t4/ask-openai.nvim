@@ -3,6 +3,7 @@ local completion_logger = require("ask-openai.logs.completion_logger")
 local CurlRequest = require("ask-openai.backends.curl_request")
 local SSEDataOnlyParser = require("ask-openai.backends.sse.data_only_parser")
 local safely = require("ask-openai.helpers.safely")
+local SSEWrapped = require("ask-openai.agents.sse_wrapped")
 local json = require('dkjson')
 local uv_spawn = require("ask-openai.helpers.uv_spawn").uv_spawn
 local raw_request = require("ask-openai.backends.raw_request")
@@ -19,7 +20,7 @@ _G.CompletionsEndpoints = {
     v1_chat_completions = "/v1/chat/completions",
 }
 
----@alias OnParsedSSE fun(sse_parsed: LlamaServerSSEBase)
+---@alias OnParsedSSE fun(sse_wrapped: SSEWrapped)
 ---@alias ExplainError fun(text: string)
 ---@alias OnCurlExitedSuccessfully fun()
 
@@ -349,7 +350,8 @@ function Curl.on_one_data_value(data_value, frontend, request)
     -- * PARSE DATA VALUE (JSON) => sse_parsed object
     local success, sse_parsed = safely.decode_json(data_value)
     if success and sse_parsed then
-        frontend.on_parsed_data_sse(sse_parsed)
+        local sse_wrapped = SSEWrapped.new(sse_parsed)
+        frontend.on_parsed_data_sse(sse_wrapped)
         -- FYI not every SSE has to have generated tokens (choices), no need to warn if no parsed value
         completion_logger.log_sse_to_request(sse_parsed, request, frontend)
 
@@ -366,7 +368,7 @@ function Curl.on_one_data_value(data_value, frontend, request)
         end
 
         if sse_parsed.timings then
-            frontend.on_sse_llama_server_timings(sse_parsed)
+            frontend.on_sse_llama_server_timings(sse_wrapped)
         end
     else
         -- PRN in the spirit of triggering events for scenarios, I could add:
