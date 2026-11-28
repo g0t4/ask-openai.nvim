@@ -208,11 +208,14 @@ end
 ---@param frontend StreamingFrontend
 ---@param accumulated_completion AccumulatedCompletion
 function M.save_raw_prompt(request, frontend, accumulated_completion)
-    local save_dir, trace_id = M.log_request_with(request, frontend)
-    -- FYI io write (below) fails if this doesn't exist:
-    vim.fn.mkdir(save_dir, "p")
+    function path_for(request, frontend)
+        local save_dir, trace_id = M.log_request_with(request, frontend)
+        -- FYI io write (below) fails if this doesn't exist:
+        vim.fn.mkdir(save_dir, "p")
+        return save_dir .. "/" .. trace_id .. "-trace.jsonl"
+    end
 
-    local path = save_dir .. "/" .. trace_id .. "-trace.jsonl"
+    local path = path_for(request, frontend)
 
     local record = {
         type = "raw_completion",
