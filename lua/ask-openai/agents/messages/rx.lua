@@ -54,6 +54,9 @@ end
 
 ---@return boolean
 function RxAccumulatedMessage:is_still_streaming()
+    -- TODO... issue with timing... it usually ususally comes AFTER finish_reason
+    -- TODO use the new AccumulatedCompletion type to determine when streaming is done and not this
+    --    FYI this is why I don't get timings in the lua chat viewer for non-llama-server backends!!
     return self.finish_reason == nil
 end
 
