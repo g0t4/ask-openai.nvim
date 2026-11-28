@@ -4,7 +4,7 @@ local tables = require("ask-openai.helpers.tables")
 local ansi = require("devtools.ansi")
 
 local response_metadata = require("ask-openai.backends.response_metadata")
-local response_reasoning = require("ask-openai.backends.response_reasoning")
+local SSEDeltaWrapped = require("ask-openai.backends.sse_delta_wrapped")
 
 local M = {
     last_done = {},
@@ -119,7 +119,7 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
             if delta.role and delta.role ~= vim.NIL then
                 accumulated_completion.role = delta.role
             end
-            local reasoning_content = response_reasoning.get_content(delta)
+            local reasoning_content = SSEDeltaWrapped.new(delta):reasoning()
             if reasoning_content ~= nil then
                 accumulated_completion.reasoning_content = (accumulated_completion.reasoning_content or "") .. reasoning_content
             end

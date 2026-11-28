@@ -25,7 +25,6 @@ local HLGroups = require("ask-openai.hlgroups")
 local formatters = require("ask-openai.agents.viewer.formatters")
 local response_stats = require("ask-openai.agents.viewer.response_stats")
 local reasoning_format = require("ask-openai.agents.viewer.reasoning_format")
-local response_reasoning = require("ask-openai.backends.response_reasoning")
 local ToolCallOutput = require("ask-openai.agents.tools.tool_call_output")
 local CurlRequestForTrace = require("ask-openai.agents.curl_request_for_trace")
 local RxAccumulatedMessage = require("ask-openai.agents.messages.rx")
@@ -40,6 +39,8 @@ local ansi = require("devtools.ansi")
 local safely = require("ask-openai.helpers.safely")
 local live_trace_stream = require("ask-openai.agents.live_trace_stream")
 local SSEWrapped = require("ask-openai.agents.sse_wrapped")
+local SSEDeltaWrapped = require("ask-openai.backends.sse_delta_wrapped")
+
 local response_metadata = require("ask-openai.backends.response_metadata")
 
 ---@class AgentsFrontend : StreamingFrontend
@@ -754,7 +755,7 @@ function AgentsFrontend.append_sse_to_accumulated_completion(sse_wrapped, reques
     end
 
     -- * accumulate reasoning_content
-    local reasoning_content = response_reasoning.get_content(choice.delta)
+    local reasoning_content = SSEDeltaWrapped.new(choice.delta):reasoning()
     if reasoning_content ~= nil then
         rx_accum_message.reasoning_content = (rx_accum_message.reasoning_content or "") .. reasoning_content
     end

@@ -1,8 +1,8 @@
 local log = require("devtools.logs.logger"):universal()
 local values = require("ask-openai.helpers.values")
-local response_reasoning = require("ask-openai.backends.response_reasoning")
 local response_metadata = require("ask-openai.backends.response_metadata")
 local SSEWrapped = require("ask-openai.agents.sse_wrapped")
+local SSEDeltaWrapped = require("ask-openai.backends.sse_delta_wrapped") -- TODO! 2026-11-28 move getting the delta sse_delta_wrapped to the sse_wrapped instance and remove the need for this wrapped type here
 -- logic for parsing SSEs from all completion backends
 
 ---@class SseFieldsResult
@@ -138,7 +138,7 @@ function parse_sse_v1_chat_completions(sse_wrapped)
         --   - 2+ SSEs are for reasoning and use reasoning_content until thinking is complete (these don't even set the content field, so it's nil in this case)
         content = delta.content or "",
 
-        reasoning_content = response_reasoning.get_content(delta) or "",
+        reasoning_content = SSEDeltaWrapped.new(delta):reasoning() or "",
 
         -- FYI finish_reason is vim.NIL until it is set (end of completion)
         finish_reason = finish_reason,

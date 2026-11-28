@@ -3,7 +3,6 @@ local local_share = require("ask-openai.config.local_share")
 local models = require("ask-openai.config.models")
 local config = require("ask-openai.config")
 local curl = require("ask-openai.backends.curl")
-local response_reasoning = require("ask-openai.backends.response_reasoning")
 local log = require("devtools.logs.logger").universal()
 local text_helpers = require("ask-openai.helpers.text")
 local Selection = require("ask-openai.helpers.selection")
@@ -25,6 +24,7 @@ local prompt_parser = require("ask-openai.frontends.context.prompt_parser")
 local RewritePerformance = require("ask-openai.rewrites.performance")
 local perf = require("ask-openai.perf")
 local SSEWrapped = require("ask-openai.agents.sse_wrapped")
+local SSEDeltaWrapped = require("ask-openai.backends.sse_delta_wrapped")
 
 ---@class RewriteFrontend : StreamingFrontend
 local RewriteFrontend = {}
@@ -145,7 +145,7 @@ local function get_extract_generated_text_func(endpoint)
                 return "", ""
             end
             local content = choice.delta.content or ""
-            local reasoning = response_reasoning.get_content(choice.delta) or ""
+            local reasoning = SSEDeltaWrapped.new(choice.delta):reasoning() or ""
             return content, reasoning
         end
     end
