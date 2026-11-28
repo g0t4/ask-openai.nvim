@@ -6,7 +6,7 @@ local ansi = require("devtools.ansi")
 local response_metadata = require("ask-openai.backends.response_metadata")
 local SSEDeltaWrapped = require("ask-openai.backends.sse_delta_wrapped")
 
-local M = { }
+local M = {}
 
 ---@param request CurlRequest|CurlRequestForTrace
 ---@param frontend StreamingFrontend
@@ -152,7 +152,6 @@ end
 
 --- Encode a trace record to JSON, mapping vim.NIL to null.
 ---@param record table
----@return string
 local function encode_record(record)
     return json.encode(record, {
         exception = function(reason, bad_value, _, default_message)
