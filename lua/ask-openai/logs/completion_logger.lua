@@ -42,7 +42,8 @@ end
 ---@param request CurlRequest|CurlRequestForTrace
 ---@param frontend StreamingFrontend
 function M.log_sse_to_request(sse_parsed, request, frontend)
-    -- TODO! didn't last_sse cause some havoc for AgentsFrontend logging the last agent message? is that fixed now that I took out last_sse?
+    -- TODO! 2026-11-27 didn't last_sse cause some havoc for AgentsFrontend logging the last agent message? is that fixed now that I took out last_sse?
+    -- TODO! 2026-11-27 once we pass sse_wrapped then remove vim.NIL checks that are relevant below
 
     local function log_raw_completion_sse()
         -- * /v1/completions endpoint
@@ -91,22 +92,6 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
             return
         end
 
-        -- FYI delta is the part that changes per SSE, except for last SSE which sets other fields like finish_reason
-        -- * key parts (in order):
-        --
-        -- first delta has role (not split apart on multiple SSEs)
-        -- delta = { content = vim.NIL, role = "assistant" },
-        --
-        -- reasoning_content SSEs
-        -- delta = { reasoning_content = "User" },
-        --
-        -- content SSEs
-        -- delta = { content = "---@" },
-        --
-        -- last SSE choices:
-        -- choices = { { delta = vim.empty_dict(), finish_reason = "stop", index = 0 } },
-        -- accum the full message (from streaming SSEs) so I can log for all frontends here
-
         -- * init accum object and store it on request
         local accumulated_completion = request.accum or AccumulatedCompletion.new()
         request.accum = accumulated_completion
@@ -122,6 +107,14 @@ function M.log_sse_to_request(sse_parsed, request, frontend)
             -- PRN warn if > 1 choices? ... we might have done that elsewhere already?
             local delta = choice and choice.delta or {}
             if type(delta) ~= "table" then return end
+            -- TODO we should NOT need to check for a delta!!! take this crap out when you redo the accumulator
+            -- - requires delta to be empty table else things like finish_reason (not on delta) aren't accumulated!
+            -- FYI type(vim.empty_dict()) == "table"
+            --  and #(vim.empty_dict()) == 0
+            --  and next(vim.empty_dict()) == nil   -- DO NOT USE THIS THOUGH :)
+            --  and (vim.empty_dict())[1] == nil -- just like an empty table
+            --  and that's good b/c the SSE w/ finish_reason has a choice w/o a delta:
+            --    choices = { { delta = vim.empty_dict(), finish_reason = "stop", index = 0 } }
 
             if delta.role and delta.role ~= vim.NIL then
                 accumulated_completion.role = delta.role

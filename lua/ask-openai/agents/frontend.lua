@@ -711,6 +711,7 @@ function AgentsFrontend.on_streaming_delta_update_message_history(sse_wrapped, r
     -- rebuilds message as if sent `stream: false`
     -- for message history / follow up
 
+    -- TODO! 2026-11-27 umm if there is no delta, we skip accumulating everything else?! wtf? role/finish_reason? (yes I know these aren't mission critical, still)
     if choice == nil or choice.delta == nil then
         log:trace("[WARN] skipping b/c choice/choice.delta is nil: '" .. vim.inspect(choice) .. "'")
         return
@@ -812,16 +813,13 @@ function AgentsFrontend.on_parsed_data_sse(sse_wrapped)
     local trace = AgentsFrontend.trace
     local request = trace.last_request
     if request.endpoint ~= CompletionsEndpoints.v1_chat_completions then
-        -- fail fast in this case
-        -- TODO (when I need it)... you very likely can support other endpoints (see what you've done in both PredictionsFrontend and RewriteFrontend (both have some multi endpoint support)
-        local message = "AgentsFrontend SSEs not supported for endpoint: " .. tostring(request.endpoint)
+        local message = "AgentsFrontend SSEs not supported for: " .. tostring(request.endpoint)
         log:error(message)
         vim.notify(message, vim.log.levels.ERROR)
         return
     end
 
     if sse_wrapped:has_choice() then
-        -- FYI could warn if > 1 choice
         AgentsFrontend.on_streaming_delta_update_message_history(sse_wrapped, request)
         return
     end
@@ -839,6 +837,8 @@ function AgentsFrontend.on_curl_exited_successfully()
         -- config_model selects params; actual_model is response metadata, so
         -- their names need not match (an endpoint may serve a different model).
 
+        -- TODO! 2026-11-27 MOVE to using curl backend's AccumulatedCompletion(s)
+        --   FYI should only be one at a time but nothing is stopping my setup here from handling multiple
         local reached_final_message = false
         for _, rx_message in ipairs(request.accumulated_model_response_messages or {}) do
             -- *** trace.last_request.accumulated_model_response_messages IS NOT trace.messages

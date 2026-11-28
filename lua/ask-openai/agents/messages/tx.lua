@@ -149,11 +149,15 @@ function TxChatMessage:from_assistant_rx_message(rx_message)
         require("ask-openai.backends.response_metadata").accumulate_metadata(rx_message.last_sse, jsonl_record.metadata.response)
     end
 
+    -- TODO! 2026-11-27 either remove this or add it to the projection logic above, it has no business here:
     -- FYI qwen3-8b's template exploded after tool call w/ reasoning_content included: (smth about lstrip).. if I comment out next line, then it works fine (tool calls and all):
     tx_message.reasoning_content = rx_message.reasoning_content
     -- FYI llama-server populates message.thinking via message.reasoning_content (for gptoss):
     --   https://github.com/ggml-org/llama.cpp/blob/0de8878c9/common/chat.cpp#L1813-L1817
-    -- TODO modify trace:add_message() to drop reasoning_content when final message is added
+    -- TODO! 2026-11-27 three things to think about:
+    --   - completion SSEs + accumulated_completion (received completion)
+    --   - what you trace (probably just accumulated_completion) b/c you might log SSEs at most
+    --   - what you send on next turn (next completion) - i.e. drop fields? like metadata/reasoning?
 
     --- * map tool calls
     if rx_message.tool_calls then
