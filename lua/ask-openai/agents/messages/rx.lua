@@ -8,7 +8,7 @@ local shared = require('ask-openai.agents.messages.shared')
 ---@field content? string
 ---@field _verbatim_content? string -- hack for  <tool_call>... leaks (can be removed if fixed)
 ---@field reasoning_content? string
----@field finish_reason? string|vim.NIL -- FYI use get_finish_reason() for clean value (vim.NIL => nil)
+---@field finish_reason? string
 ---@field tool_call_id? string
 ---@field name? string
 ---@field tool_calls ToolCall[] -- empty if none
@@ -52,19 +52,15 @@ function RxAccumulatedMessage:new(role, content)
     return self
 end
 
----Returns the finish reason, cleanup when not set (i.e. nil instead of vim.NIL)
 --- not set when still streaming
----@return FINISH_REASON?
+---@return string
 function RxAccumulatedMessage:get_finish_reason()
-    if self.finish_reason == vim.NIL then
-        return nil
-    end
     return self.finish_reason
 end
 
 ---@return boolean
 function RxAccumulatedMessage:is_still_streaming()
-    return self.finish_reason == nil or self.finish_reason == vim.NIL
+    return self.finish_reason == nil
 end
 
 ---@return boolean
