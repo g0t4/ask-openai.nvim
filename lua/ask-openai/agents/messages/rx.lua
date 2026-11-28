@@ -16,35 +16,27 @@ local shared = require('ask-openai.agents.messages.shared')
 ---@field timings? LlamaServerTimings
 local RxAccumulatedMessage = {}
 
----@enum RX_MESSAGE_ROLES
-local RX_MESSAGE_ROLES = {
-    -- these would never come FROM the model, so don't allow them as roles!
-    -- SYSTEM = "system", -- no reason for this to come back from the model so leave it off
-    -- USER = "user", -- no reason for this to come back from the model so leave it off
-    -- TOOL = "tool",
+local ASSISTANT = "assistant"
 
-    -- pretty much just assistant role...
-    --   that said, easy enough to force a model to generate any role
-    --   by hard coding it as the last part of the (raw) prompt
-    ASSISTANT = "assistant",
-}
-
+-- TODO! 2026-11-27 get rid of this entire piece of shit class as soon as curl backend handles AccumulatedCompletion
+--    TODO! then it will be obvious as day the difference between AccumulatedCompletion and what you send back!
+---
 --- ONLY FOR ACCUMULATING MODEL RESPONSES (over streaming SSEs)
 --- NOT FOR BUILDING MESSAGES in a REQUEST (see AgentTrace/TxChatMessage for that)
 ---
----@param role RX_MESSAGE_ROLES|string - Theoretically ONLY assistant role... but no reason to limit a model that generates a diff role(s)
+---@param role string - Theoretically ONLY assistant role... but no reason to limit a model that generates a diff role(s)
 ---@param content string|nil
 ---@return RxAccumulatedMessage
 function RxAccumulatedMessage:new(role, content)
     self = setmetatable({}, { __index = RxAccumulatedMessage })
     -- Default to assistant when role is missing (some backends omit `role` in
     -- the first SSE delta, e.g. when reasoning is off or content-only chunks)
-    self.role = role or RX_MESSAGE_ROLES.ASSISTANT
+    self.role = role or ASSISTANT -- the fact that I hard code this here if not set is evidence of shitty code for accumulating
     self.content = content
     self.finish_reason = nil
     self.tool_calls = {} -- empty == None (enforce invariant)
 
-    if self.role ~= RX_MESSAGE_ROLES.ASSISTANT then
+    if self.role ~= ASSISTANT then
         -- FYI can remove this logging, mostly out of curiosity
         log:warn("[WARN] unexpected role (not a problem, just heads up so you can think about it): " .. tostring(self.role))
     end
