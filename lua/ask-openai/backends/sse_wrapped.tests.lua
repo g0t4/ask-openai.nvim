@@ -1,4 +1,4 @@
-local SSEWrapped = require("ask-openai.agents.sse_wrapped")
+local SSEWrapped = require("ask-openai.backends.sse_wrapped")
 
 describe("SSEWrapped", function()
     it("reports no choices when choices is nil", function()

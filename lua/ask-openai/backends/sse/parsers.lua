@@ -1,7 +1,7 @@
 local log = require("devtools.logs.logger"):universal()
 local values = require("ask-openai.helpers.values")
 local response_metadata = require("ask-openai.backends.response_metadata")
-local SSEWrapped = require("ask-openai.agents.sse_wrapped")
+local SSEWrapped = require("ask-openai.backends.sse_wrapped")
 local SSEDeltaWrapped = require("ask-openai.backends.sse_delta_wrapped") -- TODO! 2026-11-28 move getting the delta sse_delta_wrapped to the sse_wrapped instance and remove the need for this wrapped type here
 -- logic for parsing SSEs from all completion backends
 

@@ -1,4 +1,4 @@
-local SSEWrapped = require("ask-openai.agents.sse_wrapped")
+local SSEWrapped = require("ask-openai.backends.sse_wrapped")
 require("ask-openai.helpers.test_setup").modify_package_path()
 local config = require("ask-openai.config")
 

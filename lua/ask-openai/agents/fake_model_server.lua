@@ -16,7 +16,7 @@
 ---   fake.uninstall()
 
 local log = require("devtools.logs.logger").universal()
-local SSEWrapped = require("ask-openai.agents.sse_wrapped")
+local SSEWrapped = require("ask-openai.backends.sse_wrapped")
 local CurlRequestForTrace = require("ask-openai.agents.curl_request_for_trace")
 
 ---@class FakeModelServer

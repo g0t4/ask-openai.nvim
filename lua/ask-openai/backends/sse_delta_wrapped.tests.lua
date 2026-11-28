@@ -1,7 +1,7 @@
 require("ask-openai.helpers.test_setup").modify_package_path()
 require("ask-openai.backends.sse.parsers")
 local frontend = require("ask-openai.agents.frontend")
-local SSEWrapped = require("ask-openai.agents.sse_wrapped")
+local SSEWrapped = require("ask-openai.backends.sse_wrapped")
 local SSEDeltaWrapped = require("ask-openai.backends.sse_delta_wrapped")
 
 describe("backend reasoning field normalization", function()

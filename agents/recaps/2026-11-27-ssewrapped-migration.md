@@ -8,7 +8,7 @@ semantics directly. Push the wrapper upstream into the curl backend.
 
 ## Final state (as of last session)
 
-**New module**: `lua/ask-openai/agents/sse_wrapped.lua` — `SSEWrapped` class.
+**New module**: `lua/ask-openai/backends/sse_wrapped.lua` — `SSEWrapped` class.
 - Ctor `SSEWrapped.new(sse_parsed)` **nil_ifies in place** (deep). All reads
   through the wrapper are vim.NIL-free.
 - Methods: `has_choice()` (with the `has_choices() → has_choice()` rename;
@@ -76,7 +76,7 @@ agent — read it first).
 ## To resume
 
 1. Read the current diff with `git log --oneline -20`.
-2. Check `lua/ask-openai/agents/sse_wrapped.lua` and
+2. Check `lua/ask-openai/backends/sse_wrapped.lua` and
    `backends/sse/parsers.lua` for the current shape.
 3. If extending the wrapper: ctor nil_ify invariant, `model()`/`first_choice()`
    as the canonical accessors; keep vim.NIL out of callers' data unless they

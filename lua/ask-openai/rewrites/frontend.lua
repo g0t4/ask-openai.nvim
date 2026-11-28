@@ -23,7 +23,7 @@ local rag_instructions = require("ask-openai.frontends.prompts.rag_instructions"
 local prompt_parser = require("ask-openai.frontends.context.prompt_parser")
 local RewritePerformance = require("ask-openai.rewrites.performance")
 local perf = require("ask-openai.perf")
-local SSEWrapped = require("ask-openai.agents.sse_wrapped")
+local SSEWrapped = require("ask-openai.backends.sse_wrapped")
 local SSEDeltaWrapped = require("ask-openai.backends.sse_delta_wrapped")
 
 ---@class RewriteFrontend : StreamingFrontend

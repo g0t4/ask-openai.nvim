@@ -22,7 +22,7 @@
 ---   fake.uninstall()
 
 local log = require("devtools.logs.logger").universal()
-local SSEWrapped = require("ask-openai.agents.sse_wrapped")
+local SSEWrapped = require("ask-openai.backends.sse_wrapped")
 local completion_logger = require("ask-openai.logs.completion_logger")
 
 ---@class PredictionsFakeModelServer

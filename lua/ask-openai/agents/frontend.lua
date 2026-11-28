@@ -38,7 +38,7 @@ local trace_restorer = require("ask-openai.agents.viewer.trace_restorer")
 local ansi = require("devtools.ansi")
 local safely = require("ask-openai.helpers.safely")
 local live_trace_stream = require("ask-openai.agents.live_trace_stream")
-local SSEWrapped = require("ask-openai.agents.sse_wrapped")
+local SSEWrapped = require("ask-openai.backends.sse_wrapped")
 local SSEDeltaWrapped = require("ask-openai.backends.sse_delta_wrapped")
 
 local response_metadata = require("ask-openai.backends.response_metadata")

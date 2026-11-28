@@ -2,7 +2,7 @@ local test_setup = require("ask-openai.helpers.test_setup")
 test_setup.modify_package_path()
 
 local agents_frontend = require("ask-openai.agents.frontend")
-local SSEWrapped = require("ask-openai.agents.sse_wrapped")
+local SSEWrapped = require("ask-openai.backends.sse_wrapped")
 local text = require("ask-openai.helpers.text")
 require("ask-openai.helpers.buffers")
 
