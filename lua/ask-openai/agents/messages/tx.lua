@@ -143,6 +143,7 @@ function TxChatMessage:from_assistant_rx_message(rx_message)
     }
 
     -- Preserve raw statistics alongside assistant history for trace viewers.
+    -- TODO! 2026-11-27 get a real `AccumulatedCompletion.done` boolean that is agnostic of backend
     if rx_message.last_sse then
         -- TODO move to record object's metadata - record object completion logging refactor
         require("ask-openai.backends.response_metadata").accumulate_metadata(rx_message.last_sse, tx_message)

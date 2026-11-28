@@ -645,6 +645,7 @@ local function update_ui_chat_viewer(trace)
             lines:append_blank_line()
         end
 
+        -- TODO! 2026-11-27 use a new `AccumulatedCompletion.done` (name could be better) and remove last_sse
         if rx_message.role == "assistant" and rx_message.last_sse then
             response_stats.render(lines, rx_message.last_sse)
             lines:append_blank_line_if_last_is_not_blank()
@@ -681,6 +682,7 @@ local function update_ui_chat_viewer(trace)
 
         -- * update window title with model name and token count
         local last_message = request.accumulated_model_response_messages[#request.accumulated_model_response_messages]
+        -- TODO! 2026-11-27 use a new `AccumulatedCompletion.done` (name could be better) and remove last_sse
         if last_message and last_message.last_sse then
             -- log:info("last_message", last_message)
             local last_sse = last_message.last_sse
