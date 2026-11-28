@@ -109,7 +109,7 @@ function parse_sse_v1_chat_completions(sse_wrapped)
     if sse_wrapped:has_error() then
         -- error examples:
         -- { error = { code = 503, message = "Loading model", type = "unavailable_error" } }
-        log:info("skipping SSE with error b/c that will be handled elsewhere", sse_wrapped.sse_parsed)
+        sse_wrapped:log("skipping SSE with error b/c that will be handled elsewhere")
         return nil
     end
     if sse_wrapped:no_choices() then
@@ -173,7 +173,7 @@ function parse_sse_llamacpp_completions(sse_wrapped)
     --
     -- Going forward, use /completions for RAW only
     -- use /v1/chat/completions for any chat template conversations
-    log:info("raw sse", sse)
+    sse_wrapped:log("raw sse")
 
     return {
         content           = values.empty_for_nil(sse.content),
