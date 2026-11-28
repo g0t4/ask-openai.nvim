@@ -385,6 +385,10 @@ local function convert_trace_messages_to_tx_messages(messages)
     local TxChatMessage = require("ask-openai.agents.messages.tx")
     local tx_messages = {}
 
+    -- FYI use nil, do not use vim.NIL
+    -- vim.NIL is mapped to null when I serialize to JSON b/c you cannot serialize vim.NIL vs nil...
+    -- also just make sure you do NOT manually set vim.NIL
+    -- PRN any benefit to using SSEWrapped/SSEDeltaWrapped when loading objects? (would give added benefit of stripping vim.NIL if somehow set)
     for _, msg in ipairs(messages) do
         local role = msg.role or "unknown"
 
