@@ -121,7 +121,7 @@ function parse_sse_v1_chat_completions(sse)
         return nil
     end
 
-    log:info("raw sse", sse)
+    sse_wrapped:log("raw sse")
 
     local first_choice = sse_wrapped:first_choice()
     local delta = first_choice.delta

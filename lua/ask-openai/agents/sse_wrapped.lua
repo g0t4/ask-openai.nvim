@@ -48,4 +48,10 @@ function SSEWrapped:is_finished()
     return self:finish_reason() ~= nil
 end
 
+---@param message string
+function SSEWrapped:log(message)
+    local log = require("devtools.logs.logger").universal()
+    log:info(message, self.sse_parsed)
+end
+
 return SSEWrapped
