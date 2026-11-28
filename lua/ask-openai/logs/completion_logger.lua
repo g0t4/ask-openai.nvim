@@ -150,6 +150,13 @@ function M.log_sse_to_request(sse_wrapped, request, frontend)
     log_chat_completion_sse()
 end
 
+local function path_for(request, frontend)
+    local save_dir, trace_id = M.log_request_with(request, frontend)
+    -- FYI io write (below) fails if this doesn't exist:
+    vim.fn.mkdir(save_dir, "p")
+    return save_dir .. "/" .. trace_id .. "-trace.jsonl"
+end
+
 --- Encode a trace record to JSON, mapping vim.NIL to null.
 ---@param record table
 local function encode_record(record)
@@ -208,13 +215,6 @@ end
 ---@param frontend StreamingFrontend
 ---@param accumulated_completion AccumulatedCompletion
 function M.save_raw_prompt(request, frontend, accumulated_completion)
-    function path_for(request, frontend)
-        local save_dir, trace_id = M.log_request_with(request, frontend)
-        -- FYI io write (below) fails if this doesn't exist:
-        vim.fn.mkdir(save_dir, "p")
-        return save_dir .. "/" .. trace_id .. "-trace.jsonl"
-    end
-
     local path = path_for(request, frontend)
 
     local record = {
