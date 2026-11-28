@@ -6,9 +6,7 @@ local ansi = require("devtools.ansi")
 local response_metadata = require("ask-openai.backends.response_metadata")
 local SSEDeltaWrapped = require("ask-openai.backends.sse_delta_wrapped")
 
-local M = {
-    last_done = {},
-}
+local M = { }
 
 ---@param request CurlRequest|CurlRequestForTrace
 ---@param frontend StreamingFrontend
@@ -70,10 +68,6 @@ function M.log_sse_to_request(sse_wrapped, request, frontend)
             return
         end
 
-        M.last_done = {
-            request  = request,
-            frontend = frontend,
-        }
         vim.schedule(function()
             M.save_raw_prompt(request, frontend, accumulated_completion)
         end)
@@ -141,12 +135,6 @@ function M.log_sse_to_request(sse_wrapped, request, frontend)
         if not accumulated_completion.metadata.done then
             return
         end
-
-        -- store for convenient access in-memory, that way if smth fails on save I can still see it here
-        M.last_done = {
-            request = request,
-            frontend = frontend,
-        }
 
         local messages_snapshot = tables.shallow_copy(request.body.messages or {})
         table.insert(messages_snapshot, accumulated_completion)
