@@ -183,7 +183,6 @@ function M.save_chat_trace(request, frontend, messages_snapshot)
     -- TODO add record w/ type=tools at start of trace? and if ever changed
 
     local path = path_for(request, frontend)
-    -- log:info("trace path", path)
     local messages = messages_snapshot or (request.body and request.body.messages) or {}
 
     local file = io.open(path, "w")
