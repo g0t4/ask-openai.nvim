@@ -1,6 +1,5 @@
 # PYTHON_ARGCOMPLETE_OK
 
-import asyncio
 import json
 import os
 import rich
@@ -283,50 +282,27 @@ class TraceBrowser:
         elif sequence == RIGHT_ARROW:
             self.newer()
 
-async def input_loop(browser: TraceBrowser):
+def input_loop(browser: TraceBrowser):
     fd = sys.stdin.fileno()
     old = termios.tcgetattr(fd)
     tty.setcbreak(fd)
     try:
-        reader = asyncio.StreamReader()
-        protocol = asyncio.StreamReaderProtocol(reader)
-        loop = asyncio.get_running_loop()
-        await loop.connect_read_pipe(lambda: protocol, sys.stdin)
-
-        while True:
-            char = await reader.readexactly(1)
-
-            ESCAPE = b'\x1b'
-            if char == ESCAPE:
-
-                async def read_escape_sequence():
-                    # https://en.wikipedia.org/wiki/ANSI_escape_code#Control_Sequence_Introducer_commands
-                    # - followed by any number (including none) of "parameter bytes" in the range 0x30–0x3F (ASCII 0–9:;<=>?)
-                    # - then by any number of "intermediate bytes" in the range 0x20–0x2F (ASCII space and !"#$%&'()*+,-./)
-                    # - then finally by a single "final byte" in the range 0x40–0x7E (ASCII @A–Z[\]^_`a–z{|}~)
-                    #
-                    # Most arrow key sequences are 2 more bytes (e.g. ESC [ A).
-                    # Read until we have a non‑numeric byte or we reach a reasonable limit.
-                    sequence = ESCAPE
-                    # Read the next byte; if it's '[' we expect a final character like 'A', 'B', etc.
-                    try:
-                        next_byte = await reader.readexactly(1)
-                        sequence += next_byte
-                        if next_byte == b'[':
-                            # Read final character of the CSI xterm sequence
-                            final = await reader.readexactly(1)
-                            sequence += final
-                    except Exception as e:
-                        rich.print(f"[red]Failed waiting for CSI sequence, skipping sequence: {e}")
-                        return
-
-                    browser.on_csi(sequence)
-
-                await read_escape_sequence()
+        # Read one key at a time so a launched viewer can use the same terminal.
+        while char := os.read(fd, 1):
+            if char != b'\x1b':
+                browser.on_char(char)
                 continue
 
-            browser.on_char(char)
-
+            next_byte = os.read(fd, 1)
+            if not next_byte:
+                break
+            sequence = char + next_byte
+            if next_byte == b'[':
+                final_byte = os.read(fd, 1)
+                if not final_byte:
+                    break
+                sequence += final_byte
+            browser.on_csi(sequence)
     finally:
         termios.tcsetattr(fd, termios.TCSADRAIN, old)
 
@@ -335,7 +311,7 @@ def main() -> None:
     enable_argcomplete(parser)
     args = parser.parse_args()
     browser = TraceBrowser(args.from_dir)
-    asyncio.run(input_loop(browser))
+    input_loop(browser)
 
 if __name__ == "__main__":
     main()
