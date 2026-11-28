@@ -64,6 +64,7 @@ function M.log_sse_to_request(sse_wrapped, request, frontend)
         end
         accumulate_content()
 
+        -- TODO verify if raw completions even work with new metadata approach (once we're all done with refactors)
         if not accumulated_completion.metadata.done then
             return
         end
