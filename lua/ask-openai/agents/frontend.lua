@@ -40,7 +40,6 @@ local ansi = require("devtools.ansi")
 local safely = require("ask-openai.helpers.safely")
 local live_trace_stream = require("ask-openai.agents.live_trace_stream")
 local SSEWrapped = require("ask-openai.agents.sse_wrapped")
-local values = require("ask-openai.helpers.values")
 local response_metadata = require("ask-openai.backends.response_metadata")
 
 ---@class AgentsFrontend : StreamingFrontend
@@ -714,14 +713,7 @@ function AgentsFrontend.on_streaming_delta_update_message_history(choice, reques
         return
     end
 
-    -- TODO perhaps I want to nil_ify for sglang only or? would this cause me any grief?
-    -- TODO! do I want to nil_ify anything else besides the choice object? entire sse?
-    -- log:info("choice before nilify", choice)
-    -- scrub goddamn vim.NIL (sglang is null happy, returns nul on like every field every time)
-    choice = values.nil_ify(choice)
-    -- log:info("choice after nilify", choice)
-    -- FYI have model on sglang run `date` command => vim.NIL in several fields (function.name is first that blows up => then calls itself is vim.NIL on some SSEs... yikes so yeah scrub it all righ there...)
-    --   FYI I tested this with GLM 5.3 Flash on sglang
+    -- NOTE: choice is already nil_ified in place by the SSEWrapped ctor in on_parsed_data_sse
 
     -- * lookup or create message
     -- FYI this is not well vetted for multi message responses, in fact is this using choice.index for message.index?!
